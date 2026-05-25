@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <th:block th:replace="~{fragments/public/head :: head}"></th:block>
+    <th:block layout:fragment="page-css"></th:block>
+</head>
+<body class="overflow-x-hidden">
+
+<th:block th:replace="~{fragments/public/navbar :: navbar}"></th:block>
+
+<main layout:fragment="content"></main>
+
+<th:block th:replace="~{fragments/public/footer :: footer}"></th:block>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- JS chung toàn site -->
+<script th:src="@{/js/main.js}"></script>
+<!-- JS riêng từng trang -->
+<th:block layout:fragment="page-js"></th:block>
+
+</body>
+</html>

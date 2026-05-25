@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/public-layout}">
+
+<head>
+    <th:block layout:fragment="page-css">
+        <link rel="stylesheet" th:href="@{/css/home.css}"/>
+    </th:block>
+</head>
+
+<body>
+<main layout:fragment="content">
+
+    <!-- ===== HERO ===== -->
+    <th:block th:replace="~{fragments/public/hero :: hero}"></th:block>
+
+    <!-- ===== PHILOSOPHY / ABOUT ===== -->
+    <section class="audo-section" id="services">
+        <div class="container-fluid px-4 px-md-5">
+            <div class="row align-items-center g-5">
+
+                <!-- Text -->
+                <div class="col-12 col-md-5 reveal">
+                    <span class="audo-label-caps text-secondary d-block mb-3">Our Philosophy</span>
+                    <h2 class="audo-headline-lg mb-4">
+                        A space where architecture, hospitality, and community converge.
+                    </h2>
+                    <p class="audo-body-lg text-secondary mb-5">
+                        Audo Residence is a meticulously curated sanctuary in the heart of Copenhagen.
+                        We believe in soft minimalism—an approach that bridges the gap between cold
+                        industrialism and warm, human-centric design.
+                    </p>
+                    <div class="row row-cols-2 g-4">
+                        <div class="col d-flex flex-column gap-2">
+                            <span class="material-symbols-outlined audo-amenity-icon">wifi</span>
+                            <span class="audo-label-caps">Free Wifi</span>
+                        </div>
+                        <div class="col d-flex flex-column gap-2">
+                            <span class="material-symbols-outlined audo-amenity-icon">pool</span>
+                            <span class="audo-label-caps">Pool</span>
+                        </div>
+                        <div class="col d-flex flex-column gap-2">
+                            <span class="material-symbols-outlined audo-amenity-icon">spa</span>
+                            <span class="audo-label-caps">Spa</span>
+                        </div>
+                        <div class="col d-flex flex-column gap-2">
+                            <span class="material-symbols-outlined audo-amenity-icon">restaurant</span>
+                            <span class="audo-label-caps">Restaurant</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="col-12 col-md-6 offset-md-1 reveal">
+                    <div class="audo-philosophy-img">
+                        <img th:src="@{/images/philosophy.jpg}"
+                             alt="Audo interior"
+                             class="w-100 h-100 object-fit-cover"/>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ROOMS ===== -->
+    <section class="audo-section bg-light" id="rooms">
+        <div class="container-fluid px-4 px-md-5">
+
+            <div class="d-flex justify-content-between align-items-end mb-5 reveal">
+                <div>
+                    <span class="audo-label-caps text-secondary d-block mb-2">The Rooms</span>
+                    <h2 class="audo-headline-lg mb-0">Quiet Luxury, Tactile Materiality.</h2>
+                </div>
+                <a th:href="@{/rooms}" class="d-none d-md-inline audo-text-link">
+                    Explore All Suites
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <!--
+                    Khi controller truyền List<RoomType> rooms vào model:
+                    model.addAttribute("rooms", roomTypeService.getAvailable());
+                -->
+                <div th:if="${rooms != null}"
+                     th:each="room, stat : ${rooms}"
+                     class="col-12 col-md-4 reveal"
+                     th:style="${stat.index > 0} ? 'transition-delay:' + (${stat.index} * 150) + 'ms' : ''">
+                    <div class="audo-room-card h-100">
+                        <div class="audo-room-img overflow-hidden">
+                            <img th:src="${room.imageUrl} ?: @{/images/room-default.jpg}"
+                                 th:alt="${room.name}"
+                                 class="w-100 h-100 object-fit-cover audo-room-img-hover"/>
+                        </div>
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h3 class="audo-headline-md mb-0" th:text="${room.name}">Room</h3>
+                                <span class="audo-label-caps"
+                                      th:text="'€' + ${#numbers.formatDecimal(room.basePrice,1,0)} + ' / Night'">Price</span>
+                            </div>
+                            <p class="audo-body-md text-secondary mb-4 audo-line-clamp"
+                               th:text="${room.description}">Desc</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="audo-label-caps text-secondary"
+                                      th:text="'Capacity: ' + ${room.capacity} + ' Guests'">Capacity</span>
+                                <a th:href="@{/rooms/{id}(id=${room.roomTypeId})}"
+                                   class="audo-text-link d-flex align-items-center gap-1">
+                                    View Details
+                                    <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Static placeholder — xoá khi có data thật -->
+                <th:block th:if="${rooms == null}">
+                    <div class="col-12 col-md-4 reveal">
+                        <div class="audo-room-card h-100">
+                            <div class="audo-room-img overflow-hidden">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH2VzXZGpt7I9Q7k9JrMNozXhxzHQk9Im30pjhs_gAZ1ZsDPMO7UVL-g6QSWhAx_RmpfnN97hxIibOKaz0xXV7w6m4eup3GRplwuGIh2zY4zZEUYpAclMcZM2z-5JpCnpDdwglteS4ZD5GAwzfe4xvQwsEl88ddXG4KcGv_WxHmF2U3TIDnY742yIi4uXICvtjw71UheY8NyAEoB_rL2orIa31je1V8H_HpxSUYx3lnKejbTZ2V9eSVnz8uuTRiQRYfgKYV0bcooA"
+                                     alt="The Loft" class="w-100 h-100 object-fit-cover audo-room-img-hover"/>
+                            </div>
+                            <div class="p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h3 class="audo-headline-md mb-0">The Loft</h3>
+                                    <span class="audo-label-caps">€350 / Night</span>
+                                </div>
+                                <p class="audo-body-md text-secondary mb-4 audo-line-clamp">
+                                    High ceilings and raw materials meet soft textiles. Designed for contemplative
+                                    living.
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="audo-label-caps text-secondary">Capacity: 2 Guests</span>
+                                    <a href="#" class="audo-text-link d-flex align-items-center gap-1">
+                                        View Details <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4 reveal" style="transition-delay:150ms">
+                        <div class="audo-room-card h-100">
+                            <div class="audo-room-img overflow-hidden">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIrHzaMmeoWLMKe2WuYl_gS_GZjeSt0AR1_RGIaNi--EGVrsITIMQ2UdsNN7DduXK0ZqADYzYW06WymdF1xgMowhxdvc8atA2HNiFUGAwiILVOGmOXk0TWq96Ou_8SL8FH6a9dpqQHvsuJZsKTn8TGjkZQBHQFZr0a1FHf-kc6MPzztoygUuYd7B-1iHlnMtD7rQK_f2qkyuosxA7FFcXyv-DKPiF03xOK7NU--38WKNlmB3Lhs2-APtveV7l4uDo44FybMxKYSTg"
+                                     alt="The Suite" class="w-100 h-100 object-fit-cover audo-room-img-hover"/>
+                            </div>
+                            <div class="p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h3 class="audo-headline-md mb-0">The Suite</h3>
+                                    <span class="audo-label-caps">€520 / Night</span>
+                                </div>
+                                <p class="audo-body-md text-secondary mb-4 audo-line-clamp">
+                                    A two-room sanctuary featuring a private terrace and curated Danish furniture.
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="audo-label-caps text-secondary">Capacity: 3 Guests</span>
+                                    <a href="#" class="audo-text-link d-flex align-items-center gap-1">
+                                        View Details <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4 reveal" style="transition-delay:300ms">
+                        <div class="audo-room-card h-100">
+                            <div class="audo-room-img overflow-hidden">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw6MleuefnOVRdY7ab9_fOO0PQNkqB9mT48d6nCYMPK6xQZyzh2a64dhkj_GeUINy8zO17LgONSbSqnRNExG87x1PZLonw_jkxBsi2LE-wdePLni1uZIjW2VHiQivHHHZenI3UcgmHpYohZ5e-hAVZewAJMZveD9S2ArsxDIQaN8j5ecsaZb9UpQNGKkTnOw_ELuesnOR3uTkRNnkMMPzfH4KN6n-6yMTjVeFQ_lv5Yd1PqyzTwTIz-wrOALzE-EHPz49KlZKeIFE"
+                                     alt="The Studio" class="w-100 h-100 object-fit-cover audo-room-img-hover"/>
+                            </div>
+                            <div class="p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h3 class="audo-headline-md mb-0">The Studio</h3>
+                                    <span class="audo-label-caps">€280 / Night</span>
+                                </div>
+                                <p class="audo-body-md text-secondary mb-4 audo-line-clamp">
+                                    Efficient elegance. A space that prioritizes function without sacrificing poetry.
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="audo-label-caps text-secondary">Capacity: 2 Guests</span>
+                                    <a href="#" class="audo-text-link d-flex align-items-center gap-1">
+                                        View Details <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<th:block layout:fragment="page-js">
+    <script th:src="@{/js/home.js}"></script>
+</th:block>
+
+</body>
+</html>
