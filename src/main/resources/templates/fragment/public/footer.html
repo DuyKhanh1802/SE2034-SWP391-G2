@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer th:fragment="footer" class="audo-footer border-top">
+    <div class="container-fluid px-4 px-md-5 py-5">
+        <div class="row align-items-center gy-4">
+
+            <div class="col-12 col-md-6">
+                <p class="audo-brand mb-2">AUDO RESIDENCE</p>
+                <p class="audo-label-caps text-secondary mb-0">
+                    © 2024 AUDO RESIDENCE. ARCHITECTURAL SANCTUARY.
+                </p>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <div class="d-flex flex-wrap gap-4 justify-content-md-end">
+                    <a th:href="@{/privacy}"         class="audo-footer-link">Privacy Policy</a>
+                    <a th:href="@{/terms}"           class="audo-footer-link">Terms of Service</a>
+                    <a th:href="@{/contact}"         class="audo-footer-link">Contact</a>
+                    <a th:href="@{/sustainability}"  class="audo-footer-link">Sustainability</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</footer>
+</body>
+</html>
