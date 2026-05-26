@@ -1,0 +1,321 @@
+:root {
+    --bg: #fdf8f8;
+    --surface: #f7f3f2;
+    --white: #ffffff;
+    --sand: #e5e2d9;
+    --bone: #f2f0ea;
+    --text: #1c1b1b;
+    --charcoal: #2d2d2d;
+    --muted: #858383;
+    --oak: #a68b67;
+    --danger: #ba1a1a;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Hanken Grotesk', sans-serif;
+}
+
+.admin-layout{
+    display:flex;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:286px;
+    height:100vh;
+    position:fixed;
+    left:0;
+    top:0;
+    background:var(--surface);
+    border-right:1px solid var(--sand);
+    padding:36px 18px 24px;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+}
+
+.brand-box{
+    padding:0 18px;
+    margin-bottom:42px;
+}
+
+.brand-box h1{
+    margin:0;
+    font-family:'EB Garamond', serif;
+    font-size:34px;
+    line-height:38px;
+}
+
+.brand-box p{
+    margin-top:8px;
+    font-size:12px;
+    letter-spacing:2px;
+    color:var(--muted);
+    text-transform:uppercase;
+}
+
+.sidebar-nav{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.nav-item{
+    height:54px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:0 20px;
+    text-decoration:none;
+    color:var(--text);
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:2px;
+    transition:0.2s;
+}
+
+.nav-item:hover,
+.nav-item.active{
+    background:var(--sand);
+}
+
+.sidebar-bottom{
+    margin-top:auto;
+    padding-top:30px;
+    border-top:1px solid var(--sand);
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.new-task-btn{
+    width:100%;
+    height:54px;
+    border:none;
+    background:var(--charcoal);
+    color:var(--bone);
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:2px;
+    font-weight:700;
+    margin-bottom:18px;
+}
+
+/* MAIN */
+
+.main-content{
+    margin-left:286px;
+    width:100%;
+    padding:68px 72px;
+}
+
+.top-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:72px;
+}
+
+.eyebrow{
+    color:var(--oak);
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:2px;
+    font-weight:700;
+}
+
+.top-header h2{
+    margin:0;
+    font-family:'EB Garamond', serif;
+    font-size:58px;
+    font-weight:400;
+}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:30px;
+}
+
+.date-box{
+    text-align:right;
+    font-size:12px;
+    letter-spacing:2px;
+}
+
+.date-box span{
+    color:var(--muted);
+}
+
+.bell-btn{
+    width:54px;
+    height:54px;
+    border:none;
+    background:var(--sand);
+}
+
+/* STATS */
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:28px;
+    margin-bottom:80px;
+}
+
+.stat-card{
+    background:var(--surface);
+    border:1px solid var(--sand);
+    padding:38px;
+}
+
+.stat-icon{
+    font-size:22px;
+    color:var(--oak);
+    margin-bottom:20px;
+}
+
+.stat-card p{
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:2px;
+    font-weight:700;
+}
+
+.stat-card h3{
+    font-family:'EB Garamond', serif;
+    font-size:42px;
+    font-weight:400;
+}
+
+.stat-card small{
+    color:var(--oak);
+    letter-spacing:1px;
+}
+
+.muted{
+    color:var(--muted);
+}
+
+.danger{
+    color:var(--danger);
+}
+
+.danger-text{
+    color:var(--danger);
+}
+
+/* CONTENT */
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:28px;
+}
+
+.panel-card{
+    background:white;
+    border:1px solid var(--sand);
+    padding:38px;
+}
+
+.panel-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.panel-title h3{
+    font-family:'EB Garamond', serif;
+    font-size:42px;
+    font-weight:400;
+}
+
+.panel-title a{
+    color:var(--text);
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:2px;
+    text-decoration:none;
+    border-bottom:1px solid var(--text);
+}
+
+.arrivals-table th{
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:2px;
+}
+
+.arrivals-table td{
+    padding:22px 0 !important;
+}
+
+.badge-status{
+    padding:8px 14px;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+}
+
+.arrived{
+    background:#eefaf1;
+    color:#217a37;
+}
+
+.expected{
+    background:#fff8e8;
+    color:#b64414;
+}
+
+/* ROOM */
+
+.room-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.room{
+    aspect-ratio:1/1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+
+.room b{
+    font-size:14px;
+}
+
+.room span{
+    font-size:10px;
+    text-transform:uppercase;
+}
+
+.occupied{
+    background:var(--charcoal);
+    color:var(--bone);
+}
+
+.clean{
+    background:var(--bone);
+    border:1px solid var(--sand);
+}
+
+.dirty{
+    background:var(--sand);
+}
+
+.maintenance{
+    background:var(--danger);
+    color:white;
+}
