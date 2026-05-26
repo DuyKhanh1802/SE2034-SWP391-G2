@@ -1,23 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav th:fragment="navbar"
-     id="navbar"
-     class="navbar navbar-expand-md fixed-top audo-navbar">
-
+<nav th:fragment="navbar" id="navbar" class="navbar navbar-expand-md fixed-top audo-navbar">
     <div class="container-fluid px-4 px-md-5">
 
-        <!-- Brand -->
         <a class="navbar-brand audo-brand" th:href="@{/}">AUDO RESIDENCE</a>
 
-        <!-- Mobile toggle -->
-        <button class="navbar-toggler border-0 shadow-none"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarMenu"
-                aria-controls="navbarMenu"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
+        <button class="navbar-toggler border-0 shadow-none" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
