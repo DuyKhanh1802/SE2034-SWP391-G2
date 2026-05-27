@@ -13,4 +13,11 @@ public class ServiceController {
 
     }
 
+    @GetMapping("/service-staff/listworkorders")
+    public String listWorkOrder() {
+
+        return "ServiceStaff/ListWorkOrder";
+
+    }
+
 }
