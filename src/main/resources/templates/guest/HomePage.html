@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/public-layout}">
+
+<head>
+    <th:block layout:fragment="page-css">
+        <link rel="stylesheet" th:href="@{/Guest/HomePage.css}">
+    </th:block>
+</head>
+
+<body>
+<main layout:fragment="content">
+
+    <!-- HERO SECTION -->
+    <header class="audo-hero">
+        <img id="heroImg" class="audo-hero__bg"
+             th:src="@{/images/hero-audo.jpg}"
+             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhshkIWaxvAjIfnVP8zk5SqGsgz2DOp9bkttPONIQ6HpB6h8wTLNIFdeexBpZG9ZLjA9e2kzDfY_hgQNAjwZ7xVKvzkdA3g3FM2Fr2tz_j4YSKNv1zKe5Oaw-JUhwjiYyTGh3kSAv1vOYkFGeQVyAuYUuW0b5QfXC3Y8R7wJP_R7c3iBIItJJanWGFEzq8nFEkggSM9ms3cHp5bX0jntYeE49UYPQv3VSkV-3rdTvW48EPyUWNQumIfnATW6bd6je_qYQH0Qn8Kdc"
+             alt="Audo Residence Interior"/>
+        <div class="audo-hero__overlay"></div>
+
+        <div class="audo-hero__content container-fluid px-4 px-md-5">
+            <h1 class="audo-hero__title reveal active">AUDO RESIDENCE</h1>
+            <p class="audo-hero__subtitle reveal active">Architectural Sanctuary</p>
+
+            <!-- Bộ kiểm tra phòng trống -->
+            <div class="audo-search-card reveal active">
+                <form th:action="@{/rooms/search}" method="get">
+                    <div class="row align-items-stretch g-0">
+                        <div class="col-12 col-md audo-search-field text-start">
+                            <label for="checkin">Check-in</label>
+                            <input type="date" id="checkin" name="checkin" th:value="${checkin} ?: '2026-05-25'"/>
+                        </div>
+                        <div class="col-12 col-md audo-search-field text-start">
+                            <label for="checkout">Check-out</label>
+                            <input type="date" id="checkout" name="checkout" th:value="${checkout} ?: '2026-05-30'"/>
+                        </div>
+                        <div class="col-12 col-md audo-search-field text-start">
+                            <label for="guests">Guests</label>
+                            <select id="guests" name="guests">
+                                <option value="1" th:selected="${guests == 1}">1 Adult</option>
+                                <option value="2" th:selected="${guests == 2}" selected>2 Adults</option>
+                                <option value="3" th:selected="${guests == 3}">3 Adults</option>
+                                <option value="4" th:selected="${guests == 4}">4 Adults</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button type="submit" class="audo-search-btn h-100 w-100 justify-content-center">
+                                Search Rooms <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- TRIẾT LÝ VÀ TIỆN ÍCH -->
+    <section id="services" class="audo-philosophy">
+        <div class="container-fluid px-4 px-md-5">
+            <div class="row align-items-center g-5">
+                <div class="col-12 col-md-5 text-start reveal active">
+                    <span class="audo-philosophy__label">Our Philosophy</span>
+                    <h2 class="audo-philosophy__heading" th:text="${philosophytitle} ?: 'A space where architecture, hospitality, and community converge.'">
+                        Nơi giao hòa giữa nghệ thuật kiến trúc, lòng hiếu khách và cộng đồng tâm giao.
+                    </h2>
+                    <p class="audo-philosophy__body">
+                        Audo Residence là một thánh địa nghệ thuật nghỉ dưỡng nằm giữa lòng thành phố Copenhagen. Chúng tôi tôn sùng phong cách tối giản mềm mại (soft minimalism) - một nhịp cầu nối kết giữa những đường nét công nghiệp hiện đại và sự ấm áp nguyên bản từ xúc giác con người.
+                    </p>
+
+                    <!-- Lưới tiện ích cao cấp -->
+                    <div class="row row-cols-2 g-4 mt-2">
+                        <div class="col">
+                            <div class="audo-amenity gap-2">
+                                <i class="fas fa-wifi"></i>
+                                <span class="audo-amenity__label">Free Wifi</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="audo-amenity gap-2">
+                                <i class="fas fa-swimming-pool"></i>
+                                <span class="audo-amenity__label">Pool</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="audo-amenity gap-2">
+                                <i class="fas fa-spa"></i>
+                                <span class="audo-amenity__label">Spa</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="audo-amenity gap-2">
+                                <i class="fas fa-utensils"></i>
+                                <span class="audo-amenity__label">Restaurant</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 offset-md-1 reveal active">
+                    <div class="audo-philosophy__img-wrap">
+                        <img th:src="@{/images/philosophy-audo.jpg}"
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxFICD5W9EkgZhUKj_ygI9VBb2qzmOWnks1UX8piQHAnI1JGTmQE4WfZW05x89FIedkIpcOr1xDBDRVJuJ-aNFjOf_Pspmkb7VTlTR0t_DfwpyvLVITvae8mBVfMGSI5xj1hm-N1rtcuEo-nJBFVYl4m3Ofk17Zv_nqvySZtlFhDsqdrzHrvQwuC8Npf9E1FM5c8UDLjHFKBB3U8esanWRbj92P8T1MQ8hd9r31qu9kEPQr5itNwrpna5M8o3FcZNNKmlq_9WEUQQ"
+                             alt="Interior Architecture at Audo Residence"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CÁC HẠNG PHÒNG -->
+    <section id="rooms" class="audo-rooms py-5" style="background-color: #f4f3f2;">
+        <div class="container-fluid px-4 px-md-5">
+            <div class="d-flex justify-content-between align-items-end mb-5 reveal active">
+                <div class="text-start">
+                    <span class="audo-rooms__label">The Rooms</span>
+                    <h2 class="audo-rooms__heading">Quiet Luxury, Tactile Materiality.</h2>
+                </div>
+                <div class="d-none d-md-block">
+                    <a th:href="@{/rooms}" class="audo-rooms__explore-btn">Explore All Suites</a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Loft Room -->
+                <div class="col-12 col-md-4 reveal active">
+                    <div class="audo-room-card h-100 border-0 shadow-sm">
+                        <div class="audo-room-card__img-wrap">
+                            <img th:src="@{/images/room-loft.jpg}"
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH2VzXZGpt7I9Q7k9JrMNozXhxzHQk9Im30pjhs_gAZ1ZsDPMO7UVL-g6QSWhAx_RmpfnN97hxIibOKaz0xXV7w6m4eup3GRplwuGIh2zY4zZEUYpAclMcZM2z-5JpCnpDdwglteS4ZD5GAwzfe4xvQwsEl88ddXG4KcGv_WxHmF2U3TIDnY742yIi4uXICvtjw71UheY8NyAEoB_rL2orIa31je1V8H_HpxSUYx3lnKejbTZ2V9eSVnz8uuTRiQRYfgKYV0bcooA"
+                                 alt="The Loft - Audo Residence"/>
+                        </div>
+                        <div class="audo-room-card__body text-start p-4 bg-white">
+                            <div class="audo-room-card__header">
+                                <h3 class="audo-room-card__name">The Loft</h3>
+                                <span class="audo-room-card__price">€350 / Night</span>
+                            </div>
+                            <p class="audo-room-card__desc">Trần nhà cao và vật liệu thô gặp gỡ dệt may mềm mại Đan Mạch. Được tinh tế tạo ra hướng đến sự thuần túy chiêm nghiệm.</p>
+                            <div class="audo-room-card__footer pt-3 border-top mt-auto">
+                                <span class="audo-room-card__capacity">Capacity: 2 Guests</span>
+                                <button class="audo-room-card__cta border-0 bg-transparent text-black" th:onclick="|window.location='@{/rooms/loft}'|">
+                                    View Details <i class="fas fa-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suite Room -->
+                <div class="col-12 col-md-4 reveal active">
+                    <div class="audo-room-card h-100 border-0 shadow-sm">
+                        <div class="audo-room-card__img-wrap">
+                            <img th:src="@{/images/room-suite.jpg}"
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIrHzaMmeoWLMKe2WuYl_gS_GZjeSt0AR1_RGIaNi--EGVrsITIMQ2UdsNN7DduXK0ZqADYzYW06WymdF1xgMowhxdvc8atA2HNiFUGAwiILVOGmOXk0TWq96Ou_8SL8FH6a9dpqQHvsuJZsKTn8TGjkZQBHQFZr0a1FHf-kc6MPzztoygUuYd7B-1iHlnMtD7rQK_f2qkyuosxA7FFcXyv-DKPiF03xOK7NU--38WKNlmB3Lhs2-APtveV7l4uDo44FybMxKYSTg"
+                                 alt="The Suite - Audo Residence"/>
+                        </div>
+                        <div class="audo-room-card__body text-start p-4 bg-white">
+                            <div class="audo-room-card__header">
+                                <h3 class="audo-room-card__name">The Suite</h3>
+                                <span class="audo-room-card__price">€520 / Night</span>
+                            </div>
+                            <p class="audo-room-card__desc">Một kiệt tác nghỉ dưỡng 2 căn phòng mang đậm bản sắc thiết kế đồ nội thất gỗ sồi mộc và bộ sưu tập Bắc Âu ấm cúng độc quyền.</p>
+                            <div class="audo-room-card__footer pt-3 border-top mt-auto">
+                                <span class="audo-room-card__capacity">Capacity: 3 Guests</span>
+                                <button class="audo-room-card__cta border-0 bg-transparent text-black" th:onclick="|window.location='@{/rooms/suite}'|">
+                                    View Details <i class="fas fa-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Studio Room -->
+                <div class="col-12 col-md-4 reveal active">
+                    <div class="audo-room-card h-100 border-0 shadow-sm">
+                        <div class="audo-room-card__img-wrap">
+                            <img th:src="@{/images/room-studio.jpg}"
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw6MleuefnOVRdY7ab9_fOO0PQNkqB9mT48d6nCYMPK6xQZyzh2a64dhkj_GeUINy8zO17LgONSbSqnRNExG87x1PZLonw_jkxBsi2LE-wdePLni1uZIjW2VHiQivHHHZenI3UcgmHpYohZ5e-hAVZewAJMZveD9S2ArsxDIQaN8j5ecsaZb9UpQNGKkTnOw_ELuesnOR3uTkRNnkMMPzfH4KN6n-6yMTjVeFQ_lv5Yd1PqyzTwTIz-wrOALzE-EHPz49KlZKeIFE"
+                                 alt="The Studio - Audo Residence"/>
+                        </div>
+                        <div class="audo-room-card__body text-start p-4 bg-white">
+                            <div class="audo-room-card__header">
+                                <h3 class="audo-room-card__name">The Studio</h3>
+                                <span class="audo-room-card__price">€280 / Night</span>
+                            </div>
+                            <p class="audo-room-card__desc">Sự hiệu quả của thẩm mỹ tối giản. Một không gian chú trọng công năng sâu sắc nhưng vẫn toát lên linh hồn nghệ thuật Đan Mạch.</p>
+                            <div class="audo-room-card__footer pt-3 border-top mt-auto">
+                                <span class="audo-room-card__capacity">Capacity: 2 Guests</span>
+                                <button class="audo-room-card__cta border-0 bg-transparent text-black" th:onclick="|window.location='@{/rooms/studio}'|">
+                                    View Details <i class="fas fa-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
