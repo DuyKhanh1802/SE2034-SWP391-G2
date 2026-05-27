@@ -1,4 +1,4 @@
-package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller;
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HouseKeeping;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
