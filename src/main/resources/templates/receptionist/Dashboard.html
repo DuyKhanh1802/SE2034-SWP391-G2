@@ -1,10 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Dashboard</title>
+    <link rel="stylesheet" th:href="@{/Receptionist/Dashboard.css}">
 </head>
 <body>
+
+<div class="container-dashboard">
+    <!-- Sidebar -->
+    <th:block th:replace="~{fragments/receptionist/sidebar :: sidebar}"></th:block>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="dashboard-header">
+            <h1>Dashboard Overview</h1>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="cards">
+            <div class="card">
+                <h3>Check-ins Today</h3>
+                <h2 th:text="${checkinCount}">0</h2>
+            </div>
+            <div class="card">
+                <h3>Check-outs Today</h3>
+                <h2 th:text="${checkoutCount}">0</h2>
+            </div>
+            <div class="card">
+                <h3>Occupied Rooms</h3>
+                <h2 th:text="${occupied}">0</h2>
+            </div>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="bookings-table">
+            <h2>Recent Bookings</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Guest Name</th>
+                    <th>Room Number</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="booking : ${bookings}">
+                    <td th:text="${booking.id}">ID</td>
+                    <td th:text="${booking.guestName}">Name</td>
+                    <td th:text="${booking.roomNumber}">Room</td>
+                    <td th:text="${booking.status}">Status</td>
+                </tr>
+                <!-- No data fallback -->
+                <tr th:if="${#lists.isEmpty(bookings)}">
+                    <td colspan="4" class="no-data">No recent bookings available.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
 
 </body>
 </html>
