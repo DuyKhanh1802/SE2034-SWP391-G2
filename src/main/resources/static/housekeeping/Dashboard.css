@@ -1,0 +1,468 @@
+:root {
+    --bg: #faf9f7;
+    --surface: #faf9f7;
+    --surface-low: #f4f3f1;
+    --surface-card: #ffffff;
+    --surface-bone: #f2f0ed;
+    --surface-task: #e3e2e0;
+    --border: #c4c7c7;
+    --text: #1a1c1b;
+    --muted: #444748;
+    --primary: #000000;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* ================= HEADER ================= */
+
+.staff-header {
+    height: 72px;
+    width: 100%;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 64px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.header-brand {
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--primary);
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+}
+
+.header-nav a {
+    font-size: 16px;
+    color: var(--muted);
+    padding-bottom: 5px;
+}
+
+.header-nav a.active {
+    color: var(--primary);
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    color: var(--muted);
+    font-size: 18px;
+}
+
+.header-actions i {
+    cursor: pointer;
+}
+
+.staff-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.staff-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ================= SIDEBAR ================= */
+
+.staff-sidebar {
+    width: 260px;
+    height: calc(100vh - 72px);
+    position: fixed;
+    top: 72px;
+    left: 0;
+    background: var(--surface-low);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 90;
+}
+
+.staff-profile {
+    padding: 32px 32px 36px;
+}
+
+.staff-profile h2 {
+    margin: 0 0 6px;
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+}
+
+.staff-profile p {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.sidebar-menu {
+    flex: 1;
+}
+
+.sidebar-link {
+    min-height: 58px;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--muted);
+    transition: 0.2s ease;
+}
+
+.sidebar-link i {
+    width: 20px;
+    font-size: 17px;
+}
+
+.sidebar-link span {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.sidebar-link:hover {
+    background: #e9e8e6;
+    color: var(--primary);
+}
+
+.sidebar-link.active {
+    background: #e6e2de;
+    color: var(--primary);
+    font-weight: 700;
+    border-left: 4px solid var(--primary);
+    padding-left: 28px;
+}
+
+.sidebar-logout {
+    border-top: 1px solid var(--border);
+    padding: 18px 0;
+}
+
+/* ================= MAIN ================= */
+
+.staff-main {
+    margin-left: 260px;
+    padding: 136px 64px 90px;
+    min-height: 100vh;
+    max-width: 1440px;
+}
+
+/* ================= WELCOME ================= */
+
+.welcome-section {
+    margin-bottom: 110px;
+}
+
+.welcome-section h1 {
+    margin: 0 0 10px;
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 48px;
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.welcome-section p {
+    margin: 0;
+    font-size: 18px;
+    color: var(--muted);
+}
+
+/* ================= STATS ================= */
+
+.stats-section {
+    margin-bottom: 110px;
+}
+
+.stat-card {
+    min-height: 190px;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.stat-label {
+    margin: 0 0 24px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.stat-card h2 {
+    margin: 0;
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 64px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--primary);
+}
+
+.badge-custom {
+    width: fit-content;
+    padding: 6px 16px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.badge-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #7b5b00;
+    border: 1px solid rgba(255, 193, 7, 0.25);
+}
+
+.badge-info {
+    background: rgba(2, 119, 189, 0.1);
+    color: #014975;
+    border: 1px solid rgba(2, 119, 189, 0.25);
+}
+
+.badge-success {
+    background: rgba(46, 125, 50, 0.1);
+    color: #1b5e20;
+    border: 1px solid rgba(46, 125, 50, 0.25);
+}
+
+/* ================= DASHBOARD PANELS ================= */
+
+.dashboard-section {
+    margin-bottom: 90px;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.section-title-row h2 {
+    margin: 0;
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+}
+
+.section-title-row a {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--primary);
+    padding-bottom: 4px;
+}
+
+.section-title-row a:hover {
+    opacity: 0.7;
+}
+
+/* ================= ROOM CARD ================= */
+
+.room-card {
+    background: var(--surface-bone);
+    border: 1px solid transparent;
+    padding: 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    transition: 0.25s ease;
+    cursor: pointer;
+}
+
+.room-card:hover {
+    border-color: var(--border);
+    transform: translateY(-2px);
+}
+
+.room-card h3 {
+    margin: 0 0 8px;
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.room-card p {
+    margin: 0;
+    font-size: 16px;
+    color: var(--muted);
+}
+
+.room-card span {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+/* ================= TASK CARD ================= */
+
+.task-card {
+    background: var(--surface-task);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.task-card h3 {
+    margin: 0 0 6px;
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.task-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.task-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--primary);
+}
+
+.task-status span:not(.dot) {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+/* ================= FOOTER ================= */
+
+.staff-footer {
+    margin-left: 260px;
+    background: var(--surface-bone);
+    border-top: 1px solid var(--border);
+    padding: 44px 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.footer-brand {
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+}
+
+.footer-links a,
+.footer-copy {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+}
+
+/* ================= RESPONSIVE BASIC ================= */
+
+@media (max-width: 992px) {
+    .staff-sidebar {
+        display: none;
+    }
+
+    .staff-main {
+        margin-left: 0;
+        padding: 112px 24px 60px;
+        max-width: 100%;
+    }
+
+    .staff-footer {
+        margin-left: 0;
+        padding: 32px 24px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .staff-header {
+        padding: 0 24px;
+    }
+
+    .header-brand {
+        font-size: 20px;
+    }
+
+    .header-nav {
+        display: none;
+    }
+
+    .welcome-section {
+        margin-bottom: 60px;
+    }
+
+    .stats-section {
+        margin-bottom: 60px;
+    }
+}
