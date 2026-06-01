@@ -34,3 +34,6 @@ build/
 
 # Ignore all .properties files
 *.properties
+
+# Ignore all .properties files
+*.properties
