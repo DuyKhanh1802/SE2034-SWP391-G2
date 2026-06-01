@@ -1,0 +1,120 @@
+/* Login.css — extends auth-base.css */
+
+.shell {
+    grid-template-columns: 55% 45%;
+}
+
+/* ── LEFT PANEL ── */
+.panel-left img {
+    object-position: center center;
+}
+
+.left-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    color: #fff;
+}
+
+/* Wordmark top */
+.wordmark {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.wordmark-line {
+    width: 32px;
+    height: 1px;
+    background: rgba(255,255,255,.5);
+}
+
+.wordmark-text {
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 5px;
+    color: rgba(255,255,255,.7);
+    text-transform: uppercase;
+}
+
+/* Brand block bottom */
+.brand-block { color: #fff; }
+
+.brand-eyebrow {
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--gold-light);
+    margin-bottom: 18px;
+    font-weight: 300;
+}
+
+.brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px;
+    font-weight: 300;
+    line-height: .92;
+    letter-spacing: 2px;
+    margin-bottom: 28px;
+}
+
+.brand-name span {
+    display: block;
+    font-style: italic;
+    font-size: 52px;
+    opacity: .75;
+    letter-spacing: 4px;
+}
+
+.brand-rule {
+    width: 48px;
+    height: 1px;
+    background: var(--gold);
+    margin-bottom: 22px;
+}
+
+.brand-tagline {
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 3px;
+    opacity: .65;
+    text-transform: uppercase;
+}
+
+/* Ribbon */
+.ribbon {
+    position: absolute;
+    bottom: 52px;
+    right: 0;
+    background: var(--gold);
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 3px;
+    padding: 10px 22px 10px 18px;
+    font-weight: 500;
+    z-index: 3;
+}
+
+/* ── RIGHT PANEL ── */
+.form-heading { font-size: 58px; }
+
+.field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 9px;
+}
+
+.field-header label { margin-bottom: 0; }
+
+.forgot {
+    font-size: 11px;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: .5px;
+    transition: opacity .2s;
+}
+
+.forgot:hover { opacity: .7; }

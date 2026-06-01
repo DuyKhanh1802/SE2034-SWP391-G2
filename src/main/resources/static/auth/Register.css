@@ -1,0 +1,396 @@
+/* ==========================================================================
+   Register.css — Premium Editorial Styling (Rosewood Luxury Theme) — REDESIGNED
+   ========================================================================== */
+
+:root {
+    --gold: #b29a73;
+    --gold-light: #d4c4a8;
+    --gold-dark: #8c734b;
+    --bg-cream: #F9F6F0;
+    --text-black: #1A1815;
+    --muted-clay: #7A746E;
+    --border-smoke: rgba(26, 24, 21, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+body.bg-lux-cream {
+    background-color: var(--bg-cream) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--text-black);
+    -webkit-font-smoothing: antialiased;
+}
+
+.bg-sand-light {
+    background-color: #FAF8F5 !important;
+}
+
+/* --- BRANDING LEFT PANEL --- */
+.absolute-bg-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1;
+    background-size: cover;
+    background-position: center 30%;
+    filter: brightness(0.55) contrast(1.05);
+    transition: transform 12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.col-lg-5:hover .absolute-bg-overlay {
+    transform: scale(1.04);
+}
+
+.absolute-bg-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(16, 14, 12, 0.88), rgba(26, 24, 21, 0.3));
+    z-index: 2;
+}
+
+.back-link-lux {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    font-weight: 400;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.back-link-lux::before {
+    content: '← \a0\a0';
+    font-size: 11px;
+}
+
+.back-link-lux:hover {
+    opacity: 1;
+    color: var(--gold-light) !important;
+}
+
+.emblem-crest {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border: 0.5px solid rgba(212, 196, 168, 0.4);
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    color: var(--gold-light);
+    background-color: rgba(26, 24, 21, 0.35);
+    backdrop-filter: blur(2px);
+    box-shadow: inset 0 0 8px rgba(178, 154, 115, 0.1);
+}
+
+.serif-display-italic {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 44px;
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+}
+
+.gold-highlight {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold-light);
+    font-weight: 400;
+}
+
+.desc-luxury {
+    font-size: 13px;
+    font-weight: 200;
+    line-height: 1.8;
+    max-width: 320px;
+}
+
+.perks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.perk-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12.5px;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 0.03em;
+}
+
+.perk-dot-gold {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--gold);
+    box-shadow: 0 0 8px rgba(178, 154, 115, 0.8);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.side-vertical-label {
+    position: absolute;
+    top: 0; right: 0;
+    width: 56px; height: 100%;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 0.5px solid rgba(255, 255, 255, 0.06);
+}
+
+.side-vertical-label span {
+    color: rgba(255, 255, 255, 0.22);
+    font-size: 8.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: 0.45em;
+    writing-mode: vertical-rl;
+}
+
+/* --- RIGHT PANEL: SCROLLABLE FORM --- */
+.col-lg-7 {
+    overflow-y: auto;
+    min-height: 100vh;
+    align-items: flex-start !important;
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 540px;
+    margin: 0 auto;
+}
+
+/* --- BADGE --- */
+.badge-custom-lux {
+    background-color: rgba(178, 154, 115, 0.08);
+    border: 0.5px solid rgba(178, 154, 115, 0.15);
+    border-radius: 20px;
+    padding: 6px 14px;
+}
+
+.badge-dot-gold {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background-color: var(--gold-dark);
+    margin-right: 8px;
+}
+
+.badge-text-gold {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--gold-dark);
+}
+
+/* --- HEADINGS --- */
+.heading-serif-lux {
+    font-family: 'Cinzel', serif;
+    font-weight: 300;
+    color: var(--text-black);
+    letter-spacing: 0.02em;
+    font-size: 32px;
+    line-height: 1.2;
+}
+
+.italic-serif-lux {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    color: var(--gold-dark);
+    font-size: 40px;
+}
+
+.luxury-divider {
+    height: 0.5px;
+    background-color: var(--border-smoke);
+    width: 100%;
+}
+
+/* --- LABELS --- */
+.label-gold-lux {
+    display: block;
+    font-size: 9px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted-clay);
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+/* --- INPUTS --- */
+.form-control-lux,
+.form-select-lux {
+    display: block;
+    width: 100%;
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 0.5px solid rgba(26, 24, 21, 0.18) !important;
+    border-radius: 0 !important;
+    padding: 10px 0 !important;
+    font-size: 14px !important;
+    font-weight: 300 !important;
+    color: var(--text-black) !important;
+    box-shadow: none !important;
+    transition: border-color 0.4s ease !important;
+}
+
+.form-control-lux:focus,
+.form-select-lux:focus {
+    border-bottom-color: var(--gold-dark) !important;
+    outline: none !important;
+}
+
+.form-control-lux::placeholder {
+    color: rgba(26, 24, 21, 0.28) !important;
+    font-style: italic !important;
+    font-family: 'Cormorant Garamond', serif !important;
+    font-weight: 300 !important;
+}
+
+.font-mono-lux {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* --- SELECT DROPDOWN — FIX zigzag --- */
+.form-select-lux {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238c734b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 4px center !important;
+    background-size: 12px 12px !important;
+    padding-right: 24px !important;
+    cursor: pointer !important;
+}
+
+/* --- VALIDATION ERRORS --- */
+.error-lux-text {
+    font-size: 11px;
+    color: #922B21;
+    font-weight: 400;
+    font-style: italic;
+    margin-top: 4px;
+    letter-spacing: 0.01em;
+}
+
+/* --- CHECKBOX --- */
+.form-check-input-lux {
+    width: 14px; height: 14px;
+    background-color: transparent;
+    border: 0.5px solid rgba(26, 24, 21, 0.25) !important;
+    border-radius: 0;
+    margin-top: 4px;
+    box-shadow: none !important;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.form-check-input-lux:checked {
+    background-color: var(--gold-dark) !important;
+    border-color: var(--gold-dark) !important;
+}
+
+.form-check-label-lux {
+    font-size: 11px;
+    font-weight: 300;
+    color: var(--muted-clay);
+    line-height: 1.6;
+}
+
+.text-gold-link {
+    color: var(--gold-dark);
+    text-decoration: none;
+    border-bottom: 0.5px solid transparent;
+    transition: all 0.3s;
+}
+
+.text-gold-link:hover {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+}
+
+/* --- ALERT --- */
+.alert-lux-danger {
+    background-color: #FAF5F5 !important;
+    border: none !important;
+    border-left: 1.5px solid #8C2A2A !important;
+    color: #8C2A2A !important;
+    border-radius: 0 !important;
+    font-size: 12.5px !important;
+    font-weight: 300 !important;
+    padding: 12px 16px !important;
+    letter-spacing: 0.02em;
+}
+
+/* --- SUBMIT BUTTON --- */
+.btn-lux-submit {
+    display: block;
+    width: 100%;
+    background-color: var(--text-black);
+    color: #fff;
+    border: 0.5px solid var(--text-black);
+    padding: 16px;
+    font-size: 10.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: 0.25em;
+    font-weight: 500;
+    text-transform: uppercase;
+    transition: all 0.4s ease;
+    border-radius: 0;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.btn-lux-submit:hover {
+    background-color: var(--gold);
+    border-color: var(--gold);
+    color: var(--text-black);
+    box-shadow: 0 4px 20px rgba(140, 115, 75, 0.16);
+}
+
+/* --- FOOTER SIGNIN LINK --- */
+.font-cinzel-bold {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    font-size: 10px;
+    color: var(--gold-dark);
+}
+
+.font-cinzel-bold:hover {
+    color: var(--gold);
+}
+
+/* --- LEFT PANEL STICKY on large screens --- */
+@media (min-width: 992px) {
+    .col-lg-5 {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+    }
+
+    .col-lg-7 {
+        height: auto;
+        min-height: 100vh;
+    }
+}
+
+/* --- Mobile responsive --- */
+@media (max-width: 991px) {
+    .col-lg-7 {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    .heading-serif-lux { font-size: 26px; }
+    .italic-serif-lux  { font-size: 32px; }
+}
