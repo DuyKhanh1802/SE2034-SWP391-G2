@@ -39,8 +39,15 @@ public class BookingStatusHistory {
     private User changedBy;
 
     @Column(name = "changed_at", nullable = false)
-    private Instant changedAt = Instant.now();
+    private Instant changedAt;
 
     @Column(name = "reason", length = 300)
     private String reason;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.changedAt == null) {
+            this.changedAt = Instant.now();
+        }
+    }
 }

@@ -26,6 +26,9 @@ public class FolioItem {
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id") //
+    private Service service;
     @Column(name = "description", nullable = false, length = 200)
     private String description;
 
@@ -43,7 +46,7 @@ public class FolioItem {
     private BigDecimal unitPrice;
 
     @Column(name = "posted_at", nullable = false)
-    private Instant postedAt = Instant.now();
+    private Instant postedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posted_by")
@@ -64,4 +67,11 @@ public class FolioItem {
 
     @Column(name = "voided_reason", length = 200)
     private String voidedReason;
+
+    @PrePersist
+    protected void onPost() {
+        if (this.postedAt == null) {
+            this.postedAt = Instant.now();
+        }
+    }
 }

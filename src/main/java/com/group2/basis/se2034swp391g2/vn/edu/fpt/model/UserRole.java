@@ -35,4 +35,11 @@ public class UserRole {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_by")
     private User assignedBy;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.assignedAt == null) {
+            this.assignedAt = Instant.now();
+        }
+    }
 }

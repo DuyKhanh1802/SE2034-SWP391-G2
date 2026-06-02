@@ -33,5 +33,5 @@ public class ServiceCategory {
     private String description;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 }

@@ -42,7 +42,7 @@ public class Promotion {
     private Integer usageLimit;
 
     @Column(name = "usage_count", nullable = false)
-    private Integer usageCount;
+    private Integer usageCount = 0;
 
     @Column(name = "valid_from", nullable = false)
     private Instant validFrom;
@@ -51,12 +51,19 @@ public class Promotion {
     private Instant validTo;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    private Boolean isActive = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+    }
 }

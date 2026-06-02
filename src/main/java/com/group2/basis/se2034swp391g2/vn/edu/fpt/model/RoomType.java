@@ -30,11 +30,11 @@ public class RoomType {
     private BigDecimal basePrice;
 
     @Column(name = "capacity", nullable = false)
-    private Integer capacity;
+    private Integer capacity = 2;
 
     @Column(name = "description", length = 500)
     private String description;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 }

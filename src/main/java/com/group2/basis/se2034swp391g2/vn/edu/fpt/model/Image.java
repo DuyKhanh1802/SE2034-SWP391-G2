@@ -43,6 +43,13 @@ public class Image {
     private User uploadedBy;
 
     @Column(name = "uploaded_at", nullable = false)
-    private Instant uploadedAt = Instant.now();
+    private Instant uploadedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.uploadedAt == null) {
+            this.uploadedAt = Instant.now();
+        }
+    }
 }
 

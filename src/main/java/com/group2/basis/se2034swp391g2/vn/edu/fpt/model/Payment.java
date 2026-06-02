@@ -51,12 +51,25 @@ public class Payment {
     private User processedBy;
 
     @Column(name = "paid_at", nullable = false)
-    private Instant paidAt = Instant.now();
+    private Instant paidAt;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "original_payment_id")
     private Payment originalPayment;
+
+    @PrePersist
+    protected void onCreate() {
+        Instant now = Instant.now();
+
+        if (this.createdAt == null) {
+            this.createdAt = now;
+        }
+
+        if (this.paidAt == null) {
+            this.paidAt = now;
+        }
+    }
 }
