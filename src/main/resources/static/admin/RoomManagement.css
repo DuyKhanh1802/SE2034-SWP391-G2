@@ -1,0 +1,145 @@
+/* LIST ROOM PAGE */
+
+.room-page-title {
+    margin-top: 50px;
+    margin-bottom: 35px;
+}
+
+.room-page-title h1 {
+    font-size: 72px;
+    font-family: 'Cormorant Garamond', serif;
+}
+
+.room-page-title p {
+    color: #777;
+    max-width: 720px;
+}
+
+.room-action-bar {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+}
+
+.room-action-bar span {
+    font-size: 12px;
+    letter-spacing: 3px;
+    font-weight: 600;
+    color: #777;
+}
+
+.room-action-bar h3 {
+    margin-top: 8px;
+    font-size: 38px;
+    font-family: 'Cormorant Garamond', serif;
+}
+
+.add-room-btn {
+    background: #000;
+    color: white;
+    text-decoration: none;
+    padding: 14px 28px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.add-room-btn:hover {
+    background: #333;
+    color: white;
+}
+
+.room-table-card {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 0;
+    overflow-x: auto;
+}
+
+.room-table {
+    margin-bottom: 0;
+}
+
+.room-table thead th {
+    background: #efefef;
+    color: #555;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 18px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.room-table tbody td {
+    padding: 20px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+}
+
+.room-table tbody tr:hover {
+    background: #f8f8f8;
+}
+
+.room-number {
+    font-size: 20px !important;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.room-status {
+    display: inline-block;
+    padding: 7px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.status-available {
+    background: #e7f5e7;
+    color: #2f7d32;
+}
+
+.status-occupied {
+    background: #e8f2ff;
+    color: #1e70b7;
+}
+
+.status-maintenance {
+    background: #ffe5e5;
+    color: #d32f2f;
+}
+
+.room-action-link {
+    color: #000;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-right: 14px;
+    border-bottom: 1px solid #000;
+}
+
+.room-action-link:hover {
+    color: #777;
+    border-bottom-color: #777;
+}
+.room-table-card {
+    width: 100%;
+}
+
+.room-action-danger {
+    color: #d32f2f;
+    border-bottom-color: #d32f2f;
+}
+
+.room-action-danger:hover {
+    color: #9a1f1f;
+    border-bottom-color: #9a1f1f;
+}
