@@ -3,26 +3,28 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.DiscountType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Nationalized;
-
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-@Table(name = "promotions",
-        uniqueConstraints = @UniqueConstraint(name = "uq_promotions_code", columnNames = "code"))
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Table(name = "promotions")
 public class Promotion {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "promotion_id")
-    private Long promotionId;
+    private Long id;
 
-    @Column(name = "code", nullable = false, length = 20)
+    @Column(name = "code", nullable = false, unique = true, length = 20)
     private String code;
 
-    @Nationalized
     @Column(name = "name", nullable = false, length = 200)
     private String name;
 
@@ -40,7 +42,7 @@ public class Promotion {
     private Integer usageLimit;
 
     @Column(name = "usage_count", nullable = false)
-    private Integer usageCount = 0;
+    private Integer usageCount;
 
     @Column(name = "valid_from", nullable = false)
     private Instant validFrom;
@@ -49,13 +51,12 @@ public class Promotion {
     private Instant validTo;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private Boolean isActive;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_promo_created_by"))
+    @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 }

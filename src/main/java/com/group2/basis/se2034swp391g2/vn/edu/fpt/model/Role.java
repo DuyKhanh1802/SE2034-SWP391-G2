@@ -1,25 +1,29 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
+
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-@Table(name = "roles",
-        uniqueConstraints = @UniqueConstraint(name = "uq_roles_name", columnNames = "role_name"))
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Table(name = "roles")
 public class Role {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
-    private Long roleId;
+    private Long id;
 
-    @Column(name = "role_name", nullable = false, length = 20)
-    private String roleName;
-
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users = new HashSet<>();
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role_name", nullable = false, unique = true, length = 20)
+    private RoleName roleName;
 }

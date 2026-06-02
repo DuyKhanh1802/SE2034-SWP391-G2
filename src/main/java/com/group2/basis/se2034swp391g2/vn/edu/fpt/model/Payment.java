@@ -5,23 +5,27 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "payments")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Payment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
-    private Long paymentId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_pay_booking"))
+    @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
     @Enumerated(EnumType.STRING)
@@ -43,19 +47,16 @@ public class Payment {
     private String transactionRef;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "processed_by", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_pay_processed_by"))
+    @JoinColumn(name = "processed_by", nullable = false)
     private User processedBy;
 
     @Column(name = "paid_at", nullable = false)
     private Instant paidAt = Instant.now();
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
-    /** Liên kết tới payment gốc (dùng khi hoàn tiền) */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "original_payment_id",
-            foreignKey = @ForeignKey(name = "fk_pay_original"))
+    @JoinColumn(name = "original_payment_id")
     private Payment originalPayment;
 }
