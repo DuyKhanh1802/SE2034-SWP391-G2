@@ -5,6 +5,8 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.IdentityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.UserType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Nationalized;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,14 +27,14 @@ public class User {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_type", nullable = false, length = 10)
+    @Column(name = "user_type", nullable = false, length = 10,columnDefinition = "NVARCHAR(10)")
     private UserType userType = UserType.GUEST;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "approval_status", nullable = false, length = 20)
+    @Column(name = "approval_status", nullable = false, length = 20,columnDefinition = "NVARCHAR(20)")
     private ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
 
-    @Column(name = "approval_note", length = 300)
+    @Column(name = "approval_note", length = 300,columnDefinition = "NVARCHAR(300)")
     private String approvalNote;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,26 +44,28 @@ public class User {
     @Column(name = "reviewed_at")
     private Instant reviewedAt;
 
-    @Column(name = "first_name", nullable = false, length = 50)
+
+    @Column(name = "first_name", nullable = false, length = 50,columnDefinition = "NVARCHAR(50)")
     private String firstName;
 
-    @Column(name = "last_name", nullable = false, length = 50)
+
+    @Column(name = "last_name", nullable = false, length = 50,columnDefinition = "NVARCHAR(50)")
     private String lastName;
 
-    @Column(name = "email", length = 150)
+    @Column(name = "email", length = 150,columnDefinition = "NVARCHAR(150)")
     private String email;
 
-    @Column(name = "phone", length = 20)
+    @Column(name = "phone", length = 20,columnDefinition = "NVARCHAR(20)")
     private String phone;
 
-    @Column(name = "password_hash", length = 255)
+    @Column(name = "password_hash", length = 255,columnDefinition = "NVARCHAR(255)")
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "identity_type", length = 20)
+    @Column(name = "identity_type", length = 20,columnDefinition = "NVARCHAR(20)")
     private IdentityType identityType;
 
-    @Column(name = "identity_number", length = 50)
+    @Column(name = "identity_number", length = 50,columnDefinition = "NVARCHAR(50)")
     private String identityNumber;
 
     @Column(name = "passport_expiry_date")
@@ -84,7 +88,7 @@ public class User {
     @Column(name = "last_stay_at")
     private Instant lastStayAt;
 
-    @Column(name = "internal_notes")
+    @Column(name = "internal_notes",columnDefinition = "NVARCHAR(MAX)")
     private String internalNotes;
 
     @Column(name = "is_active", nullable = false)
@@ -113,4 +117,8 @@ public class User {
     protected void onUpdate() {
         this.updatedAt = Instant.now();
     }
+
+    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @Builder.Default
+    private Set<UserRole> userRoles = new HashSet<>();
 }
