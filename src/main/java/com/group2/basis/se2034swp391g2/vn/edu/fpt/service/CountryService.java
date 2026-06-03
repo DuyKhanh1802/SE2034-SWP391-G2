@@ -12,5 +12,5 @@ public class CountryService {
 
     private final CountryRepository countryRepository;
     public List<Country> getAllCountries(){
-        return countryRepository.findAll(Sort.by(Sort.Direction.ASC, "countryName"));    }
+        return countryRepository.findAllByOrderByCountryNameAsc();    }
 }
