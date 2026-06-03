@@ -29,7 +29,9 @@ html, body {
 /* ── LAYOUT ── */
 .shell {
     display: grid;
+    grid-template-columns: 55% 45%;
     height: 100vh;
+    width: 100%;
 }
 
 /* ── LEFT PANEL ── */
@@ -48,6 +50,7 @@ html, body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center center;
     animation: slowZoom 20s ease-out forwards;
 }
 
@@ -63,6 +66,95 @@ html, body {
     background:
             linear-gradient(160deg, rgba(26,23,19,.25) 0%, transparent 50%),
             linear-gradient(to top, rgba(26,23,19,.82) 0%, rgba(26,23,19,.30) 45%, transparent 75%);
+    z-index: 1;
+}
+
+.left-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    color: #fff;
+}
+
+/* Wordmark top */
+.wordmark {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.wordmark-line {
+    width: 32px;
+    height: 1px;
+    background: rgba(255,255,255,.5);
+}
+
+.wordmark-text {
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 5px;
+    color: rgba(255,255,255,.7);
+    text-transform: uppercase;
+}
+
+/* Brand block bottom */
+.brand-block { color: #fff; }
+
+.brand-eyebrow {
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--gold-light);
+    margin-bottom: 18px;
+    font-weight: 300;
+}
+
+.brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px;
+    font-weight: 300;
+    line-height: .92;
+    letter-spacing: 2px;
+    margin-bottom: 28px;
+}
+
+.brand-name span {
+    display: block;
+    font-style: italic;
+    font-size: 52px;
+    opacity: .75;
+    letter-spacing: 4px;
+}
+
+.brand-rule {
+    width: 48px;
+    height: 1px;
+    background: var(--gold);
+    margin-bottom: 22px;
+}
+
+.brand-tagline {
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 3px;
+    opacity: .65;
+    text-transform: uppercase;
+}
+
+/* Ribbon */
+.ribbon {
+    position: absolute;
+    bottom: 52px;
+    right: 0;
+    background: var(--gold);
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 3px;
+    padding: 10px 22px 10px 18px;
+    font-weight: 500;
+    z-index: 3;
 }
 
 /* ── RIGHT PANEL ── */
@@ -71,7 +163,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 28px 72px;
+    padding: 40px 72px;
     position: relative;
     overflow-y: auto;
 }
@@ -101,7 +193,7 @@ html, body {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 }
 
 .badge-dot {
@@ -116,12 +208,13 @@ html, body {
     letter-spacing: 4px;
     color: var(--gold);
     font-weight: 500;
+    text-transform: uppercase;
 }
 
 /* ── HEADING ── */
 .form-heading {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 52px;
+    font-size: 58px;
     font-weight: 300;
     line-height: .95;
     margin-bottom: 8px;
@@ -137,7 +230,7 @@ html, body {
     font-size: 13px;
     color: var(--ink-light);
     line-height: 1.75;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     font-weight: 300;
 }
 
@@ -145,18 +238,29 @@ html, body {
     width: 100%;
     height: 1px;
     background: linear-gradient(to right, var(--gold-pale), transparent);
-    margin-bottom: 32px;
+    margin-bottom: 28px;
 }
 
 /* ── FORM ELEMENTS ── */
-.field { margin-bottom: 22px; }
+.field {
+    margin-bottom: 20px;
+    position: relative;
+}
 
 .field-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 18px;
-    margin-bottom: 22px;
 }
+
+.field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 9px;
+}
+
+.field-header label { margin-bottom: 0; }
 
 label {
     display: block;
@@ -164,11 +268,15 @@ label {
     letter-spacing: 3px;
     color: var(--ink-light);
     margin-bottom: 9px;
+    text-transform: uppercase;
+    font-weight: 500;
 }
 
 input[type="email"],
 input[type="password"],
-input[type="text"] {
+input[type="text"],
+input[type="tel"],
+select {
     width: 100%;
     border: none;
     border-bottom: 1px solid #ddd8ce;
@@ -181,15 +289,77 @@ input[type="text"] {
     transition: border-color .25s;
 }
 
-input:focus { border-bottom-color: var(--gold); }
+select {
+    border-radius: 0;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%238a8580' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+}
+
+input:focus, select:focus {
+    border-bottom-color: var(--gold);
+}
 input::placeholder { color: #c8c4bc; font-weight: 300; }
+
+/* ── INPUT GROUP (PHONE & EYE TOGGLE) ── */
+.input-group-custom {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.input-group-custom input {
+    flex: 1;
+}
+
+.phone-code-badge {
+    font-size: 14.5px;
+    color: var(--ink-mid);
+    padding-bottom: 12px;
+    margin-right: 10px;
+    border-bottom: 1px solid #ddd8ce;
+    min-width: 45px;
+    display: inline-block;
+}
+
+/* Nút ẩn hiện mật khẩu dạng tối giản nghệ thuật */
+.eye-btn-custom {
+    background: transparent;
+    border: none;
+    color: var(--ink-light);
+    position: absolute;
+    right: 0;
+    bottom: 12px;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color .2s;
+}
+.eye-btn-custom:hover { color: var(--gold); }
+
+/* ── VALIDATION ERROR STATE ── */
+.is-invalid {
+    border-bottom-color: #c0392b !important;
+}
+
+.invalid-feedback {
+    font-size: 11px;
+    color: #c0392b;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 300;
+}
 
 /* ── CHECKBOX ── */
 .check-row {
     display: flex;
     align-items: flex-start;
     gap: 11px;
-    margin-bottom: 30px;
+    margin-top: 5px;
+    margin-bottom: 26px;
 }
 
 .check-row input[type="checkbox"] {
@@ -208,9 +378,8 @@ input::placeholder { color: #c8c4bc; font-weight: 300; }
     font-weight: 300;
     line-height: 1.5;
     margin-bottom: 0;
+    text-transform: none;
 }
-
-.check-row a { color: var(--gold); text-decoration: none; }
 
 /* ── BUTTONS ── */
 .btn-primary {
@@ -235,9 +404,10 @@ input::placeholder { color: #c8c4bc; font-weight: 300; }
     background: var(--gold);
     transform: translateX(-100%);
     transition: transform .35s ease;
+    z-index: 1;
 }
 
-.btn-primary span { position: relative; z-index: 1; }
+.btn-primary span { position: relative; z-index: 2; }
 .btn-primary:hover::after { transform: translateX(0); }
 .btn-primary:active { transform: scale(.99); }
 
@@ -279,7 +449,7 @@ input::placeholder { color: #c8c4bc; font-weight: 300; }
     display: flex;
     align-items: center;
     gap: 16px;
-    margin: 28px 0;
+    margin: 24px 0;
     color: var(--ink-light);
     font-size: 11px;
     letter-spacing: 2px;
@@ -298,6 +468,9 @@ input::placeholder { color: #c8c4bc; font-weight: 300; }
     padding: 11px 14px;
     margin-bottom: 20px;
     border-left: 2px solid;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .alert-danger {
@@ -313,9 +486,9 @@ input::placeholder { color: #c8c4bc; font-weight: 300; }
 }
 
 /* ── RESPONSIVE ── */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
     .shell { grid-template-columns: 1fr !important; }
     .panel-left { display: none; }
     .panel-right { padding: 48px 36px; }
-    .form-heading { font-size: 42px; }
+    .form-heading { font-size: 46px; }
 }
