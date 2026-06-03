@@ -1,28 +1,70 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:fragment="footer-css">
+        <style>
+            footer { background-color: #FCFBF9; border-top: 1px solid #EAE6DF; padding: 60px 0 30px 0; font-size: 13px; color: #444; }
+            .footer-title { text-transform: uppercase; font-size: 11px; letter-spacing: 2px; font-weight: 600; margin-bottom: 20px; color: #1A1A1A; }
+            .footer-links list-unstyled li { margin-bottom: 10px; }
+            .footer-links a { color: #666; text-decoration: none; transition: color 0.2s; }
+            .footer-links a:hover { color: #000; }
+            .footer-bottom-logo { font-family: 'Playfair Display', serif; font-size: 45px; font-weight: bold; color: #1A1A1A; letter-spacing: -2px; margin: 40px 0; }
+            .footer-credits { font-size: 10px; letter-spacing: 1px; color: #888; text-transform: uppercase; }
+        </style>
+    </div>
+</head>
 <body>
-<footer th:fragment="footer" class="audo-footer border-top">
-    <div class="container-fluid px-4 px-md-5 py-5">
-        <div class="row align-items-center gy-4">
 
-            <div class="col-12 col-md-6">
-                <p class="audo-brand mb-2">AUDO RESIDENCE</p>
-                <p class="audo-label-caps text-secondary mb-0">
-                    © 2024 AUDO RESIDENCE. ARCHITECTURAL SANCTUARY.
-                </p>
+<footer th:fragment="footer-section">
+    <div class="container px-5">
+        <div class="row g-4 footer-links">
+            <div class="col-md-3">
+                <h6 class="footer-title">Contact Us</h6>
+                <p class="mb-1" style="line-height: 1.6;">Rosewood Hong Kong, Victoria Dockside,<br>18 Salisbury Road, Tsim Sha Tsui, Kowloon, Hong Kong</p>
+                <p class="mb-1">+852 3891 8888</p>
+                <p><a href="mailto:hongkong@rosewoodhotels.com">hongkong@rosewoodhotels.com</a></p>
             </div>
+            <div class="col-md-3">
+                <h6 class="footer-title">World of Rosewood</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Rosewood Impacts</a></li>
+                    <li><a href="#">Careers ↗</a></li>
+                    <li><a href="#">Media</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="footer-title">Follow</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#">Facebook ↗</a></li>
+                    <li><a href="#">Instagram ↗</a></li>
+                    <li><a href="#">WeChat ↗</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="footer-title">Terms</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#">Accessibility Statement</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Hotel Policy</a></li>
+                </ul>
+            </div>
+        </div>
 
-            <div class="col-12 col-md-6">
-                <div class="d-flex flex-wrap gap-4 justify-content-md-end">
-                    <a th:href="@{/privacy}"         class="audo-footer-link">Privacy Policy</a>
-                    <a th:href="@{/terms}"           class="audo-footer-link">Terms of Service</a>
-                    <a th:href="@{/contact}"         class="audo-footer-link">Contact</a>
-                    <a th:href="@{/sustainability}"  class="audo-footer-link">Sustainability</a>
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <div class="footer-bottom-logo">RW</div>
+                <div class="d-flex justify-content-between align-items-center flex-wrap pt-3 border-top" style="border-color: #EAE6DF !important;">
+                    <span class="footer-credits">ICP Licence 17035714</span>
+                    <span class="footer-credits">ROSEWOOD HOTEL GROUP © 2026</span>
                 </div>
             </div>
-
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </footer>
+
 </body>
 </html>
