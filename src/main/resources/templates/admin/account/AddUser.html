@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+
+<main layout:fragment="content" class="min-h-screen bg-background">
+    <div class="px-8 py-12 max-w-4xl mx-auto">
+        <div th:if="${param.success}" class="mb-12 bg-surface-container-low border-l-4 border-primary p-6 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-primary">check_circle</span>
+                <p class="font-label-caps text-label-caps uppercase">Staff account successfully created and is pending approval.</p>
+            </div>
+        </div>
+
+        <header class="mb-16">
+            <h2 class="font-headline-lg text-headline-lg text-primary mb-2">Add New User</h2>
+        </header>
+
+        <section class="bg-bone-white border border-outline-variant p-10">
+            <form th:action="@{/admin/accounts/add}" th:object="${accountRequest}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10" id="addUserForm">
+
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-caps text-label-caps text-secondary">FIRST NAME</label>
+                    <input th:field="*{firstName}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="Alexander" required type="text">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-caps text-label-caps text-secondary">LAST NAME</label>
+                    <input th:field="*{lastName}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="Thorne" required type="text">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-caps text-label-caps text-secondary">EMAIL ADDRESS</label>
+                    <input th:field="*{email}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="a.thorne@audoresidence.com" required type="email">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-caps text-label-caps text-secondary">PHONE NUMBER</label>
+                    <input th:field="*{phone}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="+1 (555) 000-0000" required type="tel">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-caps text-label-caps text-secondary">PASSWORD</label>
+                    <input th:field="*{password}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="Enter temporary password" required type="password">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-caps text-label-caps text-secondary">ROLE</label>
+                    <div class="relative">
+                        <select th:field="*{roleName}" class="appearance-none w-full border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 cursor-pointer" required>
+                            <option value="" disabled selected>Select Access Level</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="MANAGER">Manager</option>
+                            <option value="RECEPTIONIST">Receptionist</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 pt-8">
+                    <button type="submit" class="bg-primary text-bone-white font-button-text text-button-text py-5 px-12 hover:bg-charcoal-muted transition-all uppercase tracking-[0.2em] w-full md:w-auto">
+                        CREATE ACCOUNT
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+
+</body>
+</html>
