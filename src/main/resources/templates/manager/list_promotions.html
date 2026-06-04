@@ -193,31 +193,12 @@
 
                             <!-- Status -->
                             <td>
-                                <span th:if="${!promotion.isActive}"
-                                      class="status inactive-status">
-                                    Inactive
-                                </span>
-
-                                <span th:if="${promotion.isActive
-                                        and promotion.validFrom != null
-                                        and promotion.validFrom.isAfter(T(java.time.Instant).now())}"
-                                      class="status scheduled-status">
-                                    Scheduled
-                                </span>
-
-                                <span th:if="${promotion.isActive
-                                        and promotion.validTo != null
-                                        and promotion.validTo.isBefore(T(java.time.Instant).now())}"
-                                      class="status expired-status">
-                                    Expired
-                                </span>
-
-                                <span th:if="${promotion.isActive
-                                        and (promotion.validFrom == null
-                                            or !promotion.validFrom.isAfter(T(java.time.Instant).now()))
-                                        and (promotion.validTo == null
-                                            or !promotion.validTo.isBefore(T(java.time.Instant).now()))}"
-                                      class="status active-status">
+                                <span class="status"
+                                      th:text="${promotion.status}"
+                                      th:classappend="${promotion.status == 'Active' ? ' active-status'
+                                            : promotion.status == 'Scheduled' ? ' scheduled-status'
+                                            : promotion.status == 'Expired' ? ' expired-status'
+                                            : ' inactive-status'}">
                                     Active
                                 </span>
                             </td>
@@ -225,11 +206,9 @@
                             <!-- Actions -->
                             <td class="text-end">
                                 <div class="actions">
-                                    <a th:href="@{/manager/promotions/{id}(id=${promotion.id})}"
-                                       class="action-link"
-                                       title="View Details">
+                                    <button type="button" title="View Details">
                                         <span class="material-symbols-outlined">visibility</span>
-                                    </a>
+                                    </button>
 
                                     <button type="button" title="Edit">
                                         <span class="material-symbols-outlined">edit</span>
