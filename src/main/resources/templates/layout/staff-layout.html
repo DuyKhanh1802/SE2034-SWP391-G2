@@ -2,35 +2,40 @@
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
-<head>
-    <th:block th:replace="~{fragments/admin/head :: head}"></th:block>
-    <!-- CSS riêng từng trang -->
-    <th:block layout:fragment="page-css"></th:block>
-</head>
+
+<head th:replace="~{fragment/staff/head :: head}"></head>
+
 <body>
+<div class="d-flex min-vh-100">
 
-<div class="audo-wrapper">
+    <div th:replace="~{fragment/staff/sidebar :: sidebar}"></div>
 
-    <th:block th:replace="~{fragments/admin/sidebar :: sidebar}"></th:block>
+    <div class="flex-grow-1 d-flex flex-column w-100 overflow-hidden">
 
-    <div class="audo-main">
+        <div th:replace="~{fragment/staff/header :: header}"></div>
 
-        <th:block th:replace="~{fragments/admin/header :: header}"></th:block>
-
-        <main class="audo-content" layout:fragment="content"></main>
+        <main layout:fragment="content" class="flex-grow-1 overflow-auto bg-light">
+        </main>
 
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-    // Toggle sidebar mobile
-    document.getElementById('sidebarToggle')?.addEventListener('click', () => {
-        document.querySelector('.audo-sidebar')?.classList.toggle('show');
+    document.addEventListener("DOMContentLoaded", function() {
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        const sidebar = document.querySelector(".audo-sidebar");
+
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener("click", function(event) {
+                event.preventDefault();
+                // Thêm class để ẩn/hiện sidebar trên màn hình nhỏ
+                sidebar.classList.toggle("d-none");
+                sidebar.classList.toggle("d-flex");
+            });
+        }
     });
 </script>
-<!-- JS riêng từng trang -->
-<th:block layout:fragment="page-js"></th:block>
-
 </body>
 </html>

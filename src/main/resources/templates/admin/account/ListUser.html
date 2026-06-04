@@ -17,46 +17,61 @@
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
                         <input class="pl-10 pr-4 py-2 bg-white border border-outline-variant text-sm focus:ring-0 focus:border-primary transition-soft" placeholder="Search users..." type="text">
                     </div>
-                    <a th:href="@{/admin/accounts/add}" class="bg-primary text-bone-white px-6 py-2.5 text-xs font-bold tracking-widest uppercase hover:bg-charcoal-muted transition-soft cursor-pointer">
-                        Add User
+                    <a th:href="@{/admin/account/add}" class="bg-primary text-bone-white px-6 py-2.5 font-label-caps text-label-caps tracking-[0.1em] hover:bg-charcoal-muted transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">person_add</span>
+                        NEW STAFF
                     </a>
                 </div>
             </div>
 
-            <div class="overflow-x-auto border border-outline-variant bg-white">
+            <div class="bg-bone-white border border-outline-variant overflow-x-auto">
                 <table class="w-full text-left border-collapse">
-                    <thead class="bg-surface-container-low border-b border-outline-variant">
-                    <tr class="text-[10px] font-bold tracking-widest uppercase text-on-surface-variant">
-                        <th class="px-6 py-4 font-bold">#</th>
-                        <th class="px-6 py-4 font-bold">Full Name</th>
-                        <th class="px-6 py-4 font-bold">Email</th>
-                        <th class="px-6 py-4 font-bold">Role</th>
-                        <th class="px-6 py-4 font-bold">Status</th>
-                        <th class="px-6 py-4 font-bold">Approval</th>
-                        <th class="px-6 py-4 font-bold text-right">Actions</th>
+                    <thead>
+                    <tr class="border-b border-outline-variant bg-surface-container-lowest">
+                        <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">NAME</th>
+                        <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">ROLE</th>
+                        <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">EMAIL / PHONE</th>
+                        <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">STATUS</th>
+                        <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">APPROVAL</th>
+                        <th class="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-right">ACTIONS</th>
                     </tr>
                     </thead>
-                    <tbody class="text-sm text-on-surface-variant font-manrope">
-                    <tr th:each="user, iterStat : ${users}" class="border-b border-outline-variant hover:bg-surface-container-low transition-soft">
-                        <td class="px-6 py-4" th:text="${iterStat.count}">01</td>
-                        <td class="px-6 py-4 font-medium text-primary" th:text="${user.firstName + ' ' + user.lastName}">Erik Johansson</td>
-                        <td class="px-6 py-4" th:text="${user.email}">erik@nordic.st</td>
+                    <tbody class="divide-y divide-outline-variant">
+                    <tr th:each="user : ${users}" class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4">
-                            <span class="px-2 py-0.5 bg-surface-container-highest text-[10px] font-bold uppercase tracking-wider" th:text="${user.userType}">ADMIN</span>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-primary font-bold overflow-hidden">
+                                    <span th:if="${user.firstName == null}" class="material-symbols-outlined text-[20px]">person</span>
+                                    <span th:if="${user.firstName != null}" th:text="${#strings.substring(user.firstName,0,1)}">A</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-primary" th:text="${user.firstName + ' ' + user.lastName}">Full Name</p>
+                                    <p class="text-sm text-on-surface-variant" th:text="'ID: ' + ${user.id}">ID: 1</p>
+                                </div>
+                            </div>
                         </td>
                         <td class="px-6 py-4">
+                            <span class="border border-outline-variant px-3 py-1 text-xs font-bold tracking-wider text-primary" th:text="${user.userType}">ROLE</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-on-surface-variant">
+                            <p th:text="${user.email}">email@example.com</p>
+                            <p th:text="${user.phone}">0123456789</p>
+                        </td>
+                        <td class="px-6 py-4 text-sm">
                             <div class="flex items-center gap-2">
                                 <span class="w-1.5 h-1.5 rounded-full" th:classappend="${user.isActive} ? 'bg-green-600' : 'bg-outline-variant'"></span>
                                 <span th:text="${user.isActive} ? 'Active' : 'Inactive'">Active</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 font-bold" th:classappend="${user.approvalStatus.name() == 'PENDING'} ? 'text-orange-500' : (${user.approvalStatus.name() == 'APPROVED'} ? 'text-green-600' : 'text-red-500')" th:text="${user.approvalStatus}">
+                        <td class="px-6 py-4 font-bold"
+                            th:classappend="${user.approvalStatus?.name() == 'PENDING'} ? 'text-orange-500' : (${user.approvalStatus?.name() == 'APPROVED'} ? 'text-green-600' : 'text-red-500')"
+                            th:text="${user.approvalStatus != null ? user.approvalStatus : 'N/A'}">
                             APPROVED
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-3">
-                                <a th:href="@{/admin/accounts/{id}(id=${user.id})}" class="material-symbols-outlined text-[18px] hover:text-primary transition-soft cursor-pointer text-on-surface-variant">visibility</a>
-                                <a th:href="@{/admin/accounts/{id}/edit(id=${user.id})}" class="material-symbols-outlined text-[18px] hover:text-primary transition-soft cursor-pointer text-on-surface-variant">edit</a>
+                                <a th:href="@{/admin/account/{id}(id=${user.id})}" class="material-symbols-outlined text-[18px] hover:text-primary transition-soft cursor-pointer text-on-surface-variant">visibility</a>
+                                <a th:href="@{/admin/account/{id}/edit(id=${user.id})}" class="material-symbols-outlined text-[18px] hover:text-primary transition-soft cursor-pointer text-on-surface-variant">edit</a>
                             </div>
                         </td>
                     </tr>

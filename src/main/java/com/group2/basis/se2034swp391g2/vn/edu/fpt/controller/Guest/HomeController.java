@@ -43,7 +43,7 @@ public class HomeController {
         model.addAttribute("diningServices", dining);
 
         // Lưu ý: Đảm bảo đường dẫn này khớp với thư mục file HTML của bạn (guest/HomePage hay page/HomePage)
-        return "guest/HomePage";
+        return "page/HomePage";
     }
 }
 

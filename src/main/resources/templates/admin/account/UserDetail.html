@@ -8,7 +8,7 @@
 <main layout:fragment="content" class="min-h-screen bg-background flex flex-col">
     <section class="flex-grow px-8 py-12 max-w-7xl mx-auto w-full">
         <header class="flex justify-between items-center w-full mb-12 bg-transparent">
-            <a th:href="@{/admin/accounts}" class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+            <a th:href="@{/admin/account}" class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-[20px]">arrow_back</span>
                 <span class="font-label-caps text-label-caps">Back to List</span>
             </a>
@@ -18,46 +18,55 @@
             <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
                 <div class="bg-bone-white border border-outline-variant p-2 aspect-[4/5] relative">
                     <img th:src="@{/images/default-avatar.png}" alt="Avatar" class="w-full h-full object-cover">
-                    <div class="absolute bottom-6 left-6 bg-primary text-bone-white px-3 py-1 flex items-center gap-2" th:if="${user.isActive}">
-                        <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                        <span class="font-label-caps text-[10px] tracking-[0.2em] uppercase">Active Session</span>
+                    <div class="absolute bottom-6 left-6 bg-primary text-bone-white px-4 py-2 font-label-caps text-[10px] tracking-widest">
+                        STAFF ID: <span th:text="${user.id}">001</span>
                     </div>
-                </div>
-                <div>
-                    <h2 class="text-4xl font-garamond text-primary" th:text="${user.firstName + ' ' + user.lastName}">Anders Holm</h2>
                 </div>
             </div>
 
-            <div class="col-span-12 lg:col-span-8 flex flex-col gap-12">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                    <div class="border-b border-outline-variant pb-4">
+            <div class="col-span-12 lg:col-span-8 bg-bone-white border border-outline-variant p-10 relative">
+                <div class="absolute top-10 right-10 flex flex-col items-end">
+                    <span class="px-4 py-1 border text-xs font-bold tracking-widest uppercase mb-2"
+                          th:classappend="${user.approvalStatus?.name() == 'PENDING'} ? 'border-orange-500 text-orange-500' : (${user.approvalStatus?.name() == 'APPROVED'} ? 'border-green-600 text-green-600' : 'border-red-500 text-red-500')"
+                          th:text="${user.approvalStatus != null ? user.approvalStatus : 'N/A'}">
+                        PENDING
+                    </span>
+                    <span class="flex items-center gap-2 text-sm" th:classappend="${user.isActive} ? 'text-green-600' : 'text-on-surface-variant'">
+                        <span class="w-2 h-2 rounded-full" th:classappend="${user.isActive} ? 'bg-green-600' : 'bg-outline-variant'"></span>
+                        <span th:text="${user.isActive} ? 'Active Account' : 'Inactive Account'">Active</span>
+                    </span>
+                </div>
+
+                <div class="mb-10">
+                    <h1 class="text-5xl font-garamond text-primary mb-2" th:text="${user.firstName + ' ' + user.lastName}">First Last</h1>
+                    <p class="text-on-surface-variant font-label-caps tracking-[0.2em] uppercase" th:text="${user.userType}">ROLE</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-y-8 gap-x-12 border-t border-outline-variant pt-8">
+                    <div>
                         <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Email Address</p>
-                        <p class="font-body-lg text-primary" th:text="${user.email}">email@domain.com</p>
+                        <p class="font-body-lg text-primary" th:text="${user.email}">email@example.com</p>
                     </div>
-                    <div class="border-b border-outline-variant pb-4">
+                    <div>
                         <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Phone Number</p>
-                        <p class="font-body-lg text-primary" th:text="${user.phone}">+45 0000</p>
+                        <p class="font-body-lg text-primary" th:text="${user.phone != null ? user.phone : 'Not provided'}">+84 123 456 789</p>
                     </div>
-                    <div class="border-b border-outline-variant pb-4">
-                        <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Primary Role</p>
-                        <p class="font-body-lg text-primary" th:text="${user.userType}">STAFF</p>
+                    <div>
+                        <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Identity Number</p>
+                        <p class="font-body-lg text-primary" th:text="${user.identityNumber != null ? user.identityNumber : 'N/A'}">N/A</p>
                     </div>
-                    <div class="border-b border-outline-variant pb-4">
-                        <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Approval Status</p>
-                        <p class="font-body-lg text-primary font-bold" th:text="${user.approvalStatus}">APPROVED</p>
-                    </div>
-                    <div class="border-b border-outline-variant pb-4">
+                    <div>
                         <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Join Date</p>
-                        <p class="font-body-lg text-primary" th:text="${#dates.format(user.createdAt, 'MMM dd, yyyy')}">Oct 12, 2023</p>
+                        <p class="font-body-lg text-primary" th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'MMM dd, yyyy') : 'N/A'}">Oct 12, 2023</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 mt-12">
-                    <a th:href="@{/admin/accounts/{id}/edit(id=${user.id})}" class="px-8 py-3 bg-primary text-bone-white font-button-text uppercase hover:bg-charcoal-muted transition-all flex items-center gap-2">
+                    <a th:href="@{/admin/account/{id}/edit(id=${user.id})}" class="px-8 py-3 bg-primary text-bone-white font-button-text uppercase hover:bg-charcoal-muted transition-all flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">edit</span> Edit User
                     </a>
 
-                    <form th:if="${user.approvalStatus.name() == 'PENDING'}" th:action="@{/admin/accounts/{id}/review(id=${user.id})}" method="post" class="flex gap-2">
+                    <form th:if="${user.approvalStatus?.name() == 'PENDING'}" th:action="@{/admin/account/{id}/review(id=${user.id})}" method="post" class="flex gap-2">
                         <button type="submit" name="action" value="approve" class="px-6 py-3 border border-green-600 text-green-600 font-button-text uppercase hover:bg-green-50 transition-all">
                             Approve
                         </button>

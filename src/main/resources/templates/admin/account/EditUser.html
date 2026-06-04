@@ -13,7 +13,7 @@
             <div class="w-12 h-[1px] bg-primary"></div>
         </div>
 
-        <form th:action="@{/admin/accounts/{id}/edit(id=${user.id})}" th:object="${updateRequest}" method="post">
+        <form th:action="@{/admin/account/{id}/edit(id=${user.id})}" th:object="${updateRequest}" method="post">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-12">
                     <section class="space-y-8">
