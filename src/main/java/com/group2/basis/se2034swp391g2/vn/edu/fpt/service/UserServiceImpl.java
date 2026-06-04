@@ -1,6 +1,7 @@
-package com.group2.basis.se2034swp391g2.vn.edu.fpt.service.impl;
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.UserType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Role;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
@@ -60,7 +61,7 @@ public class UserServiceImpl implements UserService {
         newUser.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         newUser.setUserType(UserType.STAFF);
 
-        // BR-23: New staff accounts must be created with approval_status = PENDING
+        // BR-23: Tài khoản staff mới tạo mặc định trạng thái PENDING
         newUser.setApprovalStatus(ApprovalStatus.PENDING);
 
         newUser.setIsActive(true);
@@ -70,16 +71,25 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(newUser);
 
-        // Gắn quyền (Role)
-        Role role = roleRepository.findByRoleName(request.getRoleName())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+        // Gắn quyền (Role) sử dụng Enum RoleName từ bản update của Leader
+        RoleName roleEnum;
+        try {
+            roleEnum = RoleName.valueOf(request.getRoleName().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid role name provided: " + request.getRoleName());
+        }
+
+        Role role = roleRepository.findByRoleName(roleEnum);
+        if (role == null) {
+            throw new RuntimeException("Role not found in database: " + roleEnum);
+        }
 
         UserRole userRole = new UserRole();
         userRole.setId(new UserRoleId(savedUser.getId(), role.getId()));
         userRole.setUser(savedUser);
         userRole.setRole(role);
 
-        // BR-27: Each role assignment records assigned_at and optionally assigned_by
+        // BR-27: Lưu vết thời gian và người gán quyền
         userRole.setAssignedAt(Instant.now());
         if (request.getCurrentAdminId() != null) {
             User adminUser = getUserById(request.getCurrentAdminId());
@@ -99,7 +109,7 @@ public class UserServiceImpl implements UserService {
         existingUser.setPhone(request.getPhone());
         existingUser.setUpdatedAt(Instant.now());
 
-        // BR-25: Staff accounts must not be permanently deleted. Instead, is_active is set to 0 or is_deleted is set
+        // BR-25: Không hard-delete tài khoản Staff. Dùng cờ is_active và is_deleted.
         if (request.getIsActive() != null) {
             existingUser.setIsActive(request.getIsActive());
             if (!request.getIsActive()) {
@@ -127,16 +137,27 @@ public class UserServiceImpl implements UserService {
 
             if (request.getCurrentAdminId() != null) {
                 User adminUser = getUserById(request.getCurrentAdminId());
-                existingUser.setReviewedBy(adminUser.getId().intValue()); // Lưu ID người review
+                existingUser.setReviewedBy(adminUser); // Lưu ID người review
             }
         }
 
         userRepository.save(existingUser);
 
         // Xử lý đổi Role (BR-26, BR-27)
-        if (request.getRoleName() != null && !request.getRoleName().isEmpty()) {
-            Role newRole = roleRepository.findByRoleName(request.getRoleName())
-                    .orElseThrow(() -> new RuntimeException("Role not found"));
+        if (request.getRoleName() != null && !request.getRoleName().trim().isEmpty()) {
+
+            // Chuyển từ String sang Enum RoleName
+            RoleName roleEnum;
+            try {
+                roleEnum = RoleName.valueOf(request.getRoleName().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid role name provided: " + request.getRoleName());
+            }
+
+            Role newRole = roleRepository.findByRoleName(roleEnum);
+            if (newRole == null) {
+                throw new RuntimeException("Role not found in database: " + roleEnum);
+            }
 
             UserRole existingUserRole = userRoleRepository.findByUserId(existingUser.getId()).orElse(null);
 
