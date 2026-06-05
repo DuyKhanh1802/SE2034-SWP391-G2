@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.repository;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
+
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse;
@@ -42,6 +43,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             @Param("roomStatus") RoomStatus roomStatus,
             @Param("blockingStatuses") List<BookingStatus> blockingStatuses
     );
+    List<Room> findByIsDeletedFalse();
+
+    long countByIsDeletedFalse();
 
     @Query("""
             SELECT r
@@ -68,4 +72,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             @Param("roomStatus") RoomStatus roomStatus,
             @Param("blockingStatuses") List<BookingStatus> blockingStatuses
     );
+    long countByStatusAndIsDeletedFalse(RoomStatus status);
+
+    boolean existsByRoomNumberAndIsDeletedFalse(String roomNumber);
 }
