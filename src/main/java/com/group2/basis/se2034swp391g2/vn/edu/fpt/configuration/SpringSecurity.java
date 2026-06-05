@@ -24,7 +24,8 @@ public class SpringSecurity {
                                 "/common/**",
                                 "/auth/**",
                                 "/page/**",
-                                "/fragment/**")
+                                "/fragment/**",
+                "/guest/**")
                                 .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
