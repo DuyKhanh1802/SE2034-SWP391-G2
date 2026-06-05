@@ -20,6 +20,7 @@
     <!-- Room page style -->
     <link rel="stylesheet" th:href="@{/Admin/RoomManagement.css}">
 </head>
+
 <body>
 
 <div class="dashboard-wrapper d-flex">
@@ -39,7 +40,7 @@
             </li>
 
             <li class="active">
-                <a th:href="@{/admin/listroom}">
+                <a th:href="@{/admin/list_room}">
                     <i class="fa-solid fa-bed"></i>
                     <span>Rooms</span>
                 </a>
@@ -70,8 +71,17 @@
         <!-- PAGE TITLE -->
         <section class="welcome-section room-page-title">
             <h1>List Room</h1>
-            <p>Displays all hotel rooms with room number, room type, price, capacity, and status.</p>
+            <p>
+                Displays all hotel rooms with room number, room type, price,
+                capacity, and status.
+            </p>
         </section>
+
+        <!-- SUCCESS MESSAGE -->
+        <div th:if="${successMessage}" class="success-toast">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}">Add room successfully!</span>
+        </div>
 
         <!-- ACTION BAR -->
         <section class="room-action-bar d-flex justify-content-between align-items-center">
@@ -80,7 +90,7 @@
                 <h3>All Rooms</h3>
             </div>
 
-            <a th:href="@{/admin/rooms/add}" class="add-room-btn">
+            <a th:href="@{/admin/list_room/add}" class="add-room-btn">
                 <i class="fa-solid fa-plus"></i>
                 Add Room
             </a>
@@ -108,19 +118,29 @@
                 <tr th:each="room, stat : ${rooms}">
                     <td th:text="${stat.count}">1</td>
 
-                    <td class="room-number" th:text="${room.roomNumber}">101</td>
+                    <td class="room-number" th:text="${room.roomNumber}">
+                        101
+                    </td>
 
-                    <td th:text="${room.roomType.name}">DELUXE</td>
+                    <td th:text="${room.roomType.name}">
+                        DELUXE
+                    </td>
 
                     <td th:text="${#numbers.formatDecimal(room.roomType.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                         1000000 VND
                     </td>
 
-                    <td th:text="${room.roomType.capacity}">2</td>
+                    <td th:text="${room.roomType.capacity}">
+                        2
+                    </td>
 
-                    <td th:text="${room.floor}">1</td>
+                    <td th:text="${room.floor}">
+                        1
+                    </td>
 
-                    <td th:text="${room.viewType != null ? room.viewType : 'N/A'}">CITY</td>
+                    <td th:text="${room.viewType != null ? room.viewType : 'N/A'}">
+                        CITY
+                    </td>
 
                     <td>
                         <span th:if="${room.status.name() == 'AVAILABLE'}"
@@ -139,15 +159,17 @@
                         </span>
                     </td>
 
-                    <td>
+                    <td class="room-actions">
                         <a th:href="@{/admin/rooms/view/{id}(id=${room.id})}"
-                           class="room-action-link">
-                            View
+                           class="room-icon-btn"
+                           title="View">
+                            <i class="fa-regular fa-eye"></i>
                         </a>
 
                         <a th:href="@{/admin/rooms/edit/{id}(id=${room.id})}"
-                           class="room-action-link">
-                            Edit
+                           class="room-icon-btn"
+                           title="Edit">
+                            <i class="fa-regular fa-pen-to-square"></i>
                         </a>
 
                         <form th:action="@{/admin/rooms/delete/{id}(id=${room.id})}"
@@ -155,8 +177,10 @@
                               class="d-inline"
                               onsubmit="return confirm('Are you sure you want to delete this room?');">
 
-                            <button type="submit" class="room-delete-btn">
-                                Delete
+                            <button type="submit"
+                                    class="room-icon-btn room-delete-btn"
+                                    title="Delete">
+                                <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </form>
                     </td>
@@ -174,6 +198,15 @@
 
     </main>
 </div>
+
+<script>
+    setTimeout(function () {
+        const toast = document.querySelector('.success-toast');
+        if (toast) {
+            toast.style.display = 'none';
+        }
+    }, 3000);
+</script>
 
 </body>
 </html>

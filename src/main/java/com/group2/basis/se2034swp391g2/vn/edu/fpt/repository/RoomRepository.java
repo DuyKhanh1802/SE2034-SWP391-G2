@@ -14,4 +14,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     long countByIsDeletedFalse();
 
     long countByStatusAndIsDeletedFalse(RoomStatus status);
+
+    boolean existsByRoomNumberAndIsDeletedFalse(String roomNumber);
 }
