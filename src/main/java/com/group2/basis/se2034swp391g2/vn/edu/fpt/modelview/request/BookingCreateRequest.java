@@ -29,6 +29,6 @@ public class BookingCreateRequest {
 
     private String notes;
 
-    // create-only hoặc create-check-in
+    
     private String action;
 }

@@ -16,6 +16,5 @@ public class BookingResponse {
     private LocalDate checkOutDate;
     private String status;
     private BigDecimal totalAmount;
-
-
+    
 }
