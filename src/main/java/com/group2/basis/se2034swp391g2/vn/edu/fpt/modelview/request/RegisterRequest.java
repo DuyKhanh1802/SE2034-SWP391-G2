@@ -1,16 +1,19 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Role;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import org.hibernate.annotations.Nationalized;
 
 @Data
 public class RegisterRequest {
+    @Nationalized
     @NotBlank(message = "FirstName không được để trống")
     @Size(min = 2,max = 50,message = "Firstname phải từ 2-50 ký tự")
     @Pattern(regexp = "^[a-zA-Z_]+$",message = "FirstName chỉ được chứa chữ")
     private String firstName;
 
-
+    @Nationalized
     @NotBlank(message = "Lastname không được để trống")
     @Size(min = 2,max = 50,message = "Lastname phải từ 2-50 ký tự")
     @Pattern(regexp = "^[a-zA-Z_]+$",message = "LastName chỉ được chữa chữ")
@@ -31,10 +34,9 @@ public class RegisterRequest {
     @NotBlank(message = "Confirm password không được để trống")
     private String confirmPassword;
 
-    @NotNull(message = "Vui lòng chọn quốc tịch")
-    private Integer nationalityId; // Khách chọn từ Dropdown Quốc gia ở FE gửi về ID
+    private Long countryId;
 
-    @NotBlank(message = "Số CCCD hoặc Hộ chiếu không được để trống")
-    @Size(max = 20, message = "Mã số định danh không được vượt quá 20 ký tự")
-    private String identityCard; // Dùng chung trường này cho cả CCCD và Passport
+    private String phoneCode;
+
+
 }
