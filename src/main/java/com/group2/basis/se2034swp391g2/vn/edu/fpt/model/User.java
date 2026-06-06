@@ -77,10 +77,12 @@ public class User {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
-    // 2. THÊM TRƯỜNG GIỚI TÍNH (Dạng Enum String)
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 10, columnDefinition = "NVARCHAR(10)")
     private Gender gender;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")

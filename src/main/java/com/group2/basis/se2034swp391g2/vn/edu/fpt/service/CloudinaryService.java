@@ -30,4 +30,21 @@ public class CloudinaryService {
             throw new RuntimeException("Upload image failed");
         }
     }
+
+    public String uploadAvatar(MultipartFile file) {
+        try {
+            Map uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "vihotel/avatars",
+                            "resource_type", "image"
+                    )
+            );
+
+            return uploadResult.get("secure_url").toString();
+
+        } catch (IOException e) {
+            throw new RuntimeException("Upload avatar failed");
+        }
+    }
 }
