@@ -5,66 +5,69 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 
-<main layout:fragment="content" class="min-h-screen bg-background">
-    <div class="px-8 py-12 max-w-4xl mx-auto">
-        <div th:if="${param.success}" class="mb-12 bg-surface-container-low border-l-4 border-primary p-6 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <span class="material-symbols-outlined text-primary">check_circle</span>
-                <p class="font-label-caps text-label-caps uppercase">Staff account successfully created and is pending approval.</p>
-            </div>
+<main layout:fragment="content" class="bg-light min-vh-100 p-4 p-md-5">
+    <div class="container mx-auto" style="max-width: 800px;">
+
+        <div th:if="${param.success}" class="alert alert-light border-0 border-start border-4 border-dark rounded-0 mb-5 d-flex align-items-center gap-3 shadow-sm">
+            <i class="fa fa-check-circle fs-4 text-dark"></i>
+            <span class="text-uppercase fw-bold" style="letter-spacing: 1px; font-size: 0.85rem;">
+                Staff account successfully created and is pending approval.
+            </span>
         </div>
 
-        <header class="mb-16">
-            <h2 class="font-headline-lg text-headline-lg text-primary mb-2">Add New User</h2>
-        </header>
+        <div class="mb-5">
+            <h2 class="display-6 mb-2 text-dark" style="font-family: 'EB Garamond', serif;">Add New User</h2>
+            <div style="width: 50px; height: 1px; background-color: black;"></div>
+        </div>
 
-        <section class="bg-bone-white border border-outline-variant p-10">
-            <form th:action="@{/admin/account/add}" th:object="${accountRequest}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10" id="addUserForm">
+        <div class="bg-white border p-4 p-md-5">
+            <form th:action="@{/admin/account/add}" th:object="${accountRequest}" method="post">
+                <div class="row g-5">
 
-                <div class="flex flex-col gap-2">
-                    <label class="font-label-caps text-label-caps text-secondary">FIRST NAME</label>
-                    <input th:field="*{firstName}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="Alexander" required type="text">
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label class="font-label-caps text-label-caps text-secondary">LAST NAME</label>
-                    <input th:field="*{lastName}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="Thorne" required type="text">
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label class="font-label-caps text-label-caps text-secondary">EMAIL ADDRESS</label>
-                    <input th:field="*{email}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="a.thorne@audoresidence.com" required type="email">
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label class="font-label-caps text-label-caps text-secondary">PHONE NUMBER</label>
-                    <input th:field="*{phone}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="+1 (555) 000-0000" required type="tel">
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label class="font-label-caps text-label-caps text-secondary">PASSWORD</label>
-                    <input th:field="*{password}" class="border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 placeholder:text-outline-variant w-full" placeholder="Enter temporary password" required type="password">
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label class="font-label-caps text-label-caps text-secondary">ROLE</label>
-                    <div class="relative">
-                        <select th:field="*{roleName}" class="appearance-none w-full border-0 border-b border-outline-variant bg-transparent py-3 px-0 focus:ring-0 cursor-pointer" required>
-                            <option value="" disabled selected>Select Access Level</option>
-                            <option value="ADMIN">Admin</option>
-                            <option value="MANAGER">Manager</option>
-                            <option value="RECEPTIONIST">Receptionist</option>
-                        </select>
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-secondary fw-semibold small" style="letter-spacing: 1px;">First Name</label>
+                            <input th:field="*{firstName}" type="text" required class="form-control border-0 border-bottom border-dark rounded-0 px-0 bg-transparent shadow-none" placeholder="Enter first name">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-secondary fw-semibold small" style="letter-spacing: 1px;">Last Name</label>
+                            <input th:field="*{lastName}" type="text" required class="form-control border-0 border-bottom border-dark rounded-0 px-0 bg-transparent shadow-none" placeholder="Enter last name">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-secondary fw-semibold small" style="letter-spacing: 1px;">Email Address</label>
+                            <input th:field="*{email}" type="email" required class="form-control border-0 border-bottom border-dark rounded-0 px-0 bg-transparent shadow-none" placeholder="Enter work email">
+                        </div>
                     </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-secondary fw-semibold small" style="letter-spacing: 1px;">Phone Number</label>
+                            <input th:field="*{phone}" type="text" required class="form-control border-0 border-bottom border-dark rounded-0 px-0 bg-transparent shadow-none" placeholder="Enter phone number">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-secondary fw-semibold small" style="letter-spacing: 1px;">Password</label>
+                            <input th:field="*{password}" type="password" required class="form-control border-0 border-bottom border-dark rounded-0 px-0 bg-transparent shadow-none" placeholder="Enter temporary password">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-secondary fw-semibold small" style="letter-spacing: 1px;">Role</label>
+                            <select th:field="*{roleName}" required class="form-select border-0 border-bottom border-dark rounded-0 px-0 bg-transparent shadow-none cursor-pointer">
+                                <option value="" disabled selected>Select Access Level</option>
+                                <option value="ADMIN">Administrator</option>
+                                <option value="MANAGER">Manager</option>
+                                <option value="RECEPTIONIST">Receptionist</option>
+                            </select>
+                        </div>
+                    </div>
+
                 </div>
 
-                <div class="md:col-span-2 pt-8">
-                    <button type="submit" class="bg-primary text-bone-white font-button-text text-button-text py-5 px-12 hover:bg-charcoal-muted transition-all uppercase tracking-[0.2em] w-full md:w-auto">
-                        CREATE ACCOUNT
+                <div class="mt-5 pt-4">
+                    <button type="submit" class="btn btn-dark rounded-0 px-5 py-3 text-uppercase fw-semibold w-100 d-md-inline-block w-md-auto" style="letter-spacing: 1px;">
+                        Create Account
                     </button>
                 </div>
             </form>
-        </section>
+        </div>
     </div>
 </main>
 
