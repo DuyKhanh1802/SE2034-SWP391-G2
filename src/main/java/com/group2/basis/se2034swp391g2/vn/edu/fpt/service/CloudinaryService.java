@@ -41,10 +41,16 @@ public class CloudinaryService {
                     )
             );
 
-            return uploadResult.get("secure_url").toString();
+            Object secureUrl = uploadResult.get("secure_url");
+
+            if (secureUrl == null) {
+                throw new IllegalStateException("Cloudinary did not return secure_url.");
+            }
+
+            return secureUrl.toString();
 
         } catch (IOException e) {
-            throw new RuntimeException("Upload avatar failed");
+            throw new IllegalStateException("Upload avatar failed.", e);
         }
     }
 }
