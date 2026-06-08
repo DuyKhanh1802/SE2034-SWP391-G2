@@ -18,6 +18,7 @@ public class SpringSecurity {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
+                        // 1. Nhóm các đường dẫn Public (Ai cũng vào được)
                         .requestMatchers(
                                 "/",
                                 "/home",
@@ -30,9 +31,15 @@ public class SpringSecurity {
                                 "/js/**",
                                 "/images/**",
                                 "/admin/Admin.css",
-                                "/Admin/**"
+                                "/Admin/**",
+                                "/profile/**",   // Đã gộp /profile/** vào đây
+                                "/guest/**"      // Đã gộp /guest/** vào đây
                         ).permitAll()
+
+                        // 2. Nhóm quyền SYSTEM_ADMIN
                         .requestMatchers("/admin/account/**").hasRole("SYSTEM_ADMIN")
+
+                        // 3. Nhóm quyền HOTEL_ADMIN
                         .requestMatchers(
                                 "/admin/dashboard",
                                 "/admin/list_room/**",
@@ -41,13 +48,13 @@ public class SpringSecurity {
                                 "/admin/services/**",
                                 "/admin/promotions/**"
                         ).hasRole("HOTEL_ADMIN")
-                                "/fragment/**",
-                                "/profile/**",
-                                "/guest/**")
-                        .permitAll()
+
+                        // 4. Các quyền khác
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
+
+                        // 5. Mọi request khác đều phải đăng nhập
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

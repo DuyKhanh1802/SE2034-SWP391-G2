@@ -11,11 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User,Long> {
-@Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     Optional<User> findByEmail(String email);
-    Optional<User> findByIdentityNumber(String identityNumber);
     Optional<User> findByPhone(String phone);
 
     @Query("Select u From User u " +

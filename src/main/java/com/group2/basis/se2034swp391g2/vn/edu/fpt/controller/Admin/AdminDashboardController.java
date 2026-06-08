@@ -26,15 +26,4 @@ public class AdminDashboardController {
 
         return "Admin/Dashboard";
     }
-    private final RoomService roomService;
-
-    public AdminDashboardController(RoomService roomService) {
-        this.roomService = roomService;
-    }
-
-    @GetMapping("/admin/rooms")
-    public String listRooms(Model model) {
-        model.addAttribute("rooms", roomService.getAllRooms());
-        return "admin/ListRoom";
-    }
 }
