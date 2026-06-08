@@ -15,10 +15,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <!-- Common dashboard style -->
-    <link rel="stylesheet" th:href="@{/Admin/Dashboard.css}">
+    <link rel="stylesheet" th:href="@{/admin/Dashboard.css}">
 
     <!-- Room page style -->
-    <link rel="stylesheet" th:href="@{/Admin/RoomManagement.css}">
+    <link rel="stylesheet" th:href="@{/admin/RoomManagement.css}">
 </head>
 
 <body>
@@ -27,46 +27,50 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-        <div class="logo">
-            ViHotel HMS
+        <div>
+            <div class="logo">
+                ViHotel HMS
+            </div>
+
+            <ul class="menu list-unstyled">
+                <li>
+                    <a th:href="@{/admin/dashboard}">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="active">
+                    <a th:href="@{/admin/list_room}">
+                        <i class="fa-solid fa-bed"></i>
+                        <span>Rooms</span>
+                    </a>
+                </li>
+            </ul>
         </div>
 
-        <ul class="menu list-unstyled">
-            <li>
-                <a th:href="@{/admin/dashboard}">
-                    <i class="fa-solid fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
+        <a class="sidebar-user text-decoration-none" th:href="@{/profile/edit}">
+            <img th:src="${currentUser != null and currentUser.avatarUrl != null
+                        ? currentUser.avatarUrl
+                        : 'https://i.pravatar.cc/50'}"
+                 alt="admin">
 
-            <li class="active">
-                <a th:href="@{/admin/list_room}">
-                    <i class="fa-solid fa-bed"></i>
-                    <span>Rooms</span>
-                </a>
-            </li>
-        </ul>
-
-        <div class="sidebar-user">
             <div>
-                <h6>SYSTEM ADMIN</h6>
+                <h6 th:text="${currentUser != null
+                            ? currentUser.firstName + ' ' + currentUser.lastName
+                            : 'SYSTEM ADMIN'}">
+                    SYSTEM ADMIN
+                </h6>
                 <p>Admin Portal</p>
             </div>
-        </div>
+        </a>
     </aside>
 
     <!-- MAIN -->
     <main class="main-content flex-grow-1">
 
         <!-- TOPBAR -->
-        <header class="topbar d-flex justify-content-between align-items-center">
-            <h4>LIST ROOM</h4>
-
-            <div class="top-icons">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <i class="fa-regular fa-bell"></i>
-            </div>
-        </header>
+        <div th:replace="~{fragment/staff/header :: staffHeader}"></div>
 
         <!-- PAGE TITLE -->
         <section class="welcome-section room-page-title">
@@ -207,6 +211,8 @@
         }
     }, 3000);
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
