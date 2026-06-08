@@ -8,15 +8,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AdminDashboardController {
 
-//    private final RoomService roomService;
-//
-//    public AdminDashboardController(RoomService roomService) {
-//        this.roomService = roomService;
-//    }
-//
-//    @GetMapping("/admin/rooms")
-//    public String listRooms(Model model) {
-//        model.addAttribute("rooms", roomService.getAllRooms());
-//        return "admin/room/ListRoom";
-//    }
+    private final RoomService roomService;
+
+    public AdminDashboardController(RoomService roomService) {
+        this.roomService = roomService;
+    }
+
+    @GetMapping("/admin/rooms")
+    public String listRooms(Model model) {
+        model.addAttribute("rooms", roomService.getAllRooms());
+        return "admin/ListRoom";
+    }
 }

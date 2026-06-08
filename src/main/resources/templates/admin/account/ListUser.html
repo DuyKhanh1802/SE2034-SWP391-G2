@@ -1,77 +1,160 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
+
 <body>
 
-<main layout:fragment="content" class="p-4 p-md-5 bg-light min-vh-100">
-    <div class="container-fluid max-w-7xl">
-        <section class="mb-5">
-            <h3 class="display-5 mb-2" style="font-family: 'EB Garamond', serif;">Accounts Management</h3>
+<main layout:fragment="content">
+    <section class="page-title">
+        <h1>Quản lý người dùng</h1>
+        <p>Danh sách tài khoản khách hàng và nhân viên. Theo dõi vai trò, trạng thái tài khoản và tình trạng duyệt.</p>
+    </section>
 
-            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mt-5 mb-4 gap-3">
-                <h2 class="h4 m-0" style="font-family: 'EB Garamond', serif;">Staff Directory</h2>
+    <section class="admin-card d-flex justify-content-between align-items-center">
+        <div>
+            <span style="font-size:11px; letter-spacing:2px; font-weight:600; color:#777;">
+                QUẢN LÝ NGƯỜI DÙNG
+            </span>
+            <h3 style="margin-top:6px; font-size:28px; font-family:'Cormorant Garamond', serif;">
+                Danh sách tài khoản
+            </h3>
+        </div>
 
-                <div class="d-flex align-items-center gap-3">
-                    <form th:action="@{/admin/account}" method="get" class="input-group">
-                        <span class="input-group-text bg-white border-end-0 rounded-0" id="search-addon">
-                            <i class="fa fa-search text-secondary"></i>
-                        </span>
-                        <input type="text" name="keyword" th:value="${keyword}" class="form-control border-start-0 rounded-0 shadow-none" placeholder="Search users..." aria-describedby="search-addon">
-                        <button type="submit" class="d-none"></button>
-                    </form>
+        <div class="d-flex align-items-center gap-3">
+            <form th:action="@{/admin/account}"
+                  method="get"
+                  class="d-flex align-items-center bg-white border px-3"
+                  style="height:42px;">
+                <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       placeholder="Tìm theo tên, email, số điện thoại..."
+                       class="border-0 ms-2"
+                       style="outline:none; box-shadow:none; font-size:13px; min-width:220px;">
+                <button type="submit" class="d-none"></button>
+            </form>
+        </div>
+    </section>
 
-                    <a th:href="@{/admin/account/add}" class="btn btn-dark rounded-0 px-4 py-2 text-uppercase fw-semibold text-nowrap d-flex align-items-center gap-2" style="letter-spacing: 1px;">
-                        <i class="fa fa-user-plus"></i> NEW STAFF
-                    </a>
-                </div>
+    <section class="admin-card p-0 overflow-hidden">
+        <table class="table admin-table align-middle mb-0">
+            <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Họ và tên</th>
+                <th>Vai trò</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Trạng thái</th>
+                <th>Duyệt</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}">1</td>
+
+                <td>
+                    <span class="fw-semibold" th:text="${displayNamesByUserId[user.id]}">
+                        Họ và tên
+                    </span>
+                </td>
+
+                <td>
+                    <span class="role-text" th:text="${roleLabelsByUserId[user.id]}">
+                        Khách hàng
+                    </span>
+                </td>
+
+                <td th:text="${user.email != null ? user.email : 'Chưa có'}">email@example.com</td>
+                <td th:text="${user.phone != null ? user.phone : 'Chưa có'}">0123456789</td>
+
+                <td>
+                    <span th:if="${user.isActive}" class="status-text text-success">Đang hoạt động</span>
+                    <span th:unless="${user.isActive}" class="status-text text-danger">Đã vô hiệu hóa</span>
+                </td>
+
+                <td>
+                    <span class="status-text"
+                          th:classappend="${user.approvalStatus?.name() == 'APPROVED'}
+                              ? ' text-success'
+                              : (${user.approvalStatus?.name() == 'PENDING'}
+                                  ? ' text-warning'
+                                  : ' text-danger')"
+                          th:text="${user.approvalStatus?.name() == 'APPROVED'
+                              ? 'Đã duyệt'
+                              : (user.approvalStatus?.name() == 'PENDING'
+                                  ? 'Chờ duyệt'
+                                  : (user.approvalStatus?.name() == 'REJECTED'
+                                      ? 'Từ chối'
+                                      : 'Chưa có'))}">
+                        Chưa có
+                    </span>
+                </td>
+
+                <td>
+                    <div class="action-group">
+                        <a th:href="@{/admin/account/{id}(id=${user.id})}"
+                           class="action-btn"
+                           title="Xem chi tiết">
+                            <i class="fa-regular fa-eye"></i>
+                        </a>
+
+                        <a th:href="@{/admin/account/{id}/edit(id=${user.id})}"
+                           class="action-btn"
+                           title="Chỉnh sửa">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(users)}">
+                <td colspan="8" class="text-center py-5 text-muted">
+                    Không tìm thấy tài khoản.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top" th:if="${totalPages > 1}">
+            <div class="text-muted small">
+                <span th:text="${totalElements}">0</span> tài khoản
             </div>
 
-            <div class="bg-white border p-0 table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light border-bottom">
-                    <tr>
-                        <th class="text-uppercase text-secondary fw-semibold py-3 px-4" style="font-size: 0.8rem; letter-spacing: 1px;">Name</th>
-                        <th class="text-uppercase text-secondary fw-semibold py-3 px-4" style="font-size: 0.8rem; letter-spacing: 1px;">Role</th>
-                        <th class="text-uppercase text-secondary fw-semibold py-3 px-4" style="font-size: 0.8rem; letter-spacing: 1px;">Email / Phone</th>
-                        <th class="text-uppercase text-secondary fw-semibold py-3 px-4" style="font-size: 0.8rem; letter-spacing: 1px;">Status</th>
-                        <th class="text-uppercase text-secondary fw-semibold py-3 px-4" style="font-size: 0.8rem; letter-spacing: 1px;">Approval</th>
-                        <th class="text-uppercase text-secondary fw-semibold py-3 px-4 text-end" style="font-size: 0.8rem; letter-spacing: 1px;">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="user : ${users}">
-                        <td class="px-4 py-3">
-                            <div class="fw-bold text-dark" th:text="${user.firstName + ' ' + user.lastName}">Full Name</div>
-                            <div class="text-muted small" th:text="'ID: ' + ${user.id}">ID: 1</div>
-                        </td>
-                        <td class="px-4 py-3">
-                            <span class="border border-dark px-2 py-1 text-dark fw-bold small text-uppercase" th:text="${user.userType}">ROLE</span>
-                        </td>
-                        <td class="px-4 py-3 small text-secondary">
-                            <div th:text="${user.email}">email@example.com</div>
-                            <div th:text="${user.phone}">0123456789</div>
-                        </td>
-                        <td class="px-4 py-3 small">
-                            <i class="fa fa-circle me-1" th:classappend="${user.isActive} ? 'text-success' : 'text-secondary'" style="font-size: 8px;"></i>
-                            <span th:text="${user.isActive} ? 'Active' : 'Inactive'">Active</span>
-                        </td>
-                        <td class="px-4 py-3 fw-bold small"
-                            th:classappend="${user.approvalStatus?.name() == 'PENDING'} ? 'text-warning' : (${user.approvalStatus?.name() == 'APPROVED'} ? 'text-success' : 'text-danger')"
-                            th:text="${user.approvalStatus != null ? user.approvalStatus : 'N/A'}">
-                            APPROVED
-                        </td>
-                        <td class="px-4 py-3 text-end">
-                            <a th:href="@{/admin/account/{id}(id=${user.id})}" class="text-secondary text-decoration-none me-3"><i class="fa fa-eye"></i></a>
-                            <a th:href="@{/admin/account/{id}/edit(id=${user.id})}" class="text-secondary text-decoration-none"><i class="fa fa-pen"></i></a>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
+            <nav aria-label="Phân trang người dùng">
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
+                        <a class="page-link"
+                           th:href="@{/admin/account(page=${currentPage - 1}, keyword=${keyword})}"
+                           aria-label="Trang trước">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <li class="page-item"
+                        th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                        th:classappend="${pageNum == currentPage} ? ' active'">
+                        <a class="page-link"
+                           th:href="@{/admin/account(page=${pageNum}, keyword=${keyword})}"
+                           th:text="${pageNum}">1</a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
+                        <a class="page-link"
+                           th:href="@{/admin/account(page=${currentPage + 1}, keyword=${keyword})}"
+                           aria-label="Trang sau">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </section>
 </main>
 
 </body>

@@ -1,79 +1,71 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
+
 <body>
 
-<main layout:fragment="content" class="min-h-screen bg-background flex flex-col">
-    <section class="flex-grow px-8 py-12 max-w-7xl mx-auto w-full">
-        <header class="flex justify-between items-center w-full mb-12 bg-transparent">
-            <a th:href="@{/admin/account}" class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-                <span class="font-label-caps text-label-caps">Back to List</span>
-            </a>
-        </header>
+<main layout:fragment="content">
+    <section class="page-title">
+        <h1>Chi tiết người dùng</h1>
+        <p>Xem thông tin định danh và liên hệ của tài khoản.</p>
+    </section>
 
-        <div class="grid grid-cols-12 gap-8 items-start">
-            <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
-                <div class="bg-bone-white border border-outline-variant p-2 aspect-[4/5] relative">
-                    <img th:src="@{/images/default-avatar.png}" alt="Avatar" class="w-full h-full object-cover">
-                    <div class="absolute bottom-6 left-6 bg-primary text-bone-white px-4 py-2 font-label-caps text-[10px] tracking-widest">
-                        STAFF ID: <span th:text="${user.id}">001</span>
-                    </div>
-                </div>
+    <section class="admin-card">
+        <div class="detail-header">
+            <a th:href="@{/admin/account}" class="btn-admin-outline">
+                <i class="fa-solid fa-arrow-left"></i>
+                Quay lại
+            </a>
+
+            <a th:href="@{/admin/account/{id}/edit(id=${user.id})}" class="btn-admin-primary">
+                <i class="fa-regular fa-pen-to-square"></i>
+                Chỉnh sửa
+            </a>
+        </div>
+
+        <div class="user-detail-layout">
+            <div class="user-avatar">
+                <i class="fa-regular fa-user"></i>
             </div>
 
-            <div class="col-span-12 lg:col-span-8 bg-bone-white border border-outline-variant p-10 relative">
-                <div class="absolute top-10 right-10 flex flex-col items-end">
-                    <span class="px-4 py-1 border text-xs font-bold tracking-widest uppercase mb-2"
-                          th:classappend="${user.approvalStatus?.name() == 'PENDING'} ? 'border-orange-500 text-orange-500' : (${user.approvalStatus?.name() == 'APPROVED'} ? 'border-green-600 text-green-600' : 'border-red-500 text-red-500')"
-                          th:text="${user.approvalStatus != null ? user.approvalStatus : 'N/A'}">
-                        PENDING
-                    </span>
-                    <span class="flex items-center gap-2 text-sm" th:classappend="${user.isActive} ? 'text-green-600' : 'text-on-surface-variant'">
-                        <span class="w-2 h-2 rounded-full" th:classappend="${user.isActive} ? 'bg-green-600' : 'bg-outline-variant'"></span>
-                        <span th:text="${user.isActive} ? 'Active Account' : 'Inactive Account'">Active</span>
-                    </span>
+            <div class="user-detail-content">
+                <div class="section-header">
+                    <span>THÔNG TIN TÀI KHOẢN</span>
+                    <h3 th:text="${displayName}">Nguyễn Văn A</h3>
                 </div>
 
-                <div class="mb-10">
-                    <h1 class="text-5xl font-garamond text-primary mb-2" th:text="${user.firstName + ' ' + user.lastName}">First Last</h1>
-                    <p class="text-on-surface-variant font-label-caps tracking-[0.2em] uppercase" th:text="${user.userType}">ROLE</p>
-                </div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span>ID</span>
+                        <strong th:text="${user.id}">1</strong>
+                    </div>
 
-                <div class="grid grid-cols-2 gap-y-8 gap-x-12 border-t border-outline-variant pt-8">
-                    <div>
-                        <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Email Address</p>
-                        <p class="font-body-lg text-primary" th:text="${user.email}">email@example.com</p>
+                    <div class="detail-item">
+                        <span>Họ và tên</span>
+                        <strong th:text="${displayName}">Nguyễn Văn A</strong>
                     </div>
-                    <div>
-                        <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Phone Number</p>
-                        <p class="font-body-lg text-primary" th:text="${user.phone != null ? user.phone : 'Not provided'}">+84 123 456 789</p>
-                    </div>
-                    <div>
-                        <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Identity Number</p>
-                        <p class="font-body-lg text-primary" th:text="${user.identityNumber != null ? user.identityNumber : 'N/A'}">N/A</p>
-                    </div>
-                    <div>
-                        <p class="font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase opacity-60">Join Date</p>
-                        <p class="font-body-lg text-primary" th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'MMM dd, yyyy') : 'N/A'}">Oct 12, 2023</p>
-                    </div>
-                </div>
 
-                <div class="flex items-center gap-4 mt-12">
-                    <a th:href="@{/admin/account/{id}/edit(id=${user.id})}" class="px-8 py-3 bg-primary text-bone-white font-button-text uppercase hover:bg-charcoal-muted transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">edit</span> Edit User
-                    </a>
+                    <div class="detail-item">
+                        <span>Email</span>
+                        <strong th:text="${user.email != null ? user.email : 'Chưa có'}">email@example.com</strong>
+                    </div>
 
-                    <form th:if="${user.approvalStatus?.name() == 'PENDING'}" th:action="@{/admin/account/{id}/review(id=${user.id})}" method="post" class="flex gap-2">
-                        <button type="submit" name="action" value="approve" class="px-6 py-3 border border-green-600 text-green-600 font-button-text uppercase hover:bg-green-50 transition-all">
-                            Approve
-                        </button>
-                        <button type="submit" name="action" value="reject" class="px-6 py-3 border border-red-600 text-red-600 font-button-text uppercase hover:bg-red-50 transition-all">
-                            Reject
-                        </button>
-                    </form>
+                    <div class="detail-item">
+                        <span>Số điện thoại</span>
+                        <strong th:text="${user.phone != null ? user.phone : 'Chưa có'}">0900000000</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Số định danh</span>
+                        <strong th:text="${user.identityNumber != null ? user.identityNumber : 'Chưa có'}">012345678</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Vai trò</span>
+                        <strong th:text="${roleLabel}">Quản trị hệ thống</strong>
+                    </div>
                 </div>
             </div>
         </div>
