@@ -25,6 +25,10 @@ public class SpringSecurity {
                                 "/auth/**",
                                 "/page/**",
                                 "/fragment/**",
+                                "/profile/**",
+                                "/guest/**")
+                        .permitAll()
+                                "/fragment/**",
                                 "/error")
                         .permitAll()
 
@@ -89,6 +93,7 @@ public class SpringSecurity {
 
             Set<String> roles =
                     AuthorityUtils.authorityListToSet(authentication.getAuthorities());
+            if (roles.contains("ROLE_ADMIN")) {
 
             if (roles.contains("ROLE_ADMIN")) {
                 response.sendRedirect("/admin/dashboard");
