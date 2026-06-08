@@ -36,6 +36,11 @@ public class RoomService {
         return roomTypeRepository.findByIsDeletedFalse();
     }
 
+    public Room getRoomById(Long id) {
+        return roomRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Room not found!"));
+    }
+
     public void createRoom(String roomNumber,
                            Long roomTypeId,
                            Integer floor,
@@ -62,6 +67,33 @@ public class RoomService {
         Room savedRoom = roomRepository.save(room);
 
         saveRoomImages(savedRoom.getId(), imageUrls, primaryImageIndex);
+    }
+
+    public void updateRoom(Long id,
+                           String roomNumber,
+                           Long roomTypeId,
+                           Integer floor,
+                           ViewType viewType,
+                           RoomStatus status) {
+
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Room not found!"));
+
+        if (!room.getRoomNumber().equalsIgnoreCase(roomNumber)
+                && roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
+            throw new IllegalArgumentException("Room number already exists!");
+        }
+
+        RoomType roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new IllegalArgumentException("Room type not found!"));
+
+        room.setRoomNumber(roomNumber);
+        room.setRoomType(roomType);
+        room.setFloor(floor);
+        room.setViewType(viewType);
+        room.setStatus(status);
+
+        roomRepository.save(room);
     }
 
     private void saveRoomImages(Long roomId,
