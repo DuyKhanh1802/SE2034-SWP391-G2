@@ -11,5 +11,4 @@ import java.util.Optional;
 public interface CountryRepository extends JpaRepository<Country, Long> {
     List<Country> findAllByOrderByCountryNameAsc();
 
-    List<Country> findByPhoneCode(String phone);
 }
