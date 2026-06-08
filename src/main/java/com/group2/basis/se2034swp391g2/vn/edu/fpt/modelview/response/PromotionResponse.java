@@ -1,6 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.DiscountType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,11 +16,9 @@ public class PromotionResponse {
 
     private String name;
 
-    private DiscountType discountType;
+    private String description;
 
-    private BigDecimal discountValue;
-
-    private BigDecimal maxDiscount;
+    private BigDecimal discountAmount;
 
     private Integer usageLimit;
 
@@ -33,7 +30,17 @@ public class PromotionResponse {
 
     private Boolean isActive;
 
+    private Boolean showOnHomepage;
+
+    private Boolean featured;
+
+    private String imageUrl;
+
+    private String imagePublicId;
+
     private Instant createdAt;
 
     private String status;
+
+    private String displayStatus;
 }

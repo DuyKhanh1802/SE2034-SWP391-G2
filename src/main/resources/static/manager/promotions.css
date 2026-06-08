@@ -8,6 +8,8 @@
     --light-muted: #999999;
     --black: #000000;
     --danger: #b91c1c;
+    --warning: #777777;
+    --expired: #999999;
 }
 
 * {
@@ -26,7 +28,10 @@ body {
     vertical-align: middle;
 }
 
-/* Layout */
+/* =========================
+   Layout
+   ========================= */
+
 .page-wrapper {
     min-height: 100vh;
 }
@@ -48,7 +53,10 @@ body {
     flex-direction: column;
 }
 
-/* Sidebar */
+/* =========================
+   Sidebar
+   ========================= */
+
 .sidebar-brand {
     padding: 34px 28px 28px;
 }
@@ -56,13 +64,12 @@ body {
 .sidebar-brand h2 {
     margin: 0;
     font-size: 24px;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 .sidebar-brand p {
     margin: 8px 0 0;
-    font-size: 12px;
-    letter-spacing: 1px;
+    font-size: 13px;
     color: var(--muted);
 }
 
@@ -79,9 +86,8 @@ body {
     padding: 13px 18px;
     color: var(--muted);
     text-decoration: none;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 1px;
 }
 
 .sidebar-nav a:hover,
@@ -118,18 +124,21 @@ body {
 
 .user-box strong {
     display: block;
-    font-size: 12px;
-    letter-spacing: 1px;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .user-box span {
     display: block;
-    font-size: 10px;
+    font-size: 12px;
     color: var(--light-muted);
     margin-top: 2px;
 }
 
-/* Header */
+/* =========================
+   Header
+   ========================= */
+
 .page-header {
     padding: 34px 64px 28px;
     display: flex;
@@ -138,10 +147,10 @@ body {
 }
 
 .breadcrumb-custom {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--light-muted);
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     margin-bottom: 8px;
 }
 
@@ -159,10 +168,10 @@ body {
     color: #ffffff;
     text-decoration: none;
     padding: 15px 30px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
 }
 
 .btn-add:hover {
@@ -170,7 +179,10 @@ body {
     color: #ffffff;
 }
 
-/* Content */
+/* =========================
+   Content
+   ========================= */
+
 .content-section {
     padding: 28px 64px 0;
     flex: 1;
@@ -194,7 +206,7 @@ body {
     background: transparent;
     padding: 12px 22px;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
 }
 
@@ -205,7 +217,7 @@ body {
 
 .search-box {
     position: relative;
-    width: 360px;
+    width: 380px;
 }
 
 .search-box span {
@@ -230,31 +242,40 @@ body {
     border-color: var(--black);
 }
 
-/* Table */
+/* =========================
+   Table
+   ========================= */
+
 .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
 }
 
 .promotion-table {
-    min-width: 920px;
+    min-width: 1100px;
     margin: 0;
 }
 
 .promotion-table thead th {
     background: #efeeec;
-    color: var(--muted);
-    font-size: 11px;
+    color: #555555;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.3px;
+    text-transform: none;
     padding: 16px 18px;
     border-bottom: 1px solid var(--border);
+    white-space: nowrap;
 }
 
 .promotion-table tbody td {
     padding: 22px 18px;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--text);
     border-bottom: 1px solid #eeeeee;
+    vertical-align: middle;
 }
 
 .promotion-table tbody tr:hover {
@@ -263,21 +284,40 @@ body {
 
 .code {
     font-weight: 800;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
 }
 
 .muted {
     color: var(--muted);
 }
 
-/* Usage */
+.promotion-name {
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.discount-amount {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.valid-period {
+    white-space: nowrap;
+    line-height: 1.5;
+}
+
+/* =========================
+   Usage progress
+   ========================= */
+
 .usage {
-    width: 145px;
+    width: 150px;
 }
 
 .usage span {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--muted);
     white-space: nowrap;
@@ -295,15 +335,19 @@ body {
     background: var(--black);
 }
 
-/* Status */
+/* =========================
+   Status
+   ========================= */
+
 .status {
     position: relative;
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
     white-space: nowrap;
 }
 
@@ -324,7 +368,7 @@ body {
 }
 
 .scheduled-status {
-    color: var(--muted);
+    color: var(--warning);
 }
 
 .scheduled-status::before {
@@ -332,11 +376,11 @@ body {
 }
 
 .expired-status {
-    color: var(--muted);
+    color: var(--expired);
 }
 
 .expired-status::before {
-    background: var(--muted);
+    background: var(--expired);
 }
 
 .inactive-status {
@@ -351,7 +395,10 @@ body {
     opacity: 0.65;
 }
 
-/* Actions */
+/* =========================
+   Actions
+   ========================= */
+
 .actions {
     display: flex;
     justify-content: flex-end;
@@ -359,14 +406,21 @@ body {
     min-width: 120px;
 }
 
-.actions button {
+.actions button,
+.action-link {
     border: none;
     background: transparent;
     color: var(--muted);
-    padding: 0;
+    padding: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.actions button:hover {
+.actions button:hover,
+.action-link:hover {
     color: var(--black);
 }
 
@@ -375,7 +429,10 @@ body {
     cursor: not-allowed;
 }
 
-/* Table footer */
+/* =========================
+   Table footer
+   ========================= */
+
 .table-bottom {
     padding: 14px 18px;
     background: #f4f3f1;
@@ -388,9 +445,8 @@ body {
 .table-bottom p {
     margin: 0;
     color: var(--muted);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 1.5px;
 }
 
 .pagination-custom {
@@ -399,12 +455,12 @@ body {
 }
 
 .pagination-custom button {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border: 1px solid var(--border);
     background: transparent;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .pagination-custom button.active,
@@ -413,7 +469,10 @@ body {
     color: #ffffff;
 }
 
-/* Summary */
+/* =========================
+   Summary
+   ========================= */
+
 .summary-section {
     margin-top: 42px;
     margin-bottom: 48px;
@@ -422,9 +481,9 @@ body {
 .summary-section h3 {
     margin-bottom: 18px;
     color: var(--muted);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     text-transform: uppercase;
 }
 
@@ -443,14 +502,13 @@ body {
 .summary-card span {
     display: block;
     color: var(--muted);
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .summary-card strong {
-    font-size: 22px;
+    font-size: 24px;
 }
 
 .summary-card.dark {
@@ -462,52 +520,12 @@ body {
     color: #cccccc;
 }
 
-/* Footer */
-.footer {
-    margin-top: auto;
-    border-top: 1px solid var(--border);
-    padding: 26px 64px;
-    color: var(--muted);
-    font-size: 14px;
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-    .sidebar {
-        width: 220px;
-    }
-
-    .main-content {
-        margin-left: 220px;
-    }
-
-    .page-header,
-    .content-section,
-    .footer {
-        padding-left: 32px;
-        padding-right: 32px;
-    }
-
-    .toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .search-box {
-        width: 100%;
-    }
-
-    .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
 /* =========================
-   Add Promotion Form
+   Form
    ========================= */
 
 .form-card {
-    max-width: 920px;
+    max-width: 960px;
     background: var(--card-bg);
     border: 1px solid var(--border);
     padding: 36px;
@@ -515,21 +533,26 @@ body {
 
 .form-label {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-transform: none;
     margin-bottom: 8px;
 }
 
 .form-control,
 .form-select {
-    height: 46px;
+    min-height: 46px;
     border: 1px solid var(--border);
     border-radius: 0;
     background-color: #ffffff;
     color: var(--text);
     font-size: 14px;
+}
+
+textarea.form-control {
+    min-height: 110px;
+    resize: vertical;
 }
 
 .form-control:focus,
@@ -556,6 +579,7 @@ body {
 .form-check-label {
     color: var(--text);
     font-size: 14px;
+    font-weight: 500;
 }
 
 .form-actions {
@@ -568,10 +592,10 @@ body {
 .btn-cancel,
 .btn-save {
     padding: 14px 28px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-transform: none;
 }
 
 .btn-cancel {
@@ -604,96 +628,85 @@ body {
     line-height: 1.4;
 }
 
-.scheduled-status {
-    color: #777777;
+/* =========================
+   Footer
+   ========================= */
+
+.footer {
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    padding: 26px 64px;
+    color: var(--muted);
+    font-size: 14px;
 }
 
-.expired-status {
-    color: #999999;
-}
+/* =========================
+   Responsive
+   ========================= */
 
-.inactive-status {
-    color: #b91c1c;
-}
+@media (max-width: 992px) {
+    .sidebar {
+        width: 220px;
+    }
 
-.active-status {
-    color: #000000;
-}
+    .main-content {
+        margin-left: 220px;
+    }
 
-.action-link {
-    border: none;
-    background: transparent;
-    color: inherit;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
+    .page-header,
+    .content-section,
+    .footer {
+        padding-left: 32px;
+        padding-right: 32px;
+    }
 
-.action-link:hover {
-    color: #000000;
-}
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-.detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
-    margin-bottom: 40px;
-}
+    .search-box {
+        width: 100%;
+    }
 
-.detail-label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--light-muted);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-}
-
-.detail-header h2 {
-    margin: 0;
-    font-size: 32px;
-    font-weight: 600;
-    letter-spacing: 2px;
-}
-
-.detail-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-}
-
-.detail-item {
-    border: 1px solid var(--border-color);
-    padding: 22px 24px;
-    background: #ffffff;
-}
-
-.detail-item span {
-    display: block;
-    margin-bottom: 10px;
-    color: var(--light-muted);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-.detail-item strong {
-    color: var(--black);
-    font-size: 17px;
-    font-weight: 600;
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
-    .detail-header {
+    .page-header {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
     }
 
-    .detail-grid {
-        grid-template-columns: 1fr;
+    .page-header h1 {
+        font-size: 36px;
     }
+
+    .form-card {
+        padding: 24px;
+    }
+}
+
+/* =========================
+   Pop up
+   ========================= */
+.promotion-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 0;
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #166534;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 14px 18px;
+    margin-bottom: 22px;
+}
+
+.promotion-alert .material-symbols-outlined {
+    font-size: 22px;
 }

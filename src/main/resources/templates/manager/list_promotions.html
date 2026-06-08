@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>ViHotel - Promotions</title>
+    <title>Quản lý khuyến mãi - ViHotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap -->
@@ -11,7 +11,7 @@
     <!-- Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
-    <!-- Custom CSS -->
+    <!-- CSS riêng cho module khuyến mãi -->
     <link rel="stylesheet" th:href="@{/manager/promotions.css}" href="/manager/promotions.css">
 </head>
 
@@ -22,38 +22,38 @@
     <aside class="sidebar">
         <div class="sidebar-brand">
             <h2>ViHotel</h2>
-            <p>Manager Portal</p>
+            <p>Cổng quản lý</p>
         </div>
 
         <nav class="sidebar-nav">
             <a href="#">
                 <span class="material-symbols-outlined">dashboard</span>
-                Dashboard
+                Tổng quan
             </a>
 
             <a href="#">
                 <span class="material-symbols-outlined">event_available</span>
-                Bookings
+                Đặt phòng
             </a>
 
             <a href="#">
                 <span class="material-symbols-outlined">groups</span>
-                Guests
+                Khách hàng
             </a>
 
             <a th:href="@{/manager/promotions}" href="/manager/promotions" class="active">
                 <span class="material-symbols-outlined">campaign</span>
-                Promotions
+                Khuyến mãi
             </a>
 
             <a href="#">
                 <span class="material-symbols-outlined">payments</span>
-                Payments
+                Thanh toán
             </a>
 
             <a href="#">
                 <span class="material-symbols-outlined">assessment</span>
-                Reports
+                Báo cáo
             </a>
         </nav>
 
@@ -68,17 +68,17 @@
 
             <a href="#">
                 <span class="material-symbols-outlined">account_circle</span>
-                Profile
+                Hồ sơ
             </a>
 
             <a href="#">
                 <span class="material-symbols-outlined">settings</span>
-                Settings
+                Cài đặt
             </a>
 
-            <a href="#">
+            <a th:href="@{/auth/logout}" href="/auth/logout">
                 <span class="material-symbols-outlined">logout</span>
-                Logout
+                Đăng xuất
             </a>
         </div>
     </aside>
@@ -90,33 +90,38 @@
         <header class="page-header">
             <div>
                 <div class="breadcrumb-custom">
-                    Management / Promotions
+                    Quản lý / Khuyến mãi
                 </div>
-                <h1>Promotions</h1>
+                <h1>Khuyến mãi</h1>
             </div>
 
             <a th:href="@{/manager/promotions/add}" href="/manager/promotions/add" class="btn-add">
                 <span class="material-symbols-outlined">add</span>
-                Add New Promotion
+                Thêm khuyến mãi
             </a>
         </header>
 
         <!-- Content -->
         <section class="content-section">
+            
+            <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span th:text="${successMessage}">Thêm khuyến mãi thành công.</span>
+            </div>
 
             <!-- Filter + Search -->
             <div class="toolbar">
                 <div class="tabs">
-                    <button class="active">All</button>
-                    <button>Active</button>
-                    <button>Scheduled</button>
-                    <button>Expired</button>
-                    <button>Inactive</button>
+                    <button class="active">Tất cả</button>
+                    <button>Đang hoạt động</button>
+                    <button>Sắp diễn ra</button>
+                    <button>Đã hết hạn</button>
+                    <button>Đã tắt</button>
                 </div>
 
                 <div class="search-box">
                     <span class="material-symbols-outlined">search</span>
-                    <input type="text" placeholder="Search by code or promotion name...">
+                    <input type="text" placeholder="Tìm theo mã hoặc tên chiến dịch...">
                 </div>
             </div>
 
@@ -126,50 +131,47 @@
                     <table class="table align-middle promotion-table">
                         <thead>
                         <tr>
-                            <th>Code</th>
-                            <th>Promotion Name</th>
-                            <th>Discount</th>
-                            <th>Valid Period</th>
-                            <th>Usage</th>
-                            <th>Status</th>
-                            <th class="text-end">Actions</th>
+                            <th>Mã KM</th>
+                            <th>Chiến dịch</th>
+                            <th>Số tiền giảm</th>
+                            <th>Thời gian</th>
+                            <th>Lượt dùng</th>
+                            <th>Hiển thị</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end">Thao tác</th>
                         </tr>
                         </thead>
 
                         <tbody>
                         <tr th:each="promotion : ${promotions}">
-                            <!-- Code -->
+                            <!-- Mã khuyến mãi -->
                             <td class="code" th:text="${promotion.code}">
-                                TEST25
+                                VH-202606-A8K2
                             </td>
 
-                            <!-- Name -->
-                            <td th:text="${promotion.name}">
-                                Test Promotion
-                            </td>
-
-                            <!-- Discount -->
+                            <!-- Tên chiến dịch -->
                             <td>
-                                <span th:if="${promotion.discountType.name() == 'PERCENTAGE'}"
-                                      th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 0) + '% OFF'}">
-                                    10% OFF
-                                </span>
+                                <div class="promotion-name" th:text="${promotion.name}">
+                                    Ưu đãi mùa hè
+                                </div>
+                            </td>
 
-                                <span th:if="${promotion.discountType.name() == 'FIXED_AMOUNT'}"
-                                      th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 0) + ' VND OFF'}">
-                                    50000 VND OFF
+                            <!-- Số tiền giảm -->
+                            <td>
+                                <span th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 0) + ' VND'}">
+                                    100000 VND
                                 </span>
                             </td>
 
-                            <!-- Valid Period -->
+                            <!-- Thời gian áp dụng -->
                             <td class="muted"
                                 th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy')
                                         + ' - '
                                         + #temporals.format(promotion.validTo, 'dd/MM/yyyy')}">
-                                03/06/2026 - 03/07/2026
+                                01/06/2026 - 31/08/2026
                             </td>
 
-                            <!-- Usage -->
+                            <!-- Lượt dùng -->
                             <td>
                                 <div class="usage"
                                      th:with="usagePercent=${promotion.usageLimit == null || promotion.usageLimit == 0
@@ -182,7 +184,7 @@
                                             + ' ('
                                             + usagePercent
                                             + '%)'}">
-                                        0 / 100 (0%)
+                                        0 / 200 (0%)
                                     </span>
 
                                     <div class="progress-line">
@@ -191,31 +193,42 @@
                                 </div>
                             </td>
 
-                            <!-- Status -->
+                            <!-- Trạng thái hiển thị -->
+                            <td>
+                                <span class="status"
+                                      th:text="${promotion.displayStatus}"
+                                      th:classappend="${promotion.displayStatus == 'Banner nổi bật' ? ' active-status'
+                                            : promotion.displayStatus == 'Hiển thị trang chủ' ? ' scheduled-status'
+                                            : ' inactive-status'}">
+                                    Hiển thị trang chủ
+                                </span>
+                            </td>
+
+                            <!-- Trạng thái hoạt động -->
                             <td>
                                 <span class="status"
                                       th:text="${promotion.status}"
-                                      th:classappend="${promotion.status == 'Active' ? ' active-status'
-                                            : promotion.status == 'Scheduled' ? ' scheduled-status'
-                                            : promotion.status == 'Expired' ? ' expired-status'
+                                      th:classappend="${promotion.status == 'Đang hoạt động' ? ' active-status'
+                                            : promotion.status == 'Sắp diễn ra' ? ' scheduled-status'
+                                            : promotion.status == 'Đã hết hạn' ? ' expired-status'
                                             : ' inactive-status'}">
-                                    Active
+                                    Đang hoạt động
                                 </span>
                             </td>
 
                             <!-- Actions -->
                             <td class="text-end">
                                 <div class="actions">
-                                    <button type="button" title="View Details">
+                                    <button type="button" title="Xem chi tiết">
                                         <span class="material-symbols-outlined">visibility</span>
                                     </button>
 
-                                    <button type="button" title="Edit">
+                                    <button type="button" title="Chỉnh sửa">
                                         <span class="material-symbols-outlined">edit</span>
                                     </button>
 
                                     <button type="button"
-                                            th:title="${promotion.isActive ? 'Deactivate' : 'Activate'}">
+                                            th:title="${promotion.isActive ? 'Tắt khuyến mãi' : 'Bật khuyến mãi'}">
                                         <span class="material-symbols-outlined">power_settings_new</span>
                                     </button>
                                 </div>
@@ -224,8 +237,8 @@
 
                         <!-- Empty state -->
                         <tr th:if="${#lists.isEmpty(promotions)}">
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                No promotions found.
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                Chưa có khuyến mãi nào.
                             </td>
                         </tr>
                         </tbody>
@@ -234,8 +247,8 @@
 
                 <!-- Table Footer -->
                 <div class="table-bottom">
-                    <p th:text="'Showing ' + ${#lists.size(promotions)} + ' of ' + ${totalPromotions} + ' promotions'">
-                        Showing 0 of 0 promotions
+                    <p th:text="'Hiển thị ' + ${#lists.size(promotions)} + ' / ' + ${totalPromotions} + ' khuyến mãi'">
+                        Hiển thị 0 / 0 khuyến mãi
                     </p>
 
                     <div class="pagination-custom">
@@ -256,31 +269,31 @@
 
             <!-- Summary -->
             <section class="summary-section">
-                <h3>Promotion Summary</h3>
+                <h3>Tổng quan khuyến mãi</h3>
 
                 <div class="summary-grid">
                     <div class="summary-card">
-                        <span>Total Promotions</span>
+                        <span>Tổng khuyến mãi</span>
                         <strong th:text="${totalPromotions}">0</strong>
                     </div>
 
                     <div class="summary-card dark">
-                        <span>Active</span>
+                        <span>Đang hoạt động</span>
                         <strong th:text="${activePromotions}">0</strong>
                     </div>
 
                     <div class="summary-card">
-                        <span>Scheduled</span>
+                        <span>Sắp diễn ra</span>
                         <strong th:text="${scheduledPromotions}">0</strong>
                     </div>
 
                     <div class="summary-card">
-                        <span>Expired</span>
+                        <span>Đã hết hạn</span>
                         <strong th:text="${expiredPromotions}">0</strong>
                     </div>
 
                     <div class="summary-card">
-                        <span>Inactive</span>
+                        <span>Đã tắt</span>
                         <strong th:text="${inactivePromotions}">0</strong>
                     </div>
                 </div>
