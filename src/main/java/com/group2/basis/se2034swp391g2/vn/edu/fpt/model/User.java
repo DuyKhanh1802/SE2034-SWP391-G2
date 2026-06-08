@@ -48,10 +48,12 @@ public class User {
 
 
     @Column(name = "first_name", nullable = false, length = 50,columnDefinition = "NVARCHAR(50)")
+
     private String firstName;
 
 
     @Column(name = "last_name", nullable = false, length = 50,columnDefinition = "NVARCHAR(50)")
+
     private String lastName;
 
     @Column(name = "email", length = 150,columnDefinition = "NVARCHAR(150)")

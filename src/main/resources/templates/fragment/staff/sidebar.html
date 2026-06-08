@@ -1,139 +1,67 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<body>
-<!--
-    Sidebar tự highlight active theo biến "currentUri" do controller truyền vào.
-    Ví dụ trong controller: model.addAttribute("currentUri", request.getRequestURI());
+<aside class="sidebar">
+    <div>
+        <div class="logo">
+            VIH0TEL
+        </div>
 
-    Menu hiện/ẩn theo session.account.role.roleName:
-    RECEPTIONIST, KITCHEN_STAFF, SPA_STAFF, HOUSEKEEPING, MANAGER, ADMIN
--->
-<nav th:fragment="sidebar" class="audo-sidebar d-flex flex-column">
+        <ul class="menu list-unstyled">
+            <li>
+                <a th:href="@{/admin/dashboard}">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span>Bảng điều khiển</span>
+                </a>
+            </li>
 
-    <!-- Brand + Role badge -->
-    <div class="audo-sidebar-brand px-4 py-4 border-bottom d-flex align-items-center gap-2">
-        <span class="fw-semibold">AUDO</span>
-        <span class="badge bg-secondary fw-normal audo-label-caps"
-              th:text="${session.account?.role?.roleName}">ROLE</span>
+            <li>
+                <a th:href="@{/admin/rooms}">
+                    <i class="fa-solid fa-building"></i>
+                    <span>Quản lý phòng</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/admin/staff}">
+                    <i class="fa-solid fa-id-badge"></i>
+                    <span>Nhân viên</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/admin/services}">
+                    <i class="fa-solid fa-bell-concierge"></i>
+                    <span>Dịch vụ</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/admin/incidents}">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Sự cố</span>
+                </a>
+            </li>
+
+            <li class="active">
+                <a th:href="@{/profile/edit}">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Hồ sơ cá nhân</span>
+                </a>
+            </li>
+        </ul>
     </div>
 
-    <ul class="nav flex-column px-2 py-3 flex-grow-1 gap-1">
+    <a class="sidebar-user text-decoration-none" th:href="@{/profile/edit}">
+        <img th:src="${currentUser != null and currentUser.avatarUrl != null
+                    ? currentUser.avatarUrl
+                    : 'https://i.pravatar.cc/50'}"
+             alt="admin">
 
-        <!-- ── RECEPTION ── -->
-        <th:block th:if="${session.account?.role?.roleName == 'RECEPTIONIST'
-                        or session.account?.role?.roleName == 'MANAGER'
-                        or session.account?.role?.roleName == 'ADMIN'}">
-
-            <li><span class="audo-sidebar-section">RECEPTION</span></li>
-
-            <li class="nav-item">
-                <a th:href="@{/receptionist/bookings}"
-                   th:classappend="${#strings.startsWith(currentUri, '/receptionist/bookings')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-calendar-check fa-fw me-2"></i>Bookings
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/receptionist/check-in}"
-                   th:classappend="${#strings.startsWith(currentUri, '/receptionist/check-in')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-sign-in-alt fa-fw me-2"></i>Check-in / Check-out
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/receptionist/guests}"
-                   th:classappend="${#strings.startsWith(currentUri, '/receptionist/guests')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-user fa-fw me-2"></i>Guests
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/receptionist/payments}"
-                   th:classappend="${#strings.startsWith(currentUri, '/receptionist/payments')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-credit-card fa-fw me-2"></i>Payments
-                </a>
-            </li>
-        </th:block>
-
-        <!-- ── SERVICES (Kitchen + Spa) ── -->
-        <th:block th:if="${session.account?.role?.roleName == 'KITCHEN_STAFF'
-                        or session.account?.role?.roleName == 'SPA_STAFF'
-                        or session.account?.role?.roleName == 'MANAGER'
-                        or session.account?.role?.roleName == 'ADMIN'}">
-
-            <li class="mt-2"><span class="audo-sidebar-section">SERVICES</span></li>
-
-            <li class="nav-item">
-                <a th:href="@{/staff/work-orders}"
-                   th:classappend="${#strings.startsWith(currentUri, '/staff/work-orders')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-concierge-bell fa-fw me-2"></i>Work Orders
-                </a>
-            </li>
-        </th:block>
-
-        <!-- ── HOUSEKEEPING ── -->
-        <th:block th:if="${session.account?.role?.roleName == 'HOUSEKEEPING'
-                        or session.account?.role?.roleName == 'MANAGER'
-                        or session.account?.role?.roleName == 'ADMIN'}">
-
-            <li class="mt-2"><span class="audo-sidebar-section">HOUSEKEEPING</span></li>
-
-            <li class="nav-item">
-                <a th:href="@{/housekeeping/rooms}"
-                   th:classappend="${#strings.startsWith(currentUri, '/housekeeping/rooms')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-bed fa-fw me-2"></i>Room Status
-                </a>
-            </li>
-        </th:block>
-
-        <!-- ── MANAGEMENT ── -->
-        <th:block th:if="${session.account?.role?.roleName == 'MANAGER'
-                        or session.account?.role?.roleName == 'ADMIN'}">
-
-            <li class="mt-2"><span class="audo-sidebar-section">MANAGEMENT</span></li>
-
-            <li class="nav-item">
-                <a th:href="@{/admin/dashboard}"
-                   th:classappend="${#strings.startsWith(currentUri, '/admin/dashboard')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-chart-bar fa-fw me-2"></i>Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/admin/accounts}"
-                   th:classappend="${#strings.startsWith(currentUri, '/admin/accounts')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-users fa-fw me-2"></i>Accounts
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/admin/rooms}"
-                   th:classappend="${#strings.startsWith(currentUri, '/admin/rooms')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-hotel fa-fw me-2"></i>Rooms &amp; Types
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/admin/promotions}"
-                   th:classappend="${#strings.startsWith(currentUri, '/admin/promotions')} ? ' active' : ''"
-                   class="nav-link audo-sidebar-link">
-                    <i class="fa fa-tag fa-fw me-2"></i>Promotions
-                </a>
-            </li>
-        </th:block>
-
-    </ul>
-
-    <!-- Logout -->
-    <div class="px-4 py-3 border-top">
-        <a th:href="@{/logout}" class="nav-link audo-sidebar-link text-danger">
-            <i class="fa fa-sign-out-alt fa-fw me-2"></i>Logout
-        </a>
-    </div>
-
-</nav>
-</body>
-</html>
+        <div>
+            <h6 th:text="${currentUser != null
+                        ? currentUser.firstName + ' ' + currentUser.lastName
+                        : 'QUẢN TRỊ VIÊN'}">
+                QUẢN TRỊ VIÊN
+            </h6>
+            <p>Trang quản trị</p>
+        </div>
+    </a>
+</aside>

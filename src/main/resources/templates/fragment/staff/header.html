@@ -1,23 +1,56 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<body>
-<header th:fragment="header" class="audo-header d-flex align-items-center justify-content-between px-4 border-bottom">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-    <!-- Mobile toggle -->
-    <button id="sidebarToggle" class="btn btn-link text-dark d-md-none p-0">
-        <i class="fa fa-bars fa-lg"></i>
-    </button>
+<header th:fragment="staffHeader" class="topbar d-flex justify-content-between align-items-center">
+    <h4 th:text="${pageTitle != null ? pageTitle : 'DASHBOARD'}">DASHBOARD</h4>
 
-    <!-- Page title -->
-    <h6 class="mb-0 fw-semibold" th:text="${pageTitle} ?: 'Dashboard'">Dashboard</h6>
+    <div class="top-icons">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-regular fa-bell"></i>
 
-    <!-- Account info -->
-    <div class="d-flex align-items-center gap-3">
-        <span class="audo-label-caps text-secondary d-none d-md-inline"
-              th:text="${session.account?.fullName}">Staff Name</span>
-        <i class="fa fa-user-circle fa-lg text-secondary"></i>
+        <!-- AVATAR DROPDOWN -->
+        <div class="dropdown">
+            <button class="profile-dropdown-btn dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+
+                <img th:src="${currentUser != null and currentUser.avatarUrl != null
+                            ? currentUser.avatarUrl
+                            : 'https://i.pravatar.cc/40'}"
+                     alt="profile">
+
+                <span th:text="${currentUser != null ? currentUser.firstName : 'Account'}">
+                    Tài khoản
+                </span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end profile-menu">
+                <li>
+                    <a class="dropdown-item" th:href="@{/profile/edit}">
+                        <i class="fa-regular fa-user me-2"></i>
+                       Cập nhật profile
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item" href="#">
+                        <i class="fa-regular fa-bell me-2"></i>
+                        Thông báo
+                    </a>
+                </li>
+
+                <li><hr class="dropdown-divider"></li>
+
+                <li>
+                    <form th:action="@{/auth/logout}" method="post" class="m-0">
+                        <button type="submit" class="dropdown-item text-danger">
+                            <i class="fa-solid fa-right-from-bracket me-2"></i>
+                            Đăng xuất
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
     </div>
-
 </header>
-</body>
-</html>

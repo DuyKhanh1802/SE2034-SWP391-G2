@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.Gender;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.IdentityType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -42,6 +43,7 @@ public class ProfileUpdateRequest {
 
     private String email;
 
+    @NotNull(message = "Vui lòng chọn giới tính")
     private Gender gender;
 
     @Past(message = "Ngày sinh phải là ngày trong quá khứ")
