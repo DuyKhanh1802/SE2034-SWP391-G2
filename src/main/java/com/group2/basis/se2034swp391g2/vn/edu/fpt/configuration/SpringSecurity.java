@@ -24,8 +24,10 @@ public class SpringSecurity {
                                 "/common/**",
                                 "/auth/**",
                                 "/page/**",
-                                "/fragment/**")
-                                .permitAll()
+                                "/fragment/**",
+                                "/profile/**",
+                                "/guest/**")
+                        .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
@@ -46,27 +48,27 @@ public class SpringSecurity {
         return http.build();
     }
 
-   @Bean
-   public AuthenticationSuccessHandler cusAuthenticationSuccessHandler(){
-        return(request, response, authentication) -> {
+    @Bean
+    public AuthenticationSuccessHandler cusAuthenticationSuccessHandler() {
+        return (request, response, authentication) -> {
 
             Set<String> roles =
                     AuthorityUtils.authorityListToSet(authentication.getAuthorities());
-            if(roles.contains("ROLE_ADMIN")){
+            if (roles.contains("ROLE_ADMIN")) {
                 response.sendRedirect("/admin/dashboard");
-            } else if(roles.contains("ROLE_RECEPTIONIST")){
+            } else if (roles.contains("ROLE_RECEPTIONIST")) {
                 response.sendRedirect("/receptionist/dashboard");
 
             } else if (roles.contains("ROLE_MANAGER")) {
                 response.sendRedirect("/manager/dashboard");
-            }else{
+            } else {
                 response.sendRedirect("/home");
             }
         };
-   }
+    }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }
