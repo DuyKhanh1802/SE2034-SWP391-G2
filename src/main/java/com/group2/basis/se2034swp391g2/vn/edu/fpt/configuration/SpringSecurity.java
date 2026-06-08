@@ -19,20 +19,28 @@ public class SpringSecurity {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",           // Cho phép vào trang gốc
+                                "/",
                                 "/home",
-                                "/error",      // QUAN TRỌNG: Mở khóa trang báo lỗi để tránh 403 ảo
+                                "/error",
                                 "/common/**",
                                 "/auth/**",
                                 "/page/**",
                                 "/fragment/**",
-                                "/css/**",     // MỞ KHÓA CSS
-                                "/js/**",      // MỞ KHÓA JS
-                                "/images/**"   // MỞ KHÓA HÌNH ẢNH
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/admin/Admin.css",
+                                "/Admin/**"
                         ).permitAll()
-
-                        // GIỮ NGUYÊN 100% LOGIC CỦA LEADER
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/account/**").hasRole("SYSTEM_ADMIN")
+                        .requestMatchers(
+                                "/admin/dashboard",
+                                "/admin/list_room/**",
+                                "/admin/rooms/**",
+                                "/admin/room-images/**",
+                                "/admin/services/**",
+                                "/admin/promotions/**"
+                        ).hasRole("HOTEL_ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
                         .anyRequest().authenticated()
@@ -54,15 +62,15 @@ public class SpringSecurity {
     }
 
     @Bean
-    public AuthenticationSuccessHandler cusAuthenticationSuccessHandler(){
-        return(request, response, authentication) -> {
-
+    public AuthenticationSuccessHandler cusAuthenticationSuccessHandler() {
+        return (request, response, authentication) -> {
             Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
 
-            // GIỮ NGUYÊN 100% LOGIC CỦA LEADER
-            if(roles.contains("ROLE_ADMIN")){
+            if (roles.contains("ROLE_SYSTEM_ADMIN")) {
+                response.sendRedirect("/admin/account");
+            } else if (roles.contains("ROLE_HOTEL_ADMIN")) {
                 response.sendRedirect("/admin/dashboard");
-            } else if(roles.contains("ROLE_RECEPTIONIST")){
+            } else if (roles.contains("ROLE_RECEPTIONIST")) {
                 response.sendRedirect("/receptionist/dashboard");
             } else if (roles.contains("ROLE_MANAGER")) {
                 response.sendRedirect("/manager/dashboard");
@@ -73,7 +81,7 @@ public class SpringSecurity {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }
