@@ -41,6 +41,11 @@ public class SpringSecurity {
                                 "/admin/services/**",
                                 "/admin/promotions/**"
                         ).hasRole("HOTEL_ADMIN")
+                                "/fragment/**",
+                                "/profile/**",
+                                "/guest/**")
+                        .permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
                         .anyRequest().authenticated()
