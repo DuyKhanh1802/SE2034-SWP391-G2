@@ -1,219 +1,356 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <title>ViHotel HMS - Tổng quan lễ tân</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Housekeeping Dashboard</title>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600&family=Inter:wght@400;500;600&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- CSS riêng -->
-    <link rel="stylesheet" th:href="@{/HouseKeeping/Dashboard.css}">
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/receptionist/Dashboard.css}">
 </head>
 
 <body>
 
-<div class="staff-page">
+<div class="vihotel-layout">
 
-    <!-- TOP HEADER -->
-    <header class="staff-header">
-
-        <div class="header-brand">
-            NordicStay Staff
-        </div>
-
-        <nav class="header-nav">
-            <a href="#" class="active">Dashboard</a>
-            <a href="#">Room List</a>
-            <a href="#">Maintenance</a>
-        </nav>
-
-        <div class="header-actions">
-            <i class="fa-regular fa-bell"></i>
-            <i class="fa-solid fa-gear"></i>
-
-            <div class="staff-avatar">
-                <img src="https://i.pravatar.cc/100?img=32" alt="Staff Avatar">
-            </div>
-        </div>
-
-    </header>
-
-    <!-- SIDEBAR -->
-    <aside class="staff-sidebar">
-
-        <div class="staff-profile">
-            <h2>Lena Jensen</h2>
-            <p>Floor 4 Lead</p>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h1>ViHotel HMS</h1>
+            <p>LỄ TÂN</p>
         </div>
 
         <nav class="sidebar-menu">
-
-            <a href="#" class="sidebar-link active">
-                <i class="fa-solid fa-table-cells-large"></i>
-                <span>Overview</span>
+            <a th:href="@{/receptionist/dashboard}" class="sidebar-link active">
+                <i class="bi bi-grid"></i>
+                <span>TỔNG QUAN</span>
             </a>
 
-            <a href="#" class="sidebar-link">
-                <i class="fa-solid fa-broom"></i>
-                <span>My Floor</span>
+            <a th:href="@{/receptionist/rooms}" class="sidebar-link">
+                <i class="bi bi-door-open"></i>
+                <span>PHÒNG</span>
             </a>
 
-            <a href="#" class="sidebar-link">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>Report Issue</span>
+            <a th:href="@{/receptionist/bookings}" class="sidebar-link">
+                <i class="bi bi-calendar3"></i>
+                <span>ĐẶT PHÒNG</span>
             </a>
 
-            <a href="#" class="sidebar-link">
-                <i class="fa-solid fa-box"></i>
-                <span>Supplies</span>
+            <a th:href="@{/receptionist/check-in}" class="sidebar-link">
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>NHẬN PHÒNG</span>
             </a>
 
+            <a th:href="@{/receptionist/check-out}" class="sidebar-link">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>TRẢ PHÒNG</span>
+            </a>
+
+            <a th:href="@{/receptionist/folios}" class="sidebar-link">
+                <i class="bi bi-receipt"></i>
+                <span>HÓA ĐƠN</span>
+            </a>
         </nav>
 
-        <div class="sidebar-logout">
-            <a href="#" class="sidebar-link">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Logout</span>
+        <div class="sidebar-bottom">
+            <a th:href="@{/receptionist/settings}" class="sidebar-link">
+                <i class="bi bi-gear"></i>
+                <span>CÀI ĐẶT</span>
+            </a>
+
+            <a th:href="@{/logout}" class="sidebar-link">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>ĐĂNG XUẤT</span>
             </a>
         </div>
-
     </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="staff-main">
+    <!-- Main Content -->
+    <main class="main-content">
 
-        <!-- WELCOME -->
-        <section class="welcome-section">
-            <h1>Good morning, Lena</h1>
-            <p>Tuesday, October 24, 2024</p>
-        </section>
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h2>ViHotel HMS</h2>
 
-        <!-- STATS -->
-        <section class="row g-4 stats-section">
+                <nav class="topbar-nav">
+                    <a href="#">TỔNG QUAN</a>
+                    <a href="#">BÁO CÁO</a>
+                    <a href="#">KHO</a>
+                </nav>
+            </div>
 
-            <div class="col-md-4">
-                <div class="stat-card">
+            <div class="topbar-right">
+                <div class="topbar-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Tìm kiếm...">
+                </div>
+
+                <button class="topbar-icon">
+                    <i class="bi bi-bell"></i>
+                </button>
+
+                <button class="topbar-icon">
+                    <i class="bi bi-question-circle"></i>
+                </button>
+
+                <a th:href="@{/receptionist/check-in}" class="btn-main">
+                    NHẬN PHÒNG NHANH
+                </a>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <section class="page-wrapper">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1>Tổng quan lễ tân</h1>
+                    <p>
+                        Theo dõi khách nhận phòng, khách trả phòng, tình trạng phòng trống
+                        và các hoạt động quan trọng trong ngày tại quầy lễ tân.
+                    </p>
+                </div>
+
+                <div class="page-actions">
+                    <a th:href="@{/receptionist/bookings/add-walk-in}" class="btn-main">
+                        TẠO ĐẶT PHÒNG
+                    </a>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="dashboard-kpi-grid">
+
+                <div class="kpi-card">
                     <div>
-                        <p class="stat-label">Dirty rooms unclaimed</p>
-                        <h2>3</h2>
+                        <p>NHẬN PHÒNG HÔM NAY</p>
+                        <h2 th:text="${checkInToday != null ? checkInToday : 12}">12</h2>
+                    </div>
+                    <i class="bi bi-box-arrow-in-right"></i>
+                </div>
+
+                <div class="kpi-card">
+                    <div>
+                        <p>TRẢ PHÒNG HÔM NAY</p>
+                        <h2 th:text="${checkOutToday != null ? checkOutToday : 8}">8</h2>
+                    </div>
+                    <i class="bi bi-box-arrow-right"></i>
+                </div>
+
+                <div class="kpi-card">
+                    <div>
+                        <p>PHÒNG CÒN TRỐNG</p>
+                        <h2 th:text="${availableRooms != null ? availableRooms : 45}">45</h2>
+                    </div>
+                    <i class="bi bi-door-open"></i>
+                </div>
+
+                <div class="kpi-card">
+                    <div>
+                        <p>PHÒNG ĐANG SỬ DỤNG</p>
+                        <h2 th:text="${occupiedRooms != null ? occupiedRooms : 28}">28</h2>
+                    </div>
+                    <i class="bi bi-door-closed"></i>
+                </div>
+
+            </div>
+
+            <!-- Today Lists -->
+            <div class="dashboard-list-grid">
+
+                <!-- Arrivals -->
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>Khách đến hôm nay</h2>
+                        <span th:text="${expectedArrivals != null ? expectedArrivals + ' DỰ KIẾN' : '6 DỰ KIẾN'}">
+                            6 DỰ KIẾN
+                        </span>
                     </div>
 
-                    <span class="badge-custom badge-warning">
-                        Priority Action
+                    <div class="guest-task-list">
+
+                        <!-- Dynamic data -->
+                        <div class="guest-task-row" th:each="arrival : ${arrivals}">
+                            <div class="guest-task-info">
+                                <div class="guest-avatar">
+                                    <i class="bi bi-person"></i>
+                                </div>
+
+                                <div>
+                                    <h3 th:text="${arrival.guestName}"></h3>
+                                    <p>
+                                        <span th:text="${arrival.roomType}"></span>
+                                        · Dự kiến đến
+                                        <span th:text="${arrival.eta}"></span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <a th:href="@{/receptionist/check-in/{id}(id=${arrival.id})}" class="btn-outline-main">
+                                NHẬN PHÒNG
+                            </a>
+                        </div>
+
+                        <!-- Static demo data -->
+                        <div class="guest-task-row" th:if="${arrivals == null}">
+                            <div class="guest-task-info">
+                                <div class="guest-avatar">
+                                    <i class="bi bi-person"></i>
+                                </div>
+
+                                <div>
+                                    <h3>Nguyễn Văn An</h3>
+                                    <p>Deluxe Suite · Dự kiến đến 14:00</p>
+                                </div>
+                            </div>
+
+                            <a href="#" class="btn-outline-main">NHẬN PHÒNG</a>
+                        </div>
+
+                        <div class="guest-task-row" th:if="${arrivals == null}">
+                            <div class="guest-task-info">
+                                <div class="guest-avatar">
+                                    <i class="bi bi-person"></i>
+                                </div>
+
+                                <div>
+                                    <h3>Trần Thu Hà</h3>
+                                    <p>Executive Queen · Dự kiến đến 16:30</p>
+                                </div>
+                            </div>
+
+                            <a href="#" class="btn-outline-main">NHẬN PHÒNG</a>
+                        </div>
+
+                        <div class="guest-task-row" th:if="${arrivals == null}">
+                            <div class="guest-task-info">
+                                <div class="guest-avatar">
+                                    <i class="bi bi-person"></i>
+                                </div>
+
+                                <div>
+                                    <h3>Lê Minh Quân</h3>
+                                    <p>Standard King · Dự kiến đến 19:00</p>
+                                </div>
+                            </div>
+
+                            <a href="#" class="btn-outline-main">NHẬN PHÒNG</a>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Departures -->
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>Khách trả phòng hôm nay</h2>
+                        <span th:text="${pendingDepartures != null ? pendingDepartures + ' ĐANG CHỜ' : '4 ĐANG CHỜ'}">
+                            4 ĐANG CHỜ
+                        </span>
+                    </div>
+
+                    <div class="guest-task-list">
+
+                        <!-- Dynamic data -->
+                        <div class="guest-task-row" th:each="departure : ${departures}">
+                            <div class="guest-task-info">
+                                <div class="room-box" th:text="${departure.roomNumber}">
+                                    402
+                                </div>
+
+                                <div>
+                                    <h3 th:text="${departure.guestName}"></h3>
+                                    <p>
+                                        <span th:text="${departure.roomType}"></span>
+                                        · Trạng thái:
+                                        <span th:text="${departure.status}"></span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <a th:href="@{/receptionist/check-out/{id}(id=${departure.id})}" class="btn-outline-main">
+                                TRẢ PHÒNG
+                            </a>
+                        </div>
+
+                        <!-- Static demo data -->
+                        <div class="guest-task-row" th:if="${departures == null}">
+                            <div class="guest-task-info">
+                                <div class="room-box">402</div>
+
+                                <div>
+                                    <h3>Phạm Khánh Linh</h3>
+                                    <p>Standard King · Trạng thái: Sẵn sàng</p>
+                                </div>
+                            </div>
+
+                            <a href="#" class="btn-outline-main">TRẢ PHÒNG</a>
+                        </div>
+
+                        <div class="guest-task-row" th:if="${departures == null}">
+                            <div class="guest-task-info">
+                                <div class="room-box">518</div>
+
+                                <div>
+                                    <h3>Hoàng Đức Minh</h3>
+                                    <p>Penthouse · Trạng thái: Yêu cầu trả muộn</p>
+                                </div>
+                            </div>
+
+                            <a href="#" class="btn-outline-main">TRẢ PHÒNG</a>
+                        </div>
+
+                        <div class="guest-task-row" th:if="${departures == null}">
+                            <div class="guest-task-info">
+                                <div class="room-box">211</div>
+
+                                <div>
+                                    <h3>Đỗ Thùy Dương</h3>
+                                    <p>Twin Room · Trạng thái: Sẵn sàng</p>
+                                </div>
+                            </div>
+
+                            <a href="#" class="btn-outline-main">TRẢ PHÒNG</a>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Notice Section -->
+            <div class="dashboard-notice-grid">
+
+                <div class="notice-dark">
+                    <div>
+                        <p>THÔNG BÁO HỆ THỐNG</p>
+                        <h2>Lịch bảo trì thang máy khu Tây sẽ diễn ra lúc 22:00 tối nay.</h2>
+                    </div>
+
+                    <a href="#">THÔNG BÁO CHO TẤT CẢ KHÁCH</a>
+                </div>
+
+                <div class="notice-light">
+                    <div>
+                        <p>BÀN GIAO CA</p>
+                        <h3>Đảm bảo phòng VIP 302 có hoa ly tươi trước khi khách đến lúc 15:00.</h3>
+                    </div>
+
+                    <span>
+                        <i class="bi bi-clock-history"></i>
+                        2 GIỜ TRƯỚC
                     </span>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div>
-                        <p class="stat-label">My rooms in progress</p>
-                        <h2>2</h2>
-                    </div>
-
-                    <span class="badge-custom badge-info">
-                        Active Tasks
-                    </span>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div>
-                        <p class="stat-label">Completed today</p>
-                        <h2>4</h2>
-                    </div>
-
-                    <span class="badge-custom badge-success">
-                        Daily Quota
-                    </span>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- LOWER DASHBOARD -->
-        <section class="row g-5 dashboard-section">
-
-            <!-- UNCLAIMED ROOMS -->
-            <div class="col-lg-6">
-
-                <div class="section-title-row">
-                    <h2>Unclaimed rooms</h2>
-                    <a href="#">Go to Room Pool</a>
-                </div>
-
-                <div class="room-card">
-                    <div>
-                        <h3>Room 402</h3>
-                        <p>Floor 4 • Suite</p>
-                    </div>
-                    <span>45m since checkout</span>
-                </div>
-
-                <div class="room-card">
-                    <div>
-                        <h3>Room 305</h3>
-                        <p>Floor 3 • Double Room</p>
-                    </div>
-                    <span>1h since checkout</span>
-                </div>
-
-                <div class="room-card">
-                    <div>
-                        <h3>Room 512</h3>
-                        <p>Floor 5 • Penthouse</p>
-                    </div>
-                    <span>2h since checkout</span>
-                </div>
-
-            </div>
-
-            <!-- MY TASKS -->
-            <div class="col-lg-6">
-
-                <div class="section-title-row">
-                    <h2>My tasks today</h2>
-                    <a href="#">View My Tasks</a>
-                </div>
-
-                <div class="task-card">
-                    <div>
-                        <h3>Room 408</h3>
-                        <p>Assigned 8:00 AM</p>
-                    </div>
-
-                    <div class="task-status">
-                        <span class="dot"></span>
-                        <span>Cleaning</span>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </div>
-                </div>
-
-                <div class="task-card">
-                    <div>
-                        <h3>Room 411</h3>
-                        <p>Assigned 8:30 AM</p>
-                    </div>
-
-                    <div class="task-status">
-                        <span class="dot"></span>
-                        <span>Cleaning</span>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </div>
                 </div>
 
             </div>
@@ -222,28 +359,7 @@
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="staff-footer">
-
-        <div class="footer-brand">
-            NordicStay
-        </div>
-
-        <div class="footer-links">
-            <a href="#">Support</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Contact Admin</a>
-        </div>
-
-        <div class="footer-copy">
-            © 2024 NordicStay Operations.
-        </div>
-
-    </footer>
-
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

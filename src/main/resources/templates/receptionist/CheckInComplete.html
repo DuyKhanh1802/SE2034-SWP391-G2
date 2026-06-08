@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoàn tất nhận phòng</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/receptionist/CheckInComplete.css}">
+</head>
+
+<body>
+
+<div class="complete-page">
+
+    <div class="complete-card">
+
+        <div class="complete-label">HOÀN TẤT NHẬN PHÒNG</div>
+
+        <h1>Đã phân phòng</h1>
+
+        <p class="guest-info"
+           th:if="${roomCodes != null and !#lists.isEmpty(roomCodes)}"
+           th:text="${roomCodes[0].roomTypeName} + ' - Phòng ' + ${roomCodes[0].roomNumber} + ' • Khách hàng: ' + ${roomCodes[0].guestName}">
+            Deluxe - Phòng 102 • Khách hàng: Thu Hiền
+        </p>
+
+        <div class="divider"></div>
+
+        <div class="room-code-list">
+
+            <div class="room-code-item" th:each="item : ${roomCodes}">
+
+                <div class="room-title">
+                    <span th:text="'Phòng ' + ${item.roomNumber}">Phòng 102</span>
+                    <span th:text="${item.roomTypeName}">DELUXE</span>
+                </div>
+
+                <div class="access-label">MÃ TRUY CẬP PHÒNG</div>
+
+                <div class="access-code" th:text="${item.roomCode}">
+                    KDX7MDLA
+                </div>
+
+                <div class="expires-text">
+                    Hết hạn:
+                    <span th:text="${item.roomCodeExpiresAt}">
+                        2026-06-08T17:00:00Z
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="qr-placeholder">
+            <i class="bi bi-qr-code"></i>
+        </div>
+
+        <div class="qr-text">QUÉT MÃ ĐỂ ĐỒNG BỘ KHÓA ĐIỆN TỬ</div>
+
+        <div class="divider"></div>
+
+        <div class="actions">
+            <button type="button" class="btn-main">
+                <i class="bi bi-printer"></i>
+                IN PHIẾU NHẬN PHÒNG
+            </button>
+
+            <button type="button" class="btn-outline">
+                <i class="bi bi-envelope"></i>
+                GỬI EMAIL CHO KHÁCH
+            </button>
+        </div>
+
+        <a th:href="@{/receptionist/bookings}" class="done-link">
+            Hoàn tất
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -25,15 +25,16 @@ public class SpringSecurity {
                                 "/auth/**",
                                 "/page/**",
                                 "/fragment/**")
-                                .permitAll()
+                        .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")
+                        .loginProcessingUrl("/auth/login")
                         .successHandler(cusAuthenticationSuccessHandler())
-                        .failureUrl("/auth/login")
+                        .failureUrl("/auth/login?error")
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -42,7 +43,13 @@ public class SpringSecurity {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
-                .csrf(Customizer.withDefaults());
+                .csrf(csrf -> csrf.ignoringRequestMatchers(
+                        "/auth/forgot-password",
+                        "/auth/verify-reset-otp",
+                        "/auth/reset-password",
+                        "/auth/register"
+                ));
+
         return http.build();
     }
 
