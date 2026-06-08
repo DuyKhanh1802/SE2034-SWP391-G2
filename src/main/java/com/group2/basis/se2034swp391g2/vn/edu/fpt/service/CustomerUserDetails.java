@@ -8,8 +8,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class CustomerUserDetails implements UserDetails {
@@ -26,10 +24,10 @@ public class CustomerUserDetails implements UserDetails {
                     // 1. Lấy đối tượng Role thật từ bảng trung gian
                     Role role = userRole.getRole();
 
-                    // 2. Lấy giá trị chuỗi của Enum RoleName (Ví dụ: "ADMIN", "MANAGER", "GUEST")
+                    // 2. Lấy giá trị chuỗi của Enum RoleName (Ví dụ: "SYSTEM_ADMIN", "MANAGER", "GUEST")
                     String roleString = role.getRoleName().name();
 
-                    // 3. Ghép chuỗi tạo thành quyền hoàn chỉnh cho Spring Security (Ví dụ: "ROLE_ADMIN")
+                    // 3. Ghép chuỗi tạo thành quyền hoàn chỉnh cho Spring Security (Ví dụ: "ROLE_SYSTEM_ADMIN")
                     return new SimpleGrantedAuthority("ROLE_" + roleString);
                 })
                 .collect(Collectors.toList());
@@ -52,7 +50,7 @@ public class CustomerUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return Boolean.TRUE.equals(user.getIsActive());
     }
 
     @Override
@@ -62,6 +60,10 @@ public class CustomerUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return Boolean.TRUE.equals(user.getIsActive());
+    }
+
+    public User getUser() {
+        return user;
     }
 }
