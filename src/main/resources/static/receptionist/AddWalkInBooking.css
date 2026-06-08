@@ -549,3 +549,47 @@ body {
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+.phone-combined {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+    border-bottom: 1px solid var(--bg-border);
+}
+
+.form-group-line .phone-combined input {
+    border: none !important;
+    border-bottom: none !important;
+    background: transparent;
+    outline: none;
+    height: 38px;
+    padding: 6px 0 9px;
+    font-family: var(--font-body);
+    font-size: 14px;
+}
+
+.form-group-line .phone-combined .phone-code-display {
+    width: 64px !important;
+    min-width: 64px;
+    max-width: 64px;
+    flex: 0 0 64px;
+    font-weight: 700;
+    color: var(--black);
+    cursor: default;
+}
+
+.form-group-line .phone-combined .phone-number-only {
+    width: auto !important;
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--text-main);
+}
+
+.form-group-line .phone-combined .phone-number-only::placeholder {
+    color: #a7a7a7;
+}
+
+.phone-combined:focus-within {
+    border-bottom-color: var(--black);
+}

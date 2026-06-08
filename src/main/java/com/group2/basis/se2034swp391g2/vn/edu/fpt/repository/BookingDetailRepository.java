@@ -14,24 +14,25 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
     boolean existsByRoomCode(String roomCode);
 
     @Query("""
-            SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingDetailResponse(
-                b.id,
-                b.bookingReference,
-                CONCAT(b.guestFirstName, ' ', b.guestLastName),
-                r.roomNumber,
-                rt.name,
-                bd.roomCode,
-                bd.roomCodeExpiresAt,
-                bd.checkInDate,
-                bd.checkOutDate
-            )
-            FROM BookingDetail bd
-            JOIN bd.booking b
-            JOIN bd.room r
-            JOIN bd.roomType rt
-            WHERE b.id = :bookingId
-            ORDER BY r.roomNumber
-            """)
+        SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingDetailResponse(
+            bd.id,
+            b.id,
+            b.bookingReference,
+            CONCAT(b.guestFirstName, ' ', b.guestLastName),
+            r.roomNumber,
+            rt.name,
+            bd.roomCode,
+            bd.roomCodeExpiresAt,
+            bd.checkInDate,
+            bd.checkOutDate
+        )
+        FROM BookingDetail bd
+        JOIN bd.booking b
+        JOIN bd.room r
+        JOIN bd.roomType rt
+        WHERE b.id = :bookingId
+        ORDER BY r.roomNumber
+        """)
     List<BookingDetailResponse> findRoomCodesByBookingId(@Param("bookingId") Long bookingId);
 
     @Query("""

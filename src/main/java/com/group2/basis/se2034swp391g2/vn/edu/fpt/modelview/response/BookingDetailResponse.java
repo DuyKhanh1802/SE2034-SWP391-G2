@@ -12,7 +12,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingDetailResponse {
-
+    private Long bookingDetailId;
+    
     private Long bookingId;
 
     private String bookingReference;

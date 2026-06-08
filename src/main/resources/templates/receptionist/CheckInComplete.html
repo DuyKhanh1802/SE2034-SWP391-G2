@@ -28,6 +28,16 @@
 
         <div class="divider"></div>
 
+        <div th:if="${successMessage}" class="alert alert-success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
         <div class="room-code-list">
 
             <div class="room-code-item" th:each="item : ${roomCodes}">
@@ -68,10 +78,17 @@
                 IN PHIẾU NHẬN PHÒNG
             </button>
 
-            <button type="button" class="btn-outline">
-                <i class="bi bi-envelope"></i>
-                GỬI EMAIL CHO KHÁCH
-            </button>
+            <form th:if="${roomCodes != null and !#lists.isEmpty(roomCodes)}"
+                  th:action="@{'/receptionist/bookings/' + ${roomCodes[0].bookingId} + '/send-room-codes'}"
+                  method="post">
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <button type="submit" class="btn-outline">
+                    <i class="bi bi-envelope"></i>
+                    GỬI EMAIL CHO KHÁCH
+                </button>
+            </form>
         </div>
 
         <a th:href="@{/receptionist/bookings}" class="done-link">

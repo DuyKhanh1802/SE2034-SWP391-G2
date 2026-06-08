@@ -141,4 +141,45 @@ public class BookingController {
         return "redirect:/receptionist/bookings/" + checkedInBookingId + "/check-in-complete";
     }
 
+    @PostMapping("/booking-details/{bookingDetailId}/send-room-code")
+    public String sendRoomCode(@PathVariable Long bookingDetailId,
+                               @RequestParam Long bookingId,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.sendRoomCodeEmail(bookingDetailId);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Room code has been sent to guest email."
+            );
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/receptionist/bookings/" + bookingId + "/check-in-complete";
+    }
+
+    @PostMapping("/{bookingId}/send-room-codes")
+    public String sendRoomCodes(@PathVariable Long bookingId,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.sendRoomCodesEmail(bookingId);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Room code email has been sent to the guest."
+            );
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/receptionist/bookings/" + bookingId + "/check-in-complete";
+    }
+
 }

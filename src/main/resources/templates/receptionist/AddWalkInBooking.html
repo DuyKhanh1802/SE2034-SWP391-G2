@@ -226,10 +226,27 @@
 
                                 <div class="form-group-line">
                                     <label>SỐ ĐIỆN THOẠI</label>
-                                    <input type="tel"
-                                           th:field="*{phoneNumber}"
-                                           placeholder="Ví dụ: 0382271507"
-                                           required>
+
+                                    <div class="phone-combined">
+                                        <input type="text"
+                                               id="phoneCode"
+                                               class="phone-code-display"
+                                               readonly
+                                               placeholder="+84">
+
+                                        <input type="tel"
+                                               id="phoneNumberOnly"
+                                               class="phone-number-only"
+                                               placeholder="Ví dụ: 0382271507 hoặc 382271507"
+                                               maxlength="15"
+                                               pattern="[0-9]{6,15}"
+                                               inputmode="numeric"
+                                               required>
+
+                                        <input type="hidden"
+                                               th:field="*{phoneNumber}"
+                                               id="phoneNumber">
+                                    </div>
                                 </div>
 
                                 <div class="form-group-line">
@@ -258,11 +275,12 @@
 
                                 <div class="form-group-line">
                                     <label>QUỐC GIA</label>
-                                    <select th:field="*{countryId}" required>
-                                        <option value="" disabled selected>Chọn quốc gia</option>
+                                    <select th:field="*{countryId}" id="countryId" required>
+                                        <option value="" disabled>Chọn quốc gia</option>
                                         <option th:each="country : ${countries}"
                                                 th:value="${country.id}"
-                                                th:text="${country.countryName}">
+                                                th:text="${country.countryName}"
+                                                th:data-phone-code="${country.phoneCode}">
                                         </option>
                                     </select>
                                 </div>
@@ -335,6 +353,11 @@
         const taxAmount = document.getElementById("taxAmount");
         const totalPrice = document.getElementById("totalPrice");
 
+        const countrySelect = document.getElementById("countryId");
+        const phoneCodeInput = document.getElementById("phoneCode");
+        const phoneNumberOnlyInput = document.getElementById("phoneNumberOnly");
+        const phoneNumberHiddenInput = document.getElementById("phoneNumber");
+
         function formatVnd(amount) {
             return new Intl.NumberFormat("vi-VN").format(amount) + " VND";
         }
@@ -376,6 +399,38 @@
             totalPrice.textContent = formatVnd(total);
         }
 
+        function updatePhoneCode() {
+            if (!countrySelect || !phoneCodeInput) {
+                return;
+            }
+
+            const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+            const phoneCode = selectedOption ? selectedOption.getAttribute("data-phone-code") : "";
+
+            phoneCodeInput.value = phoneCode || "";
+            updateFullPhoneNumber();
+        }
+
+        function updateFullPhoneNumber() {
+            if (!phoneCodeInput || !phoneNumberOnlyInput || !phoneNumberHiddenInput) {
+                return;
+            }
+
+            const code = phoneCodeInput.value.trim();
+
+            let number = phoneNumberOnlyInput.value
+                .trim()
+                .replace(/\s+/g, "")
+                .replace(/-/g, "");
+
+
+            if (code.startsWith("+")) {
+                number = number.replace(/^0+/, "");
+            }
+
+            phoneNumberHiddenInput.value = code + number;
+        }
+
         roomCheckboxes.forEach(function (checkbox) {
             checkbox.addEventListener("change", updateSummary);
         });
@@ -383,7 +438,16 @@
         checkInInput.addEventListener("change", updateSummary);
         checkOutInput.addEventListener("change", updateSummary);
 
+        if (countrySelect) {
+            countrySelect.addEventListener("change", updatePhoneCode);
+        }
+
+        if (phoneNumberOnlyInput) {
+            phoneNumberOnlyInput.addEventListener("input", updateFullPhoneNumber);
+        }
+
         updateSummary();
+        updatePhoneCode();
     });
 </script>
 

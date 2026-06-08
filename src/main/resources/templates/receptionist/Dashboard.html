@@ -17,6 +17,9 @@
     <!-- Material Symbols: dùng cho icon giường, dashboard, receipt... giống mẫu -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" th:href="@{/receptionist/Dashboard.css}">
 </head>
@@ -78,91 +81,8 @@
 <!-- MAIN CONTENT -->
 <main class="main-content">
 
-    <!-- TOPBAR -->
-<!--    <header class="topbar">-->
-<!--        <div class="topbar-left">-->
-<!--            <h2>Tổng quan</h2>-->
 
-<!--            <nav class="topbar-tabs">-->
-<!--                <a href="#" class="active">Tổng quan</a>-->
-<!--                <a href="#">Báo cáo</a>-->
-<!--                <a href="#">Kho</a>-->
-<!--            </nav>-->
-<!--        </div>-->
-
-<!--        <div class="topbar-right">-->
-<!--            <div class="search-box">-->
-<!--                <i class="bi bi-search"></i>-->
-<!--                <input type="text" placeholder="Tìm kiếm khách...">-->
-<!--            </div>-->
-
-<!--            <button class="icon-btn" type="button">-->
-<!--                <i class="bi bi-bell"></i>-->
-<!--            </button>-->
-
-<!--            <button class="icon-btn" type="button">-->
-<!--                <i class="bi bi-question-circle"></i>-->
-<!--            </button>-->
-
-<!--            <a th:href="@{/receptionist/check-in/new}" class="quick-btn">-->
-<!--                NHẬN PHÒNG NHANH-->
-<!--            </a>-->
-<!--        </div>-->
-<!--    </header>-->
-
-    <header th:fragment="staffHeader" class="topbar d-flex justify-content-between align-items-center">
-        <h4 th:text="${pageTitle != null ? pageTitle : 'DASHBOARD'}">DASHBOARD</h4>
-
-        <div class="top-icons">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <i class="fa-regular fa-bell"></i>
-
-            <!-- AVATAR DROPDOWN -->
-            <div class="dropdown">
-                <button class="profile-dropdown-btn dropdown-toggle"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">
-
-                    <img th:src="${currentUser != null and currentUser.avatarUrl != null
-                            ? currentUser.avatarUrl
-                            : 'https://i.pravatar.cc/40'}"
-                         alt="profile">
-
-                    <span th:text="${currentUser != null ? currentUser.firstName : 'Account'}">
-                    Tài khoản
-                </span>
-                </button>
-
-                <ul class="dropdown-menu dropdown-menu-end profile-menu">
-                    <li>
-                        <a class="dropdown-item" th:href="@{/profile/edit}">
-                            <i class="fa-regular fa-user me-2"></i>
-                            Cập nhật profile
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="fa-regular fa-bell me-2"></i>
-                            Thông báo
-                        </a>
-                    </li>
-
-                    <li><hr class="dropdown-divider"></li>
-
-                    <li>
-                        <form th:action="@{/auth/logout}" method="post" class="m-0">
-                            <button type="submit" class="dropdown-item text-danger">
-                                <i class="fa-solid fa-right-from-bracket me-2"></i>
-                                Đăng xuất
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </header>
+    <div th:replace="~{fragment/staff/header :: staffHeader}"></div>
 
     <section class="content-wrapper">
 

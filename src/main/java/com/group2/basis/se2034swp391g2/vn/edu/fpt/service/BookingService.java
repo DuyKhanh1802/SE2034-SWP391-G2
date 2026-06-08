@@ -57,17 +57,20 @@ public class BookingService {
 
     private final UserRepository userRepository;
     private final CountryRepository countryRepository;
-
+    private final MailService mailService;
+    
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
                           UserRepository userRepository,
-                          CountryRepository countryRepository) {
+                          CountryRepository countryRepository,
+                          MailService mailService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingDetailRepository = bookingDetailRepository;
         this.userRepository = userRepository;
         this.countryRepository = countryRepository;
+        this.mailService = mailService;
     }
 
     public List<BookingResponse> searchBookings(String keyword,
@@ -520,6 +523,123 @@ public class BookingService {
     public Page<BookingResponse> getConfirmedBookingsForCheckIn(String keyword, Pageable pageable) {
         String searchKeyword = keyword == null ? "" : keyword.trim();
         return bookingRepository.findConfirmedBookingsForCheckIn(searchKeyword, pageable);
+    }
+
+    @Transactional
+    public void sendRoomCodeEmail(Long bookingDetailId) {
+        if (bookingDetailId == null) {
+            throw new IllegalArgumentException("Booking detail id is required.");
+        }
+
+        BookingDetail detail = bookingDetailRepository.findById(bookingDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking detail not found."));
+
+        Booking booking = detail.getBooking();
+
+        if (booking == null) {
+            throw new IllegalArgumentException("Booking not found.");
+        }
+
+        if (booking.getGuestEmail() == null || booking.getGuestEmail().isBlank()) {
+            throw new IllegalArgumentException("Guest email is missing.");
+        }
+
+        if (detail.getRoom() == null) {
+            throw new IllegalArgumentException("Room has not been assigned.");
+        }
+
+        if (detail.getRoomCode() == null || detail.getRoomCode().isBlank()) {
+            detail.setRoomCode(generateRoomCode());
+        }
+
+        if (detail.getRoomCodeExpiresAt() == null) {
+            detail.setRoomCodeExpiresAt(generateRoomCodeExpiresAt(detail.getCheckOutDate()));
+        }
+
+        bookingDetailRepository.save(detail);
+
+        String guestName = (booking.getGuestFirstName() + " " + booking.getGuestLastName()).trim();
+
+        mailService.sendRoomCodeEmail(
+                booking.getGuestEmail(),
+                guestName,
+                booking.getBookingReference(),
+                detail.getRoom().getRoomNumber(),
+                detail.getRoomCode(),
+                String.valueOf(detail.getCheckInDate()),
+                String.valueOf(detail.getCheckOutDate())
+        );
+    }
+
+    @Transactional
+    public void sendRoomCodesEmail(Long bookingId) {
+        if (bookingId == null) {
+            throw new IllegalArgumentException("Booking id is required.");
+        }
+
+        List<BookingDetail> details = bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+
+        if (details == null || details.isEmpty()) {
+            throw new IllegalArgumentException("No room code found for this booking.");
+        }
+
+        Booking booking = details.get(0).getBooking();
+
+        if (booking == null) {
+            throw new IllegalArgumentException("Booking not found.");
+        }
+
+        if (booking.getGuestEmail() == null || booking.getGuestEmail().isBlank()) {
+            throw new IllegalArgumentException("Guest email is missing.");
+        }
+
+        StringBuilder emailContent = new StringBuilder();
+        emailContent.append("Your room access information:\n\n");
+
+        for (BookingDetail detail : details) {
+            if (detail.getRoom() == null) {
+                throw new IllegalArgumentException("Room has not been assigned.");
+            }
+
+            if (detail.getRoomCode() == null || detail.getRoomCode().isBlank()) {
+                detail.setRoomCode(generateRoomCode());
+            }
+
+            if (detail.getRoomCodeExpiresAt() == null) {
+                detail.setRoomCodeExpiresAt(generateRoomCodeExpiresAt(detail.getCheckOutDate()));
+            }
+
+            emailContent
+                    .append("Room Number: ")
+                    .append(detail.getRoom().getRoomNumber())
+                    .append("\n")
+                    .append("Room Type: ")
+                    .append(detail.getRoomType().getName())
+                    .append("\n")
+                    .append("Room Code: ")
+                    .append(detail.getRoomCode())
+                    .append("\n")
+                    .append("Check-in Date: ")
+                    .append(detail.getCheckInDate())
+                    .append("\n")
+                    .append("Check-out Date: ")
+                    .append(detail.getCheckOutDate())
+                    .append("\n")
+                    .append("Expires At: ")
+                    .append(detail.getRoomCodeExpiresAt())
+                    .append("\n\n");
+        }
+
+        bookingDetailRepository.saveAll(details);
+
+        String guestName = (booking.getGuestFirstName() + " " + booking.getGuestLastName()).trim();
+
+        mailService.sendRoomCodesEmail(
+                booking.getGuestEmail(),
+                guestName,
+                booking.getBookingReference(),
+                emailContent.toString()
+        );
     }
 
 }

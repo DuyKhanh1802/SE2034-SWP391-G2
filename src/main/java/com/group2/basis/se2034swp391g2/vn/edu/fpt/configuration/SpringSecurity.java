@@ -18,7 +18,8 @@ public class SpringSecurity {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                        // 1. Nhóm các đường dẫn Public (Ai cũng vào được)
+
+                        // 1. Public URLs
                         .requestMatchers(
                                 "/",
                                 "/home",
@@ -32,14 +33,14 @@ public class SpringSecurity {
                                 "/images/**",
                                 "/admin/Admin.css",
                                 "/Admin/**",
-                                "/profile/**",   // Đã gộp /profile/** vào đây
-                                "/guest/**"      // Đã gộp /guest/** vào đây
+                                "/profile/**",
+                                "/guest/**"
                         ).permitAll()
 
-                        // 2. Nhóm quyền SYSTEM_ADMIN
+                        // 2. SYSTEM_ADMIN
                         .requestMatchers("/admin/account/**").hasRole("SYSTEM_ADMIN")
 
-                        // 3. Nhóm quyền HOTEL_ADMIN
+                        // 3. HOTEL_ADMIN
                         .requestMatchers(
                                 "/admin/dashboard",
                                 "/admin/list_room/**",
@@ -49,12 +50,12 @@ public class SpringSecurity {
                                 "/admin/promotions/**"
                         ).hasRole("HOTEL_ADMIN")
 
-                        // 4. Các quyền khác
+                        // 4. Other roles
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
 
-                        // 5. Mọi request khác đều phải đăng nhập
+                        // 5. Other requests need login
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -70,6 +71,7 @@ public class SpringSecurity {
                         .deleteCookies("JSESSIONID")
                 )
                 .csrf(Customizer.withDefaults());
+
         return http.build();
     }
 
@@ -81,22 +83,21 @@ public class SpringSecurity {
             if (roles.contains("ROLE_SYSTEM_ADMIN")) {
                 response.sendRedirect("/admin/account");
             } else if (roles.contains("ROLE_HOTEL_ADMIN")) {
-            Set<String> roles =
-                    AuthorityUtils.authorityListToSet(authentication.getAuthorities());
-            if(roles.contains("ROLE_ADMIN")){
                 response.sendRedirect("/admin/dashboard");
-            } else if(roles.contains("ROLE_RECEPTIONIST")){
+            } else if (roles.contains("ROLE_ADMIN")) {
+                response.sendRedirect("/admin/dashboard");
+            } else if (roles.contains("ROLE_RECEPTIONIST")) {
                 response.sendRedirect("/receptionist/dashboard");
             } else if (roles.contains("ROLE_MANAGER")) {
                 response.sendRedirect("/manager/dashboard");
-            }else{
+            } else {
                 response.sendRedirect("/home");
             }
         };
-   }
+    }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

@@ -42,5 +42,66 @@ public class MailService {
         }
     }
 
+    public void sendRoomCodeEmail(String toEmail,
+                                  String guestName,
+                                  String bookingReference,
+                                  String roomNumber,
+                                  String roomCode,
+                                  String checkInDate,
+                                  String checkOutDate) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("ViHotel Hanoi - Your Room Code");
+
+            message.setText(
+                    "Hello " + guestName + ",\n\n" +
+                            "Welcome to ViHotel Hanoi.\n\n" +
+                            "Your booking reference is: " + bookingReference + "\n" +
+                            "Room Number: " + roomNumber + "\n" +
+                            "Your Room Code: " + roomCode + "\n\n" +
+                            "Check-in Date: " + checkInDate + "\n" +
+                            "Check-out Date: " + checkOutDate + "\n\n" +
+                            "Please keep this code private. You can use this room code to access the guest portal during your stay.\n\n" +
+                            "ViHotel Hanoi Team"
+            );
+
+            mailSender.send(message);
+
+        } catch (MailException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send room code email: " + e.getMessage(), e);
+        }
+    }
+
+    public void sendRoomCodesEmail(String toEmail,
+                                   String guestName,
+                                   String bookingReference,
+                                   String emailContent) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("ViHotel Hanoi - Your Room Access Code");
+            message.setText(
+                    "Hello " + guestName + ",\n\n" +
+                            "Welcome to ViHotel Hanoi.\n\n" +
+                            "Your booking reference is: " + bookingReference + "\n\n" +
+                            emailContent + "\n\n" +
+                            "Please keep your room code private. You can use it to access the guest portal during your stay.\n\n" +
+                            "ViHotel Hanoi Team"
+            );
+
+            mailSender.send(message);
+
+        } catch (MailException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send room code email: " + e.getMessage(), e);
+        }
+    }
+
     
 }
