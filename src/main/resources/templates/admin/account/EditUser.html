@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/system_admin/system-admin-layout}">
+
+<body>
+
+<main layout:fragment="content">
+    <section class="page-title">
+        <h1>Chỉnh sửa người dùng</h1>
+        <p>Thực hiện các thao tác quản trị tài khoản: đặt lại mật khẩu, bật hoặc tắt tài khoản và thay đổi vai trò.</p>
+    </section>
+
+    <section class="admin-card">
+        <div class="detail-header">
+            <a th:href="@{/admin/account}" class="btn-admin-outline">
+                <i class="fa-solid fa-arrow-left"></i>
+                Quay lại
+            </a>
+        </div>
+
+        <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}">
+            Đã cập nhật thành công.
+        </div>
+
+        <div th:if="${temporaryPassword}" class="admin-alert warning">
+            Mật khẩu tạm thời:
+            <strong th:text="${temporaryPassword}">Vh@Temp123</strong>
+        </div>
+
+        <div class="user-summary">
+            <div class="user-avatar small">
+                <i class="fa-regular fa-user"></i>
+            </div>
+            <div>
+                <span>ĐANG CHỈNH SỬA</span>
+                <h3 th:text="${displayName}">Nguyễn Văn A</h3>
+                <p>
+                    <span th:text="${user.email != null ? user.email : 'Chưa có email'}">email@example.com</span>
+                    <span>•</span>
+                    <span th:text="${roleLabel}">Quản trị hệ thống</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="settings-grid">
+        <div class="admin-card settings-card">
+            <div class="section-header">
+                <span>BẢO MẬT</span>
+                <h3>Đặt lại mật khẩu</h3>
+            </div>
+            <p class="settings-note">Tạo mật khẩu tạm thời mới cho tài khoản này. Mật khẩu chỉ hiển thị một lần sau khi đặt lại.</p>
+
+            <form th:action="@{/admin/account/{id}/reset-password(id=${user.id})}" method="post">
+                <button type="submit" class="btn-admin-primary">
+                    <i class="fa-solid fa-key"></i>
+                    Đặt lại mật khẩu
+                </button>
+            </form>
+        </div>
+
+        <div class="admin-card settings-card">
+            <div class="section-header">
+                <span>TRẠNG THÁI TÀI KHOẢN</span>
+                <h3>Bật hoặc tắt tài khoản</h3>
+            </div>
+            <p class="settings-note">
+                Trạng thái hiện tại:
+                <strong class="status-text"
+                        th:classappend="${user.isActive} ? ' text-success' : ' text-danger'"
+                        th:text="${user.isActive} ? 'Đang hoạt động' : 'Đã vô hiệu hóa'">
+                    Đang hoạt động
+                </strong>
+            </p>
+
+            <form th:action="@{/admin/account/{id}/edit(id=${user.id})}" method="post">
+                <input type="hidden" name="isActive" th:value="${!user.isActive}">
+                <button type="submit"
+                        class="btn-admin-primary"
+                        th:classappend="${canDeactivateSelf} ? ' danger is-disabled' : (user.isActive ? ' danger' : '')"
+                        th:disabled="${canDeactivateSelf}"
+                        th:title="${canDeactivateSelf} ? 'Không thể vô hiệu hóa chính tài khoản đang đăng nhập' : ''">
+                    <i class="fa-solid" th:classappend="${user.isActive} ? ' fa-user-slash' : ' fa-user-check'"></i>
+                    <span th:text="${user.isActive} ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản'">
+                        Vô hiệu hóa tài khoản
+                    </span>
+                </button>
+            </form>
+
+            <p th:if="${canDeactivateSelf}" class="settings-note mt-3">
+                Không thể vô hiệu hóa chính tài khoản đang đăng nhập.
+            </p>
+        </div>
+
+        <div class="admin-card settings-card wide">
+            <div class="section-header">
+                <span>PHÂN QUYỀN</span>
+                <h3>Thay đổi vai trò</h3>
+            </div>
+
+            <form th:action="@{/admin/account/{id}/edit(id=${user.id})}" th:object="${updateRequest}" method="post" class="role-form">
+                <label for="roleName">Vai trò người dùng</label>
+                <select id="roleName" th:field="*{roleName}">
+                    <option value="">Chưa gán vai trò</option>
+                    <option th:each="roleOption : ${roleOptions}"
+                            th:value="${roleOption.key}"
+                            th:text="${roleOption.value}">
+                        Quản trị hệ thống
+                    </option>
+                </select>
+
+                <button type="submit" class="btn-admin-primary">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Lưu vai trò
+                </button>
+            </form>
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

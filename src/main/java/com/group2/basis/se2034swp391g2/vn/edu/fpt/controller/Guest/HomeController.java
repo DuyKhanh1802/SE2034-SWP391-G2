@@ -1,5 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Guest;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User; // Nhớ import model User của bạn
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,8 +11,17 @@ import java.util.List;
 @Controller
 public class HomeController {
 
-    @GetMapping("/home")
-    public String index(Model model) {
+    // Map cả 2 đường dẫn "/" và "/home" vào hàm này
+    @GetMapping({"/", "/home"})
+    public String index(Model model, @AuthenticationPrincipal User user) {
+
+        // 1. Xử lý User để tránh lỗi NullPointerException khi khách vãng lai truy cập
+        if (user != null) {
+            model.addAttribute("email", user.getEmail());
+        } else {
+            model.addAttribute("email", "Guest");
+        }
+
         // 2. Dữ liệu Recommendation Service mẫu
         List<ServiceDto> recs = new ArrayList<>();
         recs.add(new ServiceDto("Art & Drinks", "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=600", "Handcrafted cocktails."));
@@ -31,11 +42,12 @@ public class HomeController {
         dining.add(new RestaurantDto(3L, "CHAAT", "Award-winning and refined take on India's dynamic street food.", "https://images.unsplash.com/photo-1585938338392-50a59970d2ee?q=80&w=600"));
         model.addAttribute("diningServices", dining);
 
+        // Lưu ý: Đảm bảo đường dẫn này khớp với thư mục file HTML của bạn (guest/HomePage hay page/HomePage)
         return "page/HomePage";
     }
 }
 
-// Định nghĩa nhanh các DTO class để nhận dữ liệu (Bạn thay thế bằng Entity thật của bạn)
+// Định nghĩa nhanh các DTO class để nhận dữ liệu
 class ServiceDto {
     public String name; public String imageUrl; public String shortDescription;
     public ServiceDto(String n, String i, String s) { this.name = n; this.imageUrl = i; this.shortDescription = s; }
