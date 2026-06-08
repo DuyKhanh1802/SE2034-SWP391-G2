@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <body>
-<header th:fragment="header" class="audo-header d-flex align-items-center justify-content-between px-4 border-bottom">
 
-    <!-- Mobile toggle -->
-    <button id="sidebarToggle" class="btn btn-link text-dark d-md-none p-0">
-        <i class="fa fa-bars fa-lg"></i>
-    </button>
+<header th:fragment="header"
+        class="topbar d-flex justify-content-between align-items-center">
 
-    <!-- Page title -->
-    <h6 class="mb-0 fw-semibold" th:text="${pageTitle} ?: 'Dashboard'">Dashboard</h6>
+    <h4 th:text="${pageTitle}">
+        Dashboard
+    </h4>
 
-    <!-- Account info -->
-    <div class="d-flex align-items-center gap-3">
-        <span class="audo-label-caps text-secondary d-none d-md-inline"
-              th:text="${session.account?.fullName}">Staff Name</span>
-        <i class="fa fa-user-circle fa-lg text-secondary"></i>
+    <div class="top-icons">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <i class="fa-regular fa-bell"></i>
+
+        <i class="fa-regular fa-user"></i>
+
     </div>
 
 </header>
+
 </body>
+
 </html>
