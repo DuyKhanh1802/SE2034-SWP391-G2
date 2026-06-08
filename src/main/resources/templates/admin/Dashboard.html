@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -15,47 +14,74 @@
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" th:href="@{/Admin/Dashboard.css}">
+    <link rel="stylesheet" th:href="@{/admin/Dashboard.css}">
 </head>
+
 <body>
 
 <div class="dashboard-wrapper d-flex">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-        <div class="logo">
-            NORDIC STAY
+        <div>
+            <div class="logo">
+                NORDIC STAY
+            </div>
+
+            <ul class="menu list-unstyled">
+                <li class="active">
+                    <a th:href="@{/admin/dashboard}">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/admin/rooms}">
+                        <i class="fa-solid fa-building"></i>
+                        <span>Properties</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/admin/staff}">
+                        <i class="fa-solid fa-id-badge"></i>
+                        <span>Staff</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/admin/services}">
+                        <i class="fa-solid fa-bell-concierge"></i>
+                        <span>Services</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/admin/incidents}">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Incidents</span>
+                    </a>
+                </li>
+            </ul>
         </div>
 
-        <ul class="menu list-unstyled">
-            <li class="active">
-                <i class="fa-solid fa-building"></i>
-                <span>Properties</span>
-            </li>
+        <!-- CLICK TO EDIT PROFILE -->
+        <a class="sidebar-user text-decoration-none" th:href="@{/profile/edit}">
+            <img th:src="${currentUser != null and currentUser.avatarUrl != null 
+                        ? currentUser.avatarUrl 
+                        : 'https://i.pravatar.cc/50'}"
+                 alt="admin">
 
-            <li>
-                <i class="fa-solid fa-id-badge"></i>
-                <span>Staff</span>
-            </li>
-
-            <li>
-                <i class="fa-solid fa-bell-concierge"></i>
-                <span>Services</span>
-            </li>
-
-            <li>
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>Incidents</span>
-            </li>
-        </ul>
-
-        <div class="sidebar-user">
-            <img src="https://i.pravatar.cc/50" alt="admin">
             <div>
-                <h6>SYSTEM ADMIN</h6>
+                <h6 th:text="${currentUser != null 
+                            ? currentUser.firstName + ' ' + currentUser.lastName 
+                            : 'SYSTEM ADMIN'}">
+                    SYSTEM ADMIN
+                </h6>
                 <p>Admin Portal</p>
             </div>
-        </div>
+        </a>
     </aside>
 
 
@@ -63,20 +89,15 @@
     <main class="main-content flex-grow-1">
 
         <!-- TOPBAR -->
-        <header class="topbar d-flex justify-content-between align-items-center">
-            <h4>ADMIN DASHBOARD</h4>
-
-            <div class="top-icons">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <i class="fa-regular fa-bell"></i>
-                <img src="https://i.pravatar.cc/40" alt="profile">
-            </div>
-        </header>
+        <div th:replace="~{fragment/staff/header :: staffHeader}"></div>
 
 
         <!-- WELCOME -->
         <section class="welcome-section">
-            <h1>Morning, Admin.</h1>
+            <h1>
+                Morning,
+                <span th:text="${currentUser != null ? currentUser.firstName : 'Admin'}">Admin</span>.
+            </h1>
             <p>System operational across all property sectors.</p>
         </section>
 
@@ -95,7 +116,6 @@
                     <p>2 inactive accounts</p>
                 </div>
             </div>
-
 
             <div class="stat-card">
                 <div class="card-top d-flex justify-content-between">
@@ -126,7 +146,6 @@
                 </div>
             </div>
 
-
             <div class="stat-card">
                 <div class="card-top d-flex justify-content-between">
                     <i class="fa-solid fa-bell-concierge"></i>
@@ -139,7 +158,6 @@
                 </div>
             </div>
 
-
             <div class="stat-card alert-card">
                 <div class="card-top d-flex justify-content-between">
                     <i class="fa-solid fa-triangle-exclamation"></i>
@@ -151,6 +169,7 @@
                     <p>High priority status</p>
                 </div>
             </div>
+
         </section>
 
 
@@ -241,6 +260,7 @@
                             <p>45 mins ago</p>
                         </div>
                     </div>
+
                 </div>
             </div>
         </section>
@@ -270,6 +290,7 @@
     </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
-

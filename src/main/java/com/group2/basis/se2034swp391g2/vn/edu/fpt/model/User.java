@@ -1,11 +1,13 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.Gender;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.IdentityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.UserType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Nationalized;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -46,10 +48,12 @@ public class User {
 
 
     @Column(name = "first_name", nullable = false, length = 50,columnDefinition = "NVARCHAR(50)")
+
     private String firstName;
 
 
     @Column(name = "last_name", nullable = false, length = 50,columnDefinition = "NVARCHAR(50)")
+
     private String lastName;
 
     @Column(name = "email", length = 150,columnDefinition = "NVARCHAR(150)")
@@ -70,6 +74,17 @@ public class User {
 
     @Column(name = "passport_expiry_date")
     private LocalDate passportExpiryDate;
+
+    @Column(name = "date_of_birth")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dateOfBirth;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 10, columnDefinition = "NVARCHAR(10)")
+    private Gender gender;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
