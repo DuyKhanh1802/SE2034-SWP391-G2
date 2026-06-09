@@ -27,11 +27,8 @@ public class SpringSecurity {
                                 "/auth/**",
                                 "/page/**",
                                 "/fragment/**",
-                                "/css/**",
-                                "/js/**",
                                 "/images/**",
-                                "/admin/Admin.css",
-                                "/Admin/**",
+                                "/admin/**",
                                 "/profile/**",   // Đã gộp /profile/** vào đây
                                 "/guest/**"      // Đã gộp /guest/** vào đây
                         ).permitAll()

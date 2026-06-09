@@ -48,6 +48,11 @@
                     </div>
 
                     <div class="detail-item">
+                        <span>Giới tính</span>
+                        <strong th:text="${genderLabel}">Chưa có</strong>
+                    </div>
+
+                    <div class="detail-item">
                         <span>Email</span>
                         <strong th:text="${user.email != null ? user.email : 'Chưa có'}">email@example.com</strong>
                     </div>

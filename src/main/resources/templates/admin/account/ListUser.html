@@ -45,6 +45,7 @@
             <tr>
                 <th>ID</th>
                 <th>Họ tên</th>
+                <th>Giới tính</th>
                 <th>Vai trò</th>
                 <th>Email</th>
                 <th>Số điện thoại</th>
@@ -63,6 +64,8 @@
                         Họ và tên
                     </span>
                 </td>
+
+                <td th:text="${genderLabelsByUserId[user.id]}">Chưa có</td>
 
                 <td>
                     <span class="role-text" th:text="${roleLabelsByUserId[user.id]}">
@@ -114,7 +117,7 @@
             </tr>
 
             <tr th:if="${#lists.isEmpty(users)}">
-                <td colspan="8" class="text-center py-5 text-muted">
+                <td colspan="9" class="text-center py-5 text-muted">
                     Không tìm thấy tài khoản.
                 </td>
             </tr>

@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Admin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.Gender;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.DisplayUtils;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
@@ -38,13 +39,14 @@ public class AdminUserController {
                             @RequestParam(value = "page", defaultValue = "1") int page,
                             Model model) {
         int requestedPage = Math.max(page, 1);
-        PageRequest pageRequest = PageRequest.of(requestedPage - 1, DEFAULT_PAGE_SIZE, Sort.by(Sort.Direction.DESC, "id"));
+        PageRequest pageRequest = PageRequest.of(requestedPage - 1, DEFAULT_PAGE_SIZE, Sort.by(Sort.Direction.ASC, "id"));
         Page<User> userPage = userService.getAccountPage(keyword, pageRequest);
         List<User> users = userPage.getContent();
 
         model.addAttribute("users", users);
         model.addAttribute("roleLabelsByUserId", buildRoleLabels(users));
         model.addAttribute("displayNamesByUserId", buildDisplayNames(users));
+        model.addAttribute("genderLabelsByUserId", buildGenderLabels(users));
         model.addAttribute("keyword", keyword);
         model.addAttribute("currentPage", userPage.getNumber() + 1);
         model.addAttribute("totalPages", userPage.getTotalPages());
@@ -63,6 +65,7 @@ public class AdminUserController {
         model.addAttribute("roleLabel", getRoleLabel(user));
         model.addAttribute("statusLabel", getStatusLabel(user));
         model.addAttribute("approvalLabel", getApprovalLabel(user));
+        model.addAttribute("genderLabel", getGenderLabel(user));
         model.addAttribute("pageTitle", "Chi tiết người dùng");
         return "admin/account/UserDetail";
     }
@@ -119,6 +122,9 @@ public class AdminUserController {
             if (currentAdminId.equals(id) && Boolean.FALSE.equals(request.getIsActive())) {
                 request.setIsActive(Boolean.TRUE);
             }
+            if (currentAdminId.equals(id)) {
+                request.setRoleName(null);
+            }
         }
 
         userService.updateUser(id, request);
@@ -158,6 +164,11 @@ public class AdminUserController {
     private Map<Long, String> buildDisplayNames(List<User> users) {
         return users.stream()
                 .collect(Collectors.toMap(User::getId, DisplayUtils::formatDisplayName));
+    }
+
+    private Map<Long, String> buildGenderLabels(List<User> users) {
+        return users.stream()
+                .collect(Collectors.toMap(User::getId, this::getGenderLabel));
     }
 
     private Long getCurrentUserId(Authentication authentication) {
@@ -209,6 +220,13 @@ public class AdminUserController {
         };
     }
 
+    private String getGenderLabel(User user) {
+        if (user.getGender() == null) {
+            return "Chưa có";
+        }
+        return toGenderLabel(user.getGender());
+    }
+
     private Map<String, String> getRoleOptions() {
         Map<String, String> roleOptions = new LinkedHashMap<>();
         roleOptions.put(RoleName.SYSTEM_ADMIN.name(), "Quản trị hệ thống");
@@ -226,6 +244,13 @@ public class AdminUserController {
             case MANAGER -> "Quản lý";
             case RECEPTIONIST -> "Lễ tân";
             case GUEST -> "Khách hàng";
+        };
+    }
+    private String toGenderLabel(Gender gender) {
+        return switch (gender) {
+            case MALE -> "Nam";
+            case FEMALE -> "Nữ";
+            case OTHER -> "Khác";
         };
     }
 }
