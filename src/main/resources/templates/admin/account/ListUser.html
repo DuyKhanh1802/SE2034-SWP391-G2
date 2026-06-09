@@ -23,7 +23,7 @@
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <form th:action="@{/admin/account}"
+            <form th:action="@{/admin/list-user}"
                   method="get"
                   class="d-flex align-items-center bg-white border px-3"
                   style="height:42px;">
@@ -101,13 +101,13 @@
 
                 <td>
                     <div class="action-group">
-                        <a th:href="@{/admin/account/{id}(id=${user.id})}"
+                        <a th:href="@{/admin/list-user/{id}(id=${user.id})}"
                            class="action-btn"
                            title="Xem chi tiết">
                             <i class="fa-regular fa-eye"></i>
                         </a>
 
-                        <a th:href="@{/admin/account/{id}/edit(id=${user.id})}"
+                        <a th:href="@{/admin/list-user/{id}/edit(id=${user.id})}"
                            class="action-btn"
                            title="Chỉnh sửa">
                             <i class="fa-regular fa-pen-to-square"></i>
@@ -133,7 +133,7 @@
                 <ul class="pagination mb-0">
                     <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
                         <a class="page-link"
-                           th:href="@{/admin/account(page=${currentPage - 1}, keyword=${keyword})}"
+                           th:href="@{/admin/list-user(page=${currentPage - 1}, keyword=${keyword})}"
                            aria-label="Trang trước">
                             <i class="fa-solid fa-chevron-left"></i>
                         </a>
@@ -143,13 +143,13 @@
                         th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
                         th:classappend="${pageNum == currentPage} ? ' active'">
                         <a class="page-link"
-                           th:href="@{/admin/account(page=${pageNum}, keyword=${keyword})}"
+                           th:href="@{/admin/list-user(page=${pageNum}, keyword=${keyword})}"
                            th:text="${pageNum}">1</a>
                     </li>
 
                     <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
                         <a class="page-link"
-                           th:href="@{/admin/account(page=${currentPage + 1}, keyword=${keyword})}"
+                           th:href="@{/admin/list-user(page=${currentPage + 1}, keyword=${keyword})}"
                            aria-label="Trang sau">
                             <i class="fa-solid fa-chevron-right"></i>
                         </a>

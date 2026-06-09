@@ -1,31 +1,56 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<header th:fragment="staffHeader" class="topbar d-flex justify-content-between align-items-center">
+<header th:fragment="header" class="topbar d-flex justify-content-between align-items-center">
     <h4 th:text="${pageTitle != null ? pageTitle : 'DASHBOARD'}">DASHBOARD</h4>
 
     <div class="top-icons">
         <i class="fa-solid fa-magnifying-glass"></i>
         <i class="fa-regular fa-bell"></i>
 
-        <!-- AVATAR DROPDOWN -->
         <div class="dropdown">
             <button class="profile-dropdown-btn dropdown-toggle"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false">
-
                 <img th:src="${currentUser != null and currentUser.avatarUrl != null
                             ? currentUser.avatarUrl
                             : 'https://i.pravatar.cc/40'}"
                      alt="profile">
-
                 <span th:text="${currentUser != null ? currentUser.firstName : 'Account'}">
                     Tài khoản
                 </span>
             </button>
 
             <ul class="dropdown-menu dropdown-menu-end profile-menu">
+                <li sec:authorize="hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN','MANAGER','RECEPTIONIST')">
+                    <span class="dropdown-item-text profile-active-role">
+                        <span>Vai trò hiện tại:</span>
+                        <strong th:text="${session.CURRENT_ACTIVE_ROLE_LABEL ?: 'Chưa chọn'}">Chưa chọn</strong>
+                    </span>
+                </li>
+
+                <li sec:authorize="hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN','MANAGER','RECEPTIONIST')">
+                    <hr class="dropdown-divider">
+                </li>
+
+                <th:block th:if="${session.AVAILABLE_ACTIVE_ROLE_OPTIONS != null and #lists.size(session.AVAILABLE_ACTIVE_ROLE_OPTIONS) > 1}">
+                    <li th:each="roleOption : ${session.AVAILABLE_ACTIVE_ROLE_OPTIONS}"
+                        th:if="${roleOption.name() != session.CURRENT_ACTIVE_ROLE}">
+                        <a class="dropdown-item"
+                           th:href="@{/api/user/switch-role(role=${roleOption.name()})}">
+                            <i class="fa-solid fa-repeat me-2"></i>
+                            <span>Chuyển sang </span><span th:text="${roleOption.label()}">Vai trò</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                </th:block>
+
                 <li>
                     <a class="dropdown-item" th:href="@{/profile/edit}">
                         <i class="fa-regular fa-user me-2"></i>
@@ -40,7 +65,9 @@
                     </a>
                 </li>
 
-                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
 
                 <li>
                     <form th:action="@{/auth/logout}" method="post" class="m-0">
@@ -54,3 +81,5 @@
         </div>
     </div>
 </header>
+
+</html>
