@@ -1,69 +1,55 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <div th:fragment="footer-css">
-        <style>
-            footer { background-color: #FCFBF9; border-top: 1px solid #EAE6DF; padding: 60px 0 30px 0; font-size: 13px; color: #444; }
-            .footer-title { text-transform: uppercase; font-size: 11px; letter-spacing: 2px; font-weight: 600; margin-bottom: 20px; color: #1A1A1A; }
-            .footer-links list-unstyled li { margin-bottom: 10px; }
-            .footer-links a { color: #666; text-decoration: none; transition: color 0.2s; }
-            .footer-links a:hover { color: #000; }
-            .footer-bottom-logo { font-family: 'Playfair Display', serif; font-size: 45px; font-weight: bold; color: #1A1A1A; letter-spacing: -2px; margin: 40px 0; }
-            .footer-credits { font-size: 10px; letter-spacing: 1px; color: #888; text-transform: uppercase; }
-        </style>
-    </div>
-</head>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<footer th:fragment="footer-section">
-    <div class="container px-5">
-        <div class="row g-4 footer-links">
-            <div class="col-md-3">
-                <h6 class="footer-title">Contact Us</h6>
-                <p class="mb-1" style="line-height: 1.6;">Rosewood Hong Kong, Victoria Dockside,<br>18 Salisbury Road, Tsim Sha Tsui, Kowloon, Hong Kong</p>
-                <p class="mb-1">+852 3891 8888</p>
-                <p><a href="mailto:hongkong@rosewoodhotels.com">hongkong@rosewoodhotels.com</a></p>
-            </div>
-            <div class="col-md-3">
-                <h6 class="footer-title">World of Rosewood</h6>
-                <ul class="list-unstyled">
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Rosewood Impacts</a></li>
-                    <li><a href="#">Careers ↗</a></li>
-                    <li><a href="#">Media</a></li>
-                </ul>
-            </div>
-            <div class="col-md-3">
-                <h6 class="footer-title">Follow</h6>
-                <ul class="list-unstyled">
-                    <li><a href="#">Facebook ↗</a></li>
-                    <li><a href="#">Instagram ↗</a></li>
-                    <li><a href="#">WeChat ↗</a></li>
-                </ul>
-            </div>
-            <div class="col-md-3">
-                <h6 class="footer-title">Terms</h6>
-                <ul class="list-unstyled">
-                    <li><a href="#">Accessibility Statement</a></li>
-                    <li><a href="#">Cookie Policy</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Hotel Policy</a></li>
-                </ul>
-            </div>
-        </div>
+<footer th:fragment="publicFooter" class="public-footer">
 
-        <div class="row mt-5">
-            <div class="col-12 text-center">
-                <div class="footer-bottom-logo">RW</div>
-                <div class="d-flex justify-content-between align-items-center flex-wrap pt-3 border-top" style="border-color: #EAE6DF !important;">
-                    <span class="footer-credits">ICP Licence 17035714</span>
-                    <span class="footer-credits">ROSEWOOD HOTEL GROUP © 2026</span>
-                </div>
-            </div>
-        </div>
+    <div class="footer-connect">
+        <h2>Stay connected to the world of V'Hotel</h2>
+        <a href="#" class="footer-outline-btn">ĐĂNG KÝ NHẬN TIN</a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="footer-columns">
+
+        <div class="footer-col">
+            <h4>CONTACT US</h4>
+            <p>V'Hotel Hanoi</p>
+            <p>Hanoi, Vietnam</p>
+            <p>Hotline: +84 24 0000 0000</p>
+            <p>Email: reservation@vhotel.vn</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>WORLD OF V'HOTEL</h4>
+            <a href="#">About Us</a>
+            <a href="#">Careers</a>
+            <a href="#">Media</a>
+            <a href="#">Developers</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>FOLLOW</h4>
+            <a href="#">Facebook</a>
+            <a href="#">Instagram</a>
+            <a href="#">TikTok</a>
+            <a href="#">YouTube</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>TERMS</h4>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Cookie Policy</a>
+            <a href="#">Hotel Policy</a>
+            <a href="#">Accessibility Statement</a>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-brand">V'HOTEL</div>
+        <div class="footer-copy">V'HOTEL GROUP © 2026</div>
+    </div>
+
 </footer>
 
 </body>
