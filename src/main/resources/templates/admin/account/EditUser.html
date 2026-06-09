@@ -100,9 +100,16 @@
                 <h3>Thay đổi vai trò</h3>
             </div>
 
-            <form th:action="@{/admin/account/{id}/edit(id=${user.id})}" th:object="${updateRequest}" method="post" class="role-form">
+            <form th:action="@{/admin/account/{id}/edit(id=${user.id})}"
+                  th:object="${updateRequest}"
+                  method="post"
+                  class="role-form"
+                  th:classappend="${canDeactivateSelf} ? ' is-disabled' : ''">
                 <label for="roleName">Vai trò người dùng</label>
-                <select id="roleName" th:field="*{roleName}">
+                <select id="roleName"
+                        th:field="*{roleName}"
+                        th:disabled="${canDeactivateSelf}"
+                        th:title="${canDeactivateSelf} ? 'Không thể thay đổi vai trò của chính tài khoản đang đăng nhập' : ''">
                     <option value="">Chưa gán vai trò</option>
                     <option th:each="roleOption : ${roleOptions}"
                             th:value="${roleOption.key}"
@@ -111,11 +118,18 @@
                     </option>
                 </select>
 
-                <button type="submit" class="btn-admin-primary">
+                <button type="submit"
+                        class="btn-admin-primary"
+                        th:classappend="${canDeactivateSelf} ? ' is-disabled' : ''"
+                        th:disabled="${canDeactivateSelf}">
                     <i class="fa-solid fa-shield-halved"></i>
                     Lưu vai trò
                 </button>
             </form>
+
+            <p th:if="${canDeactivateSelf}" class="settings-note mt-3">
+                Không thể thay đổi vai trò của chính tài khoản đang đăng nhập.
+            </p>
         </div>
     </section>
 </main>

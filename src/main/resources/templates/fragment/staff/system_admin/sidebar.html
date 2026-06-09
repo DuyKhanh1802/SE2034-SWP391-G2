@@ -4,7 +4,7 @@
      class="sidebar">
 
     <div class="sidebar-header">
-        <h2>ViHotel</h2>
+        <h2>V'Hotel</h2>
     </div>
 
     <ul class="sidebar-menu" sec:authorize="hasRole('SYSTEM_ADMIN')">
@@ -13,13 +13,6 @@
             <a th:href="@{/admin/account}">
                 <i class="fas fa-users"></i>
                 <span>Quản lý người dùng</span>
-            </a>
-        </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/profile')} ? 'active' : ''">
-            <a href="#">
-                <i class="fas fa-user"></i>
-                <span>Hồ sơ</span>
             </a>
         </li>
 

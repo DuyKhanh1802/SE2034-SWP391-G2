@@ -566,6 +566,16 @@ ul {
     font-size: 14px;
 }
 
+.role-form.is-disabled {
+    opacity: 0.55;
+}
+
+.role-form select:disabled {
+    cursor: not-allowed;
+    background: #f3f3f3;
+    color: #777;
+}
+
 @media (max-width: 900px) {
     .user-detail-layout,
     .settings-grid {

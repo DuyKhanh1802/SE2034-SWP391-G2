@@ -2,6 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.UserType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Role;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.UserRole;
@@ -10,6 +11,8 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.AccountUpdat
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoleRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRoleRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +25,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -33,6 +37,9 @@ public class UserServiceImpl implements UserService {
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom = new SecureRandom();
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public Page<User> getAccountPage(String keyword, Pageable pageable) {
@@ -121,25 +128,39 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Role not found in database: " + roleEnum);
             }
 
-            UserRole existingUserRole = userRoleRepository.findByUserId(existingUser.getId()).orElse(null);
+            List<UserRole> currentUserRoles = userRoleRepository.findAllByUserId(existingUser.getId());
+            boolean alreadyHasOnlyRequestedRole = currentUserRoles.size() == 1
+                    && currentUserRoles.getFirst().getRole() != null
+                    && currentUserRoles.getFirst().getRole().getId().equals(newRole.getId());
 
-            if (existingUserRole == null || !existingUserRole.getRole().getId().equals(newRole.getId())) {
-                userRoleRepository.deleteByUserId(existingUser.getId());
+            existingUser.setUserType(resolveUserType(roleEnum));
+            existingUser.setUpdatedAt(Instant.now());
+            userRepository.saveAndFlush(existingUser);
 
-                UserRole newUserRole = new UserRole();
-                newUserRole.setId(new UserRoleId(existingUser.getId(), newRole.getId()));
-                newUserRole.setUser(existingUser);
-                newUserRole.setRole(newRole);
-                newUserRole.setAssignedAt(Instant.now());
-
-                if (request.getCurrentAdminId() != null) {
-                    User adminUser = getUserById(request.getCurrentAdminId());
-                    newUserRole.setAssignedBy(adminUser);
-                }
-
-                userRoleRepository.save(newUserRole);
+            if (alreadyHasOnlyRequestedRole) {
+                return;
             }
+
+            userRoleRepository.deleteByUserId(existingUser.getId());
+            userRoleRepository.flush();
+            entityManager.clear();
+
+            UserRole newUserRole = new UserRole();
+            newUserRole.setId(new UserRoleId(id, newRole.getId()));
+            newUserRole.setUser(entityManager.getReference(User.class, id));
+            newUserRole.setRole(entityManager.getReference(Role.class, newRole.getId()));
+            newUserRole.setAssignedAt(Instant.now());
+
+            if (request.getCurrentAdminId() != null) {
+                newUserRole.setAssignedBy(entityManager.getReference(User.class, request.getCurrentAdminId()));
+            }
+
+            userRoleRepository.save(newUserRole);
         }
+    }
+
+    private UserType resolveUserType(RoleName roleName) {
+        return roleName == RoleName.GUEST ? UserType.GUEST : UserType.STAFF;
     }
 
     @Override
