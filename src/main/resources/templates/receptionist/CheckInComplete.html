@@ -14,86 +14,115 @@
 
 <div class="complete-page">
 
-    <div class="complete-card">
+    <div class="complete-shell">
 
-        <div class="complete-label">HOÀN TẤT NHẬN PHÒNG</div>
+        <!-- LEFT SUMMARY -->
+        <section class="complete-summary">
 
-        <h1>Đã phân phòng</h1>
+            <div class="complete-label">HOÀN TẤT NHẬN PHÒNG</div>
 
-        <p class="guest-info"
-           th:if="${roomCodes != null and !#lists.isEmpty(roomCodes)}"
-           th:text="${roomCodes[0].roomTypeName} + ' - Phòng ' + ${roomCodes[0].roomNumber} + ' • Khách hàng: ' + ${roomCodes[0].guestName}">
-            Deluxe - Phòng 102 • Khách hàng: Thu Hiền
-        </p>
+            <h1>Đã phân phòng</h1>
 
-        <div class="divider"></div>
+            <p class="guest-info"
+               th:if="${roomCodes != null and !#lists.isEmpty(roomCodes)}"
+               th:text="'Khách hàng: ' + ${roomCodes[0].guestName}">
+                Khách hàng: Phạm Duy Khánh
+            </p>
 
-        <div th:if="${successMessage}" class="alert alert-success">
-            <i class="bi bi-check-circle-fill"></i>
-            <span th:text="${successMessage}"></span>
-        </div>
+            <p class="summary-desc">
+                Room code đã được kích hoạt. Khách có thể dùng mã này để đăng nhập Guest Portal trong thời gian lưu trú.
+            </p>
 
-        <div th:if="${errorMessage}" class="alert alert-danger">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            <span th:text="${errorMessage}"></span>
-        </div>
+            <div th:if="${successMessage}" class="alert alert-success">
+                <i class="bi bi-check-circle-fill"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
 
-        <div class="room-code-list">
+            <div th:if="${errorMessage}" class="alert alert-danger">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
 
-            <div class="room-code-item" th:each="item : ${roomCodes}">
+            <div class="summary-note">
+                <i class="bi bi-shield-check"></i>
+                <span>Mã phòng chỉ có hiệu lực đến sau ngày trả phòng.</span>
+            </div>
 
-                <div class="room-title">
-                    <span th:text="'Phòng ' + ${item.roomNumber}">Phòng 102</span>
-                    <span th:text="${item.roomTypeName}">DELUXE</span>
+            <div class="summary-actions">
+
+                <form th:if="${roomCodes != null and !#lists.isEmpty(roomCodes)}"
+                      th:action="@{'/receptionist/bookings/' + ${roomCodes[0].bookingId} + '/send-room-codes'}"
+                      method="post"
+                      class="email-form">
+
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <button type="submit" class="btn-email">
+                        <i class="bi bi-envelope"></i>
+                        GỬI EMAIL CHO KHÁCH
+                    </button>
+                </form>
+
+                <a th:href="@{/receptionist/bookings}" class="btn-done">
+                    <span>HOÀN TẤT</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+
+        </section>
+
+        <!-- RIGHT ROOM CODES -->
+        <section class="room-code-panel">
+
+            <div class="panel-header">
+                <div>
+                    <span>DANH SÁCH PHÒNG</span>
+                    <h2>Mã truy cập phòng</h2>
                 </div>
 
-                <div class="access-label">MÃ TRUY CẬP PHÒNG</div>
-
-                <div class="access-code" th:text="${item.roomCode}">
-                    KDX7MDLA
+                <div class="room-count"
+                     th:if="${roomCodes != null}"
+                     th:text="${#lists.size(roomCodes)} + ' phòng'">
+                    2 phòng
                 </div>
+            </div>
 
-                <div class="expires-text">
-                    Hết hạn:
-                    <span th:text="${item.roomCodeExpiresAt}">
-                        2026-06-08T17:00:00Z
-                    </span>
+            <div class="room-code-grid">
+
+                <div class="room-code-card" th:each="item : ${roomCodes}">
+
+                    <div class="room-card-top">
+                        <div class="room-info-box">
+                            <span>PHÒNG</span>
+                            <strong th:text="${item.roomNumber}">203</strong>
+                        </div>
+
+                        <div class="room-info-box">
+                            <span>HẠNG PHÒNG</span>
+                            <strong th:text="${item.roomTypeName}">SUPERIOR</strong>
+                        </div>
+                    </div>
+
+                    <div class="access-label">MÃ TRUY CẬP PHÒNG</div>
+
+                    <div class="access-code" th:text="${item.roomCode}">
+                        C47JMAVS
+                    </div>
+
+                    <div class="expires-box">
+                        <i class="bi bi-clock"></i>
+                        <span>Hết hạn</span>
+                        <strong th:text="${#temporals.format(item.checkOutDate.plusDays(1), 'dd/MM/yyyy')} + ' 00:00'">
+                            12/06/2026 00:00
+                        </strong>
+                    </div>
+
                 </div>
 
             </div>
 
-        </div>
-
-        <div class="qr-placeholder">
-            <i class="bi bi-qr-code"></i>
-        </div>
-
-        <div class="qr-text">QUÉT MÃ ĐỂ ĐỒNG BỘ KHÓA ĐIỆN TỬ</div>
-
-        <div class="divider"></div>
-
-        <div class="actions">
-            <button type="button" class="btn-main">
-                <i class="bi bi-printer"></i>
-                IN PHIẾU NHẬN PHÒNG
-            </button>
-
-            <form th:if="${roomCodes != null and !#lists.isEmpty(roomCodes)}"
-                  th:action="@{'/receptionist/bookings/' + ${roomCodes[0].bookingId} + '/send-room-codes'}"
-                  method="post">
-
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-                <button type="submit" class="btn-outline">
-                    <i class="bi bi-envelope"></i>
-                    GỬI EMAIL CHO KHÁCH
-                </button>
-            </form>
-        </div>
-
-        <a th:href="@{/receptionist/bookings}" class="done-link">
-            Hoàn tất
-        </a>
+        </section>
 
     </div>
 
