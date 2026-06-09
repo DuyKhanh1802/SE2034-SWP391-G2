@@ -1,41 +1,28 @@
 <div xmlns:th="http://www.thymeleaf.org"
-     xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
      th:fragment="sidebar"
      class="sidebar">
 
     <div class="sidebar-header">
-        <h2>ViHotel</h2>
+        <h2>V'Hotel</h2>
     </div>
 
-    <ul class="sidebar-menu" sec:authorize="hasRole('SYSTEM_ADMIN')">
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/account')} ? 'active' : ''">
-            <a th:href="@{/admin/account}">
+    <ul class="sidebar-menu" th:if="${session.CURRENT_ACTIVE_ROLE == 'SYSTEM_ADMIN'}">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/list-user')} ? 'active' : ''">
+            <a th:href="@{/admin/list-user}">
                 <i class="fas fa-users"></i>
                 <span>Quản lý người dùng</span>
             </a>
         </li>
 
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/profile')} ? 'active' : ''">
-            <a href="#">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/profile')} ? 'active' : ''">
+            <a th:href="@{/profile/edit}">
                 <i class="fas fa-user"></i>
-                <span>Hồ sơ</span>
+                <span>Hồ sơ của tôi</span>
             </a>
         </li>
-
-        <li>
-            <form th:action="@{/auth/logout}" method="post">
-                <button type="submit">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Đăng xuất</span>
-                </button>
-            </form>
-        </li>
-
     </ul>
 
-    <ul class="sidebar-menu" sec:authorize="hasRole('HOTEL_ADMIN')">
-
+    <ul class="sidebar-menu" th:if="${session.CURRENT_ACTIVE_ROLE == 'HOTEL_ADMIN'}">
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/list_room') or #strings.startsWith(currentUri ?: '', '/admin/rooms')} ? 'active' : ''">
             <a th:href="@{/admin/list_room}">
                 <i class="fas fa-bed"></i>
@@ -57,42 +44,61 @@
             </a>
         </li>
 
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/profile')} ? 'active' : ''">
-            <a href="#">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/profile')} ? 'active' : ''">
+            <a th:href="@{/profile/edit}">
                 <i class="fas fa-user"></i>
-                <span>Hồ sơ</span>
+                <span>Hồ sơ của tôi</span>
+            </a>
+        </li>
+    </ul>
+
+    <ul class="sidebar-menu" th:if="${session.CURRENT_ACTIVE_ROLE == 'MANAGER'}">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager')} ? 'active' : ''">
+            <a th:href="@{/manager/dashboard}">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
             </a>
         </li>
 
-        <li>
-            <form th:action="@{/auth/logout}" method="post">
-                <button type="submit">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Đăng xuất</span>
-                </button>
-            </form>
-        </li>
-
-    </ul>
-
-    <ul class="sidebar-menu" sec:authorize="!hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN')">
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/promotions')} ? 'active' : ''"
-            sec:authorize="hasRole('MANAGER')">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/promotions')} ? 'active' : ''">
             <a th:href="@{/manager/promotions}">
                 <i class="fas fa-tags"></i>
                 <span>Khuyến mãi</span>
             </a>
         </li>
 
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')} ? 'active' : ''"
-            sec:authorize="hasRole('RECEPTIONIST')">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/profile')} ? 'active' : ''">
+            <a th:href="@{/profile/edit}">
+                <i class="fas fa-user"></i>
+                <span>Hồ sơ của tôi</span>
+            </a>
+        </li>
+    </ul>
+
+    <ul class="sidebar-menu" th:if="${session.CURRENT_ACTIVE_ROLE == 'RECEPTIONIST'}">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/dashboard')} ? 'active' : ''">
+            <a th:href="@{/receptionist/dashboard}">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')} ? 'active' : ''">
             <a th:href="@{/receptionist/bookings}">
                 <i class="fas fa-calendar-check"></i>
                 <span>Đặt phòng</span>
             </a>
         </li>
 
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/profile')} ? 'active' : ''">
+            <a th:href="@{/profile/edit}">
+                <i class="fas fa-user"></i>
+                <span>Hồ sơ của tôi</span>
+            </a>
+        </li>
+    </ul>
+
+    <ul class="sidebar-menu">
         <li>
             <form th:action="@{/auth/logout}" method="post">
                 <button type="submit">
@@ -101,7 +107,5 @@
                 </button>
             </form>
         </li>
-
     </ul>
-
 </div>
