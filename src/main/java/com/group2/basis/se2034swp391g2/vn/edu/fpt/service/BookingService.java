@@ -311,17 +311,6 @@ public class BookingService {
             throw new IllegalArgumentException("Cannot check in before the check-in date.");
         }
 
-        if (userRepository.existsByEmailAndIsDeletedFalse(request.getEmail().trim())) {
-            throw new IllegalArgumentException("Email already exists.");
-        }
-
-        if (userRepository.existsByPhoneAndIsDeletedFalse(request.getPhoneNumber().trim())) {
-            throw new IllegalArgumentException("Phone number already exists.");
-        }
-
-        if (userRepository.existsByIdentityNumberAndIsDeletedFalse(request.getIdentityNumber().trim())) {
-            throw new IllegalArgumentException("Identity number already exists.");
-        }
     }
 
     private void validateBookingDates(LocalDate checkInDate, LocalDate checkOutDate) {
@@ -345,6 +334,20 @@ public class BookingService {
     }
 
     private User createGuestFromRequest(BookingCreateRequest request) {
+        String email = request.getEmail().trim();
+        String phone = request.getPhoneNumber().trim();
+        String identityNumber = request.getIdentityNumber().trim();
+
+        User existingUser = userRepository
+                .findByIdentityNumberAndIsDeletedFalse(identityNumber)
+                .or(() -> userRepository.findByEmailAndIsDeletedFalse(email))
+                .or(() -> userRepository.findByPhoneAndIsDeletedFalse(phone))
+                .orElse(null);
+
+        if (existingUser != null) {
+            return existingUser;
+        }
+
         Country country = countryRepository.findById(request.getCountryId())
                 .orElseThrow(() -> new IllegalArgumentException("Country not found."));
 
@@ -353,13 +356,13 @@ public class BookingService {
                 .approvalStatus(ApprovalStatus.APPROVED)
                 .firstName(request.getFirstName().trim())
                 .lastName(request.getLastName().trim())
-                .phone(request.getPhoneNumber().trim())
-                .email(request.getEmail().trim())
+                .phone(phone)
+                .email(email)
                 .gender(request.getGender())
                 .dateOfBirth(request.getDateOfBirth())
                 .country(country)
                 .identityType(resolveIdentityType(country))
-                .identityNumber(request.getIdentityNumber().trim())
+                .identityNumber(identityNumber)
                 .isActive(true)
                 .isDeleted(false)
                 .totalStays(0)
