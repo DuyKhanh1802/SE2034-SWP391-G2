@@ -13,9 +13,6 @@ import java.util.Optional;
 
 @Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, UserRoleId> {
-    Optional<UserRole> findByUserId(Long userId);
-    List<UserRole> findAllByUserId(Long userId);
-
     @Modifying(flushAutomatically = true)
     @Query("delete from UserRole ur where ur.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
