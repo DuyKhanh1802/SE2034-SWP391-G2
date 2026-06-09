@@ -20,6 +20,8 @@ public class SpringSecurity {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
+
+                        // 1. Public URLs
                         .requestMatchers(
                                 "/",
                                 "/home",
@@ -59,6 +61,7 @@ public class SpringSecurity {
                         .deleteCookies("JSESSIONID")
                 )
                 .csrf(Customizer.withDefaults());
+
         return http.build();
     }
 

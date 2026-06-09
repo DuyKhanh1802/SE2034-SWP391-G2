@@ -1,0 +1,694 @@
+:root {
+    --bg-main: #fdf8f8;
+    --bg-sidebar: #e8e4e1;
+    --bg-sidebar-active: #e5e2e1;
+    --bg-soft: #f1edec;
+    --bg-card: #fdf8f8;
+
+    --border: #c4c7c7;
+
+    --text-main: #1c1b1b;
+    --text-muted: #444748;
+
+    --black: #000000;
+    --white: #ffffff;
+
+    --danger: #ba1a1a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: "Manrope", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* MATERIAL ICONS */
+.material-symbols-outlined {
+    font-variation-settings:
+            'FILL' 0,
+            'wght' 300,
+            'GRAD' 0,
+            'opsz' 24;
+    font-size: 24px;
+    line-height: 1;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 34px 0;
+    z-index: 1000;
+}
+
+.sidebar-brand {
+    padding: 0 24px;
+    margin-bottom: 58px;
+}
+
+.sidebar-brand h1 {
+    font-family: "EB Garamond", serif;
+    font-size: 35px;
+    line-height: 1.1;
+    font-weight: 500;
+    margin: 0;
+    color: var(--black);
+    letter-spacing: -0.02em;
+}
+
+.sidebar-brand p {
+    margin: 10px 0 0;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.sidebar-menu {
+    flex: 1;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-height: 56px;
+    padding: 0 28px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.sidebar-link .material-symbols-outlined,
+.sidebar-link i {
+    width: 24px;
+    min-width: 24px;
+    text-align: center;
+    font-size: 24px;
+}
+
+.sidebar-link:hover {
+    background-color: #f2eeee;
+    color: var(--black);
+}
+
+.sidebar-link.active {
+    background-color: var(--bg-sidebar-active);
+    color: var(--black);
+    border-left-color: var(--black);
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+}
+
+/* =========================
+   MAIN CONTENT
+========================= */
+
+.main-content {
+    margin-left: 240px;
+    min-height: 100vh;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+
+.topbar {
+    height: 80px;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--bg-main);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 64px;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+}
+
+.topbar-left h2 {
+    font-family: "EB Garamond", serif;
+    font-size: 36px;
+    line-height: 1;
+    font-weight: 500;
+    margin: 0;
+    color: var(--black);
+    letter-spacing: -0.02em;
+}
+
+.topbar-tabs {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.topbar-tabs a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    padding-bottom: 7px;
+}
+
+.topbar-tabs a.active {
+    color: var(--black);
+    border-bottom: 1px solid var(--black);
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.search-box {
+    width: 290px;
+    height: 42px;
+    background-color: var(--bg-soft);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+}
+
+.search-box i {
+    font-size: 18px;
+    color: var(--text-muted);
+}
+
+.search-box input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    color: var(--text-main);
+}
+
+.search-box input::placeholder {
+    color: #6f7375;
+}
+
+.icon-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 21px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    color: var(--black);
+}
+
+.quick-btn {
+    height: 42px;
+    padding: 0 28px;
+    background-color: var(--black);
+    color: var(--white);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+.quick-btn:hover {
+    color: var(--white);
+    opacity: 0.85;
+}
+
+/* =========================
+   CONTENT WRAPPER
+========================= */
+
+.content-wrapper {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 64px;
+}
+
+/* =========================
+   KPI CARDS
+========================= */
+
+.kpi-row {
+    margin-bottom: 70px;
+}
+
+.kpi-card {
+    min-height: 150px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-card);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.kpi-card p {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.kpi-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-top: 22px;
+}
+
+.kpi-bottom h3 {
+    font-family: "EB Garamond", serif;
+    font-size: 54px;
+    line-height: 1;
+    font-weight: 400;
+    margin: 0;
+    color: var(--black);
+}
+
+.kpi-bottom .material-symbols-outlined {
+    color: #a7abad;
+    font-size: 26px;
+}
+
+/* =========================
+   ARRIVING / DEPARTING LIST
+========================= */
+
+.list-section {
+    row-gap: 56px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    margin-bottom: 34px;
+}
+
+.section-header h3 {
+    font-family: "EB Garamond", serif;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 500;
+    margin: 0;
+    color: var(--black);
+}
+
+.section-header span {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.guest-list {
+    width: 100%;
+}
+
+.guest-row {
+    min-height: 92px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    transition: background-color 0.2s ease;
+}
+
+.guest-row:hover {
+    background-color: #ffffff;
+}
+
+.guest-info {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+}
+
+.avatar,
+.room-number {
+    width: 56px;
+    height: 56px;
+    background-color: #ebe7e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatar .material-symbols-outlined {
+    font-size: 25px;
+    color: #a0a0a0;
+}
+
+.room-number {
+    font-family: "EB Garamond", serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--black);
+}
+
+.guest-info h4 {
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 600;
+    margin: 0 0 5px;
+    color: var(--black);
+}
+
+.guest-info p {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.outline-btn {
+    min-width: 138px;
+    height: 38px;
+    border: 1px solid var(--black);
+    color: var(--black);
+    background-color: transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.outline-btn:hover {
+    background-color: var(--black);
+    color: var(--white);
+}
+
+/* =========================
+   NOTICE SECTION
+========================= */
+
+.notice-section {
+    margin-top: 80px;
+}
+
+.dark-notice {
+    min-height: 260px;
+    background-color: #333333;
+    color: var(--white);
+    padding: 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.dark-notice p,
+.light-notice p {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.dark-notice h3 {
+    font-family: "EB Garamond", serif;
+    font-size: 34px;
+    line-height: 1.25;
+    font-weight: 400;
+    margin: 22px 0 0;
+}
+
+.dark-notice a {
+    width: fit-content;
+    color: var(--white);
+    text-decoration: none;
+    border-bottom: 1px solid var(--white);
+    padding-bottom: 4px;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+}
+
+.dark-notice a:hover {
+    opacity: 0.75;
+}
+
+.light-notice {
+    min-height: 260px;
+    background-color: #e5e2e1;
+    padding: 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.light-notice h4 {
+    font-size: 17px;
+    line-height: 1.7;
+    font-weight: 500;
+    margin: 24px 0 0;
+    color: var(--black);
+}
+
+.light-notice span {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+/* =========================
+   RESPONSIVE SUPPORT
+   Chủ yếu vẫn là desktop, phần này để không bị vỡ màn nhỏ
+========================= */
+
+@media (max-width: 1200px) {
+    .topbar {
+        padding: 0 32px;
+    }
+
+    .content-wrapper {
+        padding: 48px 32px;
+    }
+
+    .search-box {
+        display: none;
+    }
+}
+
+@media (max-width: 992px) {
+    .topbar-tabs {
+        display: none;
+    }
+
+    .quick-btn {
+        padding: 0 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 220px;
+    }
+
+    .main-content {
+        margin-left: 220px;
+    }
+
+    .topbar {
+        height: auto;
+        min-height: 80px;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 16px;
+        padding: 20px 24px;
+    }
+
+    .topbar-right {
+        flex-wrap: wrap;
+    }
+
+    .content-wrapper {
+        padding: 36px 24px;
+    }
+
+    .guest-row {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 20px 0;
+    }
+
+    .outline-btn {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   TOPBAR & PROFILE DROPDOWN (MIGRATED FROM DASHBOARD TO ADMIN LAYOUT)
+   ========================================================================== */
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 78px;
+    padding: 0 40px;
+    background-color: #f8f8f8; /* Tông nền xám sáng Nordic */
+    border-bottom: 1px solid #111; /* Đường gạch chân sắc cạnh */
+    width: 100%;
+}
+
+.topbar h4 {
+    margin: 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.top-icons {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.top-icons i {
+    font-size: 18px;
+    color: #444748;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.top-icons i:hover {
+    color: #000;
+}
+
+/* --- AVATAR DROPDOWN BUTTON --- */
+.profile-dropdown-btn {
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px 6px 6px; /* Bao quanh pill-shape cân bằng */
+    border-radius: 999px;
+    transition: background 0.25s ease;
+    color: #1d1d1d;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    outline: none !important;      /* Triệt tiêu viền xanh mặc định khi click */
+    box-shadow: none !important;   /* Triệt tiêu shadow mặc định khi click */
+}
+
+/* Ẩn hoàn toàn mũi tên tam giác (Caret) mặc định của Bootstrap */
+.profile-dropdown-btn::after {
+    display: none !important;
+}
+
+.profile-dropdown-btn:hover,
+.profile-dropdown-btn:focus,
+.profile-dropdown-btn[aria-expanded="true"] {
+    background: #e8e2dc; /* Đổi màu nền dịu mắt khi hover hoặc khi menu đang mở */
+}
+
+.profile-dropdown-btn img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #d2ccc5;
+}
+
+/* --- DROPDOWN EXPAND MENU --- */
+.profile-menu {
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    padding: 10px;
+    min-width: 220px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08); /* Đổ bóng mịn màng */
+    background-color: #ffffff;
+}
+
+.profile-menu .dropdown-item {
+    border-radius: 1px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #1d1d1d;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.profile-menu .dropdown-item:hover {
+    background: #eee8e2; /* Đồng bộ tông màu hover mềm mại */
+}
+
+.profile-menu button.dropdown-item {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+}
+
+/* Đường gạch ngang phân cách trong menu */
+.profile-menu .dropdown-divider {
+    border-top: 1px solid #ddd;
+    margin: 6px 0;
+    opacity: 1;
+}

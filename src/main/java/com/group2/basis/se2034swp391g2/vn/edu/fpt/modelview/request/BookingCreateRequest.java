@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.Gender;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -9,11 +10,15 @@ import java.util.List;
 @Data
 public class BookingCreateRequest {
 
-    private String fullName;
+    private String firstName;
+
+    private String lastName;
 
     private String phoneNumber;
 
     private String email;
+
+    private Gender gender;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate checkInDate;
@@ -27,6 +32,13 @@ public class BookingCreateRequest {
 
     private List<Long> roomIds;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dateOfBirth;
+
+    private Long countryId;
+
+    private String identityNumber;
+    
     private String notes;
 
     
