@@ -7,6 +7,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.DisplayUtils;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.UserRole;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.AccountUpdateRequest;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoleRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CustomerUserDetails;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +27,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/admin/account")
+@RequestMapping("/admin/list-user")
 @RequiredArgsConstructor
 public class AdminUserController {
 
     private static final int DEFAULT_PAGE_SIZE = 10;
 
     private final UserService userService;
+    private final RoleRepository roleRepository;
 
     @GetMapping
     public String listUsers(@RequestParam(value = "keyword", required = false) String keyword,
@@ -75,7 +77,6 @@ public class AdminUserController {
                                     @RequestParam("action") String action,
                                     Authentication authentication) {
         AccountUpdateRequest request = new AccountUpdateRequest();
-
         request.setCurrentAdminId(getCurrentUserId(authentication));
 
         if ("approve".equalsIgnoreCase(action)) {
@@ -86,7 +87,7 @@ public class AdminUserController {
         }
 
         userService.updateUser(id, request);
-        return "redirect:/admin/account/" + id + "?reviewed=true";
+        return "redirect:/admin/list-user/" + id + "?reviewed=true";
     }
 
     @GetMapping("/{id}/edit")
@@ -97,12 +98,13 @@ public class AdminUserController {
 
         AccountUpdateRequest updateRequest = new AccountUpdateRequest();
         updateRequest.setIsActive(user.getIsActive());
-        updateRequest.setRoleName(getPrimaryRoleName(user));
+        updateRequest.setRoleIds(getSelectedRoleIds(user));
 
         model.addAttribute("user", user);
         model.addAttribute("displayName", DisplayUtils.formatDisplayName(user));
         model.addAttribute("roleLabel", getRoleLabel(user));
         model.addAttribute("roleOptions", getRoleOptions());
+        model.addAttribute("roleCodesById", getRoleCodesById());
         Long currentAdminId = getCurrentUserId(authentication);
         model.addAttribute("currentAdminId", currentAdminId);
         model.addAttribute("canDeactivateSelf", currentAdminId != null && currentAdminId.equals(user.getId()));
@@ -123,13 +125,17 @@ public class AdminUserController {
                 request.setIsActive(Boolean.TRUE);
             }
             if (currentAdminId.equals(id)) {
-                request.setRoleName(null);
+                request.setRoleIds(null);
             }
         }
 
-        userService.updateUser(id, request);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật thông tin tài khoản.");
-        return "redirect:/admin/account/" + id + "/edit";
+        try {
+            userService.updateUser(id, request);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật thông tin tài khoản.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/list-user/" + id + "/edit";
     }
 
     @PostMapping("/{id}/reset-password")
@@ -138,7 +144,7 @@ public class AdminUserController {
         String temporaryPassword = userService.resetPassword(id);
         redirectAttributes.addFlashAttribute("successMessage", "Đã đặt lại mật khẩu thành công.");
         redirectAttributes.addFlashAttribute("temporaryPassword", temporaryPassword);
-        return "redirect:/admin/account/" + id + "/edit";
+        return "redirect:/admin/list-user/" + id + "/edit";
     }
 
     private boolean matchesKeyword(User user, String keyword) {
@@ -188,21 +194,21 @@ public class AdminUserController {
         return user.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .filter(role -> role != null && role.getRoleName() != null)
+                .sorted((left, right) -> Integer.compare(getRoleOrder(left.getRoleName()), getRoleOrder(right.getRoleName())))
                 .map(role -> toRoleLabel(role.getRoleName()))
                 .collect(Collectors.joining(", "));
     }
 
-    private String getPrimaryRoleName(User user) {
+    private List<Long> getSelectedRoleIds(User user) {
         if (user.getUserRoles() == null || user.getUserRoles().isEmpty()) {
-            return "";
+            return List.of();
         }
 
         return user.getUserRoles().stream()
                 .map(UserRole::getRole)
-                .filter(role -> role != null && role.getRoleName() != null)
-                .map(role -> role.getRoleName().name())
-                .findFirst()
-                .orElse("");
+                .filter(role -> role != null && role.getId() != null)
+                .map(role -> role.getId())
+                .toList();
     }
 
     private String getStatusLabel(User user) {
@@ -227,14 +233,35 @@ public class AdminUserController {
         return toGenderLabel(user.getGender());
     }
 
-    private Map<String, String> getRoleOptions() {
-        Map<String, String> roleOptions = new LinkedHashMap<>();
-        roleOptions.put(RoleName.SYSTEM_ADMIN.name(), "Quản trị hệ thống");
-        roleOptions.put(RoleName.HOTEL_ADMIN.name(), "Quản trị khách sạn");
-        roleOptions.put(RoleName.MANAGER.name(), "Quản lý");
-        roleOptions.put(RoleName.RECEPTIONIST.name(), "Lễ tân");
-        roleOptions.put(RoleName.GUEST.name(), "Khách hàng");
-        return roleOptions;
+    private Map<Long, String> getRoleOptions() {
+        return roleRepository.findAll().stream()
+                .filter(role -> role.getId() != null && role.getRoleName() != null)
+                .sorted((left, right) -> Integer.compare(getRoleOrder(left.getRoleName()), getRoleOrder(right.getRoleName())))
+                .collect(Collectors.toMap(
+                        role -> role.getId(),
+                        role -> toRoleLabel(role.getRoleName()),
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
+    }
+
+    private Map<Long, String> getRoleCodesById() {
+        return roleRepository.findAll().stream()
+                .filter(role -> role.getId() != null && role.getRoleName() != null)
+                .collect(Collectors.toMap(
+                        role -> role.getId(),
+                        role -> role.getRoleName().name()
+                ));
+    }
+
+    private int getRoleOrder(RoleName roleName) {
+        return switch (roleName) {
+            case SYSTEM_ADMIN -> 1;
+            case HOTEL_ADMIN -> 2;
+            case MANAGER -> 3;
+            case RECEPTIONIST -> 4;
+            case GUEST -> 5;
+        };
     }
 
     private String toRoleLabel(RoleName roleName) {
@@ -246,6 +273,7 @@ public class AdminUserController {
             case GUEST -> "Khách hàng";
         };
     }
+
     private String toGenderLabel(Gender gender) {
         return switch (gender) {
             case MALE -> "Nam";

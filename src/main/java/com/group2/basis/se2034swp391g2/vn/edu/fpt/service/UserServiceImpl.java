@@ -25,8 +25,11 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -115,52 +118,79 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(existingUser);
 
-        if (request.getRoleName() != null && !request.getRoleName().trim().isEmpty()) {
-            RoleName roleEnum;
-            try {
-                roleEnum = RoleName.valueOf(request.getRoleName().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid role name provided: " + request.getRoleName());
-            }
+        if (request.getRoleIds() != null) {
+            List<Long> roleIds = request.getRoleIds().stream()
+                    .filter(roleId -> roleId != null)
+                    .distinct()
+                    .toList();
 
-            Role newRole = roleRepository.findByRoleName(roleEnum);
-            if (newRole == null) {
-                throw new RuntimeException("Role not found in database: " + roleEnum);
-            }
+            List<Role> newRoles = roleRepository.findAllById(roleIds);
+            validateRoleCombination(roleIds, newRoles);
 
-            List<UserRole> currentUserRoles = userRoleRepository.findAllByUserId(existingUser.getId());
-            boolean alreadyHasOnlyRequestedRole = currentUserRoles.size() == 1
-                    && currentUserRoles.getFirst().getRole() != null
-                    && currentUserRoles.getFirst().getRole().getId().equals(newRole.getId());
+            Set<RoleName> roleNames = newRoles.stream()
+                    .map(Role::getRoleName)
+                    .collect(Collectors.toSet());
 
-            existingUser.setUserType(resolveUserType(roleEnum));
+            existingUser.setUserType(resolveUserType(roleNames));
             existingUser.setUpdatedAt(Instant.now());
             userRepository.saveAndFlush(existingUser);
-
-            if (alreadyHasOnlyRequestedRole) {
-                return;
-            }
 
             userRoleRepository.deleteByUserId(existingUser.getId());
             userRoleRepository.flush();
             entityManager.clear();
 
-            UserRole newUserRole = new UserRole();
-            newUserRole.setId(new UserRoleId(id, newRole.getId()));
-            newUserRole.setUser(entityManager.getReference(User.class, id));
-            newUserRole.setRole(entityManager.getReference(Role.class, newRole.getId()));
-            newUserRole.setAssignedAt(Instant.now());
+            User assignedBy = request.getCurrentAdminId() != null
+                    ? entityManager.getReference(User.class, request.getCurrentAdminId())
+                    : null;
 
-            if (request.getCurrentAdminId() != null) {
-                newUserRole.setAssignedBy(entityManager.getReference(User.class, request.getCurrentAdminId()));
+            for (Role role : newRoles) {
+                UserRole newUserRole = new UserRole();
+                newUserRole.setId(new UserRoleId(id, role.getId()));
+                newUserRole.setUser(entityManager.getReference(User.class, id));
+                newUserRole.setRole(entityManager.getReference(Role.class, role.getId()));
+                newUserRole.setAssignedAt(Instant.now());
+                newUserRole.setAssignedBy(assignedBy);
+                userRoleRepository.save(newUserRole);
             }
-
-            userRoleRepository.save(newUserRole);
         }
     }
 
-    private UserType resolveUserType(RoleName roleName) {
-        return roleName == RoleName.GUEST ? UserType.GUEST : UserType.STAFF;
+    private void validateRoleCombination(List<Long> requestedRoleIds, List<Role> roles) {
+        if (requestedRoleIds.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn ít nhất một vai trò.");
+        }
+
+        if (roles.size() != requestedRoleIds.size()) {
+            throw new IllegalArgumentException("Vai trò không hợp lệ.");
+        }
+
+        Set<RoleName> roleNames = roles.stream()
+                .map(Role::getRoleName)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        if (roleNames.contains(RoleName.GUEST) && roleNames.size() > 1) {
+            throw new IllegalArgumentException("Khách hàng không thể có thêm vai trò nhân viên.");
+        }
+
+        if (roleNames.contains(RoleName.SYSTEM_ADMIN) && roleNames.size() > 1) {
+            throw new IllegalArgumentException("Quản trị hệ thống không thể kiêm nhiệm vai trò khác.");
+        }
+
+        boolean hasHotelAdmin = roleNames.contains(RoleName.HOTEL_ADMIN);
+        boolean hasManager = roleNames.contains(RoleName.MANAGER);
+        boolean hasReceptionist = roleNames.contains(RoleName.RECEPTIONIST);
+
+        if (!hasHotelAdmin
+                && !hasManager
+                && !hasReceptionist
+                && !roleNames.contains(RoleName.GUEST)
+                && !roleNames.contains(RoleName.SYSTEM_ADMIN)) {
+            throw new IllegalArgumentException("Tổ hợp vai trò không hợp lệ.");
+        }
+    }
+
+    private UserType resolveUserType(Set<RoleName> roleNames) {
+        return roleNames.size() == 1 && roleNames.contains(RoleName.GUEST) ? UserType.GUEST : UserType.STAFF;
     }
 
     @Override
