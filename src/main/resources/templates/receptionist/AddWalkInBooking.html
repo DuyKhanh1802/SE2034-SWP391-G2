@@ -1,122 +1,15 @@
-<!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>ViHotel HMS - Tạo đặt phòng trực tiếp</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap"
-          rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" th:href="@{/receptionist/AddWalkInBooking.css}">
-</head>
-
+﻿<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
 <body>
+<main layout:fragment="content">
+<section class="page-wrapper">
 
-<div class="vihotel-layout">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <h1>ViHotel HMS</h1>
-            <p>LỄ TÂN</p>
-        </div>
-
-        <nav class="sidebar-menu">
-            <a th:href="@{/receptionist/dashboard}" class="sidebar-link">
-                <i class="bi bi-grid"></i>
-                <span>TỔNG QUAN</span>
-            </a>
-
-            <a th:href="@{/receptionist/rooms}" class="sidebar-link">
-                <i class="bi bi-door-open"></i>
-                <span>PHÒNG</span>
-            </a>
-
-            <a th:href="@{/receptionist/bookings}" class="sidebar-link active">
-                <i class="bi bi-calendar3"></i>
-                <span>ĐẶT PHÒNG</span>
-            </a>
-
-            <a th:href="@{/receptionist/check-in}" class="sidebar-link">
-                <i class="bi bi-box-arrow-in-right"></i>
-                <span>NHẬN PHÒNG</span>
-            </a>
-
-            <a th:href="@{/receptionist/check-out}" class="sidebar-link">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>TRẢ PHÒNG</span>
-            </a>
-
-            <a th:href="@{/receptionist/folios}" class="sidebar-link">
-                <i class="bi bi-receipt"></i>
-                <span>HÓA ĐƠN</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <a th:href="@{/receptionist/settings}" class="sidebar-link">
-                <i class="bi bi-gear"></i>
-                <span>CÀI ĐẶT</span>
-            </a>
-
-            <a th:href="@{/logout}" class="sidebar-link">
-                <i class="bi bi-box-arrow-left"></i>
-                <span>ĐĂNG XUẤT</span>
-            </a>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-
-        <!-- Top Bar -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <a th:href="@{/receptionist/bookings}" class="back-link">
-                    <i class="bi bi-arrow-left"></i>
-                    <span>QUAY LẠI DANH SÁCH ĐẶT PHÒNG</span>
-                </a>
-
-                <div class="topbar-divider"></div>
-
-                <nav class="topbar-nav">
-                    <a href="#">Tổng quan</a>
-                    <a href="#">Báo cáo</a>
-                    <a href="#">Kho</a>
-                </nav>
-            </div>
-
-            <div class="topbar-right">
-                <button class="topbar-icon notification-wrap">
-                    <i class="bi bi-bell"></i>
-                    <span class="notification-dot"></span>
-                </button>
-
-                <button class="topbar-icon">
-                    <i class="bi bi-question-circle"></i>
-                </button>
-
-                <a th:href="@{/receptionist/check-in}" class="btn-main">
-                    NHẬN PHÒNG NHANH
-                </a>
-            </div>
-        </header>
-
-        <!-- Page Content -->
-        <section class="page-wrapper">
-
-            <div class="page-title">
-                <h1>Tạo đặt phòng trực tiếp</h1>
-                <p>Tạo đặt phòng mới cho khách đến trực tiếp tại quầy lễ tân.</p>
+<div class="page-title">
+                <h1>New Walk-in Booking</h1>
+                <p>Create a new immediate reservation for arriving guests.</p>
             </div>
 
             <form th:action="@{/receptionist/bookings/add-walk-in}"
@@ -133,29 +26,23 @@
                         <div class="booking-input-grid">
 
                             <div class="form-group-line">
-                                <label>NGÀY NHẬN PHÒNG</label>
+                                <label>CHECK-IN DATE</label>
                                 <input type="date" th:field="*{checkInDate}">
                             </div>
 
                             <div class="form-group-line">
-                                <label>NGÀY TRẢ PHÒNG</label>
+                                <label>CHECK-OUT DATE</label>
                                 <input type="date" th:field="*{checkOutDate}">
                             </div>
 
                             <div class="form-group-line">
-                                <label>NGƯỜI LỚN</label>
-                                <input type="number"
-                                       th:field="*{adults}"
-                                       min="1"
-                                       placeholder="Nhập số người lớn">
+                                <label>ADULTS</label>
+                                <input type="number" th:field="*{adults}" min="1" placeholder="Enter adults">
                             </div>
 
                             <div class="form-group-line">
-                                <label>TRẺ EM</label>
-                                <input type="number"
-                                       th:field="*{children}"
-                                       min="0"
-                                       placeholder="Nhập số trẻ em">
+                                <label>CHILDREN</label>
+                                <input type="number" th:field="*{children}" min="0" placeholder="Enter children">
                             </div>
 
                         </div>
@@ -163,8 +50,8 @@
                         <!-- Available Rooms -->
                         <div class="room-section">
                             <div class="room-section-header">
-                                <label>PHÒNG CÒN TRỐNG</label>
-                                <span th:text="${#lists.size(availableRooms)} + ' PHÒNG TRỐNG'">0 PHÒNG TRỐNG</span>
+                                <label>AVAILABLE ROOMS</label>
+                                <span th:text="${#lists.size(availableRooms)} + ' AVAILABLE'">0 AVAILABLE</span>
                             </div>
 
                             <div class="room-grid">
@@ -182,17 +69,17 @@
                                         <span class="room-number" th:text="${room.roomNumber}"></span>
 
                                         <span class="room-info">
-                                            <span class="room-type" th:text="${room.roomTypeName}"></span>
-                                            <span class="room-price"
-                                                  th:text="${#numbers.formatDecimal(room.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                                            </span>
-                                        </span>
+        <span class="room-type" th:text="${room.roomTypeName}"></span>
+        <span class="room-price"
+              th:text="${#numbers.formatDecimal(room.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+        </span>
+    </span>
                                     </label>
                                 </div>
 
                                 <div th:if="${availableRooms == null or #lists.isEmpty(availableRooms)}"
                                      class="empty-rooms">
-                                    Không có phòng trống trong khoảng thời gian đã chọn.
+                                    No available rooms for selected dates.
                                 </div>
 
                             </div>
@@ -204,128 +91,55 @@
                     <div class="right-column">
 
                         <div class="guest-card">
-                            <h2>Thông tin khách hàng</h2>
+                            <h2>Guest Information</h2>
 
                             <div class="guest-form">
-
                                 <div class="form-group-line">
-                                    <label>HỌ</label>
-                                    <input type="text"
-                                           th:field="*{firstName}"
-                                           placeholder="Ví dụ: Nguyễn"
-                                           required>
+                                    <label>FULL NAME</label>
+                                    <input type="text" th:field="*{fullName}" placeholder="Johnathan Doe">
                                 </div>
 
                                 <div class="form-group-line">
-                                    <label>TÊN</label>
-                                    <input type="text"
-                                           th:field="*{lastName}"
-                                           placeholder="Ví dụ: Văn An"
-                                           required>
+                                    <label>EMAIL ADDRESS</label>
+                                    <input type="email" th:field="*{email}" placeholder="john.doe@example.com">
                                 </div>
 
                                 <div class="form-group-line">
-                                    <label>SỐ ĐIỆN THOẠI</label>
-
-                                    <div class="phone-combined">
-                                        <input type="text"
-                                               id="phoneCode"
-                                               class="phone-code-display"
-                                               readonly
-                                               placeholder="+84">
-
-                                        <input type="tel"
-                                               id="phoneNumberOnly"
-                                               class="phone-number-only"
-                                               placeholder="Ví dụ: 0382271507 hoặc 382271507"
-                                               maxlength="15"
-                                               pattern="[0-9]{6,15}"
-                                               inputmode="numeric"
-                                               required>
-
-                                        <input type="hidden"
-                                               th:field="*{phoneNumber}"
-                                               id="phoneNumber">
-                                    </div>
+                                    <label>PHONE NUMBER</label>
+                                    <input type="tel" th:field="*{phoneNumber}" placeholder="(+84)382271507">
                                 </div>
 
                                 <div class="form-group-line">
-                                    <label>EMAIL</label>
-                                    <input type="email"
-                                           th:field="*{email}"
-                                           placeholder="Ví dụ: khachhang@example.com"
-                                           required>
+                                    <label>ADDITIONAL NOTES</label>
+                                    <textarea th:field="*{notes}" rows="3"
+                                              placeholder="Special requests, allergies, or early check-in info..."></textarea>
                                 </div>
-
-                                <div class="form-group-line">
-                                    <label>GIỚI TÍNH</label>
-                                    <select th:field="*{gender}" required>
-                                        <option value="" disabled selected>Chọn giới tính</option>
-                                        <option value="MALE">Nam</option>
-                                        <option value="FEMALE">Nữ</option>
-                                        <option value="OTHER">Khác</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group-line">
-                                    <label>NGÀY SINH</label>
-                                    <input type="date"
-                                           th:field="*{dateOfBirth}">
-                                </div>
-
-                                <div class="form-group-line">
-                                    <label>QUỐC GIA</label>
-                                    <select th:field="*{countryId}" id="countryId" required>
-                                        <option value="" disabled>Chọn quốc gia</option>
-                                        <option th:each="country : ${countries}"
-                                                th:value="${country.id}"
-                                                th:text="${country.countryName}"
-                                                th:data-phone-code="${country.phoneCode}">
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group-line">
-                                    <label>SỐ GIẤY TỜ</label>
-                                    <input type="text"
-                                           th:field="*{identityNumber}"
-                                           placeholder="CCCD / Hộ chiếu"
-                                           required>
-                                </div>
-
-                                <div class="form-group-line">
-                                    <label>GHI CHÚ THÊM</label>
-                                    <input type="text"
-                                           th:field="*{notes}"
-                                           placeholder="Yêu cầu đặc biệt hoặc thông tin nhận phòng sớm...">
-                                </div>
-
                             </div>
 
                             <div class="price-summary">
                                 <div class="summary-row">
-                                    <span id="nightLabel">Tiền phòng</span>
+                                    <span id="nightLabel">Room Charge</span>
                                     <span id="roomCharge">0 VND</span>
                                 </div>
 
                                 <div class="summary-row">
-                                    <span>Thuế và phí (12%)</span>
+                                    <span>Taxes & Fees (12%)</span>
                                     <span id="taxAmount">0 VND</span>
                                 </div>
 
                                 <div class="summary-total">
-                                    <span>Tổng tiền</span>
+                                    <span>Total Price</span>
                                     <span id="totalPrice">0 VND</span>
                                 </div>
                             </div>
 
                             <div class="action-buttons">
                                 <button type="submit" name="action" value="create-check-in" class="btn-create-checkin">
-                                    TẠO VÀ NHẬN PHÒNG
+                                    CREATE & CHECK-IN
                                 </button>
 
                                 <button type="submit" name="action" value="create-only" class="btn-create-only">
-                                    CHỈ TẠO ĐẶT PHÒNG
+                                    CREATE ONLY
                                 </button>
                             </div>
                         </div>
@@ -335,12 +149,6 @@
                 </div>
 
             </form>
-
-        </section>
-
-    </main>
-
-</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -352,11 +160,6 @@
         const roomCharge = document.getElementById("roomCharge");
         const taxAmount = document.getElementById("taxAmount");
         const totalPrice = document.getElementById("totalPrice");
-
-        const countrySelect = document.getElementById("countryId");
-        const phoneCodeInput = document.getElementById("phoneCode");
-        const phoneNumberOnlyInput = document.getElementById("phoneNumberOnly");
-        const phoneNumberHiddenInput = document.getElementById("phoneNumber");
 
         function formatVnd(amount) {
             return new Intl.NumberFormat("vi-VN").format(amount) + " VND";
@@ -391,44 +194,12 @@
             const total = roomTotal + tax;
 
             nightLabel.textContent = nights > 0
-                ? "Tiền phòng (" + nights + " đêm)"
-                : "Tiền phòng";
+                ? "Room Charge (" + nights + " Nights)"
+                : "Room Charge";
 
             roomCharge.textContent = formatVnd(roomTotal);
             taxAmount.textContent = formatVnd(tax);
             totalPrice.textContent = formatVnd(total);
-        }
-
-        function updatePhoneCode() {
-            if (!countrySelect || !phoneCodeInput) {
-                return;
-            }
-
-            const selectedOption = countrySelect.options[countrySelect.selectedIndex];
-            const phoneCode = selectedOption ? selectedOption.getAttribute("data-phone-code") : "";
-
-            phoneCodeInput.value = phoneCode || "";
-            updateFullPhoneNumber();
-        }
-
-        function updateFullPhoneNumber() {
-            if (!phoneCodeInput || !phoneNumberOnlyInput || !phoneNumberHiddenInput) {
-                return;
-            }
-
-            const code = phoneCodeInput.value.trim();
-
-            let number = phoneNumberOnlyInput.value
-                .trim()
-                .replace(/\s+/g, "")
-                .replace(/-/g, "");
-
-
-            if (code.startsWith("+")) {
-                number = number.replace(/^0+/, "");
-            }
-
-            phoneNumberHiddenInput.value = code + number;
         }
 
         roomCheckboxes.forEach(function (checkbox) {
@@ -438,18 +209,10 @@
         checkInInput.addEventListener("change", updateSummary);
         checkOutInput.addEventListener("change", updateSummary);
 
-        if (countrySelect) {
-            countrySelect.addEventListener("change", updatePhoneCode);
-        }
-
-        if (phoneNumberOnlyInput) {
-            phoneNumberOnlyInput.addEventListener("input", updateFullPhoneNumber);
-        }
-
         updateSummary();
-        updatePhoneCode();
     });
 </script>
-
+</section>
+</main>
 </body>
 </html>

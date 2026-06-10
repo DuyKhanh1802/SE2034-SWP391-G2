@@ -1,7 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.configuration;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.RoleSwitchController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -20,8 +18,7 @@ public class SpringSecurity {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-
-                        // 1. Public URLs
+                        // 1. Nhóm các đường dẫn Public (Ai cũng vào được)
                         .requestMatchers(
                                 "/",
                                 "/home",
@@ -30,12 +27,19 @@ public class SpringSecurity {
                                 "/auth/**",
                                 "/page/**",
                                 "/fragment/**",
+                                "/css/**",
+                                "/js/**",
                                 "/images/**",
-                                "/guest/**"
+                                "/admin/Admin.css",
+                                "/Admin/**",
+                                "/profile/**",   // Đã gộp /profile/** vào đây
+                                "/guest/**"      // Đã gộp /guest/** vào đây
                         ).permitAll()
-                        .requestMatchers("/profile/**", "/api/user/switch-role").authenticated()
+
+                        // 2. Nhóm quyền SYSTEM_ADMIN
                         .requestMatchers("/admin/account/**").hasRole("SYSTEM_ADMIN")
-                        .requestMatchers("/admin/list-user/**").hasRole("SYSTEM_ADMIN")
+
+                        // 3. Nhóm quyền HOTEL_ADMIN
                         .requestMatchers(
                                 "/admin/dashboard",
                                 "/admin/list_room/**",
@@ -44,8 +48,13 @@ public class SpringSecurity {
                                 "/admin/services/**",
                                 "/admin/promotions/**"
                         ).hasRole("HOTEL_ADMIN")
+
+                        // 4. Các quyền khác
+                        .requestMatchers("/admin/**").hasAnyRole("SYSTEM_ADMIN", "HOTEL_ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
+
+                        // 5. Mọi request khác đều phải đăng nhập
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -61,7 +70,6 @@ public class SpringSecurity {
                         .deleteCookies("JSESSIONID")
                 )
                 .csrf(Customizer.withDefaults());
-
         return http.build();
     }
 
@@ -69,11 +77,18 @@ public class SpringSecurity {
     public AuthenticationSuccessHandler cusAuthenticationSuccessHandler() {
         return (request, response, authentication) -> {
             Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
-            RoleName activeRole = RoleSwitchController.resolveDefaultActiveRole(roles);
-            request.getSession(true).setAttribute(RoleSwitchController.CURRENT_ACTIVE_ROLE, activeRole.name());
-            request.getSession(true).setAttribute(RoleSwitchController.CURRENT_ACTIVE_ROLE_LABEL, RoleSwitchController.getRoleLabel(activeRole));
-            request.getSession(true).setAttribute(RoleSwitchController.AVAILABLE_ACTIVE_ROLE_OPTIONS, RoleSwitchController.getAvailableActiveRoleOptions(roles));
-            response.sendRedirect(RoleSwitchController.getDashboardPath(activeRole));
+
+            if (roles.contains("ROLE_SYSTEM_ADMIN")) {
+                response.sendRedirect("/admin/account");
+            } else if (roles.contains("ROLE_HOTEL_ADMIN")) {
+                response.sendRedirect("/admin/dashboard");
+            } else if (roles.contains("ROLE_RECEPTIONIST")) {
+                response.sendRedirect("/receptionist/dashboard");
+            } else if (roles.contains("ROLE_MANAGER")) {
+                response.sendRedirect("/manager/dashboard");
+            } else {
+                response.sendRedirect("/home");
+            }
         };
     }
 

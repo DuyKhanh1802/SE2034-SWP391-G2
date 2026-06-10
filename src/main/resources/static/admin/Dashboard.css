@@ -10,24 +10,7 @@ body {
     color: #1d1d1d;
 }
 
-.dashboard-wrapper {
-    min-height: 100vh;
-}
-
 /* SIDEBAR */
-.sidebar {
-    width: 260px;
-    background: #f1f1f1;
-    border-right: 1px solid #ddd;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-}
-
 .logo {
     padding: 40px 30px;
     font-size: 32px;
@@ -61,43 +44,6 @@ body {
     background: #ddd7d1;
     color: #000;
 }
-
-.sidebar-user {
-    border-top: 1px solid #ddd;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: inherit;
-    transition: 0.25s ease;
-}
-
-.sidebar-user:hover {
-    background: #e8e2dc;
-}
-
-.sidebar-user img {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid #d2ccc5;
-}
-
-.sidebar-user h6 {
-    font-size: 12px;
-    margin-bottom: 4px;
-    color: #111;
-    letter-spacing: 0.8px;
-}
-
-.sidebar-user p {
-    font-size: 13px;
-    color: #777;
-    margin-bottom: 0;
-}
-
-
 
 /* WELCOME */
 .welcome-section {
@@ -393,21 +339,6 @@ body {
 }
 
 @media (max-width: 768px) {
-    .sidebar {
-        position: static;
-        width: 100%;
-        min-height: auto;
-    }
-
-    .dashboard-wrapper {
-        flex-direction: column;
-    }
-
-    .main-content {
-        margin-left: 0;
-        padding: 28px 22px;
-    }
-
     .welcome-section h1 {
         font-size: 48px;
     }
