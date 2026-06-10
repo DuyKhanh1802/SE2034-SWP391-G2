@@ -13,13 +13,6 @@
                 <span>Quản lý người dùng</span>
             </a>
         </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/profile')} ? 'active' : ''">
-            <a th:href="@{/profile/edit}">
-                <i class="fas fa-user"></i>
-                <span>Hồ sơ của tôi</span>
-            </a>
-        </li>
     </ul>
 
     <ul class="sidebar-menu" th:if="${session.CURRENT_ACTIVE_ROLE == 'HOTEL_ADMIN'}">
@@ -43,13 +36,6 @@
                 <span>Khuyến mãi</span>
             </a>
         </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/profile')} ? 'active' : ''">
-            <a th:href="@{/profile/edit}">
-                <i class="fas fa-user"></i>
-                <span>Hồ sơ của tôi</span>
-            </a>
-        </li>
     </ul>
 
     <ul class="sidebar-menu" th:if="${session.CURRENT_ACTIVE_ROLE == 'MANAGER'}">
@@ -64,13 +50,6 @@
             <a th:href="@{/manager/promotions}">
                 <i class="fas fa-tags"></i>
                 <span>Khuyến mãi</span>
-            </a>
-        </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/profile')} ? 'active' : ''">
-            <a th:href="@{/profile/edit}">
-                <i class="fas fa-user"></i>
-                <span>Hồ sơ của tôi</span>
             </a>
         </li>
     </ul>
@@ -88,24 +67,6 @@
                 <i class="fas fa-calendar-check"></i>
                 <span>Đặt phòng</span>
             </a>
-        </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/profile')} ? 'active' : ''">
-            <a th:href="@{/profile/edit}">
-                <i class="fas fa-user"></i>
-                <span>Hồ sơ của tôi</span>
-            </a>
-        </li>
-    </ul>
-
-    <ul class="sidebar-menu">
-        <li>
-            <form th:action="@{/auth/logout}" method="post">
-                <button type="submit">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Đăng xuất</span>
-                </button>
-            </form>
         </li>
     </ul>
 </div>
