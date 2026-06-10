@@ -36,7 +36,6 @@
         <div class="hero-content">
             <p class="hero-subtitle">A refined stay in the heart of Hanoi</p>
             <h1>V'HOTEL</h1>
-            <a th:href="@{/booking}" class="hero-btn">ĐẶT PHÒNG NGAY</a>
         </div>
     </section>
 
@@ -88,81 +87,54 @@
     </section>
 
     <!-- ROOM TYPE SLIDER -->
-    <section class="room-type-section section-space">
+    <!-- ROOM CATEGORY HERO SLIDER -->
+    <section class="room-category-hero-section">
 
-        <div class="section-heading text-center">
-            <p class="section-label">ROOMS & SUITES</p>
-            <h2>Room Category</h2>
-            <p class="section-desc">
-                Lựa chọn hạng phòng phù hợp cho hành trình nghỉ dưỡng của bạn tại V'Hotel.
-            </p>
-        </div>
+        <div class="room-category-slider-wrapper">
 
-        <div class="room-slider-wrapper">
-
-            <button class="slider-btn slider-prev" type="button" data-target="roomTypeSlider">
+            <button class="room-hero-arrow room-hero-prev" type="button" data-target="roomTypeSlider">
                 <i class="bi bi-chevron-left"></i>
             </button>
 
-            <div class="room-slider" id="roomTypeSlider">
+            <div class="room-category-slider" id="roomTypeSlider">
 
-                <article class="room-slide"
+                <article class="room-category-slide"
                          th:each="roomType : ${roomTypes}">
 
-                    <div class="room-slide-image">
-                        <img th:if="${roomType.imageUrl != null}"
-                             th:src="${roomType.imageUrl}"
-                             th:alt="${roomType.displayName}">
+                    <img th:if="${roomType.imageUrl != null}"
+                         th:src="${roomType.imageUrl}"
+                         th:alt="${roomType.displayName}">
 
-                        <div th:if="${roomType.imageUrl == null}" class="room-placeholder">
-                            <span th:text="${roomType.displayName}">Room Type</span>
-                        </div>
+                    <div th:if="${roomType.imageUrl == null}" class="room-category-placeholder">
+                        <span th:text="${roomType.displayName}">Room Type</span>
+                    </div>
 
-                        <div class="room-slide-overlay"></div>
+                    <div class="room-category-overlay"></div>
 
-                        <div class="room-slide-content">
-                            <p class="section-label light">V'HOTEL HANOI</p>
-                            <h3 th:text="${roomType.displayName}">Deluxe Room</h3>
+                    <div class="room-category-content">
+                        <h2 th:text="${roomType.displayName}">Suite Sojourn</h2>
 
-                            <p th:text="${roomType.description}">
-                                Elegant room description.
-                            </p>
+                        <p th:text="${roomType.description}">
+                            With breathtaking views and refined interiors, explore our exceptional rooms for an unforgettable V'Hotel experience.
+                        </p>
+                    </div>
 
-                            <div class="room-meta">
-                                <span>
-                                    <i class="bi bi-person"></i>
-                                    <span th:text="${roomType.capacity}">2</span> guests
-                                </span>
-
-                                <span>
-                                    From
-                                    <strong th:text="${#numbers.formatDecimal(roomType.basePrice, 0, 'COMMA', 0, 'POINT')}">
-                                        0
-                                    </strong>
-                                    VND / night
-                                </span>
-                            </div>
-
-                            <div class="room-actions">
-                                <a th:href="@{/room-types/{id}(id=${roomType.id})}" class="white-outline-btn">
-                                    XEM CHI TIẾT
-                                </a>
-                                <a th:href="@{/booking(roomTypeId=${roomType.id})}" class="white-solid-btn">
-                                    ĐẶT PHÒNG
-                                </a>
-                            </div>
-                        </div>
+                    <div class="room-category-reserve">
+                        <a th:href="@{/booking(roomTypeId=${roomType.id})}">
+                            RESERVE NOW
+                        </a>
                     </div>
 
                 </article>
 
             </div>
 
-            <button class="slider-btn slider-next" type="button" data-target="roomTypeSlider">
+            <button class="room-hero-arrow room-hero-next" type="button" data-target="roomTypeSlider">
                 <i class="bi bi-chevron-right"></i>
             </button>
 
         </div>
+
     </section>
 
     <!-- DINING -->

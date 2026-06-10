@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     handleHeaderScroll();
     window.addEventListener("scroll", handleHeaderScroll);
 
-    const sliderButtons = document.querySelectorAll(".slider-btn");
+    const sliderButtons = document.querySelectorAll(".slider-btn, .room-hero-arrow");
 
     sliderButtons.forEach(function (button) {
         button.addEventListener("click", function () {
@@ -23,8 +23,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!slider) return;
 
-            const direction = button.classList.contains("slider-next") ? 1 : -1;
-            const scrollAmount = slider.clientWidth * 0.82;
+            const isNext =
+                button.classList.contains("slider-next") ||
+                button.classList.contains("room-hero-next");
+
+            const direction = isNext ? 1 : -1;
+            const scrollAmount = slider.clientWidth;
 
             slider.scrollBy({
                 left: direction * scrollAmount,

@@ -15,14 +15,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.RequestMapping;
+
 @RequiredArgsConstructor
 @Controller
+@RequestMapping("/home")
 public class HomeController {
 
     private final RoomTypeRepository roomTypeRepository;
     private final ServiceRepository serviceRepository;
 
-    @GetMapping("/home")
+    @GetMapping()
     public String home(Model model){
         List<HomeRoomType> roomTypes = roomTypeRepository.findAllRoomtypeForHome(ImageEntityType.ROOM_TYPE);
 
@@ -37,7 +40,7 @@ public class HomeController {
         String heroVideoUrl = "https://res.cloudinary.com/dhwtycrov/video/upload/video_cluubu.mp4";
 
         model.addAttribute("heroVideoUrl", heroVideoUrl);
-        model.addAttribute("roomType",roomTypes);
+        model.addAttribute("roomTypes",roomTypes);
         model.addAttribute("featuredService",featuredService);
         model.addAttribute("diningService",diningService);
         model.addAttribute("wellnessService",wellnessService);
@@ -45,4 +48,11 @@ public class HomeController {
         return "page/HomePage";
 
     }
+
+        @GetMapping("/room-types")
+        public String roomTypes(Model model){
+            List<HomeRoomType> roomTypes = roomTypeRepository.findAllRoomtypeForHome(ImageEntityType.ROOM_TYPE);
+            model.addAttribute("roomTypes",roomTypes);
+            return "page/RoomTypePage";
+        }
 }
