@@ -10,7 +10,8 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ImageRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeRepository;
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Service
@@ -36,9 +37,13 @@ public class RoomService {
         return roomTypeRepository.findByIsDeletedFalse();
     }
 
+    public Page<Room> getRoomsPage(Pageable pageable) {
+        return roomRepository.findByIsDeletedFalse(pageable);
+    }
+    
     public Room getRoomById(Long id) {
         return roomRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Room not found!"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
     }
 
     public void createRoom(String roomNumber,
@@ -50,11 +55,11 @@ public class RoomService {
                            Integer primaryImageIndex) {
 
         if (roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
-            throw new IllegalArgumentException("Room number already exists!");
+            throw new IllegalArgumentException("Số phòng đã tồn tại!");
         }
 
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Room type not found!"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng!"));
 
         Room room = new Room();
         room.setRoomNumber(roomNumber);
@@ -77,15 +82,15 @@ public class RoomService {
                            RoomStatus status) {
 
         Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Room not found!"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
 
         if (!room.getRoomNumber().equalsIgnoreCase(roomNumber)
                 && roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
-            throw new IllegalArgumentException("Room number already exists!");
+            throw new IllegalArgumentException("Số phòng đã tồn tại!");
         }
 
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Room type not found!"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng!"));
 
         room.setRoomNumber(roomNumber);
         room.setRoomType(roomType);
@@ -104,7 +109,9 @@ public class RoomService {
             return;
         }
 
-        if (primaryImageIndex == null || primaryImageIndex < 0 || primaryImageIndex >= imageUrls.size()) {
+        if (primaryImageIndex == null
+                || primaryImageIndex < 0
+                || primaryImageIndex >= imageUrls.size()) {
             primaryImageIndex = 0;
         }
 
@@ -120,4 +127,20 @@ public class RoomService {
             imageRepository.save(image);
         }
     }
+
+    public void deleteRoom(Long id) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
+
+        room.setIsDeleted(true);
+        roomRepository.save(room);
+    }
+
+    public List<Image> getRoomImages(Long roomId) {
+        return imageRepository.findByEntityTypeAndEntityIdOrderBySortOrderAsc(
+                ImageEntityType.ROOM,
+                roomId
+        );
+    }
+
 }

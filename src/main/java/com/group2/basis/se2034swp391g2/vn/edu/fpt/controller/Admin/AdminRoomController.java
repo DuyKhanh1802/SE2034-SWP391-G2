@@ -2,11 +2,15 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Admin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CloudinaryService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
+
 public class AdminRoomController {
 
     private final RoomService roomService;
@@ -36,19 +41,35 @@ public class AdminRoomController {
         this.profileService = profileService;
     }
 
+    // =========================
+    // LIST ROOM WITH PAGINATION
+    // =========================
     @GetMapping("/admin/list_room")
-    public String listRooms(Model model,
+    public String listRooms(@RequestParam(defaultValue = "0") int page,
+                            Model model,
                             Authentication authentication,
                             HttpSession session) {
 
         User currentUser = profileService.resolveCurrentUser(authentication, session);
 
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Room> roomPage = roomService.getRoomsPage(pageable);
+
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("rooms", roomService.getAllRooms());
+        model.addAttribute("rooms", roomPage.getContent());
+
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", roomPage.getTotalPages());
+        model.addAttribute("totalItems", roomPage.getTotalElements());
+        model.addAttribute("pageSize", pageSize);
 
         return "admin/ListRoom";
     }
 
+    // =========================
+    // SHOW ADD ROOM FORM
+    // =========================
     @GetMapping("/admin/list_room/add")
     public String showAddRoomForm(Model model,
                                   Authentication authentication,
@@ -64,6 +85,9 @@ public class AdminRoomController {
         return "admin/AddRoom";
     }
 
+    // =========================
+    // ADD ROOM
+    // =========================
     @PostMapping("/admin/list_room/add")
     public String addRoom(@RequestParam String roomNumber,
                           @RequestParam Long roomTypeId,
@@ -88,7 +112,7 @@ public class AdminRoomController {
                     primaryImageIndex
             );
 
-            redirectAttributes.addFlashAttribute("successMessage", "Add room successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm phòng thành công!");
 
             return "redirect:/admin/list_room";
 
@@ -112,6 +136,9 @@ public class AdminRoomController {
         }
     }
 
+    // =========================
+    // UPLOAD ROOM IMAGE TO CLOUDINARY
+    // =========================
     @PostMapping("/admin/room-images/upload")
     @ResponseBody
     public Map<String, String> uploadRoomImage(@RequestParam("file") MultipartFile file) {
@@ -122,7 +149,10 @@ public class AdminRoomController {
         );
     }
 
-    @GetMapping("/admin/rooms/edit/{id}")
+    // =========================
+    // SHOW EDIT ROOM FORM
+    // =========================
+    @GetMapping("/admin/list_room/edit/{id}")
     public String showEditRoomForm(@PathVariable Long id,
                                    Model model,
                                    Authentication authentication,
@@ -139,7 +169,10 @@ public class AdminRoomController {
         return "admin/EditRoom";
     }
 
-    @PostMapping("/admin/rooms/edit/{id}")
+    // =========================
+    // UPDATE ROOM
+    // =========================
+    @PostMapping("/admin/list_room/edit/{id}")
     public String updateRoom(@PathVariable Long id,
                              @RequestParam String roomNumber,
                              @RequestParam Long roomTypeId,
@@ -161,7 +194,7 @@ public class AdminRoomController {
                     status
             );
 
-            redirectAttributes.addFlashAttribute("successMessage", "Update room successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phòng thành công!");
 
             return "redirect:/admin/list_room";
 
@@ -180,7 +213,10 @@ public class AdminRoomController {
         }
     }
 
-    @GetMapping("/admin/rooms/view/{id}")
+    // =========================
+    // VIEW ROOM DETAIL
+    // =========================
+    @GetMapping("/admin/list_room/view/{id}")
     public String viewRoomDetail(@PathVariable Long id,
                                  Model model,
                                  Authentication authentication,
@@ -190,7 +226,22 @@ public class AdminRoomController {
 
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("room", roomService.getRoomById(id));
+        model.addAttribute("roomImages", roomService.getRoomImages(id));
 
         return "admin/ViewRoomDetail";
+    }
+
+    // =========================
+    // DELETE ROOM
+    // =========================
+    @PostMapping("/admin/list_room/delete/{id}")
+    public String deleteRoom(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes) {
+
+        roomService.deleteRoom(id);
+
+        redirectAttributes.addFlashAttribute("successMessage", "Xóa phòng thành công!");
+
+        return "redirect:/admin/list_room";
     }
 }
