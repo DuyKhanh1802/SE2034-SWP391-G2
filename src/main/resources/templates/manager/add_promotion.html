@@ -204,7 +204,10 @@
 
 <script>
     const promotionForm = document.getElementById("promotionForm");
+    const nameInput = document.getElementById("name");
     const discountAmount = document.getElementById("discountAmount");
+    const descriptionInput = document.getElementById("description");
+    const usageLimitInput = document.getElementById("usageLimit");
     const validFromInput = document.getElementById("validFromInput");
     const validToInput = document.getElementById("validToInput");
     const featured = document.getElementById("featured");
@@ -240,6 +243,63 @@
         clientErrorMessage.textContent = "";
         clientErrorMessage.style.display = "none";
     }
+
+    function bindVietnameseValidation(input, messages) {
+        input.addEventListener("invalid", function () {
+            if (input.validity.valueMissing) {
+                input.setCustomValidity(messages.valueMissing);
+                return;
+            }
+
+            if (input.validity.rangeUnderflow && messages.rangeUnderflow) {
+                input.setCustomValidity(messages.rangeUnderflow);
+                return;
+            }
+
+            if (input.validity.badInput && messages.badInput) {
+                input.setCustomValidity(messages.badInput);
+                return;
+            }
+
+            input.setCustomValidity("");
+        });
+
+        input.addEventListener("input", function () {
+            input.setCustomValidity("");
+        });
+
+        input.addEventListener("change", function () {
+            input.setCustomValidity("");
+        });
+    }
+
+    bindVietnameseValidation(nameInput, {
+        valueMissing: "Tên chiến dịch không được để trống."
+    });
+
+    bindVietnameseValidation(discountAmount, {
+        valueMissing: "Số tiền giảm không được để trống.",
+        rangeUnderflow: "Số tiền giảm phải lớn hơn 0.",
+        badInput: "Vui lòng nhập số tiền giảm hợp lệ."
+    });
+
+    bindVietnameseValidation(descriptionInput, {
+        valueMissing: "Mô tả ngắn không được để trống."
+    });
+
+    bindVietnameseValidation(usageLimitInput, {
+        valueMissing: "Giới hạn lượt dùng không được để trống.",
+        rangeUnderflow: "Giới hạn lượt dùng phải lớn hơn 0.",
+        badInput: "Vui lòng nhập giới hạn lượt dùng hợp lệ."
+    });
+
+    bindVietnameseValidation(validFromInput, {
+        valueMissing: "Ngày bắt đầu không được để trống."
+    });
+
+    bindVietnameseValidation(validToInput, {
+        valueMissing: "Ngày kết thúc không được để trống."
+    });
 
     flatpickr(validFromInput, {
         enableTime: true,
