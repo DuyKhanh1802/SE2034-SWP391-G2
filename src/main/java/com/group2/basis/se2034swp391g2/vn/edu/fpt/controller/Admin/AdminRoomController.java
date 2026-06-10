@@ -7,6 +7,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CloudinaryService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-
 public class AdminRoomController {
 
     private final RoomService roomService;
@@ -42,23 +42,38 @@ public class AdminRoomController {
     }
 
     // =========================
+    // COMMON LAYOUT DATA
+    // =========================
+    private void addLayoutData(Model model,
+                               Authentication authentication,
+                               HttpSession session,
+                               HttpServletRequest request,
+                               String pageTitle) {
+
+        User currentUser = profileService.resolveCurrentUser(authentication, session);
+
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("currentUri", request.getRequestURI());
+        model.addAttribute("pageTitle", pageTitle);
+    }
+
+    // =========================
     // LIST ROOM WITH PAGINATION
     // =========================
     @GetMapping("/admin/list_room")
     public String listRooms(@RequestParam(defaultValue = "0") int page,
                             Model model,
                             Authentication authentication,
-                            HttpSession session) {
+                            HttpSession session,
+                            HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Danh sách phòng");
 
         int pageSize = 5;
         Pageable pageable = PageRequest.of(page, pageSize);
         Page<Room> roomPage = roomService.getRoomsPage(pageable);
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("rooms", roomPage.getContent());
-
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", roomPage.getTotalPages());
         model.addAttribute("totalItems", roomPage.getTotalElements());
@@ -73,11 +88,11 @@ public class AdminRoomController {
     @GetMapping("/admin/list_room/add")
     public String showAddRoomForm(Model model,
                                   Authentication authentication,
-                                  HttpSession session) {
+                                  HttpSession session,
+                                  HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("roomTypes", roomService.getAllRoomTypes());
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
@@ -99,7 +114,8 @@ public class AdminRoomController {
                           Model model,
                           RedirectAttributes redirectAttributes,
                           Authentication authentication,
-                          HttpSession session) {
+                          HttpSession session,
+                          HttpServletRequest request) {
 
         try {
             roomService.createRoom(
@@ -117,9 +133,8 @@ public class AdminRoomController {
             return "redirect:/admin/list_room";
 
         } catch (IllegalArgumentException e) {
-            User currentUser = profileService.resolveCurrentUser(authentication, session);
+            addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-            model.addAttribute("currentUser", currentUser);
             model.addAttribute("errorMessage", e.getMessage());
 
             model.addAttribute("roomTypes", roomService.getAllRoomTypes());
@@ -156,11 +171,11 @@ public class AdminRoomController {
     public String showEditRoomForm(@PathVariable Long id,
                                    Model model,
                                    Authentication authentication,
-                                   HttpSession session) {
+                                   HttpSession session,
+                                   HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("room", roomService.getRoomById(id));
         model.addAttribute("roomTypes", roomService.getAllRoomTypes());
         model.addAttribute("viewTypes", ViewType.values());
@@ -182,7 +197,8 @@ public class AdminRoomController {
                              Model model,
                              RedirectAttributes redirectAttributes,
                              Authentication authentication,
-                             HttpSession session) {
+                             HttpSession session,
+                             HttpServletRequest request) {
 
         try {
             roomService.updateRoom(
@@ -199,15 +215,20 @@ public class AdminRoomController {
             return "redirect:/admin/list_room";
 
         } catch (IllegalArgumentException e) {
-            User currentUser = profileService.resolveCurrentUser(authentication, session);
+            addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
 
-            model.addAttribute("currentUser", currentUser);
             model.addAttribute("errorMessage", e.getMessage());
 
             model.addAttribute("room", roomService.getRoomById(id));
             model.addAttribute("roomTypes", roomService.getAllRoomTypes());
             model.addAttribute("viewTypes", ViewType.values());
             model.addAttribute("roomStatuses", RoomStatus.values());
+
+            model.addAttribute("roomNumber", roomNumber);
+            model.addAttribute("selectedRoomTypeId", roomTypeId);
+            model.addAttribute("floor", floor);
+            model.addAttribute("selectedViewType", viewType);
+            model.addAttribute("selectedStatus", status);
 
             return "admin/EditRoom";
         }
@@ -220,11 +241,11 @@ public class AdminRoomController {
     public String viewRoomDetail(@PathVariable Long id,
                                  Model model,
                                  Authentication authentication,
-                                 HttpSession session) {
+                                 HttpSession session,
+                                 HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Chi tiết phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("room", roomService.getRoomById(id));
         model.addAttribute("roomImages", roomService.getRoomImages(id));
 

@@ -1,8 +1,4 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/staff-layout}">
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -16,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Common dashboard style -->
     <link rel="stylesheet" th:href="@{/admin/Dashboard.css}">
@@ -26,57 +22,17 @@
 </head>
 
 <body>
-<main layout:fragment="content">
-<!-- PAGE TITLE -->
 
 <div class="dashboard-wrapper d-flex">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div>
-            <div class="logo">
-                ViHotel HMS
-            </div>
-
-            <ul class="menu list-unstyled">
-                <li>
-                    <a th:href="@{/admin/dashboard}">
-                        <i class="fa-solid fa-chart-line"></i>
-                        <span>Tổng quan</span>
-                    </a>
-                </li>
-
-                <li class="active">
-                    <a th:href="@{/admin/list_room}">
-                        <i class="fa-solid fa-bed"></i>
-                        <span>Phòng</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <a class="sidebar-user text-decoration-none" th:href="@{/profile/edit}">
-            <img th:src="${currentUser != null and currentUser.avatarUrl != null
-                        ? currentUser.avatarUrl
-                        : 'https://i.pravatar.cc/50'}"
-                 alt="admin">
-
-            <div>
-                <h6 th:text="${currentUser != null
-                            ? currentUser.firstName + ' ' + currentUser.lastName
-                            : 'QUẢN TRỊ VIÊN'}">
-                    QUẢN TRỊ VIÊN
-                </h6>
-                <p>Cổng quản trị</p>
-            </div>
-        </a>
-    </aside>
+    <!-- SIDEBAR CHUNG -->
+    <div th:replace="~{fragment/staff/sidebar :: sidebar}"></div>
 
     <!-- MAIN CONTENT -->
     <main class="main-content flex-grow-1">
 
-        <!-- TOPBAR -->
-        <div th:replace="~{fragment/staff/header :: staffHeader}"></div>
+        <!-- HEADER CHUNG -->
+        <div th:replace="~{fragment/staff/header :: header}"></div>
 
         <!-- PAGE TITLE -->
         <section class="welcome-section room-page-title">
@@ -110,7 +66,7 @@
                         <input type="text"
                                name="roomNumber"
                                class="form-control room-input"
-                               th:value="${room.roomNumber}"
+                               th:value="${roomNumber != null ? roomNumber : room.roomNumber}"
                                placeholder="Nhập số phòng"
                                required>
                     </div>
@@ -125,7 +81,9 @@
                             <option th:each="type : ${roomTypes}"
                                     th:value="${type.id}"
                                     th:text="${type.name}"
-                                    th:selected="${room.roomType != null and room.roomType.id == type.id}">
+                                    th:selected="${selectedRoomTypeId != null
+                                                 ? selectedRoomTypeId == type.id
+                                                 : (room.roomType != null and room.roomType.id == type.id)}">
                                 DELUXE
                             </option>
                         </select>
@@ -137,7 +95,7 @@
                         <input type="number"
                                name="floor"
                                class="form-control room-input"
-                               th:value="${room.floor}"
+                               th:value="${floor != null ? floor : room.floor}"
                                placeholder="Nhập tầng"
                                min="1"
                                required>
@@ -152,7 +110,9 @@
 
                             <option th:each="view : ${viewTypes}"
                                     th:value="${view}"
-                                    th:selected="${room.viewType != null and room.viewType == view}"
+                                    th:selected="${selectedViewType != null
+                                                 ? selectedViewType == view
+                                                 : (room.viewType != null and room.viewType == view)}"
                                     th:text="${view.name() == 'SEA' ? 'Hướng biển' :
                                              (view.name() == 'CITY' ? 'Hướng thành phố' :
                                              (view.name() == 'POOL' ? 'Hướng hồ bơi' :
@@ -171,7 +131,9 @@
 
                             <option th:each="status : ${roomStatuses}"
                                     th:value="${status}"
-                                    th:selected="${room.status != null and room.status == status}"
+                                    th:selected="${selectedStatus != null
+                                                 ? selectedStatus == status
+                                                 : (room.status != null and room.status == status)}"
                                     th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
                                              (status.name() == 'OCCUPIED' ? 'Đang sử dụng' :
                                              (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status))}">
@@ -199,7 +161,19 @@
 
         </section>
 
+    </main>
+</div>
+
+<script>
+    setTimeout(function () {
+        const toast = document.querySelector('.error-toast');
+        if (toast) {
+            toast.style.display = 'none';
+        }
+    }, 3000);
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</main>
+
 </body>
 </html>

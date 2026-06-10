@@ -9,9 +9,12 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ImageRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeRepository;
-import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -40,12 +43,13 @@ public class RoomService {
     public Page<Room> getRoomsPage(Pageable pageable) {
         return roomRepository.findByIsDeletedFalse(pageable);
     }
-    
+
     public Room getRoomById(Long id) {
         return roomRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
     }
 
+    @Transactional
     public void createRoom(String roomNumber,
                            Long roomTypeId,
                            Integer floor,
@@ -53,6 +57,12 @@ public class RoomService {
                            RoomStatus status,
                            List<String> imageUrls,
                            Integer primaryImageIndex) {
+
+        if (roomNumber == null || roomNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Số phòng không được để trống!");
+        }
+
+        roomNumber = roomNumber.trim();
 
         if (roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
             throw new IllegalArgumentException("Số phòng đã tồn tại!");
@@ -69,9 +79,19 @@ public class RoomService {
         room.setStatus(status);
         room.setIsDeleted(false);
 
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom;
 
-        saveRoomImages(savedRoom.getId(), imageUrls, primaryImageIndex);
+        try {
+            savedRoom = roomRepository.saveAndFlush(room);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Số phòng đã tồn tại!");
+        }
+
+        try {
+            saveRoomImages(savedRoom.getId(), imageUrls, primaryImageIndex);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Lưu ảnh phòng thất bại. Vui lòng kiểm tra lại dữ liệu ảnh.");
+        }
     }
 
     public void updateRoom(Long id,
@@ -83,6 +103,12 @@ public class RoomService {
 
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
+
+        if (roomNumber == null || roomNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Số phòng không được để trống!");
+        }
+
+        roomNumber = roomNumber.trim();
 
         if (!room.getRoomNumber().equalsIgnoreCase(roomNumber)
                 && roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
@@ -106,6 +132,15 @@ public class RoomService {
                                 Integer primaryImageIndex) {
 
         if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
+
+        imageUrls = imageUrls.stream()
+                .filter(url -> url != null && !url.trim().isEmpty())
+                .map(String::trim)
+                .toList();
+
+        if (imageUrls.isEmpty()) {
             return;
         }
 
@@ -142,5 +177,4 @@ public class RoomService {
                 roomId
         );
     }
-
 }
