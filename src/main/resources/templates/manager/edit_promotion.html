@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <div class="page-action-bar">
+        <div>
+            <div class="breadcrumb-custom">
+                Quản lý / Khuyến mãi / Chỉnh sửa
+            </div>
+            <h1>Chỉnh sửa khuyến mãi</h1>
+        </div>
+    </div>
+
+    <section class="content-section">
+        <div class="form-card">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+                Có lỗi xảy ra
+            </div>
+            <div id="clientErrorMessage" class="alert alert-danger" style="display: none;"></div>
+
+            <form id="promotionForm"
+                  th:action="@{/manager/promotions/edit/{id}(id=${promotionId})}"
+                  th:object="${promotion}"
+                  method="post">
+
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label" for="name">Tên chiến dịch</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{name}"
+                               id="name"
+                               maxlength="200"
+                               placeholder="Ví dụ: Ưu đãi mùa hè"
+                               required>
+                        <small class="form-hint">
+                            Tên dùng để quản lý và phân biệt các chiến dịch khuyến mãi.
+                        </small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="discountAmount">Số tiền giảm</label>
+                        <input type="number"
+                               class="form-control"
+                               th:field="*{discountAmount}"
+                               id="discountAmount"
+                               min="1"
+                               step="1"
+                               inputmode="numeric"
+                               placeholder="Ví dụ: 100000"
+                               required>
+                        <small class="form-hint">
+                            Số tiền được trừ trực tiếp khi khách áp dụng mã khuyến mãi.
+                        </small>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label" for="description">Mô tả ngắn</label>
+                        <textarea class="form-control"
+                                  th:field="*{description}"
+                                  id="description"
+                                  rows="3"
+                                  maxlength="300"
+                                  placeholder="Ví dụ: Giảm 100.000 VND cho khách đặt phòng trong mùa hè."
+                                  required></textarea>
+                        <small class="form-hint">
+                            Nội dung tóm tắt chính sách ưu đãi, tối đa 300 ký tự.
+                        </small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="usageLimit">Giới hạn lượt dùng</label>
+                        <input type="number"
+                               class="form-control"
+                               th:field="*{usageLimit}"
+                               id="usageLimit"
+                               min="1"
+                               step="1"
+                               placeholder="Ví dụ: 200"
+                               required>
+                        <small class="form-hint">
+                            Tổng số lượt đặt phòng được phép áp dụng mã khuyến mãi.
+                        </small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="promotionImage">Ảnh khuyến mãi</label>
+                        <input type="file"
+                               class="form-control"
+                               id="promotionImage"
+                               accept="image/*">
+
+                        <input type="hidden" th:field="*{imageUrl}" id="imageUrl">
+                        <input type="hidden" th:field="*{imagePublicId}" id="imagePublicId">
+
+                        <small class="form-hint">
+                            Có thể giữ ảnh hiện tại hoặc thay bằng ảnh mới, dung lượng tối đa 5MB.
+                        </small>
+
+                        <div id="imagePreview" class="mt-3">
+                            <img th:if="${promotion.imageUrl != null and !promotion.imageUrl.isBlank()}"
+                                 th:src="${promotion.imageUrl}"
+                                 alt="Ảnh khuyến mãi"
+                                 class="promotion-image-preview">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="validFromInput">Ngày bắt đầu</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{validFromInput}"
+                               id="validFromInput"
+                               placeholder="dd/mm/yyyy --:--"
+                               required>
+                        <small class="form-hint">
+                            Thời điểm chiến dịch bắt đầu có hiệu lực.
+                        </small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="validToInput">Ngày kết thúc</label>
+                        <input type="text"
+                               class="form-control"
+                               th:field="*{validToInput}"
+                               id="validToInput"
+                               placeholder="dd/mm/yyyy --:--"
+                               required>
+                        <small class="form-hint">
+                            Thời điểm chiến dịch ngừng áp dụng.
+                        </small>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Tùy chọn hiển thị</label>
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   th:field="*{showOnHomepage}"
+                                   id="showOnHomepage">
+                            <label class="form-check-label" for="showOnHomepage">
+                                Hiển thị ở trang chủ
+                            </label>
+                        </div>
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   th:field="*{featured}"
+                                   id="featured">
+                            <label class="form-check-label" for="featured">
+                                Đặt làm banner nổi bật
+                            </label>
+                        </div>
+
+                        <small class="form-hint">
+                            Cấu hình vị trí hiển thị của chiến dịch trên trang chủ.
+                        </small>
+                    </div>
+                </div>
+
+            </form>
+
+            <div class="form-actions form-actions-split">
+                <form th:action="@{/manager/promotions/delete/{id}(id=${promotionId})}"
+                      method="post"
+                      class="delete-inline-form"
+                      onsubmit="return confirm('Bạn có chắc muốn xóa khuyến mãi này không?');">
+                    <input type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
+                    <button type="submit" class="btn-delete">
+                        <span class="material-symbols-outlined">delete</span>
+                        Xóa khuyến mãi
+                    </button>
+                </form>
+
+                <div class="form-actions-group">
+                    <a th:href="@{/manager/promotions/{id}(id=${promotionId})}"
+                       href="#"
+                       class="btn-cancel">
+                        Hủy
+                    </a>
+
+                    <button type="submit" class="btn-save" form="promotionForm">
+                        Lưu cập nhật
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        const promotionForm = document.getElementById("promotionForm");
+        const nameInput = document.getElementById("name");
+        const discountAmount = document.getElementById("discountAmount");
+        const descriptionInput = document.getElementById("description");
+        const usageLimitInput = document.getElementById("usageLimit");
+        const validFromInput = document.getElementById("validFromInput");
+        const validToInput = document.getElementById("validToInput");
+        const featured = document.getElementById("featured");
+        const showOnHomepage = document.getElementById("showOnHomepage");
+        const promotionImage = document.getElementById("promotionImage");
+        const imageUrl = document.getElementById("imageUrl");
+        const imagePublicId = document.getElementById("imagePublicId");
+        const imagePreview = document.getElementById("imagePreview");
+        const clientErrorMessage = document.getElementById("clientErrorMessage");
+        let currentImageUrl = imageUrl.value.trim();
+        let currentImagePublicId = imagePublicId.value.trim();
+        let isUploadingImage = false;
+
+        function syncFeaturedWithHomepage() {
+            if (featured.checked) {
+                showOnHomepage.checked = true;
+            }
+        }
+
+        function showFieldError(input, message) {
+            input.setCustomValidity(message);
+            input.reportValidity();
+        }
+
+        function clearFieldError(input) {
+            input.setCustomValidity("");
+        }
+
+        function showFormError(message) {
+            clientErrorMessage.textContent = message;
+            clientErrorMessage.style.display = "block";
+        }
+
+        function clearFormError() {
+            clientErrorMessage.textContent = "";
+            clientErrorMessage.style.display = "none";
+        }
+
+        function renderImagePreview(url) {
+            if (!url) {
+                imagePreview.innerHTML = "";
+                return;
+            }
+
+            imagePreview.innerHTML = `
+                <img src="${url}"
+                     alt="Ảnh khuyến mãi"
+                     class="promotion-image-preview">
+            `;
+        }
+
+        function restoreExistingImage() {
+            imageUrl.value = currentImageUrl;
+            imagePublicId.value = currentImagePublicId;
+            renderImagePreview(currentImageUrl);
+        }
+
+        function bindVietnameseValidation(input, messages) {
+            input.addEventListener("invalid", function () {
+                if (input.validity.valueMissing) {
+                    input.setCustomValidity(messages.valueMissing);
+                    return;
+                }
+
+                if (input.validity.rangeUnderflow && messages.rangeUnderflow) {
+                    input.setCustomValidity(messages.rangeUnderflow);
+                    return;
+                }
+
+                if (input.validity.badInput && messages.badInput) {
+                    input.setCustomValidity(messages.badInput);
+                    return;
+                }
+
+                input.setCustomValidity("");
+            });
+
+            input.addEventListener("input", function () {
+                input.setCustomValidity("");
+            });
+
+            input.addEventListener("change", function () {
+                input.setCustomValidity("");
+            });
+        }
+
+        bindVietnameseValidation(nameInput, {
+            valueMissing: "Tên chiến dịch không được để trống."
+        });
+
+        bindVietnameseValidation(discountAmount, {
+            valueMissing: "Số tiền giảm không được để trống.",
+            rangeUnderflow: "Số tiền giảm phải lớn hơn 0.",
+            badInput: "Vui lòng nhập số tiền giảm hợp lệ."
+        });
+
+        bindVietnameseValidation(descriptionInput, {
+            valueMissing: "Mô tả ngắn không được để trống."
+        });
+
+        bindVietnameseValidation(usageLimitInput, {
+            valueMissing: "Giới hạn lượt dùng không được để trống.",
+            rangeUnderflow: "Giới hạn lượt dùng phải lớn hơn 0.",
+            badInput: "Vui lòng nhập giới hạn lượt dùng hợp lệ."
+        });
+
+        flatpickr(validFromInput, {
+            enableTime: true,
+            dateFormat: "Y-m-d\\TH:i",
+            altInput: true,
+            altFormat: "d/m/Y H:i",
+            time_24hr: true,
+            minuteIncrement: 5,
+            allowInput: false
+        });
+
+        flatpickr(validToInput, {
+            enableTime: true,
+            dateFormat: "Y-m-d\\TH:i",
+            altInput: true,
+            altFormat: "d/m/Y H:i",
+            time_24hr: true,
+            minuteIncrement: 5,
+            allowInput: false
+        });
+
+        validFromInput.addEventListener("change", clearFormError);
+        validToInput.addEventListener("change", clearFormError);
+
+        featured.addEventListener("change", syncFeaturedWithHomepage);
+        syncFeaturedWithHomepage();
+
+        promotionImage.addEventListener("change", async function () {
+            const file = promotionImage.files[0];
+
+            clearFieldError(promotionImage);
+            clearFormError();
+
+            if (!file) {
+                restoreExistingImage();
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+                showFieldError(promotionImage, "File tải lên phải là ảnh.");
+                promotionImage.value = "";
+                restoreExistingImage();
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                showFieldError(promotionImage, "Kích thước ảnh không được vượt quá 5MB.");
+                promotionImage.value = "";
+                restoreExistingImage();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+            isUploadingImage = true;
+
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
+
+                const response = await fetch("/manager/promotion-images/upload", {
+                    method: "POST",
+                    headers: csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {},
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.error || !data.imageUrl || !data.imagePublicId) {
+                    showFieldError(promotionImage, data.error || "Tải ảnh khuyến mãi thất bại.");
+                    promotionImage.value = "";
+                    restoreExistingImage();
+                    return;
+                }
+
+                imageUrl.value = data.imageUrl;
+                imagePublicId.value = data.imagePublicId;
+                currentImageUrl = data.imageUrl;
+                currentImagePublicId = data.imagePublicId;
+                renderImagePreview(data.imageUrl);
+            } catch (error) {
+                showFieldError(promotionImage, "Tải ảnh khuyến mãi thất bại.");
+                promotionImage.value = "";
+                restoreExistingImage();
+            } finally {
+                isUploadingImage = false;
+            }
+        });
+
+        promotionForm.addEventListener("submit", function (event) {
+            clearFormError();
+            clearFieldError(promotionImage);
+            clearFieldError(validFromInput);
+            clearFieldError(validToInput);
+
+            if (isUploadingImage) {
+                event.preventDefault();
+                showFieldError(promotionImage, "Ảnh đang được tải lên. Vui lòng chờ upload ảnh xong rồi lưu.");
+                return;
+            }
+
+            if (imageUrl.value.trim() === "" || imagePublicId.value.trim() === "") {
+                event.preventDefault();
+                showFieldError(promotionImage, "Vui lòng chọn ảnh khuyến mãi hợp lệ trước khi lưu.");
+                return;
+            }
+
+            if (!validFromInput.value.trim()) {
+                event.preventDefault();
+                showFormError("Ngày bắt đầu không được để trống.");
+                return;
+            }
+
+            if (!validToInput.value.trim()) {
+                event.preventDefault();
+                showFormError("Ngày kết thúc không được để trống.");
+                return;
+            }
+
+            const validFromDate = validFromInput._flatpickr?.selectedDates?.[0];
+            const validToDate = validToInput._flatpickr?.selectedDates?.[0];
+
+            if (validFromDate && validToDate && validToDate.getTime() <= validFromDate.getTime()) {
+                event.preventDefault();
+                showFormError("Ngày kết thúc phải sau ngày bắt đầu.");
+            }
+        });
+    </script>
+</main>
+</body>
+</html>

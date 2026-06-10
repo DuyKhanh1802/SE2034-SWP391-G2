@@ -5,7 +5,6 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-    <!-- Page action -->
     <div class="page-action-bar">
         <div>
             <div class="breadcrumb-custom">
@@ -20,15 +19,17 @@
         </a>
     </div>
 
-    <!-- Content -->
     <section class="content-section">
-
         <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
             <span class="material-symbols-outlined">check_circle</span>
             <span th:text="${successMessage}">Thêm khuyến mãi thành công.</span>
         </div>
 
-        <!-- Filter và search -->
+        <div th:if="${errorMessage}" class="alert alert-danger promotion-alert promotion-alert-danger" role="alert">
+            <span class="material-symbols-outlined">error</span>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+
         <div class="toolbar">
             <div class="tabs">
                 <a th:href="@{/manager/promotions(status='all', keyword=${keyword}, size=${pageSize})}"
@@ -70,7 +71,6 @@
             </form>
         </div>
 
-        <!-- Bảng khuyến mãi -->
         <div class="table-card">
             <div class="table-responsive">
                 <table class="table align-middle promotion-table">
@@ -89,78 +89,70 @@
 
                     <tbody>
                     <tr th:each="promotion : ${promotions}">
-                        <!-- Mã khuyến mãi -->
                         <td class="code" th:text="${promotion.code}">
                             VH-202606-A8K2
                         </td>
 
-                        <!-- Tên chiến dịch -->
                         <td>
                             <div class="promotion-name" th:text="${promotion.name}">
                                 Ưu đãi mùa hè
                             </div>
                         </td>
 
-                        <!-- Số tiền giảm -->
                         <td class="discount-amount">
-                                <span th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 'POINT', 0, 'COMMA')}">
-                                    200.000
-                                </span>
+                            <span th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 'POINT', 0, 'COMMA')}">
+                                200.000
+                            </span>
                             <span> VND</span>
                         </td>
 
-                        <!-- Thời gian áp dụng -->
                         <td class="muted valid-period">
-                                <span th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy')}">
-                                    01/06/2026
-                                </span>
+                            <span th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy')}">
+                                01/06/2026
+                            </span>
                             <br>
                             <span th:text="${#temporals.format(promotion.validTo, 'dd/MM/yyyy')}">
-                                    31/08/2026
-                                </span>
+                                31/08/2026
+                            </span>
                         </td>
 
-                        <!-- Lượt dùng -->
                         <td>
                             <div class="usage">
-                                    <span th:text="${promotion.usageCount + ' / ' + promotion.usageLimit}">
-                                        0 / 200
-                                    </span>
+                                <span th:text="${promotion.usageCount + ' / ' + promotion.usageLimit}">
+                                    0 / 200
+                                </span>
 
                                 <div class="progress-line">
-                                    <div style="width: 0%"></div>
+                                    <div th:style="'width:' + ${promotion.usageLimit > 0 ? T(java.lang.Math).min(100, promotion.usageCount * 100 / promotion.usageLimit) : 0} + '%'"></div>
                                 </div>
                             </div>
                         </td>
 
-                        <!-- Trạng thái hiển thị -->
                         <td>
-                                <span class="status"
-                                      th:text="${promotion.displayStatus}"
-                                      th:classappend="${promotion.displayStatus == 'Banner nổi bật'} ? ' featured-status' : (${promotion.displayStatus == 'Hiển thị trang chủ'} ? ' homepage-status' : ' hidden-status')">
-                                    Banner nổi bật
-                                </span>
+                            <span class="status"
+                                  th:text="${promotion.displayStatus}"
+                                  th:classappend="${promotion.displayStatus == 'Banner nổi bật'} ? ' featured-status' : (${promotion.displayStatus == 'Hiển thị trang chủ'} ? ' homepage-status' : ' hidden-status')">
+                                Banner nổi bật
+                            </span>
                         </td>
 
-                        <!-- Trạng thái hoạt động -->
                         <td>
-                                <span class="status"
-                                      th:text="${promotion.status}"
-                                      th:classappend="${promotion.status == 'Đang hoạt động'} ? ' active-status' : (${promotion.status == 'Sắp diễn ra'} ? ' scheduled-status' : (${promotion.status == 'Đã hết hạn'} ? ' expired-status' : ' inactive-status'))">
-                                    Đang hoạt động
-                                </span>
+                            <span class="status"
+                                  th:text="${promotion.status}"
+                                  th:classappend="${promotion.status == 'Đang hoạt động'} ? ' active-status' : (${promotion.status == 'Sắp diễn ra'} ? ' scheduled-status' : (${promotion.status == 'Đã hết hạn'} ? ' expired-status' : ' inactive-status'))">
+                                Đang hoạt động
+                            </span>
                         </td>
 
-                        <!-- Thao tác -->
                         <td>
                             <div class="actions">
-                                <a href="#"
+                                <a th:href="@{/manager/promotions/{id}(id=${promotion.id})}"
                                    class="action-link action-view"
                                    title="Xem chi tiết">
                                     <span class="material-symbols-outlined">visibility</span>
                                 </a>
 
-                                <a href="#"
+                                <a th:href="@{/manager/promotions/edit/{id}(id=${promotion.id})}"
                                    class="action-link action-edit"
                                    title="Chỉnh sửa">
                                     <span class="material-symbols-outlined">edit</span>
@@ -175,7 +167,6 @@
                         </td>
                     </tr>
 
-                    <!-- Không có dữ liệu -->
                     <tr th:if="${#lists.isEmpty(promotions)}">
                         <td colspan="8" class="text-center py-5 text-muted">
                             Chưa có khuyến mãi nào.
@@ -185,7 +176,6 @@
                 </table>
             </div>
 
-            <!-- Phân trang -->
             <div class="table-bottom">
                 <p th:text="'Hiển thị ' + ${#lists.size(promotions)} + ' / ' + ${totalPromotions} + ' khuyến mãi'">
                     Hiển thị 0 / 0 khuyến mãi
@@ -220,7 +210,6 @@
             </div>
         </div>
 
-        <!-- Tổng quan khuyến mãi -->
         <section class="summary-section">
             <h3>Tổng quan khuyến mãi</h3>
 
@@ -252,7 +241,6 @@
             </div>
         </section>
     </section>
-
 </main>
 </body>
 </html>

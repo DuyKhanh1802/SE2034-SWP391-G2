@@ -12,6 +12,8 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     boolean existsByBookingReference(String bookingReference);
 
+    boolean existsByPromotion_IdAndIsDeletedFalse(Long promotionId);
+
 
     @Query("""
             SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(

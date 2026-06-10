@@ -5,6 +5,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.PromotionRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionListResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PromotionRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRepository;
 import org.springframework.security.core.Authentication;
@@ -26,26 +27,25 @@ import java.util.UUID;
 @Service
 public class PromotionService {
 
-    /*
-     * Dung lượng tối đa ảnh khuyến mãi.
-     */
     private static final long MAX_PROMOTION_IMAGE_SIZE = 5 * 1024 * 1024;
+    private static final DateTimeFormatter FORM_DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
     private final PromotionRepository promotionRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
     private final CloudinaryService cloudinaryService;
 
     public PromotionService(PromotionRepository promotionRepository,
                             UserRepository userRepository,
+                            BookingRepository bookingRepository,
                             CloudinaryService cloudinaryService) {
         this.promotionRepository = promotionRepository;
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
         this.cloudinaryService = cloudinaryService;
     }
 
-    /*
-     * Lấy danh sách khuyến mãi có tìm kiếm, lọc trạng thái và phân trang.
-     */
     public PromotionListResponse getPromotionListResponse(int page,
                                                           int size,
                                                           String keyword,
@@ -118,14 +118,30 @@ public class PromotionService {
         );
     }
 
-    /*
-     * Upload ảnh khuyến mãi lên Cloudinary.
-     */
+    public PromotionResponse getPromotionDetail(Long id) {
+        return toResponse(getPromotionEntity(id));
+    }
+
+    public PromotionRequest getPromotionEditRequest(Long id) {
+        Promotion promotion = getPromotionEntity(id);
+        PromotionRequest request = new PromotionRequest();
+        request.setName(promotion.getName());
+        request.setDescription(promotion.getDescription());
+        request.setDiscountAmount(promotion.getDiscountAmount());
+        request.setUsageLimit(promotion.getUsageLimit());
+        request.setShowOnHomepage(Boolean.TRUE.equals(promotion.getShowOnHomepage()));
+        request.setFeatured(Boolean.TRUE.equals(promotion.getFeatured()));
+        request.setImageUrl(promotion.getImageUrl());
+        request.setImagePublicId(promotion.getImagePublicId());
+        request.setValidFromInput(formatForDateTimeInput(promotion.getValidFrom()));
+        request.setValidToInput(formatForDateTimeInput(promotion.getValidTo()));
+        return request;
+    }
+
     public Map<String, String> uploadPromotionImage(MultipartFile file) {
         validatePromotionImage(file);
 
         Map<?, ?> uploadResult = cloudinaryService.uploadPromotionImage(file);
-
         Object secureUrl = uploadResult.get("secure_url");
         Object publicId = uploadResult.get("public_id");
 
@@ -139,37 +155,55 @@ public class PromotionService {
         );
     }
 
-    /*
-     * Tạo mới chiến dịch khuyến mãi.
-     */
     public void createPromotion(PromotionRequest request) {
-        validatePromotionRequest(request);
+        validatePromotionRequest(request, null, false);
 
         User currentUser = getCurrentUser();
-
         Promotion promotion = new Promotion();
         promotion.setCode(generatePromotionCode());
-        promotion.setName(request.getName().trim());
-        promotion.setDescription(normalizeDescription(request.getDescription()));
-        promotion.setDiscountAmount(request.getDiscountAmount());
-        promotion.setUsageLimit(request.getUsageLimit());
-        promotion.setUsageCount(0);
-        promotion.setValidFrom(convertToInstant(request.getValidFromInput()));
-        promotion.setValidTo(convertToInstant(request.getValidToInput()));
-        promotion.setIsActive(true);
-        promotion.setShowOnHomepage(resolveShowOnHomepage(request));
-        promotion.setFeatured(Boolean.TRUE.equals(request.getFeatured()));
-        promotion.setImageUrl(normalizeImageUrl(request.getImageUrl()));
-        promotion.setImagePublicId(normalizeImagePublicId(request.getImagePublicId()));
         promotion.setCreatedBy(currentUser);
         promotion.setCreatedAt(Instant.now());
+
+        applyPromotionRequest(promotion, request);
+        promotion.setUsageCount(0);
 
         promotionRepository.save(promotion);
     }
 
-    /*
-     * Chuyển Entity sang DTO để hiển thị.
-     */
+    public void updatePromotion(Long id, PromotionRequest request) {
+        Promotion promotion = getPromotionEntity(id);
+        validatePromotionRequest(request, promotion.getId(), true);
+        applyPromotionRequest(promotion, request);
+        promotionRepository.save(promotion);
+    }
+
+    public void deletePromotion(Long id) {
+        Promotion promotion = getPromotionEntity(id);
+
+        if (bookingRepository.existsByPromotion_IdAndIsDeletedFalse(id)) {
+            throw new IllegalArgumentException("Không thể xóa khuyến mãi đã được áp dụng trong đơn đặt phòng.");
+        }
+
+        promotionRepository.delete(promotion);
+    }
+
+    private void applyPromotionRequest(Promotion promotion, PromotionRequest request) {
+        promotion.setName(request.getName().trim());
+        promotion.setDescription(normalizeDescription(request.getDescription()));
+        promotion.setDiscountAmount(request.getDiscountAmount());
+        promotion.setUsageLimit(request.getUsageLimit());
+        promotion.setValidFrom(convertToInstant(request.getValidFromInput()));
+        promotion.setValidTo(convertToInstant(request.getValidToInput()));
+        promotion.setShowOnHomepage(resolveShowOnHomepage(request));
+        promotion.setFeatured(Boolean.TRUE.equals(request.getFeatured()));
+        promotion.setImageUrl(normalizeImageUrl(request.getImageUrl()));
+        promotion.setImagePublicId(normalizeImagePublicId(request.getImagePublicId()));
+
+        if (promotion.getIsActive() == null) {
+            promotion.setIsActive(true);
+        }
+    }
+
     private PromotionResponse toResponse(Promotion promotion) {
         return PromotionResponse.builder()
                 .id(promotion.getId())
@@ -192,9 +226,15 @@ public class PromotionService {
                 .build();
     }
 
-    /*
-     * Tính trạng thái hoạt động của khuyến mãi.
-     */
+    private Promotion getPromotionEntity(Long id) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Khuyến mãi không hợp lệ.");
+        }
+
+        return promotionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi."));
+    }
+
     private String getPromotionStatus(Promotion promotion) {
         Instant now = Instant.now();
 
@@ -213,9 +253,6 @@ public class PromotionService {
         return "Đang hoạt động";
     }
 
-    /*
-     * Tính trạng thái hiển thị của khuyến mãi.
-     */
     private String getDisplayStatus(Promotion promotion) {
         if (Boolean.TRUE.equals(promotion.getFeatured())) {
             return "Banner nổi bật";
@@ -228,22 +265,16 @@ public class PromotionService {
         return "Ẩn";
     }
 
-    /*
-     * Validate dữ liệu tạo khuyến mãi.
-     */
-    private void validatePromotionRequest(PromotionRequest request) {
+    private void validatePromotionRequest(PromotionRequest request, Long promotionId, boolean isEditMode) {
         validateName(request);
         validateDescription(request);
         validateDiscountAmount(request);
         validateUsageLimit(request);
-        validateDateInput(request);
+        validateDateInput(request, isEditMode);
         validateUploadedImage(request);
-        validateFeaturedBanner(request);
+        validateFeaturedBanner(request, promotionId);
     }
 
-    /*
-     * Kiểm tra file ảnh khuyến mãi.
-     */
     private void validatePromotionImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Vui lòng chọn ảnh khuyến mãi.");
@@ -258,9 +289,6 @@ public class PromotionService {
         }
     }
 
-    /*
-     * Kiểm tra tên chiến dịch.
-     */
     private void validateName(PromotionRequest request) {
         if (request.getName() == null || request.getName().isBlank()) {
             throw new IllegalArgumentException("Tên chiến dịch không được để trống.");
@@ -271,9 +299,6 @@ public class PromotionService {
         }
     }
 
-    /*
-     * Kiểm tra mô tả chiến dịch.
-     */
     private void validateDescription(PromotionRequest request) {
         if (request.getDescription() == null || request.getDescription().isBlank()) {
             throw new IllegalArgumentException("Mô tả ngắn không được để trống.");
@@ -284,9 +309,6 @@ public class PromotionService {
         }
     }
 
-    /*
-     * Kiểm tra số tiền giảm.
-     */
     private void validateDiscountAmount(PromotionRequest request) {
         if (request.getDiscountAmount() == null
                 || request.getDiscountAmount().compareTo(BigDecimal.ZERO) <= 0) {
@@ -294,19 +316,13 @@ public class PromotionService {
         }
     }
 
-    /*
-     * Kiểm tra giới hạn lượt dùng.
-     */
     private void validateUsageLimit(PromotionRequest request) {
         if (request.getUsageLimit() == null || request.getUsageLimit() <= 0) {
             throw new IllegalArgumentException("Giới hạn lượt dùng phải lớn hơn 0.");
         }
     }
 
-    /*
-     * Kiểm tra thời gian áp dụng.
-     */
-    private void validateDateInput(PromotionRequest request) {
+    private void validateDateInput(PromotionRequest request, boolean isEditMode) {
         if (request.getValidFromInput() == null || request.getValidFromInput().isBlank()) {
             throw new IllegalArgumentException("Ngày bắt đầu không được để trống.");
         }
@@ -318,11 +334,13 @@ public class PromotionService {
         Instant validFrom = convertToInstant(request.getValidFromInput());
         Instant validTo = convertToInstant(request.getValidToInput());
 
-        LocalDate today = LocalDate.now();
-        LocalDate validFromDate = validFrom.atZone(ZoneId.systemDefault()).toLocalDate();
+        if (!isEditMode) {
+            LocalDate today = LocalDate.now();
+            LocalDate validFromDate = validFrom.atZone(ZoneId.systemDefault()).toLocalDate();
 
-        if (validFromDate.isBefore(today)) {
-            throw new IllegalArgumentException("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
+            if (validFromDate.isBefore(today)) {
+                throw new IllegalArgumentException("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
+            }
         }
 
         if (!validTo.isAfter(validFrom)) {
@@ -330,9 +348,6 @@ public class PromotionService {
         }
     }
 
-    /*
-     * Kiểm tra ảnh đã upload thành công.
-     */
     private void validateUploadedImage(PromotionRequest request) {
         if (request.getImageUrl() == null || request.getImageUrl().isBlank()
                 || request.getImagePublicId() == null || request.getImagePublicId().isBlank()) {
@@ -340,16 +355,14 @@ public class PromotionService {
         }
     }
 
-    /*
-     * Chỉ cho phép một banner nổi bật đang hoạt động.
-     */
-    private void validateFeaturedBanner(PromotionRequest request) {
+    private void validateFeaturedBanner(PromotionRequest request, Long promotionId) {
         if (!Boolean.TRUE.equals(request.getFeatured())) {
             return;
         }
 
-        boolean hasActiveFeaturedPromotion =
-                promotionRepository.existsByFeaturedTrueAndIsActiveTrueAndValidToAfter(Instant.now());
+        boolean hasActiveFeaturedPromotion = promotionId == null
+                ? promotionRepository.existsByFeaturedTrueAndIsActiveTrueAndValidToAfter(Instant.now())
+                : promotionRepository.existsByFeaturedTrueAndIsActiveTrueAndValidToAfterAndIdNot(Instant.now(), promotionId);
 
         if (hasActiveFeaturedPromotion) {
             throw new IllegalArgumentException(
@@ -358,9 +371,6 @@ public class PromotionService {
         }
     }
 
-    /*
-     * Nếu là banner nổi bật thì tự động hiển thị ở trang chủ.
-     */
     private Boolean resolveShowOnHomepage(PromotionRequest request) {
         if (Boolean.TRUE.equals(request.getFeatured())) {
             return true;
@@ -369,9 +379,6 @@ public class PromotionService {
         return Boolean.TRUE.equals(request.getShowOnHomepage());
     }
 
-    /*
-     * Sinh mã khuyến mãi tự động.
-     */
     private String generatePromotionCode() {
         String yearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
         String code;
@@ -389,9 +396,6 @@ public class PromotionService {
         return code;
     }
 
-    /*
-     * Chuyển datetime-local sang Instant.
-     */
     private Instant convertToInstant(String dateTimeInput) {
         try {
             LocalDateTime localDateTime = LocalDateTime.parse(dateTimeInput);
@@ -401,30 +405,28 @@ public class PromotionService {
         }
     }
 
-    /*
-     * Chuẩn hóa mô tả.
-     */
+    private String formatForDateTimeInput(Instant instant) {
+        if (instant == null) {
+            return "";
+        }
+
+        return instant.atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+                .format(FORM_DATE_TIME_FORMATTER);
+    }
+
     private String normalizeDescription(String description) {
         return description.trim();
     }
 
-    /*
-     * Chuẩn hóa URL ảnh.
-     */
     private String normalizeImageUrl(String imageUrl) {
         return imageUrl.trim();
     }
 
-    /*
-     * Chuẩn hóa public id ảnh.
-     */
     private String normalizeImagePublicId(String imagePublicId) {
         return imagePublicId.trim();
     }
 
-    /*
-     * Lấy manager đang đăng nhập.
-     */
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -438,9 +440,6 @@ public class PromotionService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng hiện tại."));
     }
 
-    /*
-     * Kiểm tra khuyến mãi có khớp từ khóa tìm kiếm không.
-     */
     private boolean matchKeyword(PromotionResponse promotion, String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return true;
@@ -452,9 +451,6 @@ public class PromotionService {
         return code.contains(keyword) || name.contains(keyword);
     }
 
-    /*
-     * Kiểm tra khuyến mãi có khớp tab trạng thái không.
-     */
     private boolean matchStatus(PromotionResponse promotion, String status) {
         if ("all".equals(status)) {
             return true;

@@ -54,7 +54,7 @@
           th:href="@{/manager/promotions.css}">
 
     <link rel="stylesheet"
-          th:if="${#strings.startsWith(currentUri ?: '', '/manager/promotions/add')}"
+          th:if="${#strings.startsWith(currentUri ?: '', '/manager/promotions/add') or #strings.startsWith(currentUri ?: '', '/manager/promotions/edit/')}"
           href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <link rel="stylesheet"
