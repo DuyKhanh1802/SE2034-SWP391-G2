@@ -58,19 +58,21 @@ public class BookingService {
     private final UserRepository userRepository;
     private final CountryRepository countryRepository;
     private final MailService mailService;
-    
+    private final PaymentRepository paymentRepository;
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
                           UserRepository userRepository,
                           CountryRepository countryRepository,
-                          MailService mailService) {
+                          MailService mailService,
+                          PaymentRepository paymentRepository) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingDetailRepository = bookingDetailRepository;
         this.userRepository = userRepository;
         this.countryRepository = countryRepository;
         this.mailService = mailService;
+        this.paymentRepository = paymentRepository;
     }
 
     public List<BookingResponse> searchBookings(String keyword,
@@ -153,9 +155,12 @@ public class BookingService {
                 .checkOutDate(checkOutDate)
                 .numAdults(request.getAdults())
                 .numChildren(request.getChildren())
+                .totalRooms(selectedRooms.size()) // thêm dòng này
                 .specialRequests(request.getNotes())
                 .bookingReference(generateBookingReference())
-                .depositStatus(DepositStatus.UNPAID)
+                .depositStatus(Boolean.TRUE.equals(request.getDepositPaid())
+                        ? DepositStatus.PAID
+                        : DepositStatus.UNPAID)
                 .status(bookingStatus)
                 .discountAmount(BigDecimal.ZERO)
                 .totalAmount(BigDecimal.ZERO)
@@ -163,6 +168,7 @@ public class BookingService {
                 .build();
 
         Booking savedBooking = bookingRepository.save(booking);
+        
 
         long nights = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
 
@@ -181,6 +187,8 @@ public class BookingService {
                     .checkOutDate(checkOutDate)
                     .pricePerNight(pricePerNight)
                     .numNights((int) nights)
+                    .numAdults(request.getAdults())
+                    .numChildren(request.getChildren())
                     .subtotal(subtotal);
 
             if (bookingStatus == BookingStatus.CHECKED_IN) {

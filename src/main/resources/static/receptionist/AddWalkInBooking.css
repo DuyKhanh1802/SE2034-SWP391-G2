@@ -87,11 +87,11 @@ body {
 .page-wrapper {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 64px 64px 72px;
+    padding: 34px 64px 64px;
 }
 
 .page-title {
-    margin-bottom: 58px;
+    margin-bottom: 36px;
 }
 
 .page-title h1 {
@@ -125,7 +125,7 @@ body {
 .booking-layout {
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.9fr);
-    gap: 64px;
+    gap: 48px;
     align-items: flex-start;
 }
 
@@ -163,14 +163,12 @@ body {
 .form-group-line input,
 .form-group-line select,
 .form-group-line textarea {
-    width: 100%;
-    border: none;
-    border-bottom: 1px solid var(--bg-border);
-    background: transparent;
-    padding: 8px 0 12px;
-    color: var(--text-main);
-    font-size: 16px;
-    outline: none;
+    resize: none;
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    line-height: 1.4;
+    overflow: hidden;
 }
 
 .form-group-line input:focus,
@@ -288,15 +286,15 @@ body {
 .guest-card {
     border: 1px solid var(--bg-border);
     background: rgba(232, 228, 225, 0.28);
-    padding: 38px 42px;
+    padding: 30px 36px;
     min-height: 0;
     display: flex;
     flex-direction: column;
 }
 
 .guest-card h2 {
-    margin: 0 0 34px;
-    padding-bottom: 24px;
+    margin: 0 0 24px;
+    padding-bottom: 20px;
     border-bottom: 1px solid var(--bg-border);
     font-family: var(--font-heading);
     font-size: 28px;
@@ -307,12 +305,55 @@ body {
 .guest-form {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 28px;
-    margin-bottom: 46px;
+    gap: 22px 30px;
+    margin-bottom: 0;
 }
 
 .guest-form .form-group-wide {
     grid-column: 1 / -1;
+}
+
+/* Inputs */
+.form-group-line {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group-line label {
+    color: var(--black);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+}
+
+.form-group-line input,
+.form-group-line select,
+.form-group-line textarea {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--bg-border);
+    background: transparent;
+    padding: 5px 0 9px;
+    color: var(--text-main);
+    font-size: 15px;
+    outline: none;
+}
+
+.form-group-line input:focus,
+.form-group-line select:focus,
+.form-group-line textarea:focus {
+    border-bottom-color: var(--black);
+}
+
+.form-group-line input::placeholder,
+.form-group-line textarea::placeholder {
+    color: #a7a7a7;
+}
+
+.form-group-line select {
+    min-height: 36px;
+    appearance: auto;
 }
 
 /* Price */
@@ -437,5 +478,155 @@ body {
         flex-direction: column;
         gap: 8px;
     }
+}
+
+/* =========================
+   PHONE INPUT
+========================= */
+
+.phone-combined {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border-bottom: 1px solid #c9c9c9;
+    padding-bottom: 5px;
+    min-height: 36px;
+    gap: 10px;
+}
+
+.phone-code-display {
+    width: 52px !important;
+    flex: 0 0 52px;
+    height: 28px;
+    border: none !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+    background: transparent;
+    color: #6f6f6f;
+    font-size: 14px;
+    text-align: left;
+    outline: none;
+}
+
+.phone-number-only {
+    flex: 1;
+    min-width: 0;
+    height: 28px;
+    border: none !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+    background: transparent;
+    font-size: 14px;
+    color: #222;
+    outline: none;
+}
+
+.phone-number-only::placeholder {
+    color: #b5b5b5;
+}
+
+.phone-combined:focus-within {
+    border-bottom-color: #9b7a45;
+}
+
+
+/* =========================
+   DEPOSIT SECTION
+========================= */
+
+.deposit-section {
+    margin-top: 24px;
+    padding: 28px 34px;
+    border: 1px solid #d0d0d0;
+    background: transparent; /* nền giống bên ngoài */
+}
+
+.deposit-header {
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #d6d6d6;
+}
+
+.deposit-header span {
+    display: block;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: #8a6a3d;
+    margin-bottom: 10px;
+}
+
+.deposit-header p {
+    margin: 0;
+    font-size: 15px;
+    color: #777;
+    line-height: 1.5;
+}
+
+.deposit-check {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+}
+
+.deposit-check input {
+    width: 18px;
+    height: 18px;
+    accent-color: #9b7a45;
+}
+
+/* 2 ô tiền cọc và phương thức thanh toán */
+.deposit-fields {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    align-items: end; /* giúp input/select thẳng hàng dưới */
+}
+
+.deposit-fields .form-group-line {
+    margin-bottom: 0;
+}
+
+/* Cố định chiều cao label để 2 cột không lệch */
+.deposit-fields .form-group-line label {
+    display: flex;
+    align-items: flex-start;
+    min-height: 36px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #111;
+    line-height: 1.4;
+}
+
+.deposit-fields input,
+.deposit-fields select {
+    width: 100%;
+    height: 42px;
+    border: none;
+    border-bottom: 1px solid #c8c8c8;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    font-size: 15px;
+    color: #222;
+    outline: none;
+}
+
+.deposit-fields input::placeholder {
+    color: #b5b5b5;
+}
+
+.deposit-fields input:focus,
+.deposit-fields select:focus {
+    border-bottom-color: #9b7a45;
 }
 
