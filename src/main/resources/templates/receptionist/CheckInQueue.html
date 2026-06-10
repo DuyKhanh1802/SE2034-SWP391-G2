@@ -1,243 +1,210 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>ViHotel HMS - Danh sách nhận phòng</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap"
-          rel="stylesheet">
-
-    <!-- Reuse List Booking CSS for consistent layout -->
-    <link rel="stylesheet" th:href="@{/receptionist/ListBooking.css}">
-</head>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
 
 <body>
 
-<div class="vihotel-layout">
+<main layout:fragment="content">
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <h1>ViHotel HMS</h1>
-            <p>LỄ TÂN</p>
-        </div>
+    <!-- WELCOME -->
+    <section class="welcome-section">
+        <h1>Danh sách nhận phòng</h1>
+        <p>Danh sách các đặt phòng đã xác nhận và đang chờ khách đến nhận phòng.</p>
+    </section>
 
-        <nav class="sidebar-menu">
-            <a th:href="@{/receptionist/dashboard}" class="sidebar-link">
-                <i class="bi bi-grid"></i>
-                <span>TỔNG QUAN</span>
-            </a>
+    <!-- STATS -->
+    <section class="row g-4 stats-section">
 
-            <a th:href="@{/receptionist/rooms}" class="sidebar-link">
-                <i class="bi bi-door-open"></i>
-                <span>PHÒNG</span>
-            </a>
-
-            <a th:href="@{/receptionist/bookings}" class="sidebar-link">
-                <i class="bi bi-calendar3"></i>
-                <span>ĐẶT PHÒNG</span>
-            </a>
-
-            <a th:href="@{/receptionist/check-in}" class="sidebar-link active">
-                <i class="bi bi-box-arrow-in-right"></i>
-                <span>NHẬN PHÒNG</span>
-            </a>
-
-            <a th:href="@{/receptionist/check-out}" class="sidebar-link">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>TRẢ PHÒNG</span>
-            </a>
-
-            <a th:href="@{/receptionist/folios}" class="sidebar-link">
-                <i class="bi bi-receipt"></i>
-                <span>HÓA ĐƠN</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <a th:href="@{/receptionist/settings}" class="sidebar-link">
-                <i class="bi bi-gear"></i>
-                <span>CÀI ĐẶT</span>
-            </a>
-
-            <a th:href="@{/auth/logout}" class="sidebar-link">
-                <i class="bi bi-box-arrow-left"></i>
-                <span>ĐĂNG XUẤT</span>
-            </a>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-
-        <!-- Top Bar -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <div class="topbar-title">
-                    <h1>ViHotel HMS</h1>
-                </div>
-
-                <div class="topbar-divider"></div>
-
-                <nav class="topbar-nav">
-                    <a href="#">Tổng quan</a>
-                    <a href="#">Báo cáo</a>
-                    <a href="#">Kho</a>
-                </nav>
-            </div>
-
-            <div class="topbar-right">
-                <button class="topbar-icon notification-wrap">
-                    <i class="bi bi-bell"></i>
-                    <span class="notification-dot"></span>
-                </button>
-
-                <button class="topbar-icon">
-                    <i class="bi bi-question-circle"></i>
-                </button>
-
-                <a th:href="@{/receptionist/bookings/add-walk-in}" class="btn-main">
-                    TẠO ĐẶT PHÒNG
-                </a>
-            </div>
-        </header>
-
-        <!-- Page Content -->
-        <section class="page-wrapper checkin-queue-page">
-
-            <!-- Page Header -->
-            <div class="queue-header">
+        <div class="col-md-4">
+            <div class="stat-card">
                 <div>
-                    <h1>Danh sách nhận phòng</h1>
-                    <p>Danh sách các đặt phòng đã xác nhận và đang chờ khách đến nhận phòng.</p>
+                    <p class="stat-label">Đặt phòng chờ nhận</p>
+                    <h2 th:text="${totalItems != null ? totalItems : 0}">0</h2>
                 </div>
+
+                <span class="badge-custom badge-warning">
+                    Cần xử lý
+                </span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div>
+                    <p class="stat-label">Trang hiện tại</p>
+                    <h2 th:text="${currentPage != null ? currentPage + 1 : 1}">1</h2>
+                </div>
+
+                <span class="badge-custom badge-info">
+                    Danh sách
+                </span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div>
+                    <p class="stat-label">Tổng số trang</p>
+                    <h2 th:text="${totalPages != null ? totalPages : 1}">1</h2>
+                </div>
+
+                <span class="badge-custom badge-success">
+                    Phân trang
+                </span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- FILTER -->
+    <section class="dashboard-section">
+
+        <div class="section-title-row">
+            <h2>Tìm kiếm đặt phòng</h2>
+            <a th:href="@{/receptionist/check-in}">Làm mới</a>
+        </div>
+
+        <form th:action="@{/receptionist/check-in}" method="get" class="queue-filter-bar">
+
+            <div class="filter-group guest-search">
+                <label>Tìm kiếm khách hàng</label>
+
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       placeholder="Tìm theo mã đặt phòng, tên khách hoặc phòng">
             </div>
 
-            <!-- Search Bar -->
-            <form th:action="@{/receptionist/check-in}" method="get" class="queue-filter-bar">
+            <div class="filter-button-wrap">
+                <button type="submit" class="btn-filter">
+                    <i class="bi bi-search"></i>
+                    Tìm kiếm
+                </button>
+            </div>
 
-                <div class="filter-group guest-search">
-                    <label>TÌM KIẾM KHÁCH HÀNG</label>
-                    <input type="text"
-                           name="keyword"
-                           th:value="${keyword}"
-                           placeholder="Tìm theo mã đặt phòng, tên khách hoặc phòng">
-                </div>
+        </form>
 
-                <div class="filter-button-wrap">
-                    <button type="submit" class="btn-filter">
-                        <i class="bi bi-search"></i>
-                        TÌM KIẾM
-                    </button>
-                </div>
+    </section>
 
-            </form>
+    <!-- CHECK-IN LIST -->
+    <section class="dashboard-section">
 
-            <!-- Check-in Queue Table -->
-            <div class="table-wrap">
-                <table class="booking-table">
-                    <thead>
-                    <tr>
-                        <th>MÃ ĐẶT PHÒNG</th>
-                        <th>TÊN KHÁCH</th>
-                        <th>PHÒNG</th>
-                        <th>NGÀY NHẬN</th>
-                        <th>NGÀY TRẢ</th>
-                        <th>TRẠNG THÁI</th>
-                        <th class="text-end">THAO TÁC</th>
-                    </tr>
-                    </thead>
+        <div class="section-title-row">
+            <h2>Đặt phòng chờ nhận phòng</h2>
+            <a th:href="@{/receptionist/bookings}">Xem đặt phòng</a>
+        </div>
 
-                    <tbody>
+        <div class="table-wrap">
+            <table class="booking-table">
+                <thead>
+                <tr>
+                    <th>Mã đặt phòng</th>
+                    <th>Tên khách</th>
+                    <th>Phòng</th>
+                    <th>Ngày nhận</th>
+                    <th>Ngày trả</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+                </thead>
 
-                    <tr th:each="booking : ${bookings}">
-                        <td class="booking-id" th:text="'#' + ${booking.bookingReference}"></td>
+                <tbody>
 
-                        <td>
-                            <div class="guest-info">
-                                <div>
-                                    <div class="guest-name" th:text="${booking.guestName}"></div>
+                <tr th:each="booking : ${bookings}">
+                    <td class="booking-id" th:text="'#' + ${booking.bookingReference}">
+                        #BK001
+                    </td>
+
+                    <td>
+                        <div class="guest-info">
+                            <div>
+                                <div class="guest-name" th:text="${booking.guestName}">
+                                    Nguyễn Văn A
                                 </div>
                             </div>
-                        </td>
+                        </div>
+                    </td>
 
-                        <td th:text="${booking.roomName}"></td>
+                    <td th:text="${booking.roomName}">
+                        101
+                    </td>
 
-                        <td th:text="${booking.checkInDate}"></td>
+                    <td th:text="${booking.checkInDate}">
+                        2026-06-10
+                    </td>
 
-                        <td th:text="${booking.checkOutDate}"></td>
+                    <td th:text="${booking.checkOutDate}">
+                        2026-06-12
+                    </td>
 
-                        <td>
-                            <span class="status-badge status-confirmed"
-                                  th:text="${booking.status}">
-                            </span>
-                        </td>
+                    <td>
+                        <span class="status-badge status-confirmed"
+                              th:text="${booking.status}">
+                            CONFIRMED
+                        </span>
+                    </td>
 
-                        <td class="text-end">
-                            <div class="table-actions">
-                                <a th:href="@{/receptionist/bookings/{id}/check-in(id=${booking.bookingId})}"
-                                   class="action-strong">
-                                    BẮT ĐẦU NHẬN PHÒNG
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
+                    <td class="text-end">
+                        <a th:href="@{/receptionist/bookings/{id}/check-in(id=${booking.bookingId})}"
+                           class="action-strong">
+                            Bắt đầu nhận phòng
+                        </a>
+                    </td>
+                </tr>
 
-                    <tr th:if="${bookings == null or #lists.isEmpty(bookings)}">
-                        <td colspan="7" class="text-center py-5">
-                            Không có đặt phòng đã xác nhận đang chờ nhận phòng.
-                        </td>
-                    </tr>
+                <tr th:if="${bookings == null or #lists.isEmpty(bookings)}">
+                    <td colspan="7" class="text-center py-5">
+                        Không có đặt phòng đã xác nhận đang chờ nhận phòng.
+                    </td>
+                </tr>
 
-                    </tbody>
-                </table>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-row" th:if="${totalPages != null and totalPages > 1}">
+
+            <div class="pagination-info">
+                <span th:text="'Trang ' + (${currentPage} + 1) + ' / ' + ${totalPages}">
+                    Trang 1 / 1
+                </span>
+
+                <span th:text="' • ' + ${totalItems} + ' đặt phòng đã xác nhận'">
+                    • 0 đặt phòng đã xác nhận
+                </span>
             </div>
 
-            <!-- Pagination -->
-            <div class="pagination-row" th:if="${totalPages > 1}">
+            <div class="pagination-actions">
 
-                <div class="pagination-info">
-                    <span th:text="'Trang ' + (${currentPage} + 1) + ' / ' + ${totalPages}"></span>
-                    <span th:text="' • ' + ${totalItems} + ' đặt phòng đã xác nhận'"></span>
-                </div>
+                <a class="page-btn"
+                   th:classappend="${currentPage == 0} ? ' disabled'"
+                   th:href="@{/receptionist/check-in(page=${currentPage - 1}, keyword=${keyword})}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
 
-                <div class="pagination-actions">
+                <a class="page-btn"
+                   th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                   th:classappend="${i == currentPage} ? ' active'"
+                   th:href="@{/receptionist/check-in(page=${i}, keyword=${keyword})}"
+                   th:text="${i + 1}">
+                    1
+                </a>
 
-                    <a class="page-btn"
-                       th:classappend="${currentPage == 0} ? ' disabled'"
-                       th:href="@{/receptionist/check-in(page=${currentPage - 1}, keyword=${keyword})}">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
+                <a class="page-btn"
+                   th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
+                   th:href="@{/receptionist/check-in(page=${currentPage + 1}, keyword=${keyword})}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
 
-                    <a class="page-btn"
-                       th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                       th:classappend="${i == currentPage} ? ' active'"
-                       th:href="@{/receptionist/check-in(page=${i}, keyword=${keyword})}"
-                       th:text="${i + 1}">
-                    </a>
-
-                    <a class="page-btn"
-                       th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
-                       th:href="@{/receptionist/check-in(page=${currentPage + 1}, keyword=${keyword})}">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-
-                </div>
             </div>
+        </div>
 
-        </section>
+    </section>
 
-    </main>
-
-</div>
+</main>
 
 </body>
 </html>

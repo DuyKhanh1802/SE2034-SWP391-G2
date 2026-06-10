@@ -53,7 +53,7 @@ public class BookingService {
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
     private static final Pattern PHONE_PATTERN =
-            Pattern.compile("^\\+?[0-9()\\s-]{8,20}$");
+            Pattern.compile("^[0-9()+\\s-]{8,20}$");
 
     private final UserRepository userRepository;
     private final CountryRepository countryRepository;

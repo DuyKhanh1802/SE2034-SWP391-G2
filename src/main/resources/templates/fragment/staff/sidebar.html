@@ -53,7 +53,15 @@
             sec:authorize="hasRole('RECEPTIONIST')">
             <a th:href="@{/receptionist/dashboard}">
                 <i class="fas fa-chart-line"></i>
-                <span>Dashboard</span>
+                <span>Tổng quan</span>
+            </a>
+        </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/rooms')} ? 'active' : ''"
+            sec:authorize="hasRole('RECEPTIONIST')">
+            <a th:href="@{/receptionist/rooms}">
+                <i class="fas fa-bed"></i>
+                <span>Phòng</span>
             </a>
         </li>
 
@@ -64,6 +72,32 @@
                 <span>Đặt phòng</span>
             </a>
         </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/check-in')} ? 'active' : ''"
+            sec:authorize="hasRole('RECEPTIONIST')">
+            <a th:href="@{/receptionist/check-in}">
+                <i class="fas fa-right-to-bracket"></i>
+                <span>Nhận phòng</span>
+            </a>
+        </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/check-out')} ? 'active' : ''"
+            sec:authorize="hasRole('RECEPTIONIST')">
+            <a th:href="@{/receptionist/check-out}">
+                <i class="fas fa-right-from-bracket"></i>
+                <span>Trả phòng</span>
+            </a>
+        </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/invoices')} ? 'active' : ''"
+            sec:authorize="hasRole('RECEPTIONIST')">
+            <a th:href="@{/receptionist/invoices}">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Hóa đơn</span>
+            </a>
+        </li>
+
+
     </ul>
 
     <div class="sidebar-section-spacer"></div>

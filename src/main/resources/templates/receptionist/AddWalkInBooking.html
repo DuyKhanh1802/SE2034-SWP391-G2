@@ -12,6 +12,11 @@
                 <p>Create a new immediate reservation for arriving guests.</p>
             </div>
 
+            <div th:if="${errorMessage}" class="walkin-alert">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span th:text="${errorMessage}">Invalid booking information.</span>
+            </div>
+
             <form th:action="@{/receptionist/bookings/add-walk-in}"
                   th:object="${request}"
                   method="post"
@@ -95,8 +100,13 @@
 
                             <div class="guest-form">
                                 <div class="form-group-line">
-                                    <label>FULL NAME</label>
-                                    <input type="text" th:field="*{fullName}" placeholder="Johnathan Doe">
+                                    <label>FIRST NAME</label>
+                                    <input type="text" th:field="*{firstName}" placeholder="Johnathan">
+                                </div>
+
+                                <div class="form-group-line">
+                                    <label>LAST NAME</label>
+                                    <input type="text" th:field="*{lastName}" placeholder="Doe">
                                 </div>
 
                                 <div class="form-group-line">
@@ -110,6 +120,38 @@
                                 </div>
 
                                 <div class="form-group-line">
+                                    <label>GENDER</label>
+                                    <select th:field="*{gender}">
+                                        <option value="">Select gender</option>
+                                        <option value="MALE">Male</option>
+                                        <option value="FEMALE">Female</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group-line">
+                                    <label>DATE OF BIRTH</label>
+                                    <input type="date" th:field="*{dateOfBirth}">
+                                </div>
+
+                                <div class="form-group-line">
+                                    <label>COUNTRY</label>
+                                    <select th:field="*{countryId}">
+                                        <option value="">Select country</option>
+                                        <option th:each="country : ${countries}"
+                                                th:value="${country.id}"
+                                                th:text="${country.countryName}">
+                                            Vietnam
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group-line">
+                                    <label>IDENTITY NUMBER</label>
+                                    <input type="text" th:field="*{identityNumber}" placeholder="Passport / CCCD">
+                                </div>
+
+                                <div class="form-group-line form-group-wide">
                                     <label>ADDITIONAL NOTES</label>
                                     <textarea th:field="*{notes}" rows="3"
                                               placeholder="Special requests, allergies, or early check-in info..."></textarea>

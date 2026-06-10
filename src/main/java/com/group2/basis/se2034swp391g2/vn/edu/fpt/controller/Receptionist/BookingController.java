@@ -83,7 +83,7 @@ public class BookingController {
         request.setCheckOutDate(checkOutDate);
         request.setAdults(1);
         request.setChildren(0);
-        
+
         model.addAttribute("countries", countryRepository.findAll());
         model.addAttribute("request", request);
         model.addAttribute("availableRooms", bookingService.getAvailableRooms(checkInDate, checkOutDate));
@@ -93,20 +93,38 @@ public class BookingController {
 
     @PostMapping("/add-walk-in")
     public String addWalkInBooking(@ModelAttribute BookingCreateRequest request,
+                                   Model model,
                                    RedirectAttributes redirectAttributes) {
 
-        Long bookingId = bookingService.addWalkInBooking(request);
+        try {
+            Long bookingId = bookingService.addWalkInBooking(request);
 
-        if ("create-check-in".equals(request.getAction())) {
-            return "redirect:/receptionist/bookings/" + bookingId + "/check-in-complete";
+            if ("create-check-in".equals(request.getAction())) {
+                return "redirect:/receptionist/bookings/" + bookingId + "/check-in-complete";
+            }
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Walk-in booking created successfully."
+            );
+
+            return "redirect:/receptionist/bookings";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("countries", countryRepository.findAll());
+            model.addAttribute("request", request);
+
+            try {
+                model.addAttribute(
+                        "availableRooms",
+                        bookingService.getAvailableRooms(request.getCheckInDate(), request.getCheckOutDate())
+                );
+            } catch (IllegalArgumentException ignored) {
+                model.addAttribute("availableRooms", java.util.Collections.emptyList());
+            }
+
+            return "receptionist/AddWalkInBooking";
         }
-
-        redirectAttributes.addFlashAttribute(
-                "successMessage",
-                "Walk-in booking created successfully."
-        );
-
-        return "redirect:/receptionist/bookings";
     }
 
     @GetMapping("/{bookingId}/check-in-complete")
