@@ -1,0 +1,552 @@
+/* =========================
+   BASE STYLES
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    line-height: 1.5;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    color: inherit;
+}
+
+/* =========================
+   UTILITY CLASSES (Bootstrap fallback)
+========================= */
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -0.5rem;
+    margin-left: -0.5rem;
+}
+
+.row > * {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.g-4 > * {
+    margin-bottom: 1.5rem;
+}
+
+.col-12 {
+    flex: 0 0 auto;
+    width: 100%;
+}
+
+.col-md-4 {
+    flex: 0 0 auto;
+    width: 33.33333333%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-end {
+    text-align: right;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.py-5 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+/* =========================
+   WELCOME SECTION
+========================= */
+
+.welcome-section {
+    margin-bottom: 28px;
+}
+
+.welcome-section h1 {
+    margin: 0 0 8px;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 42px;
+    font-weight: 600;
+    color: #222;
+    letter-spacing: -0.5px;
+}
+
+.welcome-section p {
+    margin: 0;
+    max-width: 720px;
+    font-size: 14px;
+    color: #777;
+    line-height: 1.6;
+}
+
+/* =========================
+   STATS SECTION
+========================= */
+
+.stats-section {
+    margin-bottom: 28px;
+}
+
+.stat-card {
+    min-height: 120px;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    transition: box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.stat-label {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: #777;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.stat-card h2 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* =========================
+   BADGES
+========================= */
+
+.badge-custom {
+    display: inline-block;
+    padding: 7px 11px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border-radius: 3px;
+}
+
+.badge-warning {
+    background: #fff6dd;
+    color: #b77900;
+}
+
+.badge-info {
+    background: #e8f2ff;
+    color: #1e70b7;
+}
+
+.badge-success {
+    background: #e7f5e7;
+    color: #2f7d32;
+}
+
+/* =========================
+   SECTION CONTAINER
+========================= */
+
+.dashboard-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.section-title-row h2 {
+    margin: 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: #222;
+    letter-spacing: -0.3px;
+}
+
+.section-title-row a {
+    font-size: 13px;
+    font-weight: 600;
+    color: #222;
+    border-bottom: 1px solid #222;
+    transition: opacity 0.2s ease;
+}
+
+.section-title-row a:hover {
+    opacity: 0.7;
+}
+
+/* =========================
+   FILTER BAR
+========================= */
+
+.queue-filter-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #777;
+    text-transform: uppercase;
+}
+
+.filter-group input {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 0 14px;
+    font-size: 14px;
+    font-family: 'Manrope', sans-serif;
+    color: #222;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.filter-group input::placeholder {
+    color: #aaa;
+}
+
+.filter-group input:focus {
+    border-color: #222;
+    box-shadow: none;
+}
+
+.filter-button-wrap {
+    display: flex;
+}
+
+.btn-filter {
+    height: 44px;
+    border: none;
+    background: #111;
+    color: #fff;
+    padding: 0 20px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Manrope', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-filter:hover {
+    background: #333;
+}
+
+.btn-filter:active {
+    background: #000;
+}
+
+.btn-filter i {
+    font-size: 14px;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 22px;
+}
+
+.booking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.booking-table thead {
+    background: #efefef;
+}
+
+.booking-table thead th {
+    color: #555;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 13px 14px;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.booking-table tbody td {
+    padding: 14px;
+    font-size: 13px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.booking-table tbody tr:hover {
+    background: #f8f8f8;
+}
+
+.booking-id {
+    font-weight: 700;
+    color: #222;
+}
+
+.guest-name {
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+}
+
+/* =========================
+   STATUS BADGE
+========================= */
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    border-radius: 3px;
+}
+
+.status-confirmed {
+    background: #e7f5e7;
+    color: #2f7d32;
+}
+
+/* =========================
+   ACTION BUTTON
+========================= */
+
+.action-strong {
+    display: inline-block;
+    background: #111;
+    color: #fff;
+    padding: 8px 13px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 2px;
+}
+
+.action-strong:hover {
+    background: #333;
+    color: #fff;
+    text-decoration: none;
+}
+
+.action-strong:active {
+    background: #000;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.pagination-row {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    font-size: 13px;
+    color: #666;
+}
+
+.pagination-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-btn {
+    min-width: 34px;
+    height: 34px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #222;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.page-btn:hover:not(.disabled) {
+    background: #f2f2f2;
+    color: #222;
+}
+
+.page-btn.active {
+    background: #111;
+    border-color: #111;
+    color: #fff;
+}
+
+.page-btn.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.page-btn i {
+    font-size: 14px;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+
+@media (max-width: 768px) {
+    .welcome-section h1 {
+        font-size: 34px;
+    }
+
+    .section-title-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .section-title-row h2 {
+        font-size: 24px;
+    }
+
+    .queue-filter-bar {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .filter-button-wrap {
+        width: 100%;
+    }
+
+    .btn-filter {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .stat-card {
+        min-height: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .booking-table {
+        font-size: 12px;
+    }
+
+    .booking-table thead th,
+    .booking-table tbody td {
+        padding: 10px 8px;
+    }
+
+    .pagination-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pagination-actions {
+        width: 100%;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        min-width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-section h1 {
+        font-size: 28px;
+    }
+
+    .stat-card h2 {
+        font-size: 28px;
+    }
+
+    .dashboard-section {
+        padding: 16px;
+    }
+
+    .booking-table {
+        font-size: 11px;
+    }
+
+    .action-strong {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}

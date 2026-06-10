@@ -23,10 +23,10 @@ public class Booking {
     @Column(name = "booking_id")
     private Long id;
 
-    @Column(name = "guest_first_name", nullable = false, length = 50)
+    @Column(name = "guest_first_name", nullable = false, length = 50, columnDefinition = "NVARCHAR(50)")
     private String guestFirstName;
 
-    @Column(name = "guest_last_name", nullable = false, length = 50)
+    @Column(name = "guest_last_name", nullable = false, length = 50, columnDefinition = "NVARCHAR(50)")
     private String guestLastName;
 
     @Column(name = "guest_phone", nullable = false, length = 20)
@@ -61,7 +61,7 @@ public class Booking {
     @Column(name = "num_children", nullable = false)
     private Integer numChildren;
 
-    @Column(name = "special_requests", length = 500)
+    @Column(name = "special_requests", length = 500, columnDefinition = "NVARCHAR(500)")
     private String specialRequests;
 
     @Column(name = "booking_reference", nullable = false, unique = true, length = 20)
@@ -85,7 +85,7 @@ public class Booking {
     @JoinColumn(name = "cancelled_by")
     private User cancelledBy;
 
-    @Column(name = "cancel_reason", length = 300)
+    @Column(name = "cancel_reason", length = 300, columnDefinition = "NVARCHAR(300)")
     private String cancelReason;
 
     @Column(name = "cancelled_at")
