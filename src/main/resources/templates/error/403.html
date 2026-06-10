@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 Forbidden | AUDO RESIDENCE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#000000', background: '#f9f9f9', 'on-surface-variant': '#444748', 'bone-white': '#FFFFFF' },
+                    fontFamily: { garamond: ['EB Garamond', 'serif'], manrope: ['Manrope', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f9f9f9; font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center text-center px-6 selection:bg-gray-200">
+<h1 class="text-[120px] md:text-[150px] font-garamond leading-none text-primary mb-2">403</h1>
+<h2 class="text-2xl md:text-3xl font-garamond text-primary mb-4">Access Denied</h2>
+<p class="text-on-surface-variant max-w-md mb-10 font-light leading-relaxed">
+    You do not have the required permissions to view this directory or page using the credentials you supplied.
+</p>
+<div class="flex gap-4">
+    <a href="javascript:history.back()" class="border border-primary text-primary px-8 py-4 text-xs font-bold tracking-[0.2em] uppercase hover:bg-gray-100 transition-colors">
+        Go Back
+    </a>
+    <a th:href="@{/}" class="bg-primary text-bone-white px-8 py-4 text-xs font-bold tracking-[0.2em] uppercase hover:bg-black/80 transition-colors">
+        Homepage
+    </a>
+</div>
+</body>
+</html>

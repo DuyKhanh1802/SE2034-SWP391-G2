@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -22,6 +26,8 @@
 </head>
 
 <body>
+<main layout:fragment="content">
+<!-- PAGE TITLE -->
 
 <div class="dashboard-wrapper d-flex">
 
@@ -247,9 +253,6 @@
 
         </section>
 
-    </main>
-</div>
-
 <script>
     setTimeout(function () {
         const toast = document.querySelector('.success-toast');
@@ -260,6 +263,6 @@
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+</main>
 </body>
 </html>

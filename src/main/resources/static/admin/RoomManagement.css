@@ -1086,6 +1086,8 @@ body {
 
     .room-hero-image {
         height: 300px;
+.room-page-title h1 {
+        font-size: 50px;
     }
 }
 
@@ -1103,6 +1105,7 @@ body {
     }
 
     .top-icons {
+.top-icons {
         width: 100%;
         justify-content: flex-end;
     }
@@ -1159,12 +1162,6 @@ body {
         flex-direction: column;
         align-items: flex-start;
         gap: 14px;
-        padding: 16px;
-    }
-
-    .pagination-buttons {
-        width: 100%;
-        justify-content: flex-end;
     }
 
     .form-actions {
@@ -1176,52 +1173,5 @@ body {
         width: 100%;
         justify-content: center;
     }
-
-    .room-detail-top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
-    }
-
-    .room-title-row h1 {
-        font-size: 26px;
-    }
-
-    .room-info-grid {
-        grid-template-columns: 1fr;
-        row-gap: 18px;
-    }
-
-    .room-detail-side {
-        grid-template-columns: 1fr;
-    }
-
-    .room-hero-image {
-        height: 240px;
-    }
 }
 
-@media (max-width: 576px) {
-    .room-detail-luxury {
-        margin-top: 22px;
-    }
-
-    .room-title-row h1 {
-        font-size: 24px;
-    }
-
-    .room-thumb-item {
-        width: 86px;
-        height: 60px;
-    }
-
-    .side-card {
-        padding: 18px;
-    }
-
-    .pagination-btn {
-        width: 34px;
-        height: 34px;
-        font-size: 12px;
-    }
-}

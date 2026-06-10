@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+<header class="page-header">
+            <div>
+                <div class="breadcrumb-custom">
+                    Management / Promotions / Detail
+                </div>
+                <h1>Promotion Detail</h1>
+            </div>
+        </header>
+
+        <section class="content-section">
+            <div class="form-card">
+
+                <div class="detail-header">
+                    <div>
+                        <span class="detail-label">Promotion Code</span>
+                        <h2 th:text="${promotion.code}">TEST25</h2>
+                    </div>
+
+                    <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
+                        Back to List
+                    </a>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span>Promotion Name</span>
+                        <strong th:text="${promotion.name}">Test Promotion</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Discount Type</span>
+                        <strong th:text="${promotion.discountType}">PERCENTAGE</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Discount Value</span>
+                        <strong>
+                            <span th:if="${promotion.discountType.name() == 'PERCENTAGE'}"
+                                  th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 0) + '% OFF'}">
+                                10% OFF
+                            </span>
+
+                            <span th:if="${promotion.discountType.name() == 'FIXED_AMOUNT'}"
+                                  th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 0) + ' VND OFF'}">
+                                500000 VND OFF
+                            </span>
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Max Discount</span>
+                        <strong th:text="${promotion.maxDiscount != null
+                                ? #numbers.formatDecimal(promotion.maxDiscount, 0, 0) + ' VND'
+                                : 'Not applied'}">
+                            Not applied
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Usage</span>
+                        <strong th:text="${promotion.usageCount + ' / ' + promotion.usageLimit}">
+                            0 / 100
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Status</span>
+
+                        <strong th:if="${!promotion.isActive}" class="inactive-status">
+                            Inactive
+                        </strong>
+
+                        <strong th:if="${promotion.isActive
+                                and promotion.validFrom != null
+                                and promotion.validFrom.isAfter(T(java.time.Instant).now())}"
+                                class="scheduled-status">
+                            Scheduled
+                        </strong>
+
+                        <strong th:if="${promotion.isActive
+                                and promotion.validTo != null
+                                and promotion.validTo.isBefore(T(java.time.Instant).now())}"
+                                class="expired-status">
+                            Expired
+                        </strong>
+
+                        <strong th:if="${promotion.isActive
+                                and (promotion.validFrom == null
+                                    or !promotion.validFrom.isAfter(T(java.time.Instant).now()))
+                                and (promotion.validTo == null
+                                    or !promotion.validTo.isBefore(T(java.time.Instant).now()))}"
+                                class="active-status">
+                            Active
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Valid From</span>
+                        <strong th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy HH:mm')}">
+                            03/06/2026 10:00
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Valid To</span>
+                        <strong th:text="${#temporals.format(promotion.validTo, 'dd/MM/yyyy HH:mm')}">
+                            03/07/2026 10:00
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Created At</span>
+                        <strong th:text="${#temporals.format(promotion.createdAt, 'dd/MM/yyyy HH:mm')}">
+                            03/06/2026 10:00
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Active Flag</span>
+                        <strong th:text="${promotion.isActive ? 'True' : 'False'}">
+                            True
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
+                        Cancel
+                    </a>
+
+                    <a href="#" class="btn-save">
+                        Edit Promotion
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        <footer class="footer">
+            Â© 2026 ViHotel. All rights reserved.
+        </footer>
+</main>
+</body>
+</html>

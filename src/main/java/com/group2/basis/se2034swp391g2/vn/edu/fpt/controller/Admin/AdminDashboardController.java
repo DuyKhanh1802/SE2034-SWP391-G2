@@ -24,6 +24,6 @@ public class AdminDashboardController {
 
         model.addAttribute("currentUser", currentUser);
 
-        return "Admin/Dashboard";
+        return "admin/Dashboard";
     }
 }
