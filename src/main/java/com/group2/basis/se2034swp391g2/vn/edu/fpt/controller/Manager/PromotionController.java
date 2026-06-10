@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -33,9 +34,6 @@ public class PromotionController {
         this.profileService = profileService;
     }
 
-    /*
-     * Hiển thị danh sách khuyến mãi có phân trang, tìm kiếm và lọc trạng thái.
-     */
     @GetMapping("/manager/promotions")
     public String listPromotions(@RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "5") int size,
@@ -68,9 +66,23 @@ public class PromotionController {
         return "manager/list_promotions";
     }
 
-    /*
-     * Hiển thị form thêm khuyến mãi.
-     */
+    @GetMapping("/manager/promotions/{id}")
+    public String showPromotionDetail(@PathVariable Long id,
+                                      Model model,
+                                      Authentication authentication,
+                                      HttpSession session,
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            addHeaderAttributes(model, authentication, session, "CHI TIẾT KHUYẾN MÃI");
+            model.addAttribute("promotion", promotionService.getPromotionDetail(id));
+
+            return "manager/promotion_detail";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/manager/promotions";
+        }
+    }
+
     @GetMapping("/manager/promotions/add")
     public String showAddPromotionForm(Model model,
                                        Authentication authentication,
@@ -81,9 +93,24 @@ public class PromotionController {
         return "manager/add_promotion";
     }
 
-    /*
-     * Upload ảnh khuyến mãi lên Cloudinary.
-     */
+    @GetMapping("/manager/promotions/edit/{id}")
+    public String showEditPromotionForm(@PathVariable Long id,
+                                        Model model,
+                                        Authentication authentication,
+                                        HttpSession session,
+                                        RedirectAttributes redirectAttributes) {
+        try {
+            addHeaderAttributes(model, authentication, session, "CHỈNH SỬA KHUYẾN MÃI");
+            model.addAttribute("promotion", promotionService.getPromotionEditRequest(id));
+            model.addAttribute("promotionId", id);
+
+            return "manager/edit_promotion";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/manager/promotions";
+        }
+    }
+
     @PostMapping("/manager/promotion-images/upload")
     @ResponseBody
     public ResponseEntity<Map<String, String>> uploadPromotionImage(@RequestParam("file") MultipartFile file) {
@@ -103,9 +130,6 @@ public class PromotionController {
         }
     }
 
-    /*
-     * Xử lý thêm khuyến mãi mới.
-     */
     @PostMapping("/manager/promotions/add")
     public String addPromotion(@ModelAttribute("promotion") PromotionRequest request,
                                Model model,
@@ -124,7 +148,6 @@ public class PromotionController {
 
         } catch (IllegalArgumentException e) {
             addHeaderAttributes(model, authentication, session, "THÊM KHUYẾN MÃI");
-
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("promotion", request);
 
@@ -132,9 +155,42 @@ public class PromotionController {
         }
     }
 
-    /*
-     * Truyền dữ liệu cho header dùng chung của staff.
-     */
+    @PostMapping("/manager/promotions/edit/{id}")
+    public String editPromotion(@PathVariable Long id,
+                                @ModelAttribute("promotion") PromotionRequest request,
+                                Model model,
+                                Authentication authentication,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            promotionService.updatePromotion(id, request);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật khuyến mãi thành công.");
+
+            return "redirect:/manager/promotions/" + id;
+
+        } catch (IllegalArgumentException e) {
+            addHeaderAttributes(model, authentication, session, "CHỈNH SỬA KHUYẾN MÃI");
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("promotion", request);
+            model.addAttribute("promotionId", id);
+
+            return "manager/edit_promotion";
+        }
+    }
+
+    @PostMapping("/manager/promotions/delete/{id}")
+    public String deletePromotion(@PathVariable Long id,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            promotionService.deletePromotion(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa khuyến mãi thành công.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/manager/promotions";
+    }
+
     private void addHeaderAttributes(Model model,
                                      Authentication authentication,
                                      HttpSession session,

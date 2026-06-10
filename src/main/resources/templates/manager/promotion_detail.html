@@ -1,151 +1,169 @@
-﻿<!DOCTYPE html>
-<html lang="en"
+<!DOCTYPE html>
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-<header class="page-header">
-            <div>
-                <div class="breadcrumb-custom">
-                    Management / Promotions / Detail
-                </div>
-                <h1>Promotion Detail</h1>
+    <div class="page-action-bar">
+        <div>
+            <div class="breadcrumb-custom">
+                Quản lý / Khuyến mãi / Chi tiết
             </div>
-        </header>
+            <h1>Chi tiết khuyến mãi</h1>
+        </div>
 
-        <section class="content-section">
-            <div class="form-card">
+        <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
+            Quay lại danh sách
+        </a>
+    </div>
 
-                <div class="detail-header">
-                    <div>
-                        <span class="detail-label">Promotion Code</span>
-                        <h2 th:text="${promotion.code}">TEST25</h2>
-                    </div>
+    <section class="content-section promotion-detail-page">
+        <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span th:text="${successMessage}">Cập nhật khuyến mãi thành công.</span>
+        </div>
 
-                    <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
-                        Back to List
-                    </a>
+        <section class="detail-hero">
+            <div class="detail-hero-media">
+                <img th:if="${promotion.imageUrl != null and !promotion.imageUrl.isBlank()}"
+                     th:src="${promotion.imageUrl}"
+                     alt="Ảnh khuyến mãi"
+                     class="promotion-detail-image">
+
+                <div th:if="${promotion.imageUrl == null or promotion.imageUrl.isBlank()}"
+                     class="promotion-detail-placeholder">
+                    Không có ảnh
+                </div>
+            </div>
+
+            <div class="detail-hero-body">
+                <div class="detail-hero-top">
+                    <span class="detail-code" th:text="${promotion.code}">VH-202606-A8K2</span>
+                    <span class="status detail-status"
+                          th:text="${promotion.status}"
+                          th:classappend="${promotion.status == 'Đang hoạt động'} ? ' active-status' : (${promotion.status == 'Sắp diễn ra'} ? ' scheduled-status' : (${promotion.status == 'Đã hết hạn'} ? ' expired-status' : ' inactive-status'))">
+                        Đang hoạt động
+                    </span>
                 </div>
 
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <span>Promotion Name</span>
-                        <strong th:text="${promotion.name}">Test Promotion</strong>
+                <h2 th:text="${promotion.name}">Ưu đãi mùa hè</h2>
+
+                <p class="detail-description" th:text="${promotion.description}">
+                    Giảm giá cho khách đặt phòng trong mùa hè.
+                </p>
+
+                <div class="detail-badges">
+                    <span class="detail-badge" th:text="${promotion.displayStatus}">Banner nổi bật</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="detail-metrics">
+            <div class="detail-metric-card detail-metric-emphasis">
+                <span>Số tiền giảm</span>
+                <strong th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                    200.000 VND
+                </strong>
+            </div>
+
+            <div class="detail-metric-card">
+                <span>Lượt dùng</span>
+                <strong th:text="${promotion.usageCount + ' / ' + promotion.usageLimit}">
+                    0 / 200
+                </strong>
+            </div>
+
+            <div class="detail-metric-card">
+                <span>Ngày bắt đầu</span>
+                <strong th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy HH:mm')}">
+                    03/06/2026 10:00
+                </strong>
+            </div>
+
+            <div class="detail-metric-card">
+                <span>Ngày kết thúc</span>
+                <strong th:text="${#temporals.format(promotion.validTo, 'dd/MM/yyyy HH:mm')}">
+                    03/07/2026 10:00
+                </strong>
+            </div>
+        </section>
+
+        <div class="detail-sections">
+            <section class="detail-panel">
+                <div class="detail-panel-header">
+                    <h3>Thông tin chiến dịch</h3>
+                </div>
+
+                <div class="detail-info-list">
+                    <div class="detail-info-row">
+                        <span>Mã khuyến mãi</span>
+                        <strong th:text="${promotion.code}">VH-202606-A8K2</strong>
                     </div>
 
-                    <div class="detail-item">
-                        <span>Discount Type</span>
-                        <strong th:text="${promotion.discountType}">PERCENTAGE</strong>
+                    <div class="detail-info-row">
+                        <span>Tên chiến dịch</span>
+                        <strong th:text="${promotion.name}">Ưu đãi mùa hè</strong>
                     </div>
 
-                    <div class="detail-item">
-                        <span>Discount Value</span>
-                        <strong>
-                            <span th:if="${promotion.discountType.name() == 'PERCENTAGE'}"
-                                  th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 0) + '% OFF'}">
-                                10% OFF
-                            </span>
-
-                            <span th:if="${promotion.discountType.name() == 'FIXED_AMOUNT'}"
-                                  th:text="${#numbers.formatDecimal(promotion.discountValue, 0, 0) + ' VND OFF'}">
-                                500000 VND OFF
-                            </span>
-                        </strong>
+                    <div class="detail-info-row detail-info-row-text">
+                        <span>Mô tả ngắn</span>
+                        <p th:text="${promotion.description}">Giảm giá cho khách đặt phòng trong mùa hè.</p>
                     </div>
 
-                    <div class="detail-item">
-                        <span>Max Discount</span>
-                        <strong th:text="${promotion.maxDiscount != null
-                                ? #numbers.formatDecimal(promotion.maxDiscount, 0, 0) + ' VND'
-                                : 'Not applied'}">
-                            Not applied
-                        </strong>
-                    </div>
-
-                    <div class="detail-item">
-                        <span>Usage</span>
-                        <strong th:text="${promotion.usageCount + ' / ' + promotion.usageLimit}">
-                            0 / 100
-                        </strong>
-                    </div>
-
-                    <div class="detail-item">
-                        <span>Status</span>
-
-                        <strong th:if="${!promotion.isActive}" class="inactive-status">
-                            Inactive
-                        </strong>
-
-                        <strong th:if="${promotion.isActive
-                                and promotion.validFrom != null
-                                and promotion.validFrom.isAfter(T(java.time.Instant).now())}"
-                                class="scheduled-status">
-                            Scheduled
-                        </strong>
-
-                        <strong th:if="${promotion.isActive
-                                and promotion.validTo != null
-                                and promotion.validTo.isBefore(T(java.time.Instant).now())}"
-                                class="expired-status">
-                            Expired
-                        </strong>
-
-                        <strong th:if="${promotion.isActive
-                                and (promotion.validFrom == null
-                                    or !promotion.validFrom.isAfter(T(java.time.Instant).now()))
-                                and (promotion.validTo == null
-                                    or !promotion.validTo.isBefore(T(java.time.Instant).now()))}"
-                                class="active-status">
-                            Active
-                        </strong>
-                    </div>
-
-                    <div class="detail-item">
-                        <span>Valid From</span>
-                        <strong th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy HH:mm')}">
-                            03/06/2026 10:00
-                        </strong>
-                    </div>
-
-                    <div class="detail-item">
-                        <span>Valid To</span>
-                        <strong th:text="${#temporals.format(promotion.validTo, 'dd/MM/yyyy HH:mm')}">
-                            03/07/2026 10:00
-                        </strong>
-                    </div>
-
-                    <div class="detail-item">
-                        <span>Created At</span>
+                    <div class="detail-info-row">
+                        <span>Ngày tạo</span>
                         <strong th:text="${#temporals.format(promotion.createdAt, 'dd/MM/yyyy HH:mm')}">
                             03/06/2026 10:00
                         </strong>
                     </div>
+                </div>
+            </section>
 
-                    <div class="detail-item">
-                        <span>Active Flag</span>
-                        <strong th:text="${promotion.isActive ? 'True' : 'False'}">
-                            True
-                        </strong>
+            <section class="detail-panel">
+                <div class="detail-panel-header">
+                    <h3>Thiết lập hiển thị</h3>
+                </div>
+
+                <div class="detail-info-list">
+                    <div class="detail-info-row">
+                        <span>Trạng thái hoạt động</span>
+                        <strong th:text="${promotion.isActive ? 'Đang bật' : 'Đã tắt'}">Đang bật</strong>
+                    </div>
+
+                    <div class="detail-info-row">
+                        <span>Hiển thị</span>
+                        <strong th:text="${promotion.displayStatus}">Banner nổi bật</strong>
+                    </div>
+
+                    <div class="detail-info-row">
+                        <span>Hiển thị trang chủ</span>
+                        <strong th:text="${promotion.showOnHomepage ? 'Có' : 'Không'}">Có</strong>
+                    </div>
+
+                    <div class="detail-info-row">
+                        <span>Banner nổi bật</span>
+                        <strong th:text="${promotion.featured ? 'Có' : 'Không'}">Không</strong>
+                    </div>
+
+                    <div class="detail-info-row">
+                        <span>Lượt dùng tối đa</span>
+                        <strong th:text="${promotion.usageLimit}">200</strong>
                     </div>
                 </div>
+            </section>
+        </div>
 
-                <div class="form-actions">
-                    <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
-                        Cancel
-                    </a>
+        <div class="form-actions detail-actions">
+            <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
+                Quay lại
+            </a>
 
-                    <a href="#" class="btn-save">
-                        Edit Promotion
-                    </a>
-                </div>
-
-            </div>
-        </section>
-
-        <footer class="footer">
-            Â© 2026 ViHotel. All rights reserved.
-        </footer>
+            <a th:href="@{/manager/promotions/edit/{id}(id=${promotion.id})}" href="#" class="btn-save">
+                Chỉnh sửa khuyến mãi
+            </a>
+        </div>
+    </section>
 </main>
 </body>
 </html>

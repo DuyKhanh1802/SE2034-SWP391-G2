@@ -7,13 +7,9 @@ import java.time.Instant;
 
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
-    /*
-     * Kiểm tra mã khuyến mãi đã tồn tại.
-     */
     boolean existsByCode(String code);
 
-    /*
-     * Kiểm tra banner nổi bật đang hoạt động.
-     */
     boolean existsByFeaturedTrueAndIsActiveTrueAndValidToAfter(Instant now);
+
+    boolean existsByFeaturedTrueAndIsActiveTrueAndValidToAfterAndIdNot(Instant now, Long id);
 }
