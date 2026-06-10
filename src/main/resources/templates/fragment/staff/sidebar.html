@@ -9,7 +9,7 @@
 
     <ul class="sidebar-menu"
         sec:authorize="hasRole('SYSTEM_ADMIN')"
-        th:if="${session.CURRENT_ACTIVE_ROLE == null or session.CURRENT_ACTIVE_ROLE == 'SYSTEM_ADMIN'}">
+        th:if="${session.CURRENT_ACTIVE_ROLE == 'SYSTEM_ADMIN'}">
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/system-admin/list-user')} ? 'active' : ''">
             <a th:href="@{/system-admin/list-user}">
                 <i class="fas fa-users"></i>
@@ -37,54 +37,56 @@
     </ul>
 
     <ul class="sidebar-menu"
-        th:if="${session.CURRENT_ACTIVE_ROLE == 'MANAGER' or session.CURRENT_ACTIVE_ROLE == 'RECEPTIONIST'}">
-        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/dashboard')} ? 'active' : ''"
-            sec:authorize="hasRole('MANAGER')">
+        sec:authorize="hasRole('MANAGER')"
+        th:if="${session.CURRENT_ACTIVE_ROLE == 'MANAGER'}">
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/dashboard')} ? 'active' : ''">
             <a th:href="@{/manager/dashboard}">
                 <i class="fas fa-chart-line"></i>
                 <span>Tổng quan</span>
             </a>
         </li>
 
-        <li sec:authorize="hasRole('MANAGER')">
+        <li>
             <a href="#">
                 <i class="fas fa-calendar-check"></i>
                 <span>Đặt phòng</span>
             </a>
         </li>
 
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/promotions')} ? 'active' : ''"
-            sec:authorize="hasRole('MANAGER')">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/promotions')} ? 'active' : ''">
             <a th:href="@{/manager/promotions}">
                 <i class="fas fa-tags"></i>
                 <span>Khuyến mãi</span>
             </a>
         </li>
 
-        <li sec:authorize="hasRole('MANAGER')">
+        <li>
             <a href="#">
                 <i class="fas fa-users"></i>
                 <span>Khách hàng</span>
             </a>
         </li>
 
-        <li sec:authorize="hasRole('MANAGER')">
+        <li>
             <a href="#">
                 <i class="fas fa-chart-pie"></i>
                 <span>Báo cáo</span>
             </a>
         </li>
 
-        <li th:classappend="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')} ? 'active' : ''"
-            sec:authorize="hasRole('RECEPTIONIST')">
+    </ul>
+
+    <ul class="sidebar-menu"
+        sec:authorize="hasRole('RECEPTIONIST')"
+        th:if="${session.CURRENT_ACTIVE_ROLE == 'RECEPTIONIST'}">
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')} ? 'active' : ''">
             <a th:href="@{/receptionist/dashboard}">
                 <i class="fas fa-chart-line"></i>
                 <span>Dashboard</span>
             </a>
         </li>
 
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')} ? 'active' : ''"
-            sec:authorize="hasRole('RECEPTIONIST')">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')} ? 'active' : ''">
             <a th:href="@{/receptionist/bookings}">
                 <i class="fas fa-calendar-check"></i>
                 <span>Đặt phòng</span>
