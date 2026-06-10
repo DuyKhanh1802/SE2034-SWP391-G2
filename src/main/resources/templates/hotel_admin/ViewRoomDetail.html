@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="welcome-section room-page-title">
+        <h1>Room Detail</h1>
+        <p>View hotel room information and current operational status.</p>
+    </section>
+
+    <section class="room-form-card">
+        <div class="form-heading">
+            <span>ROOM MANAGEMENT</span>
+            <h3 th:text="${room.roomNumber}">101</h3>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span>Room Number</span>
+                <strong th:text="${room.roomNumber}">101</strong>
+            </div>
+
+            <div class="detail-item">
+                <span>Room Type</span>
+                <strong th:text="${room.roomType != null ? room.roomType.name : 'N/A'}">DELUXE</strong>
+            </div>
+
+            <div class="detail-item">
+                <span>Base Price</span>
+                <strong th:text="${room.roomType != null ? #numbers.formatDecimal(room.roomType.basePrice, 0, 'COMMA', 0, 'POINT') + ' VND' : 'N/A'}">
+                    1000000 VND
+                </strong>
+            </div>
+
+            <div class="detail-item">
+                <span>Capacity</span>
+                <strong th:text="${room.roomType != null ? room.roomType.capacity : 'N/A'}">2</strong>
+            </div>
+
+            <div class="detail-item">
+                <span>Floor</span>
+                <strong th:text="${room.floor}">1</strong>
+            </div>
+
+            <div class="detail-item">
+                <span>View Type</span>
+                <strong th:text="${room.viewType != null ? room.viewType : 'N/A'}">CITY</strong>
+            </div>
+
+            <div class="detail-item">
+                <span>Status</span>
+                <strong th:text="${room.status != null ? room.status : 'N/A'}">AVAILABLE</strong>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/hotel-admin/list-room}" class="cancel-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back
+            </a>
+
+            <a th:href="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}" class="save-room-btn">
+                <i class="fa-regular fa-pen-to-square"></i>
+                Edit
+            </a>
+        </div>
+    </section>
+</main>
+</body>
+</html>
