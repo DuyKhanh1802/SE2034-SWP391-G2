@@ -5,253 +5,253 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-        <!-- Page action -->
-        <div class="page-action-bar">
-            <div>
-                <div class="breadcrumb-custom">
-                    Quản lý / Khuyến mãi
-                </div>
-                <h1>Khuyến mãi</h1>
+    <!-- Page action -->
+    <div class="page-action-bar">
+        <div>
+            <div class="breadcrumb-custom">
+                Quản lý / Khuyến mãi
             </div>
-
-            <a th:href="@{/manager/promotions/add}" href="/manager/promotions/add" class="btn-add">
-                <span class="material-symbols-outlined">add</span>
-                Thêm khuyến mãi
-            </a>
+            <h1>Khuyến mãi</h1>
         </div>
 
-        <!-- Content -->
-        <section class="content-section">
+        <a th:href="@{/manager/promotions/add}" href="/manager/promotions/add" class="btn-add">
+            <span class="material-symbols-outlined">add</span>
+            Thêm khuyến mãi
+        </a>
+    </div>
 
-            <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span th:text="${successMessage}">Thêm khuyến mãi thành công.</span>
+    <!-- Content -->
+    <section class="content-section">
+
+        <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span th:text="${successMessage}">Thêm khuyến mãi thành công.</span>
+        </div>
+
+        <!-- Filter và search -->
+        <div class="toolbar">
+            <div class="tabs">
+                <a th:href="@{/manager/promotions(status='all', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'all'} ? 'active' : ''">
+                    Tất cả
+                </a>
+
+                <a th:href="@{/manager/promotions(status='active', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'active'} ? 'active' : ''">
+                    Đang hoạt động
+                </a>
+
+                <a th:href="@{/manager/promotions(status='scheduled', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'scheduled'} ? 'active' : ''">
+                    Sắp diễn ra
+                </a>
+
+                <a th:href="@{/manager/promotions(status='expired', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'expired'} ? 'active' : ''">
+                    Đã hết hạn
+                </a>
+
+                <a th:href="@{/manager/promotions(status='inactive', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'inactive'} ? 'active' : ''">
+                    Đã tắt
+                </a>
             </div>
 
-            <!-- Filter và search -->
-            <div class="toolbar">
-                <div class="tabs">
-                    <a th:href="@{/manager/promotions(status='all', keyword=${keyword}, size=${pageSize})}"
-                       th:classappend="${selectedStatus == 'all'} ? 'active' : ''">
-                        Tất cả
-                    </a>
+            <form th:action="@{/manager/promotions}" method="get" class="search-box">
+                <span class="material-symbols-outlined">search</span>
 
-                    <a th:href="@{/manager/promotions(status='active', keyword=${keyword}, size=${pageSize})}"
-                       th:classappend="${selectedStatus == 'active'} ? 'active' : ''">
-                        Đang hoạt động
-                    </a>
+                <input type="hidden" name="status" th:value="${selectedStatus}">
+                <input type="hidden" name="size" th:value="${pageSize}">
 
-                    <a th:href="@{/manager/promotions(status='scheduled', keyword=${keyword}, size=${pageSize})}"
-                       th:classappend="${selectedStatus == 'scheduled'} ? 'active' : ''">
-                        Sắp diễn ra
-                    </a>
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       placeholder="Tìm theo mã hoặc tên chiến dịch...">
+            </form>
+        </div>
 
-                    <a th:href="@{/manager/promotions(status='expired', keyword=${keyword}, size=${pageSize})}"
-                       th:classappend="${selectedStatus == 'expired'} ? 'active' : ''">
-                        Đã hết hạn
-                    </a>
+        <!-- Bảng khuyến mãi -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table align-middle promotion-table">
+                    <thead>
+                    <tr>
+                        <th>Mã KM</th>
+                        <th>Chiến dịch</th>
+                        <th>Số tiền giảm</th>
+                        <th>Thời gian</th>
+                        <th>Lượt dùng</th>
+                        <th>Hiển thị</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
 
-                    <a th:href="@{/manager/promotions(status='inactive', keyword=${keyword}, size=${pageSize})}"
-                       th:classappend="${selectedStatus == 'inactive'} ? 'active' : ''">
-                        Đã tắt
-                    </a>
-                </div>
+                    <tbody>
+                    <tr th:each="promotion : ${promotions}">
+                        <!-- Mã khuyến mãi -->
+                        <td class="code" th:text="${promotion.code}">
+                            VH-202606-A8K2
+                        </td>
 
-                <form th:action="@{/manager/promotions}" method="get" class="search-box">
-                    <span class="material-symbols-outlined">search</span>
+                        <!-- Tên chiến dịch -->
+                        <td>
+                            <div class="promotion-name" th:text="${promotion.name}">
+                                Ưu đãi mùa hè
+                            </div>
+                        </td>
 
-                    <input type="hidden" name="status" th:value="${selectedStatus}">
-                    <input type="hidden" name="size" th:value="${pageSize}">
-
-                    <input type="text"
-                           name="keyword"
-                           th:value="${keyword}"
-                           placeholder="Tìm theo mã hoặc tên chiến dịch...">
-                </form>
-            </div>
-
-            <!-- Bảng khuyến mãi -->
-            <div class="table-card">
-                <div class="table-responsive">
-                    <table class="table align-middle promotion-table">
-                        <thead>
-                        <tr>
-                            <th>Mã KM</th>
-                            <th>Chiến dịch</th>
-                            <th>Số tiền giảm</th>
-                            <th>Thời gian</th>
-                            <th>Lượt dùng</th>
-                            <th>Hiển thị</th>
-                            <th>Trạng thái</th>
-                            <th class="text-end">Thao tác</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        <tr th:each="promotion : ${promotions}">
-                            <!-- Mã khuyến mãi -->
-                            <td class="code" th:text="${promotion.code}">
-                                VH-202606-A8K2
-                            </td>
-
-                            <!-- Tên chiến dịch -->
-                            <td>
-                                <div class="promotion-name" th:text="${promotion.name}">
-                                    Ưu đãi mùa hè
-                                </div>
-                            </td>
-
-                            <!-- Số tiền giảm -->
-                            <td class="discount-amount">
+                        <!-- Số tiền giảm -->
+                        <td class="discount-amount">
                                 <span th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 'POINT', 0, 'COMMA')}">
                                     200.000
                                 </span>
-                                <span> VND</span>
-                            </td>
+                            <span> VND</span>
+                        </td>
 
-                            <!-- Thời gian áp dụng -->
-                            <td class="muted valid-period">
+                        <!-- Thời gian áp dụng -->
+                        <td class="muted valid-period">
                                 <span th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy')}">
                                     01/06/2026
                                 </span>
-                                <br>
-                                <span th:text="${#temporals.format(promotion.validTo, 'dd/MM/yyyy')}">
+                            <br>
+                            <span th:text="${#temporals.format(promotion.validTo, 'dd/MM/yyyy')}">
                                     31/08/2026
                                 </span>
-                            </td>
+                        </td>
 
-                            <!-- Lượt dùng -->
-                            <td>
-                                <div class="usage">
+                        <!-- Lượt dùng -->
+                        <td>
+                            <div class="usage">
                                     <span th:text="${promotion.usageCount + ' / ' + promotion.usageLimit}">
                                         0 / 200
                                     </span>
 
-                                    <div class="progress-line">
-                                        <div style="width: 0%"></div>
-                                    </div>
+                                <div class="progress-line">
+                                    <div style="width: 0%"></div>
                                 </div>
-                            </td>
+                            </div>
+                        </td>
 
-                            <!-- Trạng thái hiển thị -->
-                            <td>
+                        <!-- Trạng thái hiển thị -->
+                        <td>
                                 <span class="status"
                                       th:text="${promotion.displayStatus}"
                                       th:classappend="${promotion.displayStatus == 'Banner nổi bật'} ? ' featured-status' : (${promotion.displayStatus == 'Hiển thị trang chủ'} ? ' homepage-status' : ' hidden-status')">
                                     Banner nổi bật
                                 </span>
-                            </td>
+                        </td>
 
-                            <!-- Trạng thái hoạt động -->
-                            <td>
+                        <!-- Trạng thái hoạt động -->
+                        <td>
                                 <span class="status"
                                       th:text="${promotion.status}"
                                       th:classappend="${promotion.status == 'Đang hoạt động'} ? ' active-status' : (${promotion.status == 'Sắp diễn ra'} ? ' scheduled-status' : (${promotion.status == 'Đã hết hạn'} ? ' expired-status' : ' inactive-status'))">
                                     Đang hoạt động
                                 </span>
-                            </td>
+                        </td>
 
-                            <!-- Thao tác -->
-                            <td>
-                                <div class="actions">
-                                    <a href="#"
-                                       class="action-link action-view"
-                                       title="Xem chi tiết">
-                                        <span class="material-symbols-outlined">visibility</span>
-                                    </a>
+                        <!-- Thao tác -->
+                        <td>
+                            <div class="actions">
+                                <a href="#"
+                                   class="action-link action-view"
+                                   title="Xem chi tiết">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </a>
 
-                                    <a href="#"
-                                       class="action-link action-edit"
-                                       title="Chỉnh sửa">
-                                        <span class="material-symbols-outlined">edit</span>
-                                    </a>
+                                <a href="#"
+                                   class="action-link action-edit"
+                                   title="Chỉnh sửa">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </a>
 
-                                    <button type="button"
-                                            class="action-toggle"
-                                            title="Bật / Tắt">
-                                        <span class="material-symbols-outlined">power_settings_new</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                <button type="button"
+                                        class="action-toggle"
+                                        title="Bật / Tắt">
+                                    <span class="material-symbols-outlined">power_settings_new</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
 
-                        <!-- Không có dữ liệu -->
-                        <tr th:if="${#lists.isEmpty(promotions)}">
-                            <td colspan="8" class="text-center py-5 text-muted">
-                                Chưa có khuyến mãi nào.
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Phân trang -->
-                <div class="table-bottom">
-                    <p th:text="'Hiển thị ' + ${#lists.size(promotions)} + ' / ' + ${totalPromotions} + ' khuyến mãi'">
-                        Hiển thị 0 / 0 khuyến mãi
-                    </p>
-
-                    <div class="pagination-custom" th:if="${totalPages > 1}">
-                        <a th:if="${hasPrevious}"
-                           th:href="@{/manager/promotions(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </a>
-
-                        <button type="button" disabled th:if="${!hasPrevious}">
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </button>
-
-                        <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
-                           th:href="@{/manager/promotions(page=${pageNumber}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}"
-                           th:text="${pageNumber + 1}"
-                           th:classappend="${pageNumber == currentPage ? 'active' : ''}">
-                            1
-                        </a>
-
-                        <a th:if="${hasNext}"
-                           th:href="@{/manager/promotions(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
-                            <span class="material-symbols-outlined">chevron_right</span>
-                        </a>
-
-                        <button type="button" disabled th:if="${!hasNext}">
-                            <span class="material-symbols-outlined">chevron_right</span>
-                        </button>
-                    </div>
-                </div>
+                    <!-- Không có dữ liệu -->
+                    <tr th:if="${#lists.isEmpty(promotions)}">
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            Chưa có khuyến mãi nào.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Tổng quan khuyến mãi -->
-            <section class="summary-section">
-                <h3>Tổng quan khuyến mãi</h3>
+            <!-- Phân trang -->
+            <div class="table-bottom">
+                <p th:text="'Hiển thị ' + ${#lists.size(promotions)} + ' / ' + ${totalPromotions} + ' khuyến mãi'">
+                    Hiển thị 0 / 0 khuyến mãi
+                </p>
 
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <span>Tổng khuyến mãi</span>
-                        <strong th:text="${totalPromotions}">0</strong>
-                    </div>
+                <div class="pagination-custom" th:if="${totalPages > 1}">
+                    <a th:if="${hasPrevious}"
+                       th:href="@{/manager/promotions(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </a>
 
-                    <div class="summary-card dark">
-                        <span>Đang hoạt động</span>
-                        <strong th:text="${activePromotions}">0</strong>
-                    </div>
+                    <button type="button" disabled th:if="${!hasPrevious}">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
 
-                    <div class="summary-card">
-                        <span>Sắp diễn ra</span>
-                        <strong th:text="${scheduledPromotions}">0</strong>
-                    </div>
+                    <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
+                       th:href="@{/manager/promotions(page=${pageNumber}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == currentPage ? 'active' : ''}">
+                        1
+                    </a>
 
-                    <div class="summary-card">
-                        <span>Đã hết hạn</span>
-                        <strong th:text="${expiredPromotions}">0</strong>
-                    </div>
+                    <a th:if="${hasNext}"
+                       th:href="@{/manager/promotions(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </a>
 
-                    <div class="summary-card">
-                        <span>Đã tắt</span>
-                        <strong th:text="${inactivePromotions}">0</strong>
-                    </div>
+                    <button type="button" disabled th:if="${!hasNext}">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
                 </div>
-            </section>
+            </div>
+        </div>
+
+        <!-- Tổng quan khuyến mãi -->
+        <section class="summary-section">
+            <h3>Tổng quan khuyến mãi</h3>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <span>Tổng khuyến mãi</span>
+                    <strong th:text="${totalPromotions}">0</strong>
+                </div>
+
+                <div class="summary-card dark">
+                    <span>Đang hoạt động</span>
+                    <strong th:text="${activePromotions}">0</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Sắp diễn ra</span>
+                    <strong th:text="${scheduledPromotions}">0</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Đã hết hạn</span>
+                    <strong th:text="${expiredPromotions}">0</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Đã tắt</span>
+                    <strong th:text="${inactivePromotions}">0</strong>
+                </div>
+            </div>
         </section>
+    </section>
 
 </main>
 </body>

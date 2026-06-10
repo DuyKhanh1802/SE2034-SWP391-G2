@@ -293,14 +293,6 @@
         badInput: "Vui lòng nhập giới hạn lượt dùng hợp lệ."
     });
 
-    bindVietnameseValidation(validFromInput, {
-        valueMissing: "Ngày bắt đầu không được để trống."
-    });
-
-    bindVietnameseValidation(validToInput, {
-        valueMissing: "Ngày kết thúc không được để trống."
-    });
-
     flatpickr(validFromInput, {
         enableTime: true,
         dateFormat: "Y-m-d\\TH:i",
@@ -418,13 +410,13 @@
 
         if (!validFromInput.value.trim()) {
             event.preventDefault();
-            showFieldError(validFromInput, "Ngày bắt đầu không được để trống.");
+            showFormError("Ngày bắt đầu không được để trống.");
             return;
         }
 
         if (!validToInput.value.trim()) {
             event.preventDefault();
-            showFieldError(validToInput, "Ngày kết thúc không được để trống.");
+            showFormError("Ngày kết thúc không được để trống.");
             return;
         }
 
