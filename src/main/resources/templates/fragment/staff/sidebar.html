@@ -1,67 +1,74 @@
-<aside class="sidebar">
-    <div>
-        <div class="logo">
-            VIH0TEL
-        </div>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     th:fragment="sidebar"
+     class="sidebar">
 
-        <ul class="menu list-unstyled">
-            <li>
-                <a th:href="@{/admin/dashboard}">
-                    <i class="fa-solid fa-gauge-high"></i>
-                    <span>Bảng điều khiển</span>
-                </a>
-            </li>
-
-            <li>
-                <a th:href="@{/admin/rooms}">
-                    <i class="fa-solid fa-building"></i>
-                    <span>Quản lý phòng</span>
-                </a>
-            </li>
-
-            <li>
-                <a th:href="@{/admin/staff}">
-                    <i class="fa-solid fa-id-badge"></i>
-                    <span>Nhân viên</span>
-                </a>
-            </li>
-
-            <li>
-                <a th:href="@{/admin/services}">
-                    <i class="fa-solid fa-bell-concierge"></i>
-                    <span>Dịch vụ</span>
-                </a>
-            </li>
-
-            <li>
-                <a th:href="@{/admin/incidents}">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>Sự cố</span>
-                </a>
-            </li>
-
-            <li class="active">
-                <a th:href="@{/profile/edit}">
-                    <i class="fa-regular fa-user"></i>
-                    <span>Hồ sơ cá nhân</span>
-                </a>
-            </li>
-        </ul>
+    <div class="sidebar-header">
+        <h2>ViHotel</h2>
     </div>
 
-    <a class="sidebar-user text-decoration-none" th:href="@{/profile/edit}">
-        <img th:src="${currentUser != null and currentUser.avatarUrl != null
-                    ? currentUser.avatarUrl
-                    : 'https://i.pravatar.cc/50'}"
-             alt="admin">
+    <ul class="sidebar-menu" sec:authorize="hasRole('SYSTEM_ADMIN')">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/account')} ? 'active' : ''">
+            <a th:href="@{/admin/account}">
+                <i class="fas fa-users"></i>
+                <span>Quản lý người dùng</span>
+            </a>
+        </li>
+    </ul>
 
-        <div>
-            <h6 th:text="${currentUser != null
-                        ? currentUser.firstName + ' ' + currentUser.lastName
-                        : 'QUẢN TRỊ VIÊN'}">
-                QUẢN TRỊ VIÊN
-            </h6>
-            <p>Trang quản trị</p>
-        </div>
-    </a>
-</aside>
+    <ul class="sidebar-menu" sec:authorize="hasRole('HOTEL_ADMIN')">
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/admin/dashboard')} ? 'active' : ''">
+            <a th:href="@{/admin/dashboard}">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/list_room') or #strings.startsWith(currentUri ?: '', '/admin/rooms')} ? 'active' : ''">
+            <a th:href="@{/admin/list_room}">
+                <i class="fas fa-bed"></i>
+                <span>Phòng</span>
+            </a>
+        </li>
+    </ul>
+
+    <ul class="sidebar-menu" sec:authorize="!hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN')">
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/dashboard')} ? 'active' : ''"
+            sec:authorize="hasRole('MANAGER')">
+            <a th:href="@{/manager/dashboard}">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/promotions')} ? 'active' : ''"
+            sec:authorize="hasRole('MANAGER')">
+            <a th:href="@{/manager/promotions}">
+                <i class="fas fa-tags"></i>
+                <span>Khuyến mãi</span>
+            </a>
+        </li>
+
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')} ? 'active' : ''"
+            sec:authorize="hasRole('RECEPTIONIST')">
+            <a th:href="@{/receptionist/dashboard}">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')} ? 'active' : ''"
+            sec:authorize="hasRole('RECEPTIONIST')">
+            <a th:href="@{/receptionist/bookings}">
+                <i class="fas fa-calendar-check"></i>
+                <span>Đặt phòng</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-section-spacer"></div>
+
+    <ul class="sidebar-menu">
+
+    </ul>
+</div>

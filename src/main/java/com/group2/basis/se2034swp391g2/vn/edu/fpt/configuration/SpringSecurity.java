@@ -50,7 +50,7 @@ public class SpringSecurity {
                         ).hasRole("HOTEL_ADMIN")
 
                         // 4. Các quyền khác
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("SYSTEM_ADMIN", "HOTEL_ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
 
