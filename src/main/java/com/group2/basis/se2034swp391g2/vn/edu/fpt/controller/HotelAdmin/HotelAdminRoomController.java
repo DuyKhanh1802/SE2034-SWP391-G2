@@ -1,4 +1,4 @@
-package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Admin;
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
@@ -27,29 +27,25 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class AdminRoomController {
+public class HotelAdminRoomController {
 
     private final RoomService roomService;
     private final CloudinaryService cloudinaryService;
     private final ProfileService profileService;
 
-    public AdminRoomController(RoomService roomService,
-                               CloudinaryService cloudinaryService,
-                               ProfileService profileService) {
+    public HotelAdminRoomController(RoomService roomService,
+                                    CloudinaryService cloudinaryService,
+                                    ProfileService profileService) {
         this.roomService = roomService;
         this.cloudinaryService = cloudinaryService;
         this.profileService = profileService;
     }
 
-    // =========================
-    // COMMON LAYOUT DATA
-    // =========================
     private void addLayoutData(Model model,
                                Authentication authentication,
                                HttpSession session,
                                HttpServletRequest request,
                                String pageTitle) {
-
         User currentUser = profileService.resolveCurrentUser(authentication, session);
 
         model.addAttribute("currentUser", currentUser);
@@ -57,10 +53,7 @@ public class AdminRoomController {
         model.addAttribute("pageTitle", pageTitle);
     }
 
-    // =========================
-    // LIST ROOM WITH PAGINATION
-    // =========================
-    @GetMapping("/admin/list_room")
+    @GetMapping("/hotel-admin/list-room")
     public String listRooms(@RequestParam(defaultValue = "0") int page,
                             Model model,
                             Authentication authentication,
@@ -79,13 +72,10 @@ public class AdminRoomController {
         model.addAttribute("totalItems", roomPage.getTotalElements());
         model.addAttribute("pageSize", pageSize);
 
-        return "admin/ListRoom";
+        return "hotel_admin/ListRoom";
     }
 
-    // =========================
-    // SHOW ADD ROOM FORM
-    // =========================
-    @GetMapping("/admin/list_room/add")
+    @GetMapping("/hotel-admin/list-room/add")
     public String showAddRoomForm(Model model,
                                   Authentication authentication,
                                   HttpSession session,
@@ -97,13 +87,10 @@ public class AdminRoomController {
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
 
-        return "admin/AddRoom";
+        return "hotel_admin/AddRoom";
     }
 
-    // =========================
-    // ADD ROOM
-    // =========================
-    @PostMapping("/admin/list_room/add")
+    @PostMapping("/hotel-admin/list-room/add")
     public String addRoom(@RequestParam String roomNumber,
                           @RequestParam Long roomTypeId,
                           @RequestParam Integer floor,
@@ -128,9 +115,9 @@ public class AdminRoomController {
                     primaryImageIndex
             );
 
-            redirectAttributes.addFlashAttribute("successMessage", "Thêm phòng thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Add room successfully!");
 
-            return "redirect:/admin/list_room";
+            return "redirect:/hotel-admin/list-room";
 
         } catch (IllegalArgumentException e) {
             addLayoutData(model, authentication, session, request, "Thêm phòng");
@@ -147,14 +134,11 @@ public class AdminRoomController {
             model.addAttribute("selectedViewType", viewType);
             model.addAttribute("selectedStatus", status);
 
-            return "admin/AddRoom";
+            return "hotel_admin/AddRoom";
         }
     }
 
-    // =========================
-    // UPLOAD ROOM IMAGE TO CLOUDINARY
-    // =========================
-    @PostMapping("/admin/room-images/upload")
+    @PostMapping("/hotel-admin/room-images/upload")
     @ResponseBody
     public Map<String, String> uploadRoomImage(@RequestParam("file") MultipartFile file) {
         Map uploadResult = cloudinaryService.uploadRoomImage(file);
@@ -164,10 +148,7 @@ public class AdminRoomController {
         );
     }
 
-    // =========================
-    // SHOW EDIT ROOM FORM
-    // =========================
-    @GetMapping("/admin/list_room/edit/{id}")
+    @GetMapping("/hotel-admin/rooms/edit/{id}")
     public String showEditRoomForm(@PathVariable Long id,
                                    Model model,
                                    Authentication authentication,
@@ -181,13 +162,10 @@ public class AdminRoomController {
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
 
-        return "admin/EditRoom";
+        return "hotel_admin/EditRoom";
     }
 
-    // =========================
-    // UPDATE ROOM
-    // =========================
-    @PostMapping("/admin/list_room/edit/{id}")
+    @PostMapping("/hotel-admin/rooms/edit/{id}")
     public String updateRoom(@PathVariable Long id,
                              @RequestParam String roomNumber,
                              @RequestParam Long roomTypeId,
@@ -210,9 +188,9 @@ public class AdminRoomController {
                     status
             );
 
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phòng thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Update room successfully!");
 
-            return "redirect:/admin/list_room";
+            return "redirect:/hotel-admin/list-room";
 
         } catch (IllegalArgumentException e) {
             addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
@@ -224,20 +202,19 @@ public class AdminRoomController {
             model.addAttribute("viewTypes", ViewType.values());
             model.addAttribute("roomStatuses", RoomStatus.values());
 
-            model.addAttribute("roomNumber", roomNumber);
-            model.addAttribute("selectedRoomTypeId", roomTypeId);
-            model.addAttribute("floor", floor);
-            model.addAttribute("selectedViewType", viewType);
-            model.addAttribute("selectedStatus", status);
-
-            return "admin/EditRoom";
+            return "hotel_admin/EditRoom";
         }
     }
 
-    // =========================
-    // VIEW ROOM DETAIL
-    // =========================
-    @GetMapping("/admin/list_room/view/{id}")
+    @PostMapping("/hotel-admin/rooms/delete/{id}")
+    public String deleteRoom(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes) {
+        roomService.deleteRoom(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Delete room successfully!");
+        return "redirect:/hotel-admin/list-room";
+    }
+
+    @GetMapping("/hotel-admin/rooms/view/{id}")
     public String viewRoomDetail(@PathVariable Long id,
                                  Model model,
                                  Authentication authentication,
@@ -249,20 +226,6 @@ public class AdminRoomController {
         model.addAttribute("room", roomService.getRoomById(id));
         model.addAttribute("roomImages", roomService.getRoomImages(id));
 
-        return "admin/ViewRoomDetail";
-    }
-
-    // =========================
-    // DELETE ROOM
-    // =========================
-    @PostMapping("/admin/list_room/delete/{id}")
-    public String deleteRoom(@PathVariable Long id,
-                             RedirectAttributes redirectAttributes) {
-
-        roomService.deleteRoom(id);
-
-        redirectAttributes.addFlashAttribute("successMessage", "Xóa phòng thành công!");
-
-        return "redirect:/admin/list_room";
+        return "hotel_admin/ViewRoomDetail";
     }
 }

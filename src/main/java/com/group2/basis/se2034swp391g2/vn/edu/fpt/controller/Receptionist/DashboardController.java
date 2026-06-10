@@ -5,11 +5,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class ReceptionistDashboardController {
+public class DashboardController {
 
     @GetMapping("/receptionist/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("pageTitle", "Receptionist Dashboard");
+        model.addAttribute("pageTitle", "TỔNG QUAN LỄ TÂN");
+        model.addAttribute("activeMenu", "dashboard");
         return "receptionist/Dashboard";
     }
 }

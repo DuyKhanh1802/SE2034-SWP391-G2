@@ -1,218 +1,532 @@
 ﻿<!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
+
 <body>
+
 <main layout:fragment="content">
-<section class="page-wrapper">
 
-<div class="page-title">
-                <h1>New Walk-in Booking</h1>
-                <p>Create a new immediate reservation for arriving guests.</p>
-            </div>
+    <section class="page-wrapper">
 
-            <form th:action="@{/receptionist/bookings/add-walk-in}"
-                  th:object="${request}"
-                  method="post"
-                  class="walkin-form">
+        <div class="page-title">
+            <h1>Tạo đặt phòng trực tiếp</h1>
+            <p>Tạo đặt phòng mới cho khách đến trực tiếp tại quầy lễ tân.</p>
+        </div>
 
-                <div class="booking-layout">
+        <div th:if="${errorMessage}" class="walkin-alert">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span th:text="${errorMessage}">Thông tin đặt phòng không hợp lệ.</span>
+        </div>
 
-                    <!-- Left Column -->
-                    <div class="left-column">
+        <form th:action="@{/receptionist/bookings/add-walk-in}"
+              th:object="${request}"
+              method="post"
+              class="walkin-form">
 
-                        <!-- Date and Guest Count -->
-                        <div class="booking-input-grid">
+            <div class="booking-layout">
 
-                            <div class="form-group-line">
-                                <label>CHECK-IN DATE</label>
-                                <input type="date" th:field="*{checkInDate}">
-                            </div>
+                <!-- Left Column -->
+                <div class="left-column">
 
-                            <div class="form-group-line">
-                                <label>CHECK-OUT DATE</label>
-                                <input type="date" th:field="*{checkOutDate}">
-                            </div>
+                    <!-- Date and Guest Count -->
+                    <div class="booking-input-grid">
 
-                            <div class="form-group-line">
-                                <label>ADULTS</label>
-                                <input type="number" th:field="*{adults}" min="1" placeholder="Enter adults">
-                            </div>
-
-                            <div class="form-group-line">
-                                <label>CHILDREN</label>
-                                <input type="number" th:field="*{children}" min="0" placeholder="Enter children">
-                            </div>
-
+                        <div class="form-group-line">
+                            <label>NGÀY NHẬN PHÒNG</label>
+                            <input type="date" th:field="*{checkInDate}" required>
                         </div>
 
-                        <!-- Available Rooms -->
-                        <div class="room-section">
-                            <div class="room-section-header">
-                                <label>AVAILABLE ROOMS</label>
-                                <span th:text="${#lists.size(availableRooms)} + ' AVAILABLE'">0 AVAILABLE</span>
-                            </div>
+                        <div class="form-group-line">
+                            <label>NGÀY TRẢ PHÒNG</label>
+                            <input type="date" th:field="*{checkOutDate}" required>
+                        </div>
 
-                            <div class="room-grid">
+                        <div class="form-group-line">
+                            <label>NGƯỜI LỚN</label>
+                            <input type="number"
+                                   th:field="*{adults}"
+                                   min="1"
+                                   placeholder="Nhập số người lớn"
+                                   required>
+                        </div>
 
-                                <div class="room-option" th:each="room : ${availableRooms}">
-                                    <input class="room-checkbox"
-                                           type="checkbox"
-                                           name="roomIds"
-                                           th:id="'room' + ${room.roomId}"
-                                           th:value="${room.roomId}">
-
-                                    <label class="room-card"
-                                           th:for="'room' + ${room.roomId}"
-                                           th:attr="data-price=${room.basePrice}">
-                                        <span class="room-number" th:text="${room.roomNumber}"></span>
-
-                                        <span class="room-info">
-        <span class="room-type" th:text="${room.roomTypeName}"></span>
-        <span class="room-price"
-              th:text="${#numbers.formatDecimal(room.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-        </span>
-    </span>
-                                    </label>
-                                </div>
-
-                                <div th:if="${availableRooms == null or #lists.isEmpty(availableRooms)}"
-                                     class="empty-rooms">
-                                    No available rooms for selected dates.
-                                </div>
-
-                            </div>
+                        <div class="form-group-line">
+                            <label>TRẺ EM</label>
+                            <input type="number"
+                                   th:field="*{children}"
+                                   min="0"
+                                   placeholder="Nhập số trẻ em">
                         </div>
 
                     </div>
 
-                    <!-- Right Column -->
-                    <div class="right-column">
-
-                        <div class="guest-card">
-                            <h2>Guest Information</h2>
-
-                            <div class="guest-form">
-                                <div class="form-group-line">
-                                    <label>FULL NAME</label>
-                                    <input type="text" th:field="*{fullName}" placeholder="Johnathan Doe">
-                                </div>
-
-                                <div class="form-group-line">
-                                    <label>EMAIL ADDRESS</label>
-                                    <input type="email" th:field="*{email}" placeholder="john.doe@example.com">
-                                </div>
-
-                                <div class="form-group-line">
-                                    <label>PHONE NUMBER</label>
-                                    <input type="tel" th:field="*{phoneNumber}" placeholder="(+84)382271507">
-                                </div>
-
-                                <div class="form-group-line">
-                                    <label>ADDITIONAL NOTES</label>
-                                    <textarea th:field="*{notes}" rows="3"
-                                              placeholder="Special requests, allergies, or early check-in info..."></textarea>
-                                </div>
-                            </div>
-
-                            <div class="price-summary">
-                                <div class="summary-row">
-                                    <span id="nightLabel">Room Charge</span>
-                                    <span id="roomCharge">0 VND</span>
-                                </div>
-
-                                <div class="summary-row">
-                                    <span>Taxes & Fees (12%)</span>
-                                    <span id="taxAmount">0 VND</span>
-                                </div>
-
-                                <div class="summary-total">
-                                    <span>Total Price</span>
-                                    <span id="totalPrice">0 VND</span>
-                                </div>
-                            </div>
-
-                            <div class="action-buttons">
-                                <button type="submit" name="action" value="create-check-in" class="btn-create-checkin">
-                                    CREATE & CHECK-IN
-                                </button>
-
-                                <button type="submit" name="action" value="create-only" class="btn-create-only">
-                                    CREATE ONLY
-                                </button>
-                            </div>
+                    <!-- Available Rooms -->
+                    <div class="room-section">
+                        <div class="room-section-header">
+                            <label>PHÒNG CÒN TRỐNG</label>
+                            <span th:text="${availableRooms != null ? #lists.size(availableRooms) + ' PHÒNG TRỐNG' : '0 PHÒNG TRỐNG'}">
+                                0 PHÒNG TRỐNG
+                            </span>
                         </div>
 
+                        <div class="room-grid">
+
+                            <div class="room-option" th:each="room : ${availableRooms}">
+                                <input class="room-checkbox"
+                                       type="checkbox"
+                                       name="roomIds"
+                                       th:id="'room' + ${room.roomId}"
+                                       th:value="${room.roomId}">
+
+                                <label class="room-card"
+                                       th:for="'room' + ${room.roomId}"
+                                       th:attr="data-price=${room.basePrice}">
+                                    <span class="room-number" th:text="${room.roomNumber}">
+                                        101
+                                    </span>
+
+                                    <span class="room-info">
+                                        <span class="room-type" th:text="${room.roomTypeName}">
+                                            Deluxe
+                                        </span>
+
+                                        <span class="room-price"
+                                              th:text="${#numbers.formatDecimal(room.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                            0 VND
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div th:if="${availableRooms == null or #lists.isEmpty(availableRooms)}"
+                                 class="empty-rooms">
+                                Không có phòng trống trong khoảng thời gian đã chọn.
+                            </div>
+
+                        </div>
                     </div>
 
                 </div>
 
-            </form>
+                <!-- Right Column -->
+                <div class="right-column">
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const checkInInput = document.querySelector("input[name='checkInDate']");
-        const checkOutInput = document.querySelector("input[name='checkOutDate']");
-        const roomCheckboxes = document.querySelectorAll(".room-checkbox");
+                    <!-- Guest Info -->
+                    <div class="guest-card">
+                        <h2>Thông tin khách hàng</h2>
 
-        const nightLabel = document.getElementById("nightLabel");
-        const roomCharge = document.getElementById("roomCharge");
-        const taxAmount = document.getElementById("taxAmount");
-        const totalPrice = document.getElementById("totalPrice");
+                        <div class="guest-form">
 
-        function formatVnd(amount) {
-            return new Intl.NumberFormat("vi-VN").format(amount) + " VND";
-        }
+                            <div class="form-group-line">
+                                <label>HỌ</label>
+                                <input type="text"
+                                       th:field="*{firstName}"
+                                       placeholder="Ví dụ: Nguyễn"
+                                       required>
+                            </div>
 
-        function getNights() {
-            const checkInDate = new Date(checkInInput.value);
-            const checkOutDate = new Date(checkOutInput.value);
+                            <div class="form-group-line">
+                                <label>TÊN</label>
+                                <input type="text"
+                                       th:field="*{lastName}"
+                                       placeholder="Ví dụ: Văn An"
+                                       required>
+                            </div>
 
-            if (!checkInInput.value || !checkOutInput.value || checkOutDate <= checkInDate) {
-                return 0;
-            }
+                            <div class="form-group-line">
+                                <label>QUỐC GIA</label>
+                                <select th:field="*{countryId}" id="countryId" required>
+                                    <option value="">Chọn quốc gia</option>
 
-            const oneDay = 1000 * 60 * 60 * 24;
-            return Math.round((checkOutDate - checkInDate) / oneDay);
-        }
+                                    <option th:each="country : ${countries}"
+                                            th:value="${country.id}"
+                                            th:text="${country.countryName}"
+                                            th:attr="data-phone-code=${country.phoneCode}">
+                                        Việt Nam
+                                    </option>
+                                </select>
+                            </div>
 
-        function updateSummary() {
-            const nights = getNights();
-            let selectedRoomTotalPerNight = 0;
+                            <div class="form-group-line">
+                                <label>SỐ ĐIỆN THOẠI</label>
 
-            roomCheckboxes.forEach(function (checkbox) {
-                if (checkbox.checked) {
-                    const card = checkbox.nextElementSibling;
-                    const price = Number(card.dataset.price || 0);
-                    selectedRoomTotalPerNight += price;
+                                <div class="phone-combined">
+                                    <input type="text"
+                                           id="phoneCode"
+                                           class="phone-code-display"
+                                           readonly
+                                           placeholder="+84">
+
+                                    <input type="tel"
+                                           id="phoneNumberOnly"
+                                           class="phone-number-only"
+                                           placeholder="382271507"
+                                           maxlength="15"
+                                           pattern="[0-9]{6,15}"
+                                           inputmode="numeric"
+                                           required>
+
+                                    <input type="hidden"
+                                           th:field="*{phoneNumber}"
+                                           id="phoneNumber">
+                                </div>
+                            </div>
+
+                            <div class="form-group-line">
+                                <label>EMAIL</label>
+                                <input type="email"
+                                       th:field="*{email}"
+                                       placeholder="Ví dụ: khachhang@example.com"
+                                       required>
+                            </div>
+
+                            <div class="form-group-line">
+                                <label>GIỚI TÍNH</label>
+                                <select th:field="*{gender}" required>
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="MALE">Nam</option>
+                                    <option value="FEMALE">Nữ</option>
+                                    <option value="OTHER">Khác</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group-line">
+                                <label>NGÀY SINH</label>
+                                <input type="date" th:field="*{dateOfBirth}">
+                            </div>
+
+                            <div class="form-group-line">
+                                <label>SỐ GIẤY TỜ</label>
+                                <input type="text"
+                                       th:field="*{identityNumber}"
+                                       placeholder="CCCD / Hộ chiếu"
+                                       required>
+                            </div>
+
+                            <div class="form-group-line form-group-wide">
+                                <label>GHI CHÚ THÊM</label>
+                                <textarea th:field="*{notes}"
+                                          rows="1"
+                                          placeholder="Yêu cầu đặc biệt hoặc thông tin nhận phòng sớm..."></textarea>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <!-- Deposit -->
+                    <div class="deposit-section">
+                        <div class="deposit-header">
+                            <div>
+                                <span>THÔNG TIN ĐẶT CỌC</span>
+                                <p>Ghi nhận tiền cọc nếu khách đã thanh toán tại quầy.</p>
+                            </div>
+                        </div>
+
+                        <label class="deposit-check">
+                            <input type="checkbox"
+                                   id="depositPaid"
+                                   name="depositPaid"
+                                   value="true">
+                            <span>Khách đã thanh toán tiền cọc</span>
+                        </label>
+
+                        <div class="deposit-fields" id="depositFields">
+                            <div class="form-group-line">
+                                <label>SỐ TIỀN CỌC</label>
+                                <input type="number"
+                                       id="depositAmount"
+                                       name="depositAmount"
+                                       min="0"
+                                       step="1000"
+                                       placeholder="Ví dụ: 500000">
+                            </div>
+
+                            <div class="form-group-line">
+                                <label>PHƯƠNG THỨC THANH TOÁN</label>
+                                <select id="depositMethod" name="depositMethod">
+                                    <option value="">Chọn phương thức</option>
+                                    <option value="CASH">Tiền mặt</option>
+                                    <option value="CARD">Thẻ</option>
+                                    <option value="TRANSFER">Chuyển khoản</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Summary -->
+                    <div class="price-summary">
+                        <div class="summary-row">
+                            <span id="nightLabel">Tiền phòng</span>
+                            <span id="roomCharge">0 VND</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Thuế và phí (12%)</span>
+                            <span id="taxAmount">0 VND</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Tổng tiền</span>
+                            <span id="totalPrice">0 VND</span>
+                        </div>
+
+                        <div class="summary-row deposit-summary-row">
+                            <span>Tiền cọc đã thu</span>
+                            <span id="depositPreview">0 VND</span>
+                        </div>
+
+                        <div class="summary-total">
+                            <span>Còn lại dự kiến</span>
+                            <span id="remainingAmount">0 VND</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-buttons">
+                        <button type="submit"
+                                name="action"
+                                value="create-check-in"
+                                class="btn-create-checkin">
+                            TẠO VÀ NHẬN PHÒNG
+                        </button>
+
+                        <button type="submit"
+                                name="action"
+                                value="create-only"
+                                class="btn-create-only">
+                            CHỈ TẠO ĐẶT PHÒNG
+                        </button>
+                    </div>
+                </div>
+                </div>
+
+            </div>
+
+        </form>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const checkInInput = document.querySelector("input[name='checkInDate']");
+                const checkOutInput = document.querySelector("input[name='checkOutDate']");
+                const roomCheckboxes = document.querySelectorAll(".room-checkbox");
+
+                const nightLabel = document.getElementById("nightLabel");
+                const roomCharge = document.getElementById("roomCharge");
+                const taxAmount = document.getElementById("taxAmount");
+                const totalPrice = document.getElementById("totalPrice");
+
+                const countrySelect = document.getElementById("countryId");
+                const phoneCodeInput = document.getElementById("phoneCode");
+                const phoneNumberOnlyInput = document.getElementById("phoneNumberOnly");
+                const phoneNumberHiddenInput = document.getElementById("phoneNumber");
+
+                const depositPaidCheckbox = document.getElementById("depositPaid");
+                const depositFields = document.getElementById("depositFields");
+                const depositAmountInput = document.getElementById("depositAmount");
+                const depositMethodInput = document.getElementById("depositMethod");
+                const depositPreview = document.getElementById("depositPreview");
+                const remainingAmount = document.getElementById("remainingAmount");
+
+                const walkinForm = document.querySelector(".walkin-form");
+
+                function formatVnd(amount) {
+                    return new Intl.NumberFormat("vi-VN").format(amount) + " VND";
                 }
+
+                function getNights() {
+                    if (!checkInInput || !checkOutInput) {
+                        return 0;
+                    }
+
+                    const checkInValue = checkInInput.value;
+                    const checkOutValue = checkOutInput.value;
+
+                    if (!checkInValue || !checkOutValue) {
+                        return 0;
+                    }
+
+                    const checkInDate = new Date(checkInValue);
+                    const checkOutDate = new Date(checkOutValue);
+
+                    if (checkOutDate <= checkInDate) {
+                        return 0;
+                    }
+
+                    const oneDay = 1000 * 60 * 60 * 24;
+                    return Math.round((checkOutDate - checkInDate) / oneDay);
+                }
+
+                function getSelectedRoomTotalPerNight() {
+                    let selectedRoomTotalPerNight = 0;
+
+                    roomCheckboxes.forEach(function (checkbox) {
+                        if (checkbox.checked) {
+                            const card = checkbox.nextElementSibling;
+                            const price = Number(card.dataset.price || 0);
+                            selectedRoomTotalPerNight += price;
+                        }
+                    });
+
+                    return selectedRoomTotalPerNight;
+                }
+
+                function updateSummary() {
+                    const nights = getNights();
+                    const selectedRoomTotalPerNight = getSelectedRoomTotalPerNight();
+
+                    const roomTotal = selectedRoomTotalPerNight * nights;
+                    const tax = Math.round(roomTotal * 0.12);
+                    const total = roomTotal + tax;
+
+                    let deposit = 0;
+
+                    if (depositPaidCheckbox && depositPaidCheckbox.checked && depositAmountInput) {
+                        deposit = Number(depositAmountInput.value || 0);
+                    }
+
+                    if (deposit < 0) {
+                        deposit = 0;
+                    }
+
+                    if (deposit > total) {
+                        deposit = total;
+
+                        if (depositAmountInput) {
+                            depositAmountInput.value = total;
+                        }
+                    }
+
+                    const remaining = total - deposit;
+
+                    if (nightLabel) {
+                        nightLabel.textContent = nights > 0
+                            ? "Tiền phòng (" + nights + " đêm)"
+                            : "Tiền phòng";
+                    }
+
+                    if (roomCharge) {
+                        roomCharge.textContent = formatVnd(roomTotal);
+                    }
+
+                    if (taxAmount) {
+                        taxAmount.textContent = formatVnd(tax);
+                    }
+
+                    if (totalPrice) {
+                        totalPrice.textContent = formatVnd(total);
+                    }
+
+                    if (depositPreview) {
+                        depositPreview.textContent = formatVnd(deposit);
+                    }
+
+                    if (remainingAmount) {
+                        remainingAmount.textContent = formatVnd(remaining);
+                    }
+                }
+
+                function toggleDepositFields() {
+                    if (!depositPaidCheckbox || !depositFields) {
+                        return;
+                    }
+
+                    if (depositPaidCheckbox.checked) {
+                        depositFields.style.display = "grid";
+                    } else {
+                        depositFields.style.display = "none";
+
+                        if (depositAmountInput) {
+                            depositAmountInput.value = "";
+                        }
+
+                        if (depositMethodInput) {
+                            depositMethodInput.value = "";
+                        }
+                    }
+
+                    updateSummary();
+                }
+
+                function updatePhoneCode() {
+                    if (!countrySelect || !phoneCodeInput) {
+                        return;
+                    }
+
+                    const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+                    const phoneCode = selectedOption ? selectedOption.getAttribute("data-phone-code") : "";
+
+                    phoneCodeInput.value = phoneCode || "";
+                    updateFullPhoneNumber();
+                }
+
+                function updateFullPhoneNumber() {
+                    if (!phoneCodeInput || !phoneNumberOnlyInput || !phoneNumberHiddenInput) {
+                        return;
+                    }
+
+                    const code = phoneCodeInput.value.trim();
+
+                    let number = phoneNumberOnlyInput.value
+                        .trim()
+                        .replace(/\s+/g, "")
+                        .replace(/-/g, "");
+
+                    if (number.startsWith("+")) {
+                        number = number.replace(code, "");
+                    }
+
+                    if (code.startsWith("+")) {
+                        number = number.replace(/^0+/, "");
+                    }
+
+                    phoneNumberHiddenInput.value = code + number;
+                }
+
+                roomCheckboxes.forEach(function (checkbox) {
+                    checkbox.addEventListener("change", updateSummary);
+                });
+
+                if (checkInInput) {
+                    checkInInput.addEventListener("change", updateSummary);
+                }
+
+                if (checkOutInput) {
+                    checkOutInput.addEventListener("change", updateSummary);
+                }
+
+                if (countrySelect) {
+                    countrySelect.addEventListener("change", updatePhoneCode);
+                }
+
+                if (phoneNumberOnlyInput) {
+                    phoneNumberOnlyInput.addEventListener("input", updateFullPhoneNumber);
+                }
+
+                if (depositPaidCheckbox) {
+                    depositPaidCheckbox.addEventListener("change", toggleDepositFields);
+                }
+
+                if (depositAmountInput) {
+                    depositAmountInput.addEventListener("input", updateSummary);
+                }
+
+                if (walkinForm) {
+                    walkinForm.addEventListener("submit", function () {
+                        updateFullPhoneNumber();
+                    });
+                }
+
+                updatePhoneCode();
+                toggleDepositFields();
+                updateSummary();
             });
+        </script>
 
-            const roomTotal = selectedRoomTotalPerNight * nights;
-            const tax = Math.round(roomTotal * 0.12);
-            const total = roomTotal + tax;
+    </section>
 
-            nightLabel.textContent = nights > 0
-                ? "Room Charge (" + nights + " Nights)"
-                : "Room Charge";
-
-            roomCharge.textContent = formatVnd(roomTotal);
-            taxAmount.textContent = formatVnd(tax);
-            totalPrice.textContent = formatVnd(total);
-        }
-
-        roomCheckboxes.forEach(function (checkbox) {
-            checkbox.addEventListener("change", updateSummary);
-        });
-
-        checkInInput.addEventListener("change", updateSummary);
-        checkOutInput.addEventListener("change", updateSummary);
-
-        updateSummary();
-    });
-</script>
-</section>
 </main>
+
 </body>
 </html>

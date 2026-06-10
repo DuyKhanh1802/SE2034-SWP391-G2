@@ -1,8 +1,9 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.configuration;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.RoleSwitchController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,27 +31,28 @@ public class SpringSecurity {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/admin/Admin.css",
+                                "/system_admin/**",
+                                "/hotel_admin/**",
                                 "/Admin/**",
-                                "/profile/**",   // Đã gộp /profile/** vào đây
-                                "/guest/**"      // Đã gộp /guest/** vào đây
+                                "/guest/**"
                         ).permitAll()
 
                         // 2. Nhóm quyền SYSTEM_ADMIN
-                        .requestMatchers("/admin/account/**").hasRole("SYSTEM_ADMIN")
+                        .requestMatchers("/profile/**", "/api/user/switch-role").authenticated()
+                        .requestMatchers("/system-admin/**").hasRole("SYSTEM_ADMIN")
 
                         // 3. Nhóm quyền HOTEL_ADMIN
                         .requestMatchers(
-                                "/admin/dashboard",
-                                "/admin/list_room/**",
-                                "/admin/rooms/**",
-                                "/admin/room-images/**",
-                                "/admin/services/**",
-                                "/admin/promotions/**"
+                                "/hotel-admin/dashboard",
+                                "/hotel-admin/list-room/**",
+                                "/hotel-admin/rooms/**",
+                                "/hotel-admin/room-images/**",
+                                "/hotel-admin/services/**",
+                                "/hotel-admin/promotions/**"
                         ).hasRole("HOTEL_ADMIN")
 
                         // 4. Các quyền khác
-                        .requestMatchers("/admin/**").hasAnyRole("SYSTEM_ADMIN", "HOTEL_ADMIN")
+                        .requestMatchers("/hotel-admin/**").hasRole("HOTEL_ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
 
@@ -69,7 +71,13 @@ public class SpringSecurity {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
-                .csrf(Customizer.withDefaults());
+
+                /*
+                 * Bỏ CSRF cho API upload ảnh khuyến mãi.
+                 */
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/manager/promotion-images/upload")
+                );
         return http.build();
     }
 
@@ -78,17 +86,11 @@ public class SpringSecurity {
         return (request, response, authentication) -> {
             Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
 
-            if (roles.contains("ROLE_SYSTEM_ADMIN")) {
-                response.sendRedirect("/admin/account");
-            } else if (roles.contains("ROLE_HOTEL_ADMIN")) {
-                response.sendRedirect("/admin/dashboard");
-            } else if (roles.contains("ROLE_RECEPTIONIST")) {
-                response.sendRedirect("/receptionist/dashboard");
-            } else if (roles.contains("ROLE_MANAGER")) {
-                response.sendRedirect("/manager/dashboard");
-            } else {
-                response.sendRedirect("/home");
-            }
+            RoleName activeRole = RoleSwitchController.resolveDefaultActiveRole(roles);
+            request.getSession(true).setAttribute(RoleSwitchController.CURRENT_ACTIVE_ROLE, activeRole.name());
+            request.getSession(true).setAttribute(RoleSwitchController.CURRENT_ACTIVE_ROLE_LABEL, RoleSwitchController.getRoleLabel(activeRole));
+            request.getSession(true).setAttribute(RoleSwitchController.AVAILABLE_ACTIVE_ROLE_OPTIONS, RoleSwitchController.getAvailableActiveRoleOptions(roles));
+            response.sendRedirect(RoleSwitchController.getDashboardPath(activeRole));
         };
     }
 
