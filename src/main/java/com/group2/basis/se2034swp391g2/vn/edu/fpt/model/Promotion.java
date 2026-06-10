@@ -28,13 +28,13 @@ public class Promotion {
     @Column(name = "code", nullable = false, unique = true, length = 30)
     private String code;
 
-    @Column(name = "name", nullable = false, length = 200)
+    @Column(name = "name", nullable = false, length = 200, columnDefinition = "NVARCHAR(200)")
     private String name;
 
     /*
      * Mô tả ngắn để hiển thị ở homepage / special offers.
      */
-    @Column(name = "description", length = 300)
+    @Column(name = "description", length = 300, columnDefinition = "NVARCHAR(300)")
     private String description;
 
     /*

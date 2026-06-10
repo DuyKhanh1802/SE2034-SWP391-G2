@@ -24,14 +24,12 @@ public class PromotionRequest {
     private Boolean featured = false;
 
     /*
-     * Ảnh khuyến mãi đã được upload lên Cloudinary trước.
-     * Form chỉ gửi lại URL ảnh để lưu vào promotion.
+     * URL ảnh khuyến mãi đã upload.
      */
     private String imageUrl;
 
     /*
      * Public ID của ảnh trên Cloudinary.
-     * Dùng để update/delete ảnh sau này nếu cần.
      */
     private String imagePublicId;
 

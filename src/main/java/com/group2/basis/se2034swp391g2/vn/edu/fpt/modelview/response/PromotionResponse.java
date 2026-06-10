@@ -6,6 +6,9 @@ import lombok.Getter;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+/*
+ * Response cho từng khuyến mãi hiển thị trên danh sách.
+ */
 @Getter
 @Builder
 public class PromotionResponse {

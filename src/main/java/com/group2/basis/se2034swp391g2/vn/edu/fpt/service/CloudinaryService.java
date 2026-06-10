@@ -11,6 +11,8 @@ import java.util.Map;
 @Service
 public class CloudinaryService {
 
+    private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
     private final Cloudinary cloudinary;
 
     public CloudinaryService(Cloudinary cloudinary) {
@@ -18,22 +20,36 @@ public class CloudinaryService {
     }
 
     /*
-     * Upload ảnh phòng lên Cloudinary.
+     * Upload ảnh phòng.
      */
     public Map uploadRoomImage(MultipartFile file) {
         return uploadImage(file, "vihotel/rooms", "Vui lòng chọn ảnh phòng.");
     }
 
     /*
-     * Upload ảnh khuyến mãi lên Cloudinary.
+     * Upload ảnh khuyến mãi.
      */
     public Map uploadPromotionImage(MultipartFile file) {
         return uploadImage(file, "vihotel/promotions", "Vui lòng chọn ảnh khuyến mãi.");
     }
 
     /*
-     * Hàm upload dùng chung cho nhiều loại ảnh.
-     * Mỗi loại ảnh sẽ được lưu vào một folder riêng trên Cloudinary.
+     * Upload ảnh đại diện người dùng.
+     */
+    public String uploadAvatar(MultipartFile file) {
+        Map uploadResult = uploadImage(file, "vihotel/avatars", "Vui lòng chọn ảnh đại diện.");
+
+        Object secureUrl = uploadResult.get("secure_url");
+
+        if (secureUrl == null) {
+            throw new IllegalStateException("Cloudinary không trả về URL ảnh.");
+        }
+
+        return secureUrl.toString();
+    }
+
+    /*
+     * Upload ảnh lên Cloudinary theo folder.
      */
     private Map uploadImage(MultipartFile file, String folder, String emptyFileMessage) {
         validateImageFile(file, emptyFileMessage);
@@ -52,8 +68,7 @@ public class CloudinaryService {
     }
 
     /*
-     * Kiểm tra file trước khi upload.
-     * Chỉ cho phép file ảnh và dung lượng tối đa 5MB.
+     * Kiểm tra file ảnh trước khi upload.
      */
     private void validateImageFile(MultipartFile file, String emptyFileMessage) {
         if (file == null || file.isEmpty()) {
@@ -64,33 +79,8 @@ public class CloudinaryService {
             throw new IllegalArgumentException("File tải lên phải là ảnh.");
         }
 
-        long maxSize = 5 * 1024 * 1024;
-
-        if (file.getSize() > maxSize) {
+        if (file.getSize() > MAX_IMAGE_SIZE) {
             throw new IllegalArgumentException("Kích thước ảnh không được vượt quá 5MB.");
-        }
-    }
-
-    public String uploadAvatar(MultipartFile file) {
-        try {
-            Map uploadResult = cloudinary.uploader().upload(
-                    file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", "vihotel/avatars",
-                            "resource_type", "image"
-                    )
-            );
-
-            Object secureUrl = uploadResult.get("secure_url");
-
-            if (secureUrl == null) {
-                throw new IllegalStateException("Cloudinary did not return secure_url.");
-            }
-
-            return secureUrl.toString();
-
-        } catch (IOException e) {
-            throw new IllegalStateException("Upload avatar failed.", e);
         }
     }
 }
