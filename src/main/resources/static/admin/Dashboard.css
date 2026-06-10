@@ -1,3 +1,7 @@
+/* =========================
+   GLOBAL
+========================= */
+
 * {
     margin: 0;
     padding: 0;
@@ -5,22 +9,105 @@
 }
 
 body {
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Inter', 'Manrope', Arial, sans-serif;
     background: #f7f7f7;
     color: #1d1d1d;
+    overflow-x: hidden;
 }
 
-/* SIDEBAR */
+/* =========================
+   COMMON LAYOUT
+========================= */
+
+.dashboard-wrapper {
+    min-height: 100vh;
+    background: #f7f7f7;
+    display: flex;
+}
+
+/* =========================
+   COMMON SIDEBAR
+========================= */
+
+.sidebar {
+    width: 260px;
+    min-width: 260px;
+    min-height: 100vh;
+    background: #f7f7f7;
+    border-right: 1px solid #ddd8d1;
+    padding: 44px 16px;
+}
+
+.sidebar-header {
+    padding: 0 20px;
+    margin-bottom: 80px;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    font-size: 34px;
+    font-weight: 500;
+    letter-spacing: 6px;
+    color: #111;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+}
+
+.sidebar-menu li {
+    margin-bottom: 10px;
+}
+
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    color: #5f6673;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: 0.25s ease;
+}
+
+.sidebar-menu li a i {
+    width: 20px;
+    font-size: 16px;
+    color: inherit;
+}
+
+.sidebar-menu li a:hover,
+.sidebar-menu li.active a {
+    background: #ddd7d1;
+    color: #111;
+}
+
+.sidebar-section-spacer {
+    height: 30px;
+}
+
+/* =========================
+   OLD SIDEBAR COMPATIBILITY
+   Giữ lại để các màn cũ dùng .logo / .menu không bị vỡ
+========================= */
+
 .logo {
     padding: 40px 30px;
     font-size: 32px;
     letter-spacing: 4px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
     color: #111;
 }
 
 .menu {
+    list-style: none;
     padding: 0 16px;
+    margin: 0;
 }
 
 .menu li {
@@ -45,7 +132,10 @@ body {
     color: #000;
 }
 
-/* WELCOME */
+/* =========================
+   WELCOME
+========================= */
+
 .welcome-section {
     margin-top: 50px;
     margin-bottom: 50px;
@@ -53,7 +143,7 @@ body {
 
 .welcome-section h1 {
     font-size: 72px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
     font-weight: 500;
 }
 
@@ -62,7 +152,10 @@ body {
     margin-top: 10px;
 }
 
-/* STATS */
+/* =========================
+   STATS
+========================= */
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -99,7 +192,7 @@ body {
 
 .card-bottom h2 {
     font-size: 50px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
 }
 
 .card-bottom small {
@@ -112,7 +205,7 @@ body {
 
 .room-stats h3 {
     font-size: 38px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
 }
 
 .room-stats small {
@@ -140,7 +233,10 @@ body {
     color: #b54edb;
 }
 
-/* CONTENT */
+/* =========================
+   CONTENT
+========================= */
+
 .content-grid {
     display: grid;
     grid-template-columns: 1.35fr 0.95fr;
@@ -155,7 +251,7 @@ body {
 }
 
 .section-title h3 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
     font-size: 40px;
     margin-bottom: 0;
 }
@@ -214,7 +310,7 @@ body {
 
 .quote-box p {
     font-size: 34px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
     font-style: italic;
 }
 
@@ -225,7 +321,10 @@ body {
     color: #777;
 }
 
-/* ACTIVITY */
+/* =========================
+   ACTIVITY
+========================= */
+
 .activity-list {
     display: flex;
     flex-direction: column;
@@ -279,7 +378,10 @@ body {
     font-weight: 600;
 }
 
-/* BOTTOM */
+/* =========================
+   BOTTOM
+========================= */
+
 .bottom-section {
     margin-top: 120px;
 }
@@ -305,7 +407,7 @@ body {
     margin-top: 20px;
     margin-bottom: 20px;
     font-size: 48px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
 }
 
 .bottom-text p {
@@ -323,7 +425,10 @@ body {
     letter-spacing: 1px;
 }
 
-/* RESPONSIVE */
+/* =========================
+   RESPONSIVE
+========================= */
+
 @media (max-width: 1200px) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -339,6 +444,29 @@ body {
 }
 
 @media (max-width: 768px) {
+    .dashboard-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-width: 100%;
+        min-height: auto;
+        border-right: none;
+        border-bottom: 1px solid #ddd8d1;
+        padding: 24px 16px;
+    }
+
+    .sidebar-header {
+        margin-bottom: 24px;
+        padding: 0;
+    }
+
+    .sidebar-header h2 {
+        font-size: 30px;
+        letter-spacing: 4px;
+    }
+
     .welcome-section h1 {
         font-size: 48px;
     }
