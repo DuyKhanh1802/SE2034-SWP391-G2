@@ -1,5 +1,5 @@
-﻿<!DOCTYPE html>
-<html lang="en"
+<!DOCTYPE html>
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
@@ -7,29 +7,29 @@
 <main layout:fragment="content">
 <!-- PAGE TITLE -->
         <section class="welcome-section room-page-title">
-            <h1>List Room</h1>
+            <h1>Danh sách phòng</h1>
             <p>
-                Displays all hotel rooms with room number, room type, price,
-                capacity, and status.
+                Hiển thị toàn bộ phòng trong khách sạn cùng với số phòng, hạng phòng,
+                giá phòng, sức chứa, tầng, hướng nhìn và trạng thái hiện tại.
             </p>
         </section>
 
         <!-- SUCCESS MESSAGE -->
         <div th:if="${successMessage}" class="success-toast">
             <i class="fa-solid fa-circle-check"></i>
-            <span th:text="${successMessage}">Add room successfully!</span>
+            <span th:text="${successMessage}">Thêm phòng thành công!</span>
         </div>
 
         <!-- ACTION BAR -->
         <section class="room-action-bar d-flex justify-content-between align-items-center">
             <div>
-                <span>ROOM MANAGEMENT</span>
-                <h3>All Rooms</h3>
+                <span>QUẢN LÝ PHÒNG</span>
+                <h3>Tất cả phòng</h3>
             </div>
 
             <a th:href="@{/hotel-admin/list-room/add}" class="add-room-btn">
                 <i class="fa-solid fa-plus"></i>
-                Add Room
+                Thêm phòng
             </a>
         </section>
 
@@ -39,21 +39,21 @@
             <table class="table room-table align-middle">
                 <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Room Number</th>
-                    <th>Room Type</th>
-                    <th>Price</th>
-                    <th>Capacity</th>
-                    <th>Floor</th>
-                    <th>View Type</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                    <th>STT</th>
+                    <th>Số phòng</th>
+                    <th>Hạng phòng</th>
+                    <th>Giá</th>
+                    <th>Sức chứa</th>
+                    <th>Tầng</th>
+                    <th>Hướng nhìn</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
                 </tr>
                 </thead>
 
                 <tbody>
                 <tr th:each="room, stat : ${rooms}">
-                    <td th:text="${stat.count}">1</td>
+                    <td th:text="${currentPage * pageSize + stat.count}">1</td>
 
                     <td class="room-number" th:text="${room.roomNumber}">
                         101
@@ -64,7 +64,7 @@
                     </td>
 
                     <td th:text="${#numbers.formatDecimal(room.roomType.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                        1000000 VND
+                        1,000,000 VND
                     </td>
 
                     <td th:text="${room.roomType.capacity}">
@@ -75,48 +75,56 @@
                         1
                     </td>
 
-                    <td th:text="${room.viewType != null ? room.viewType : 'N/A'}">
-                        CITY
+                    <td>
+                        <span th:if="${room.viewType == null}">Không có</span>
+
+                        <span th:if="${room.viewType != null}" th:switch="${room.viewType.name()}">
+                            <span th:case="'SEA'">Hướng biển</span>
+                            <span th:case="'CITY'">Hướng thành phố</span>
+                            <span th:case="'POOL'">Hướng hồ bơi</span>
+                            <span th:case="'GARDEN'">Hướng vườn</span>
+                            <span th:case="*" th:text="${room.viewType}">Khác</span>
+                        </span>
                     </td>
 
                     <td>
                         <span th:if="${room.status.name() == 'AVAILABLE'}"
                               class="room-status status-available">
-                            AVAILABLE
+                            CÒN TRỐNG
                         </span>
 
                         <span th:if="${room.status.name() == 'OCCUPIED'}"
                               class="room-status status-occupied">
-                            OCCUPIED
+                            ĐANG SỬ DỤNG
                         </span>
 
                         <span th:if="${room.status.name() == 'MAINTENANCE'}"
                               class="room-status status-maintenance">
-                            MAINTENANCE
+                            BẢO TRÌ
                         </span>
                     </td>
 
                     <td class="room-actions">
                         <a th:href="@{/hotel-admin/rooms/view/{id}(id=${room.id})}"
                            class="room-icon-btn"
-                           title="View">
+                           title="Xem chi tiết">
                             <i class="fa-regular fa-eye"></i>
                         </a>
 
                         <a th:href="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}"
                            class="room-icon-btn"
-                           title="Edit">
+                           title="Chỉnh sửa">
                             <i class="fa-regular fa-pen-to-square"></i>
                         </a>
 
                         <form th:action="@{/hotel-admin/rooms/delete/{id}(id=${room.id})}"
                               method="post"
                               class="d-inline"
-                              onsubmit="return confirm('Are you sure you want to delete this room?');">
+                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa phòng này không?');">
 
                             <button type="submit"
                                     class="room-icon-btn room-delete-btn"
-                                    title="Delete">
+                                    title="Xóa">
                                 <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </form>
@@ -125,14 +133,51 @@
 
                 <tr th:if="${#lists.isEmpty(rooms)}">
                     <td colspan="9" class="text-center py-5 text-muted">
-                        No rooms found.
+                        Chưa có phòng nào trong hệ thống.
                     </td>
                 </tr>
                 </tbody>
             </table>
 
-        </section>
+            <!-- PAGINATION -->
+            <div class="room-pagination-bar" th:if="${totalPages > 0}">
 
+                <div class="pagination-info">
+                    Hiển thị
+                    <strong th:text="${#lists.size(rooms)}">5</strong>
+                    /
+                    <strong th:text="${totalItems}">10</strong>
+                    phòng
+                </div>
+
+                <div class="pagination-buttons" th:if="${totalPages > 1}">
+
+                    <a th:href="@{/hotel-admin/list-room(page=${currentPage - 1})}"
+                       th:classappend="${currentPage == 0} ? ' disabled' : ''"
+                       class="pagination-btn"
+                       title="Trang trước">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+
+                    <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                       th:href="@{/hotel-admin/list-room(page=${i})}"
+                       th:text="${i + 1}"
+                       th:classappend="${i == currentPage} ? ' active' : ''"
+                       class="pagination-btn">
+                        1
+                    </a>
+
+                    <a th:href="@{/hotel-admin/list-room(page=${currentPage + 1})}"
+                       th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+                       class="pagination-btn"
+                       title="Trang sau">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+
+                </div>
+            </div>
+
+        </section>
 <script>
     setTimeout(function () {
         const toast = document.querySelector('.success-toast');
@@ -141,8 +186,6 @@
         }
     }, 3000);
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </main>
 </body>
 </html>

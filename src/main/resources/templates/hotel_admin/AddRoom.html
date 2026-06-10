@@ -1,5 +1,5 @@
-﻿<!DOCTYPE html>
-<html lang="en"
+<!DOCTYPE html>
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
@@ -7,25 +7,25 @@
 <main layout:fragment="content">
 <!-- PAGE TITLE -->
         <section class="welcome-section room-page-title">
-            <h1>Add Room</h1>
+            <h1>Thêm phòng</h1>
             <p>
-                Create a new hotel room by entering room number, room type, floor,
-                view type, status, and room images.
+                Tạo phòng mới bằng cách nhập số phòng, hạng phòng, tầng,
+                hướng nhìn, trạng thái và hình ảnh phòng.
             </p>
         </section>
 
         <!-- ERROR MESSAGE -->
         <div th:if="${errorMessage}" class="error-toast">
             <i class="fa-solid fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}">Room number already exists!</span>
+            <span th:text="${errorMessage}">Số phòng đã tồn tại!</span>
         </div>
 
         <!-- FORM -->
         <section class="room-form-card">
 
             <div class="form-heading">
-                <span>ROOM MANAGEMENT</span>
-                <h3>Room Information</h3>
+                <span>QUẢN LÝ PHÒNG</span>
+                <h3>Thông tin phòng</h3>
             </div>
 
             <form th:action="@{/hotel-admin/list-room/add}" method="post">
@@ -33,19 +33,19 @@
                 <div class="row g-4">
 
                     <div class="col-md-6">
-                        <label class="form-label">Room Number</label>
+                        <label class="form-label">Số phòng</label>
                         <input type="text"
                                name="roomNumber"
                                class="form-control room-input"
-                               placeholder="Example: 101"
+                               placeholder="Ví dụ: 101"
                                th:value="${roomNumber}"
                                required>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Room Type</label>
+                        <label class="form-label">Hạng phòng</label>
                         <select name="roomTypeId" class="form-select room-input" required>
-                            <option value="">Select room type</option>
+                            <option value="">Chọn hạng phòng</option>
 
                             <option th:each="type : ${roomTypes}"
                                     th:value="${type.id}"
@@ -57,47 +57,52 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Floor</label>
+                        <label class="form-label">Tầng</label>
                         <input type="number"
                                name="floor"
                                class="form-control room-input"
-                               placeholder="Example: 1"
+                               placeholder="Ví dụ: 1"
                                min="1"
                                th:value="${floor}"
                                required>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">View Type</label>
+                        <label class="form-label">Hướng nhìn</label>
                         <select name="viewType" class="form-select room-input" required>
-                            <option value="">Select view type</option>
+                            <option value="">Chọn hướng nhìn</option>
 
                             <option th:each="view : ${viewTypes}"
                                     th:value="${view}"
-                                    th:text="${view}"
-                                    th:selected="${view == selectedViewType}">
-                                CITY
+                                    th:selected="${view == selectedViewType}"
+                                    th:text="${view.name() == 'SEA' ? 'Hướng biển' :
+                                             (view.name() == 'CITY' ? 'Hướng thành phố' :
+                                             (view.name() == 'POOL' ? 'Hướng hồ bơi' :
+                                             (view.name() == 'GARDEN' ? 'Hướng vườn' : view)))}">
+                                Hướng thành phố
                             </option>
                         </select>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Status</label>
+                        <label class="form-label">Trạng thái</label>
                         <select name="status" class="form-select room-input" required>
-                            <option value="">Select status</option>
+                            <option value="">Chọn trạng thái</option>
 
                             <option th:each="status : ${roomStatuses}"
                                     th:value="${status}"
-                                    th:text="${status}"
-                                    th:selected="${status == selectedStatus}">
-                                AVAILABLE
+                                    th:selected="${status == selectedStatus}"
+                                    th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
+                                             (status.name() == 'OCCUPIED' ? 'Đang sử dụng' :
+                                             (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status))}">
+                                Còn trống
                             </option>
                         </select>
                     </div>
 
                     <!-- ROOM IMAGES -->
                     <div class="col-md-12">
-                        <label class="form-label">Room Images</label>
+                        <label class="form-label">Hình ảnh phòng</label>
 
                         <input type="file"
                                id="roomImages"
@@ -106,8 +111,8 @@
                                multiple>
 
                         <p class="image-note">
-                            Select multiple images. Images will be uploaded automatically.
-                            The first image is selected as the main image by default.
+                            Có thể chọn nhiều ảnh. Ảnh sẽ được tự động tải lên Cloudinary.
+                            Ảnh đầu tiên sẽ được chọn làm ảnh chính mặc định.
                         </p>
 
                         <div id="imagePreviewList" class="image-preview-list"></div>
@@ -120,19 +125,18 @@
 
                 <div class="form-actions">
                     <a th:href="@{/hotel-admin/list-room}" class="cancel-btn">
-                        Cancel
+                        Hủy
                     </a>
 
                     <button type="submit" class="save-room-btn">
                         <i class="fa-solid fa-check"></i>
-                        Save Room
+                        Lưu phòng
                     </button>
                 </div>
 
             </form>
 
         </section>
-
 <script>
     setTimeout(function () {
         const toast = document.querySelector('.error-toast');
@@ -167,18 +171,23 @@
                 });
 
                 if (!response.ok) {
-                    alert('Upload image failed');
+                    alert('Tải ảnh lên thất bại. Vui lòng thử lại.');
                     continue;
                 }
 
                 const data = await response.json();
+
+                if (!data.imageUrl) {
+                    alert('Không nhận được đường dẫn ảnh. Vui lòng thử lại.');
+                    continue;
+                }
 
                 uploadedImages.push({
                     imageUrl: data.imageUrl
                 });
 
             } catch (error) {
-                alert('Upload image failed');
+                alert('Tải ảnh lên thất bại. Vui lòng thử lại.');
             }
         }
 
@@ -195,7 +204,7 @@
 
             previewList.innerHTML += `
                 <div class="image-preview-item">
-                    <img src="${image.imageUrl}" alt="Room image">
+                    <img src="${image.imageUrl}" alt="Hình ảnh phòng">
 
                     <div class="image-preview-info">
                         <label>
@@ -203,10 +212,10 @@
                                    name="primaryImageIndex"
                                    value="${index}"
                                    ${isPrimary ? 'checked' : ''}>
-                            Main image
+                            Ảnh chính
                         </label>
 
-                        <span>Order: ${index + 1}</span>
+                        <span>Thứ tự: ${index + 1}</span>
                     </div>
                 </div>
             `;
@@ -217,8 +226,6 @@
         });
     }
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </main>
 </body>
 </html>

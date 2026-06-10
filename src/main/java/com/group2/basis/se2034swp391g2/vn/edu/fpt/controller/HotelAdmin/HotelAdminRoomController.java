@@ -2,11 +2,16 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CloudinaryService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,15 +41,36 @@ public class HotelAdminRoomController {
         this.profileService = profileService;
     }
 
-    @GetMapping("/hotel-admin/list-room")
-    public String listRooms(Model model,
-                            Authentication authentication,
-                            HttpSession session) {
-
+    private void addLayoutData(Model model,
+                               Authentication authentication,
+                               HttpSession session,
+                               HttpServletRequest request,
+                               String pageTitle) {
         User currentUser = profileService.resolveCurrentUser(authentication, session);
 
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("rooms", roomService.getAllRooms());
+        model.addAttribute("currentUri", request.getRequestURI());
+        model.addAttribute("pageTitle", pageTitle);
+    }
+
+    @GetMapping("/hotel-admin/list-room")
+    public String listRooms(@RequestParam(defaultValue = "0") int page,
+                            Model model,
+                            Authentication authentication,
+                            HttpSession session,
+                            HttpServletRequest request) {
+
+        addLayoutData(model, authentication, session, request, "Danh sách phòng");
+
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Room> roomPage = roomService.getRoomsPage(pageable);
+
+        model.addAttribute("rooms", roomPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", roomPage.getTotalPages());
+        model.addAttribute("totalItems", roomPage.getTotalElements());
+        model.addAttribute("pageSize", pageSize);
 
         return "hotel_admin/ListRoom";
     }
@@ -52,11 +78,11 @@ public class HotelAdminRoomController {
     @GetMapping("/hotel-admin/list-room/add")
     public String showAddRoomForm(Model model,
                                   Authentication authentication,
-                                  HttpSession session) {
+                                  HttpSession session,
+                                  HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("roomTypes", roomService.getAllRoomTypes());
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
@@ -75,7 +101,8 @@ public class HotelAdminRoomController {
                           Model model,
                           RedirectAttributes redirectAttributes,
                           Authentication authentication,
-                          HttpSession session) {
+                          HttpSession session,
+                          HttpServletRequest request) {
 
         try {
             roomService.createRoom(
@@ -93,9 +120,8 @@ public class HotelAdminRoomController {
             return "redirect:/hotel-admin/list-room";
 
         } catch (IllegalArgumentException e) {
-            User currentUser = profileService.resolveCurrentUser(authentication, session);
+            addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-            model.addAttribute("currentUser", currentUser);
             model.addAttribute("errorMessage", e.getMessage());
 
             model.addAttribute("roomTypes", roomService.getAllRoomTypes());
@@ -126,11 +152,11 @@ public class HotelAdminRoomController {
     public String showEditRoomForm(@PathVariable Long id,
                                    Model model,
                                    Authentication authentication,
-                                   HttpSession session) {
+                                   HttpSession session,
+                                   HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("room", roomService.getRoomById(id));
         model.addAttribute("roomTypes", roomService.getAllRoomTypes());
         model.addAttribute("viewTypes", ViewType.values());
@@ -149,7 +175,8 @@ public class HotelAdminRoomController {
                              Model model,
                              RedirectAttributes redirectAttributes,
                              Authentication authentication,
-                             HttpSession session) {
+                             HttpSession session,
+                             HttpServletRequest request) {
 
         try {
             roomService.updateRoom(
@@ -166,9 +193,8 @@ public class HotelAdminRoomController {
             return "redirect:/hotel-admin/list-room";
 
         } catch (IllegalArgumentException e) {
-            User currentUser = profileService.resolveCurrentUser(authentication, session);
+            addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
 
-            model.addAttribute("currentUser", currentUser);
             model.addAttribute("errorMessage", e.getMessage());
 
             model.addAttribute("room", roomService.getRoomById(id));
@@ -192,12 +218,13 @@ public class HotelAdminRoomController {
     public String viewRoomDetail(@PathVariable Long id,
                                  Model model,
                                  Authentication authentication,
-                                 HttpSession session) {
+                                 HttpSession session,
+                                 HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Chi tiết phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("room", roomService.getRoomById(id));
+        model.addAttribute("roomImages", roomService.getRoomImages(id));
 
         return "hotel_admin/ViewRoomDetail";
     }
