@@ -14,7 +14,7 @@
 
     <section class="admin-card">
         <div class="detail-header">
-            <a th:href="@{/admin/list-user}" class="btn-admin-outline">
+            <a th:href="@{/system-admin/list-user}" class="btn-admin-outline">
                 <i class="fa-solid fa-arrow-left"></i>
                 Quay lại
             </a>
@@ -57,7 +57,7 @@
             </div>
             <p class="settings-note">Tạo mật khẩu tạm thời mới cho tài khoản này. Mật khẩu chỉ hiển thị một lần sau khi đặt lại.</p>
 
-            <form th:action="@{/admin/list-user/{id}/reset-password(id=${user.id})}" method="post">
+            <form th:action="@{/system-admin/list-user/{id}/reset-password(id=${user.id})}" method="post">
                 <button type="submit" class="btn-admin-primary">
                     <i class="fa-solid fa-key"></i>
                     Đặt lại mật khẩu
@@ -79,13 +79,13 @@
                 </strong>
             </p>
 
-            <form th:action="@{/admin/list-user/{id}/edit(id=${user.id})}" method="post">
+            <form th:action="@{/system-admin/list-user/{id}/edit(id=${user.id})}" method="post">
                 <input type="hidden" name="isActive" th:value="${!user.isActive}">
                 <button type="submit"
                         class="btn-admin-primary"
-                        th:classappend="${canDeactivateSelf} ? ' danger is-disabled' : (user.isActive ? ' danger' : '')"
-                        th:disabled="${canDeactivateSelf}"
-                        th:title="${canDeactivateSelf} ? 'Không thể vô hiệu hóa chính tài khoản đang đăng nhập' : ''">
+                        th:classappend="${isCurrentUser} ? ' danger is-disabled' : (user.isActive ? ' danger' : '')"
+                        th:disabled="${isCurrentUser}"
+                        th:title="${isCurrentUser} ? 'Không thể vô hiệu hóa chính tài khoản đang đăng nhập' : ''">
                     <i class="fa-solid" th:classappend="${user.isActive} ? ' fa-user-slash' : ' fa-user-check'"></i>
                     <span th:text="${user.isActive} ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản'">
                         Vô hiệu hóa tài khoản
@@ -93,7 +93,7 @@
                 </button>
             </form>
 
-            <p th:if="${canDeactivateSelf}" class="settings-note mt-3">
+            <p th:if="${isCurrentUser}" class="settings-note mt-3">
                 Không thể vô hiệu hóa chính tài khoản đang đăng nhập.
             </p>
         </div>
@@ -107,11 +107,12 @@
                 </p>
             </div>
 
-            <form th:action="@{/admin/list-user/{id}/edit(id=${user.id})}"
+            <form th:action="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
                   th:object="${updateRequest}"
                   method="post"
                   class="role-form multi-role-form"
-                  th:classappend="${canDeactivateSelf} ? ' is-disabled' : ''">
+                  th:classappend="${isCurrentUser} ? ' is-disabled' : ''">
+                <input type="hidden" name="roleUpdateRequested" value="true">
                 <div class="role-check-list">
                     <label class="role-check-item"
                            th:each="roleOption : ${roleOptions}"
@@ -121,21 +122,21 @@
                                th:field="*{roleIds}"
                                th:value="${roleOption.key}"
                                th:data-role-code="${roleCodesById[roleOption.key]}"
-                               th:disabled="${canDeactivateSelf}">
+                               th:disabled="${isCurrentUser}">
                         <span th:text="${roleOption.value}">Vai trò</span>
                     </label>
                 </div>
 
                 <button type="submit"
                         class="btn-admin-primary"
-                        th:classappend="${canDeactivateSelf} ? ' is-disabled' : ''"
-                        th:disabled="${canDeactivateSelf}">
+                        th:classappend="${isCurrentUser} ? ' is-disabled' : ''"
+                        th:disabled="${isCurrentUser}">
                     <i class="fa-solid fa-shield-halved"></i>
                     Lưu vai trò
                 </button>
             </form>
 
-            <p th:if="${canDeactivateSelf}" class="settings-note mt-3">
+            <p th:if="${isCurrentUser}" class="settings-note mt-3">
                 Không thể thay đổi vai trò của chính tài khoản đang đăng nhập.
             </p>
         </div>

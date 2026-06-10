@@ -35,15 +35,20 @@
           th:href="@{/common/header.css}">
 
     <link rel="stylesheet"
-          th:href="@{/admin/Admin.css}">
+          th:if="${#strings.startsWith(currentUri ?: '', '/system-admin')}"
+          th:href="@{/system_admin/Admin.css}">
 
     <link rel="stylesheet"
-          th:if="${#strings.equals(currentUri ?: '', '/admin/dashboard')}"
-          th:href="@{/admin/Dashboard.css}">
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin')}"
+          th:href="@{/hotel_admin/Admin.css}">
 
     <link rel="stylesheet"
-          th:if="${#strings.startsWith(currentUri ?: '', '/admin/list_room') or #strings.startsWith(currentUri ?: '', '/admin/rooms')}"
-          th:href="@{/admin/RoomManagement.css}">
+          th:if="${#strings.equals(currentUri ?: '', '/hotel-admin/dashboard')}"
+          th:href="@{/hotel_admin/Dashboard.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/list-room') or #strings.startsWith(currentUri ?: '', '/hotel-admin/rooms')}"
+          th:href="@{/hotel_admin/RoomManagement.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/manager/dashboard')}"
@@ -52,6 +57,10 @@
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/manager/promotions')}"
           th:href="@{/manager/promotions.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/manager/promotions/add')}"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')}"

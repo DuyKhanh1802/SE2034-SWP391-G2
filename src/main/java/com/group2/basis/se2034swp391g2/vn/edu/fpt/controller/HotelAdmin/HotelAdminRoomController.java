@@ -1,12 +1,17 @@
-package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Admin;
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CloudinaryService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,49 +27,70 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class AdminRoomController {
+public class HotelAdminRoomController {
 
     private final RoomService roomService;
     private final CloudinaryService cloudinaryService;
     private final ProfileService profileService;
 
-    public AdminRoomController(RoomService roomService,
-                               CloudinaryService cloudinaryService,
-                               ProfileService profileService) {
+    public HotelAdminRoomController(RoomService roomService,
+                                    CloudinaryService cloudinaryService,
+                                    ProfileService profileService) {
         this.roomService = roomService;
         this.cloudinaryService = cloudinaryService;
         this.profileService = profileService;
     }
 
-    @GetMapping("/admin/list_room")
-    public String listRooms(Model model,
-                            Authentication authentication,
-                            HttpSession session) {
-
+    private void addLayoutData(Model model,
+                               Authentication authentication,
+                               HttpSession session,
+                               HttpServletRequest request,
+                               String pageTitle) {
         User currentUser = profileService.resolveCurrentUser(authentication, session);
 
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("rooms", roomService.getAllRooms());
-
-        return "admin/ListRoom";
+        model.addAttribute("currentUri", request.getRequestURI());
+        model.addAttribute("pageTitle", pageTitle);
     }
 
-    @GetMapping("/admin/list_room/add")
+    @GetMapping("/hotel-admin/list-room")
+    public String listRooms(@RequestParam(defaultValue = "0") int page,
+                            Model model,
+                            Authentication authentication,
+                            HttpSession session,
+                            HttpServletRequest request) {
+
+        addLayoutData(model, authentication, session, request, "Danh sách phòng");
+
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Room> roomPage = roomService.getRoomsPage(pageable);
+
+        model.addAttribute("rooms", roomPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", roomPage.getTotalPages());
+        model.addAttribute("totalItems", roomPage.getTotalElements());
+        model.addAttribute("pageSize", pageSize);
+
+        return "hotel_admin/ListRoom";
+    }
+
+    @GetMapping("/hotel-admin/list-room/add")
     public String showAddRoomForm(Model model,
                                   Authentication authentication,
-                                  HttpSession session) {
+                                  HttpSession session,
+                                  HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("roomTypes", roomService.getAllRoomTypes());
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
 
-        return "admin/AddRoom";
+        return "hotel_admin/AddRoom";
     }
 
-    @PostMapping("/admin/list_room/add")
+    @PostMapping("/hotel-admin/list-room/add")
     public String addRoom(@RequestParam String roomNumber,
                           @RequestParam Long roomTypeId,
                           @RequestParam Integer floor,
@@ -75,7 +101,8 @@ public class AdminRoomController {
                           Model model,
                           RedirectAttributes redirectAttributes,
                           Authentication authentication,
-                          HttpSession session) {
+                          HttpSession session,
+                          HttpServletRequest request) {
 
         try {
             roomService.createRoom(
@@ -90,12 +117,11 @@ public class AdminRoomController {
 
             redirectAttributes.addFlashAttribute("successMessage", "Add room successfully!");
 
-            return "redirect:/admin/list_room";
+            return "redirect:/hotel-admin/list-room";
 
         } catch (IllegalArgumentException e) {
-            User currentUser = profileService.resolveCurrentUser(authentication, session);
+            addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-            model.addAttribute("currentUser", currentUser);
             model.addAttribute("errorMessage", e.getMessage());
 
             model.addAttribute("roomTypes", roomService.getAllRoomTypes());
@@ -108,11 +134,11 @@ public class AdminRoomController {
             model.addAttribute("selectedViewType", viewType);
             model.addAttribute("selectedStatus", status);
 
-            return "admin/AddRoom";
+            return "hotel_admin/AddRoom";
         }
     }
 
-    @PostMapping("/admin/room-images/upload")
+    @PostMapping("/hotel-admin/room-images/upload")
     @ResponseBody
     public Map<String, String> uploadRoomImage(@RequestParam("file") MultipartFile file) {
         Map uploadResult = cloudinaryService.uploadRoomImage(file);
@@ -122,24 +148,24 @@ public class AdminRoomController {
         );
     }
 
-    @GetMapping("/admin/rooms/edit/{id}")
+    @GetMapping("/hotel-admin/rooms/edit/{id}")
     public String showEditRoomForm(@PathVariable Long id,
                                    Model model,
                                    Authentication authentication,
-                                   HttpSession session) {
+                                   HttpSession session,
+                                   HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("room", roomService.getRoomById(id));
         model.addAttribute("roomTypes", roomService.getAllRoomTypes());
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
 
-        return "admin/EditRoom";
+        return "hotel_admin/EditRoom";
     }
 
-    @PostMapping("/admin/rooms/edit/{id}")
+    @PostMapping("/hotel-admin/rooms/edit/{id}")
     public String updateRoom(@PathVariable Long id,
                              @RequestParam String roomNumber,
                              @RequestParam Long roomTypeId,
@@ -149,7 +175,8 @@ public class AdminRoomController {
                              Model model,
                              RedirectAttributes redirectAttributes,
                              Authentication authentication,
-                             HttpSession session) {
+                             HttpSession session,
+                             HttpServletRequest request) {
 
         try {
             roomService.updateRoom(
@@ -163,12 +190,11 @@ public class AdminRoomController {
 
             redirectAttributes.addFlashAttribute("successMessage", "Update room successfully!");
 
-            return "redirect:/admin/list_room";
+            return "redirect:/hotel-admin/list-room";
 
         } catch (IllegalArgumentException e) {
-            User currentUser = profileService.resolveCurrentUser(authentication, session);
+            addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
 
-            model.addAttribute("currentUser", currentUser);
             model.addAttribute("errorMessage", e.getMessage());
 
             model.addAttribute("room", roomService.getRoomById(id));
@@ -176,21 +202,30 @@ public class AdminRoomController {
             model.addAttribute("viewTypes", ViewType.values());
             model.addAttribute("roomStatuses", RoomStatus.values());
 
-            return "admin/EditRoom";
+            return "hotel_admin/EditRoom";
         }
     }
 
-    @GetMapping("/admin/rooms/view/{id}")
+    @PostMapping("/hotel-admin/rooms/delete/{id}")
+    public String deleteRoom(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes) {
+        roomService.deleteRoom(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Delete room successfully!");
+        return "redirect:/hotel-admin/list-room";
+    }
+
+    @GetMapping("/hotel-admin/rooms/view/{id}")
     public String viewRoomDetail(@PathVariable Long id,
                                  Model model,
                                  Authentication authentication,
-                                 HttpSession session) {
+                                 HttpSession session,
+                                 HttpServletRequest request) {
 
-        User currentUser = profileService.resolveCurrentUser(authentication, session);
+        addLayoutData(model, authentication, session, request, "Chi tiết phòng");
 
-        model.addAttribute("currentUser", currentUser);
         model.addAttribute("room", roomService.getRoomById(id));
+        model.addAttribute("roomImages", roomService.getRoomImages(id));
 
-        return "admin/ViewRoomDetail";
+        return "hotel_admin/ViewRoomDetail";
     }
 }

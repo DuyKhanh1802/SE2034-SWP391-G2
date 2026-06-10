@@ -108,6 +108,19 @@
     background: #eee8e2;
 }
 
+.profile-active-role {
+    display: grid;
+    gap: 2px;
+    padding: 10px 12px;
+    color: #777;
+    font-size: 12px;
+}
+
+.profile-active-role strong {
+    color: #1d1d1d;
+    font-size: 14px;
+}
+
 .profile-menu button.dropdown-item {
     width: 100%;
     text-align: left;

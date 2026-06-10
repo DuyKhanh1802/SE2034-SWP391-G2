@@ -8,13 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, UserRoleId> {
     Optional<UserRole> findByUserId(Long userId);
-    List<UserRole> findAllByUserId(Long userId);
 
     @Modifying(flushAutomatically = true)
     @Query("delete from UserRole ur where ur.user.id = :userId")

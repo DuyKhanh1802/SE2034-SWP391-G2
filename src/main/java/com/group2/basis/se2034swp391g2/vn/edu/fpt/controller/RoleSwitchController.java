@@ -57,8 +57,8 @@ public class RoleSwitchController {
 
     public static String getDashboardPath(RoleName role) {
         return switch (role) {
-            case SYSTEM_ADMIN -> "/admin/list-user";
-            case HOTEL_ADMIN -> "/admin/dashboard";
+            case SYSTEM_ADMIN -> "/system-admin/list-user";
+            case HOTEL_ADMIN -> "/hotel-admin/dashboard";
             case MANAGER -> "/manager/dashboard";
             case RECEPTIONIST -> "/receptionist/dashboard";
             case GUEST -> "/home";

@@ -81,6 +81,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUser(Long id, AccountUpdateRequest request) {
         User existingUser = getUserById(id);
+        validateSelfAccountUpdate(existingUser, request);
 
         if (request.getFirstName() != null) {
             existingUser.setFirstName(request.getFirstName());
@@ -118,14 +119,17 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(existingUser);
 
-        if (request.getRoleIds() != null) {
-            List<Long> roleIds = request.getRoleIds().stream()
+        if (Boolean.TRUE.equals(request.getRoleUpdateRequested())) {
+            List<Long> submittedRoleIds = request.getRoleIds() == null ? List.of() : request.getRoleIds();
+            List<Long> requestedRoleIds = submittedRoleIds.stream()
                     .filter(roleId -> roleId != null)
+                    .toList();
+            List<Long> roleIds = requestedRoleIds.stream()
                     .distinct()
                     .toList();
 
             List<Role> newRoles = roleRepository.findAllById(roleIds);
-            validateRoleCombination(roleIds, newRoles);
+            validateRoleCombination(requestedRoleIds, newRoles);
 
             Set<RoleName> roleNames = newRoles.stream()
                     .map(Role::getRoleName)
@@ -160,7 +164,12 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Vui lòng chọn ít nhất một vai trò.");
         }
 
-        if (roles.size() != requestedRoleIds.size()) {
+        int distinctRoleCount = new HashSet<>(requestedRoleIds).size();
+        if (distinctRoleCount != requestedRoleIds.size()) {
+            throw new IllegalArgumentException("Không được chọn trùng vai trò.");
+        }
+
+        if (roles.size() != distinctRoleCount) {
             throw new IllegalArgumentException("Vai trò không hợp lệ.");
         }
 
@@ -215,5 +224,23 @@ public class UserServiceImpl implements UserService {
         }
 
         return password.toString();
+    }
+
+    private void validateSelfAccountUpdate(User existingUser, AccountUpdateRequest request) {
+        if (request.getCurrentAdminId() == null || existingUser.getId() == null) {
+            return;
+        }
+
+        boolean isCurrentUser = request.getCurrentAdminId().equals(existingUser.getId());
+        boolean isTryingToDeactivateSelf = isCurrentUser && Boolean.FALSE.equals(request.getIsActive());
+
+        if (isTryingToDeactivateSelf) {
+            throw new IllegalArgumentException("Không thể vô hiệu hóa chính tài khoản đang đăng nhập.");
+        }
+
+        if (isCurrentUser) {
+            request.setRoleIds(null);
+            request.setRoleUpdateRequested(false);
+        }
     }
 }

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+<!-- PAGE TITLE -->
+        <section class="welcome-section room-page-title">
+            <h1>Chỉnh sửa phòng</h1>
+            <p>
+                Cập nhật số phòng, hạng phòng, tầng, hướng nhìn và trạng thái hiện tại của phòng.
+            </p>
+        </section>
+
+        <!-- ERROR MESSAGE -->
+        <div th:if="${errorMessage}" class="error-toast">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra!</span>
+        </div>
+
+        <!-- EDIT FORM -->
+        <section class="room-form-card">
+
+            <div class="form-heading">
+                <span>QUẢN LÝ PHÒNG</span>
+                <h3>Thông tin phòng</h3>
+            </div>
+
+            <form th:action="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}" method="post">
+
+                <div class="row g-4">
+
+                    <!-- ROOM NUMBER -->
+                    <div class="col-md-6">
+                        <label class="form-label">Số phòng</label>
+                        <input type="text"
+                               name="roomNumber"
+                               class="form-control room-input"
+                               th:value="${roomNumber != null ? roomNumber : room.roomNumber}"
+                               placeholder="Nhập số phòng"
+                               required>
+                    </div>
+
+                    <!-- ROOM TYPE -->
+                    <div class="col-md-6">
+                        <label class="form-label">Hạng phòng</label>
+
+                        <select name="roomTypeId" class="form-select room-input" required>
+                            <option value="">-- Chọn hạng phòng --</option>
+
+                            <option th:each="type : ${roomTypes}"
+                                    th:value="${type.id}"
+                                    th:text="${type.name}"
+                                    th:selected="${selectedRoomTypeId != null
+                                                 ? selectedRoomTypeId == type.id
+                                                 : (room.roomType != null and room.roomType.id == type.id)}">
+                                DELUXE
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- FLOOR -->
+                    <div class="col-md-6">
+                        <label class="form-label">Tầng</label>
+                        <input type="number"
+                               name="floor"
+                               class="form-control room-input"
+                               th:value="${floor != null ? floor : room.floor}"
+                               placeholder="Nhập tầng"
+                               min="1"
+                               required>
+                    </div>
+
+                    <!-- VIEW TYPE -->
+                    <div class="col-md-6">
+                        <label class="form-label">Hướng nhìn</label>
+
+                        <select name="viewType" class="form-select room-input" required>
+                            <option value="">-- Chọn hướng nhìn --</option>
+
+                            <option th:each="view : ${viewTypes}"
+                                    th:value="${view}"
+                                    th:selected="${selectedViewType != null
+                                                 ? selectedViewType == view
+                                                 : (room.viewType != null and room.viewType == view)}"
+                                    th:text="${view.name() == 'SEA' ? 'Hướng biển' :
+                                             (view.name() == 'CITY' ? 'Hướng thành phố' :
+                                             (view.name() == 'POOL' ? 'Hướng hồ bơi' :
+                                             (view.name() == 'GARDEN' ? 'Hướng vườn' : view)))}">
+                                Hướng thành phố
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- STATUS -->
+                    <div class="col-md-6">
+                        <label class="form-label">Trạng thái</label>
+
+                        <select name="status" class="form-select room-input" required>
+                            <option value="">-- Chọn trạng thái --</option>
+
+                            <option th:each="status : ${roomStatuses}"
+                                    th:value="${status}"
+                                    th:selected="${selectedStatus != null
+                                                 ? selectedStatus == status
+                                                 : (room.status != null and room.status == status)}"
+                                    th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
+                                             (status.name() == 'OCCUPIED' ? 'Đang sử dụng' :
+                                             (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status))}">
+                                Còn trống
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="form-actions">
+                    <a th:href="@{/hotel-admin/list-room}" class="cancel-btn">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Quay lại
+                    </a>
+
+                    <button type="submit" class="save-room-btn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Lưu thay đổi
+                    </button>
+                </div>
+
+            </form>
+
+        </section>
+<script>
+    setTimeout(function () {
+        const toast = document.querySelector('.error-toast');
+        if (toast) {
+            toast.style.display = 'none';
+        }
+    }, 3000);
+</script>
+</main>
+</body>
+</html>
