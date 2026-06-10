@@ -2,7 +2,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -69,7 +68,13 @@ public class SpringSecurity {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
-                .csrf(Customizer.withDefaults());
+
+                /*
+                 * Bỏ CSRF cho API upload ảnh khuyến mãi.
+                 */
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/manager/promotion-images/upload")
+                );
         return http.build();
     }
 

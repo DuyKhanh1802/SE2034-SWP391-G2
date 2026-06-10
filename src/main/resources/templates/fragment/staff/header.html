@@ -4,52 +4,49 @@
 <header th:fragment="header" class="topbar">
     <h4 th:text="${pageTitle != null ? pageTitle : 'DASHBOARD'}">DASHBOARD</h4>
 
-    <div class="top-icons">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <i class="fa-regular fa-bell"></i>
+    <div class="dropdown">
+        <button class="profile-dropdown-btn dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
 
-        <div class="dropdown">
-            <button class="profile-dropdown-btn dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-
-                <img th:src="${currentUser != null and currentUser.avatarUrl != null
+            <img th:src="${currentUser != null and currentUser.avatarUrl != null
                             ? currentUser.avatarUrl
                             : 'https://i.pravatar.cc/40'}"
-                     alt="profile">
+                 alt="profile">
 
-                <span th:text="${currentUser != null ? currentUser.firstName : 'Tài khoản'}">
+            <span th:text="${currentUser != null ? currentUser.firstName : 'Tài khoản'}">
                     Tài khoản
                 </span>
-            </button>
+        </button>
 
-            <ul class="dropdown-menu dropdown-menu-end profile-menu">
-                <li>
-                    <a class="dropdown-item" th:href="@{/profile/edit}">
-                        <i class="fa-regular fa-user me-2"></i>
-                        Cập nhật profile
-                    </a>
-                </li>
+        <ul class="dropdown-menu dropdown-menu-end profile-menu">
+            <li>
+                <a class="dropdown-item" th:href="@{/profile/edit}">
+                    <i class="fa-regular fa-user me-2"></i>
+                    Cập nhật profile
+                </a>
+            </li>
 
-                <li>
-                    <a class="dropdown-item" href="#">
-                        <i class="fa-regular fa-bell me-2"></i>
-                        Thông báo
-                    </a>
-                </li>
+            <li>
+                <a class="dropdown-item" href="#">
+                    <i class="fa-regular fa-bell me-2"></i>
+                    Thông báo
+                </a>
+            </li>
 
-                <li><hr class="dropdown-divider"></li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
 
-                <li>
-                    <form th:action="@{/auth/logout}" method="post" class="m-0">
-                        <button type="submit" class="dropdown-item text-danger">
-                            <i class="fa-solid fa-right-from-bracket me-2"></i>
-                            Đăng xuất
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+            <li>
+                <form th:action="@{/auth/logout}" method="post" class="m-0">
+                    <button type="submit" class="dropdown-item text-danger">
+                        <i class="fa-solid fa-right-from-bracket me-2"></i>
+                        Đăng xuất
+                    </button>
+                </form>
+            </li>
+        </ul>
     </div>
 </header>

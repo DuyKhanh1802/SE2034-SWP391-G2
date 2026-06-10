@@ -37,7 +37,14 @@
             sec:authorize="hasRole('MANAGER')">
             <a th:href="@{/manager/dashboard}">
                 <i class="fas fa-chart-line"></i>
-                <span>Dashboard</span>
+                <span>Tổng quan</span>
+            </a>
+        </li>
+
+        <li sec:authorize="hasRole('MANAGER')">
+            <a href="#">
+                <i class="fas fa-calendar-check"></i>
+                <span>Đặt phòng</span>
             </a>
         </li>
 
@@ -46,6 +53,20 @@
             <a th:href="@{/manager/promotions}">
                 <i class="fas fa-tags"></i>
                 <span>Khuyến mãi</span>
+            </a>
+        </li>
+
+        <li sec:authorize="hasRole('MANAGER')">
+            <a href="#">
+                <i class="fas fa-users"></i>
+                <span>Khách hàng</span>
+            </a>
+        </li>
+
+        <li sec:authorize="hasRole('MANAGER')">
+            <a href="#">
+                <i class="fas fa-chart-pie"></i>
+                <span>Báo cáo</span>
             </a>
         </li>
 
