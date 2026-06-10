@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -53,4 +54,17 @@ public class BookingDetail {
 
     @Column(name = "room_code_expires_at")
     private Instant roomCodeExpiresAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "view_type", length = 20)
+    private ViewType viewType;
+
+    @Column(name = "num_adults", nullable = false)
+    private Integer numAdults = 1;
+
+    @Column(name = "num_children", nullable = false)
+    private Integer numChildren = 0;
+
+    @Column(name = "child_ages", length = 100)
+    private String childAges;
 }

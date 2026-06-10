@@ -55,6 +55,9 @@ public class Booking {
     @Column(name = "num_adults", nullable = false)
     private Integer numAdults;
 
+    @Column(name = "total_rooms", nullable = false)
+    private Integer totalRooms = 1;
+
     @Column(name = "num_children", nullable = false)
     private Integer numChildren;
 
