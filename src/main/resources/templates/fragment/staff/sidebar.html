@@ -7,32 +7,37 @@
         <h2>ViHotel</h2>
     </div>
 
-    <ul class="sidebar-menu" sec:authorize="hasRole('SYSTEM_ADMIN')">
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/account')} ? 'active' : ''">
-            <a th:href="@{/admin/account}">
+    <ul class="sidebar-menu"
+        sec:authorize="hasRole('SYSTEM_ADMIN')"
+        th:if="${session.CURRENT_ACTIVE_ROLE == null or session.CURRENT_ACTIVE_ROLE == 'SYSTEM_ADMIN'}">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/system-admin/list-user')} ? 'active' : ''">
+            <a th:href="@{/system-admin/list-user}">
                 <i class="fas fa-users"></i>
                 <span>Quản lý người dùng</span>
             </a>
         </li>
     </ul>
 
-    <ul class="sidebar-menu" sec:authorize="hasRole('HOTEL_ADMIN')">
-        <li th:classappend="${#strings.equals(currentUri ?: '', '/admin/dashboard')} ? 'active' : ''">
-            <a th:href="@{/admin/dashboard}">
+    <ul class="sidebar-menu"
+        sec:authorize="hasRole('HOTEL_ADMIN')"
+        th:if="${session.CURRENT_ACTIVE_ROLE == 'HOTEL_ADMIN'}">
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/hotel-admin/dashboard')} ? 'active' : ''">
+            <a th:href="@{/hotel-admin/dashboard}">
                 <i class="fas fa-chart-line"></i>
                 <span>Dashboard</span>
             </a>
         </li>
 
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/admin/list_room') or #strings.startsWith(currentUri ?: '', '/admin/rooms')} ? 'active' : ''">
-            <a th:href="@{/admin/list_room}">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/list-room') or #strings.startsWith(currentUri ?: '', '/hotel-admin/rooms')} ? 'active' : ''">
+            <a th:href="@{/hotel-admin/list-room}">
                 <i class="fas fa-bed"></i>
                 <span>Phòng</span>
             </a>
         </li>
     </ul>
 
-    <ul class="sidebar-menu" sec:authorize="!hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN')">
+    <ul class="sidebar-menu"
+        th:if="${session.CURRENT_ACTIVE_ROLE == 'MANAGER' or session.CURRENT_ACTIVE_ROLE == 'RECEPTIONIST'}">
         <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/dashboard')} ? 'active' : ''"
             sec:authorize="hasRole('MANAGER')">
             <a th:href="@{/manager/dashboard}">
