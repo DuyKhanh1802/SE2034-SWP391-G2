@@ -1,0 +1,112 @@
+/* Shared staff layout and sidebar */
+body {
+    margin: 0;
+    font-family: 'Manrope', sans-serif;
+    background: #f5f5f5;
+    color: #333;
+}
+
+a {
+    text-decoration: none;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+}
+
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+    background: #f5f5f5;
+}
+
+.page-container {
+    padding: 28px;
+}
+
+.sidebar {
+    width: 200px;
+    background: #f4f4f3;
+    color: #101010;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #dedbd7;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    padding: 52px 30px 70px;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    max-width: 145px;
+    color: #050505;
+    font-size: 30px;
+    line-height: 1.52;
+    font-weight: 500;
+    letter-spacing: 7px;
+    font-family: 'Cormorant Garamond', serif;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0 12px;
+}
+
+.sidebar-menu li {
+    margin-bottom: 8px;
+}
+
+.sidebar-menu li a,
+.sidebar-menu li button {
+    color: #596574;
+    min-height: 54px;
+    width: 100%;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    gap: 12px;
+    transition: .2s;
+    font-size: 16px;
+    font-weight: 400;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.sidebar-menu li form {
+    margin: 0;
+}
+
+.sidebar-menu li a:hover,
+.sidebar-menu li button:hover {
+    background: #e8e3dd;
+    color: #111;
+}
+
+.sidebar-menu li.active a,
+.sidebar-menu li.active button {
+    background: #ded8d2;
+    color: #000;
+}
+
+.sidebar-menu li a i,
+.sidebar-menu li button i {
+    width: 16px;
+    color: currentColor;
+    font-size: 16px;
+    text-align: center;
+}
+
+.sidebar-section-spacer {
+    flex: 1;
+}

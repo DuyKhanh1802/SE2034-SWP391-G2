@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViHotel HMS - Edit Room</title>
+    <title>ViHotel HMS - Chỉnh sửa phòng</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Common dashboard style -->
     <link rel="stylesheet" th:href="@{/admin/Dashboard.css}">
@@ -25,101 +25,65 @@
 
 <div class="dashboard-wrapper d-flex">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div>
-            <div class="logo">
-                ViHotel HMS
-            </div>
-
-            <ul class="menu list-unstyled">
-                <li>
-                    <a th:href="@{/admin/dashboard}">
-                        <i class="fa-solid fa-chart-line"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-
-                <li class="active">
-                    <a th:href="@{/admin/list_room}">
-                        <i class="fa-solid fa-bed"></i>
-                        <span>Rooms</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <a class="sidebar-user text-decoration-none" th:href="@{/profile/edit}">
-            <img th:src="${currentUser != null and currentUser.avatarUrl != null
-                        ? currentUser.avatarUrl
-                        : 'https://i.pravatar.cc/50'}"
-                 alt="admin">
-
-            <div>
-                <h6 th:text="${currentUser != null
-                            ? currentUser.firstName + ' ' + currentUser.lastName
-                            : 'SYSTEM ADMIN'}">
-                    SYSTEM ADMIN
-                </h6>
-                <p>Admin Portal</p>
-            </div>
-        </a>
-    </aside>
+    <!-- SIDEBAR CHUNG -->
+    <div th:replace="~{fragment/staff/sidebar :: sidebar}"></div>
 
     <!-- MAIN CONTENT -->
     <main class="main-content flex-grow-1">
 
-        <!-- TOPBAR -->
-        <div th:replace="~{fragment/staff/header :: staffHeader}"></div>
+        <!-- HEADER CHUNG -->
+        <div th:replace="~{fragment/staff/header :: header}"></div>
 
         <!-- PAGE TITLE -->
         <section class="welcome-section room-page-title">
-            <h1>Edit Room</h1>
+            <h1>Chỉnh sửa phòng</h1>
             <p>
-                Update room number, room type, floor, view type, and room status.
+                Cập nhật số phòng, hạng phòng, tầng, hướng nhìn và trạng thái hiện tại của phòng.
             </p>
         </section>
 
         <!-- ERROR MESSAGE -->
         <div th:if="${errorMessage}" class="error-toast">
             <i class="fa-solid fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}">Error message</span>
+            <span th:text="${errorMessage}">Có lỗi xảy ra!</span>
         </div>
 
         <!-- EDIT FORM -->
         <section class="room-form-card">
 
             <div class="form-heading">
-                <span>ROOM MANAGEMENT</span>
-                <h3>Room Information</h3>
+                <span>QUẢN LÝ PHÒNG</span>
+                <h3>Thông tin phòng</h3>
             </div>
 
-            <form th:action="@{/admin/rooms/edit/{id}(id=${room.id})}" method="post">
+            <form th:action="@{/admin/list_room/edit/{id}(id=${room.id})}" method="post">
 
                 <div class="row g-4">
 
                     <!-- ROOM NUMBER -->
                     <div class="col-md-6">
-                        <label class="form-label">Room Number</label>
+                        <label class="form-label">Số phòng</label>
                         <input type="text"
                                name="roomNumber"
                                class="form-control room-input"
-                               th:value="${room.roomNumber}"
-                               placeholder="Enter room number"
+                               th:value="${roomNumber != null ? roomNumber : room.roomNumber}"
+                               placeholder="Nhập số phòng"
                                required>
                     </div>
 
                     <!-- ROOM TYPE -->
                     <div class="col-md-6">
-                        <label class="form-label">Room Type</label>
+                        <label class="form-label">Hạng phòng</label>
 
                         <select name="roomTypeId" class="form-select room-input" required>
-                            <option value="">-- Select Room Type --</option>
+                            <option value="">-- Chọn hạng phòng --</option>
 
                             <option th:each="type : ${roomTypes}"
                                     th:value="${type.id}"
                                     th:text="${type.name}"
-                                    th:selected="${room.roomType != null and room.roomType.id == type.id}">
+                                    th:selected="${selectedRoomTypeId != null
+                                                 ? selectedRoomTypeId == type.id
+                                                 : (room.roomType != null and room.roomType.id == type.id)}">
                                 DELUXE
                             </option>
                         </select>
@@ -127,44 +91,53 @@
 
                     <!-- FLOOR -->
                     <div class="col-md-6">
-                        <label class="form-label">Floor</label>
+                        <label class="form-label">Tầng</label>
                         <input type="number"
                                name="floor"
                                class="form-control room-input"
-                               th:value="${room.floor}"
-                               placeholder="Enter floor"
+                               th:value="${floor != null ? floor : room.floor}"
+                               placeholder="Nhập tầng"
                                min="1"
                                required>
                     </div>
 
                     <!-- VIEW TYPE -->
                     <div class="col-md-6">
-                        <label class="form-label">View Type</label>
+                        <label class="form-label">Hướng nhìn</label>
 
                         <select name="viewType" class="form-select room-input" required>
-                            <option value="">-- Select View Type --</option>
+                            <option value="">-- Chọn hướng nhìn --</option>
 
                             <option th:each="view : ${viewTypes}"
                                     th:value="${view}"
-                                    th:text="${view}"
-                                    th:selected="${room.viewType != null and room.viewType == view}">
-                                CITY
+                                    th:selected="${selectedViewType != null
+                                                 ? selectedViewType == view
+                                                 : (room.viewType != null and room.viewType == view)}"
+                                    th:text="${view.name() == 'SEA' ? 'Hướng biển' :
+                                             (view.name() == 'CITY' ? 'Hướng thành phố' :
+                                             (view.name() == 'POOL' ? 'Hướng hồ bơi' :
+                                             (view.name() == 'GARDEN' ? 'Hướng vườn' : view)))}">
+                                Hướng thành phố
                             </option>
                         </select>
                     </div>
 
                     <!-- STATUS -->
                     <div class="col-md-6">
-                        <label class="form-label">Status</label>
+                        <label class="form-label">Trạng thái</label>
 
                         <select name="status" class="form-select room-input" required>
-                            <option value="">-- Select Status --</option>
+                            <option value="">-- Chọn trạng thái --</option>
 
                             <option th:each="status : ${roomStatuses}"
                                     th:value="${status}"
-                                    th:text="${status}"
-                                    th:selected="${room.status != null and room.status == status}">
-                                AVAILABLE
+                                    th:selected="${selectedStatus != null
+                                                 ? selectedStatus == status
+                                                 : (room.status != null and room.status == status)}"
+                                    th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
+                                             (status.name() == 'OCCUPIED' ? 'Đang sử dụng' :
+                                             (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status))}">
+                                Còn trống
                             </option>
                         </select>
                     </div>
@@ -175,12 +148,12 @@
                 <div class="form-actions">
                     <a th:href="@{/admin/list_room}" class="cancel-btn">
                         <i class="fa-solid fa-arrow-left"></i>
-                        Back
+                        Quay lại
                     </a>
 
                     <button type="submit" class="save-room-btn">
                         <i class="fa-solid fa-floppy-disk"></i>
-                        Save
+                        Lưu thay đổi
                     </button>
                 </div>
 
@@ -190,6 +163,15 @@
 
     </main>
 </div>
+
+<script>
+    setTimeout(function () {
+        const toast = document.querySelector('.error-toast');
+        if (toast) {
+            toast.style.display = 'none';
+        }
+    }, 3000);
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
