@@ -127,7 +127,7 @@ public class PromotionService {
         PromotionRequest request = new PromotionRequest();
         request.setName(promotion.getName());
         request.setDescription(promotion.getDescription());
-        request.setDiscountAmount(promotion.getDiscountAmount());
+        request.setDiscountAmount(normalizeEditableAmount(promotion.getDiscountAmount()));
         request.setUsageLimit(promotion.getUsageLimit());
         request.setShowOnHomepage(Boolean.TRUE.equals(promotion.getShowOnHomepage()));
         request.setFeatured(Boolean.TRUE.equals(promotion.getFeatured()));
@@ -425,6 +425,20 @@ public class PromotionService {
 
     private String normalizeImagePublicId(String imagePublicId) {
         return imagePublicId.trim();
+    }
+
+    private BigDecimal normalizeEditableAmount(BigDecimal amount) {
+        if (amount == null) {
+            return null;
+        }
+
+        BigDecimal normalized = amount.stripTrailingZeros();
+
+        if (normalized.scale() < 0) {
+            normalized = normalized.setScale(0);
+        }
+
+        return normalized;
     }
 
     private User getCurrentUser() {

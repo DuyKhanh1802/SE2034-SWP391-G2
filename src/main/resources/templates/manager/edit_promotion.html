@@ -24,6 +24,7 @@
             <form id="promotionForm"
                   th:action="@{/manager/promotions/edit/{id}(id=${promotionId})}"
                   th:object="${promotion}"
+                  novalidate
                   method="post">
 
                 <input type="hidden"
@@ -51,7 +52,6 @@
                                class="form-control"
                                th:field="*{discountAmount}"
                                id="discountAmount"
-                               min="1"
                                step="1"
                                inputmode="numeric"
                                placeholder="Ví dụ: 100000"
@@ -81,7 +81,6 @@
                                class="form-control"
                                th:field="*{usageLimit}"
                                id="usageLimit"
-                               min="1"
                                step="1"
                                placeholder="Ví dụ: 200"
                                required>
@@ -166,7 +165,6 @@
                         </small>
                     </div>
                 </div>
-
             </form>
 
             <div class="form-actions form-actions-split">
@@ -184,7 +182,7 @@
                 </form>
 
                 <div class="form-actions-group">
-                    <a th:href="@{/manager/promotions/{id}(id=${promotionId})}"
+                    <a th:href="@{/manager/promotions}"
                        href="#"
                        class="btn-cancel">
                         Hủy
@@ -226,6 +224,7 @@
 
         function showFieldError(input, message) {
             input.setCustomValidity(message);
+            input.focus();
             input.reportValidity();
         }
 
@@ -269,11 +268,6 @@
                     return;
                 }
 
-                if (input.validity.rangeUnderflow && messages.rangeUnderflow) {
-                    input.setCustomValidity(messages.rangeUnderflow);
-                    return;
-                }
-
                 if (input.validity.badInput && messages.badInput) {
                     input.setCustomValidity(messages.badInput);
                     return;
@@ -297,7 +291,6 @@
 
         bindVietnameseValidation(discountAmount, {
             valueMissing: "Số tiền giảm không được để trống.",
-            rangeUnderflow: "Số tiền giảm phải lớn hơn 0.",
             badInput: "Vui lòng nhập số tiền giảm hợp lệ."
         });
 
@@ -307,7 +300,6 @@
 
         bindVietnameseValidation(usageLimitInput, {
             valueMissing: "Giới hạn lượt dùng không được để trống.",
-            rangeUnderflow: "Giới hạn lượt dùng phải lớn hơn 0.",
             badInput: "Vui lòng nhập giới hạn lượt dùng hợp lệ."
         });
 
@@ -401,9 +393,49 @@
 
         promotionForm.addEventListener("submit", function (event) {
             clearFormError();
+            clearFieldError(nameInput);
+            clearFieldError(discountAmount);
+            clearFieldError(descriptionInput);
+            clearFieldError(usageLimitInput);
             clearFieldError(promotionImage);
             clearFieldError(validFromInput);
             clearFieldError(validToInput);
+
+            if (!nameInput.value.trim()) {
+                event.preventDefault();
+                showFieldError(nameInput, "Tên chiến dịch không được để trống.");
+                return;
+            }
+
+            if (!descriptionInput.value.trim()) {
+                event.preventDefault();
+                showFieldError(descriptionInput, "Mô tả ngắn không được để trống.");
+                return;
+            }
+
+            if (!discountAmount.value.trim()) {
+                event.preventDefault();
+                showFieldError(discountAmount, "Số tiền giảm không được để trống.");
+                return;
+            }
+
+            if (Number(discountAmount.value) <= 0) {
+                event.preventDefault();
+                showFieldError(discountAmount, "Số tiền giảm phải lớn hơn 0.");
+                return;
+            }
+
+            if (!usageLimitInput.value.trim()) {
+                event.preventDefault();
+                showFieldError(usageLimitInput, "Giới hạn lượt dùng không được để trống.");
+                return;
+            }
+
+            if (Number(usageLimitInput.value) <= 0) {
+                event.preventDefault();
+                showFieldError(usageLimitInput, "Giới hạn lượt dùng phải lớn hơn 0.");
+                return;
+            }
 
             if (isUploadingImage) {
                 event.preventDefault();
