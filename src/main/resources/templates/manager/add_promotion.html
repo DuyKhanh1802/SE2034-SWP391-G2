@@ -22,6 +22,10 @@
                 <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
                     Có lỗi xảy ra
                 </div>
+                <div id="clientErrorMessage"
+                     class="alert alert-danger"
+                     style="display: none;">
+                </div>
                 <!-- Form thêm khuyến mãi -->
                 <form id="promotionForm"
                       th:action="@{/manager/promotions/add}"
@@ -209,12 +213,32 @@
     const imageUrl = document.getElementById("imageUrl");
     const imagePublicId = document.getElementById("imagePublicId");
     const imagePreview = document.getElementById("imagePreview");
+    const clientErrorMessage = document.getElementById("clientErrorMessage");
     let isUploadingImage = false;
 
     function syncFeaturedWithHomepage() {
         if (featured.checked) {
             showOnHomepage.checked = true;
         }
+    }
+
+    function showFieldError(input, message) {
+        input.setCustomValidity(message);
+        input.reportValidity();
+    }
+
+    function clearFieldError(input) {
+        input.setCustomValidity("");
+    }
+
+    function showFormError(message) {
+        clientErrorMessage.textContent = message;
+        clientErrorMessage.style.display = "block";
+    }
+
+    function clearFormError() {
+        clientErrorMessage.textContent = "";
+        clientErrorMessage.style.display = "none";
     }
 
     flatpickr(validFromInput, {
@@ -239,12 +263,17 @@
         allowInput: false
     });
 
+    validFromInput.addEventListener("change", clearFormError);
+    validToInput.addEventListener("change", clearFormError);
+
     featured.addEventListener("change", syncFeaturedWithHomepage);
     syncFeaturedWithHomepage();
 
     promotionImage.addEventListener("change", async function () {
         const file = promotionImage.files[0];
 
+        clearFieldError(promotionImage);
+        clearFormError();
         imageUrl.value = "";
         imagePublicId.value = "";
         imagePreview.innerHTML = "";
@@ -254,13 +283,13 @@
         }
 
         if (!file.type.startsWith("image/")) {
-            alert("File tải lên phải là ảnh.");
+            showFieldError(promotionImage, "File tải lên phải là ảnh.");
             promotionImage.value = "";
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            alert("Kích thước ảnh không được vượt quá 5MB.");
+            showFieldError(promotionImage, "Kích thước ảnh không được vượt quá 5MB.");
             promotionImage.value = "";
             return;
         }
@@ -283,7 +312,7 @@
             const data = await response.json();
 
             if (!response.ok || data.error || !data.imageUrl || !data.imagePublicId) {
-                alert(data.error || "Tải ảnh khuyến mãi thất bại.");
+                showFieldError(promotionImage, data.error || "Tải ảnh khuyến mãi thất bại.");
                 promotionImage.value = "";
                 return;
             }
@@ -298,7 +327,7 @@
             `;
 
         } catch (error) {
-            alert("Tải ảnh khuyến mãi thất bại.");
+            showFieldError(promotionImage, "Tải ảnh khuyến mãi thất bại.");
             promotionImage.value = "";
             imageUrl.value = "";
             imagePublicId.value = "";
@@ -310,15 +339,41 @@
     });
 
     promotionForm.addEventListener("submit", function (event) {
+        clearFormError();
+        clearFieldError(promotionImage);
+        clearFieldError(validFromInput);
+        clearFieldError(validToInput);
+
         if (isUploadingImage) {
             event.preventDefault();
-            alert("Ảnh đang được tải lên. Vui lòng chờ upload ảnh xong rồi lưu.");
+            showFieldError(promotionImage, "Ảnh đang được tải lên. Vui lòng chờ upload ảnh xong rồi lưu.");
             return;
         }
 
         if (imageUrl.value.trim() === "" || imagePublicId.value.trim() === "") {
             event.preventDefault();
-            alert("Vui lòng chọn ảnh khuyến mãi và chờ ảnh tải lên thành công trước khi lưu.");
+            showFieldError(promotionImage, "Vui lòng chọn ảnh khuyến mãi và chờ ảnh tải lên thành công trước khi lưu.");
+            return;
+        }
+
+        if (!validFromInput.value.trim()) {
+            event.preventDefault();
+            showFieldError(validFromInput, "Ngày bắt đầu không được để trống.");
+            return;
+        }
+
+        if (!validToInput.value.trim()) {
+            event.preventDefault();
+            showFieldError(validToInput, "Ngày kết thúc không được để trống.");
+            return;
+        }
+
+        const validFromDate = validFromInput._flatpickr?.selectedDates?.[0];
+        const validToDate = validToInput._flatpickr?.selectedDates?.[0];
+
+        if (validFromDate && validToDate && validToDate.getTime() <= validFromDate.getTime()) {
+            event.preventDefault();
+            showFormError("Ngày kết thúc phải sau ngày bắt đầu.");
         }
     });
 </script>
