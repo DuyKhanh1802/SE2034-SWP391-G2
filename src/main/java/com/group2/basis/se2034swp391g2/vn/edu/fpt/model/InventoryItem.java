@@ -40,7 +40,7 @@ public class InventoryItem {
     @Column(name = "minimum_quantity", nullable = false, precision = 12, scale = 2)
     private BigDecimal minimumQuantity = BigDecimal.ZERO;
 
-    @Column(name = "unit_cost", nullable = false, precision = 12, scale = 2)
+    @Column(name = "unit_cost", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal unitCost = BigDecimal.ZERO;
 
     @Column(name = "is_deleted", nullable = false)

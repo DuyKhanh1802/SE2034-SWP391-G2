@@ -15,14 +15,12 @@
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
     <section class="detail-grid">
-        <form class="panel form-panel" th:action="@{/manager/inventory/items}" method="post">
-            <h2>Thêm hàng hóa</h2>
-            <input name="name" placeholder="Tên hàng hóa" required>
-            <input name="category" placeholder="Loại hàng">
-            <input name="unit" placeholder="Đơn vị tính" required>
-            <input type="number" step="0.01" min="0" name="openingQuantity" placeholder="Tồn đầu kỳ">
-            <input type="number" step="0.01" min="0" name="minimumQuantity" placeholder="Ngưỡng cảnh báo">
-            <button type="submit">Thêm hàng hóa</button>
+        <form class="panel form-panel" th:action="@{/manager/inventory/items/import}" method="post" enctype="multipart/form-data">
+            <h2>Import hàng hóa</h2>
+            <p class="form-hint">File .xlsx gồm các cột: tên hàng, loại, đơn vị, tồn đầu kỳ, ngưỡng cảnh báo, giá vốn.</p>
+            <input type="file" name="file" accept=".xlsx" required>
+            <a class="secondary-link" th:href="@{/manager/inventory-items-template.xlsx}">Tải file mẫu</a>
+            <button type="submit">Import Excel</button>
         </form>
 
         <form class="panel form-panel" th:action="@{/manager/inventory/receipts}" method="post">
@@ -31,7 +29,12 @@
                 <option th:each="item : ${items}" th:value="${item.id}" th:text="${item.name}">Hàng hóa</option>
             </select>
             <input type="number" step="0.01" min="0.01" name="quantity" placeholder="Số lượng" required>
-            <input type="number" step="1000" min="1" name="unitCost" placeholder="Đơn giá" required>
+            <input type="number" step="1000" min="1" name="unitCost" placeholder="Đơn giá trước VAT" required>
+            <select name="fundMethod" required>
+                <option value="TRANSFER">Chuyển khoản</option>
+                <option value="CASH">Tiền mặt</option>
+                <option value="CARD">Thẻ</option>
+            </select>
             <input name="supplier" placeholder="Nhà cung cấp">
             <textarea name="note" rows="2" placeholder="Ghi chú"></textarea>
             <button type="submit">Nhập hàng</button>
@@ -54,6 +57,24 @@
                 <td><a th:href="@{/manager/inventory/{id}(id=${item.id})}">Chi tiết</a></td>
             </tr>
             <tr th:if="${#lists.isEmpty(items)}"><td colspan="8">Chưa có hàng hóa.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>Phiếu nhập gần đây</h2>
+        <table class="module-table">
+            <thead><tr><th>Mã phiếu</th><th>Hàng hóa</th><th>Trước VAT</th><th>VAT</th><th>Tổng chi</th><th>Thời gian</th></tr></thead>
+            <tbody>
+            <tr th:each="receipt : ${recentReceipts}">
+                <td th:text="${receipt.code}">IR</td>
+                <td th:text="${receipt.item.name}">Hàng hóa</td>
+                <td th:text="${#numbers.formatDecimal(receipt.subtotal, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
+                <td th:text="${#numbers.formatDecimal(receipt.vatAmount, 0, 'POINT', 0, 'COMMA') + ' VND (' + receipt.vatRate + '%)'}">0 VND</td>
+                <td th:text="${#numbers.formatDecimal(receipt.totalCost, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
+                <td th:text="${#temporals.format(receipt.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(recentReceipts)}"><td colspan="6">Chưa có phiếu nhập.</td></tr>
             </tbody>
         </table>
     </section>

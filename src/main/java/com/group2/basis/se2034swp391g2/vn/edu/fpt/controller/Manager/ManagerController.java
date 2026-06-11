@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Manager;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
@@ -107,20 +109,30 @@ public class ManagerController {
         addHeaderAttributes(model, authentication, session, "Quản lý quỹ");
         model.addAttribute("fundSetting", hotelFundService.getCurrentSetting());
         model.addAttribute("openingBalance", hotelFundService.getOpeningBalance());
+        model.addAttribute("openingCashBalance", hotelFundService.getOpeningBalanceByFundMethod(PaymentMethod.CASH));
+        model.addAttribute("openingTransferBalance", hotelFundService.getOpeningBalanceByFundMethod(PaymentMethod.TRANSFER));
+        model.addAttribute("openingCardBalance", hotelFundService.getOpeningBalanceByFundMethod(PaymentMethod.CARD));
         model.addAttribute("totalIncome", cashTransactionService.getTotalIncome());
         model.addAttribute("totalExpense", cashTransactionService.getTotalExpense());
         model.addAttribute("currentBalance", hotelFundService.getCurrentBalance());
+        model.addAttribute("cashBalance", hotelFundService.getCurrentBalanceByFundMethod(PaymentMethod.CASH));
+        model.addAttribute("transferBalance", hotelFundService.getCurrentBalanceByFundMethod(PaymentMethod.TRANSFER));
+        model.addAttribute("cardBalance", hotelFundService.getCurrentBalanceByFundMethod(PaymentMethod.CARD));
         model.addAttribute("recentTransactions", cashTransactionService.getRecentTransactions(10));
         return "manager/fund";
     }
 
     @PostMapping("/manager/fund/opening-balance")
-    public String configureOpeningBalance(@RequestParam BigDecimal openingBalance,
+    public String configureOpeningBalance(@RequestParam(required = false) BigDecimal openingCashBalance,
+                                          @RequestParam(required = false) BigDecimal openingTransferBalance,
+                                          @RequestParam(required = false) BigDecimal openingCardBalance,
                                           Authentication authentication,
                                           HttpSession session,
                                           RedirectAttributes redirectAttributes) {
         try {
-            hotelFundService.configureOpeningBalance(openingBalance, resolveCurrentUser(authentication, session));
+            hotelFundService.configureOpeningBalance(
+                    openingCashBalance, openingTransferBalance, openingCardBalance,
+                    resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage", "Đã cấu hình vốn đầu kỳ.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -131,6 +143,7 @@ public class ManagerController {
     @PostMapping("/manager/fund/manual-transaction")
     public String createManualTransaction(@RequestParam CashTransactionType type,
                                           @RequestParam BigDecimal amount,
+                                          @RequestParam(defaultValue = "CASH") PaymentMethod fundMethod,
                                           @RequestParam(required = false) String description,
                                           Authentication authentication,
                                           HttpSession session,
@@ -140,7 +153,7 @@ public class ManagerController {
                     ? CashTransactionCategory.MANUAL_INCOME
                     : CashTransactionCategory.MANUAL_EXPENSE;
             cashTransactionService.createManualTransaction(
-                    type, category, amount, description, resolveCurrentUser(authentication, session));
+                    type, category, amount, fundMethod, description, resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage", "Đã lập phiếu thu/chi thủ công.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -177,10 +190,26 @@ public class ManagerController {
         return "redirect:/manager/inventory";
     }
 
+    @PostMapping("/manager/inventory/items/import")
+    public String importInventoryItems(@RequestParam("file") MultipartFile file,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            InventoryManagementService.InventoryImportResult result =
+                    inventoryManagementService.importItemsFromExcel(file);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Đã import " + result.importedCount() + " hàng hóa. Bỏ qua "
+                            + result.skippedCount() + " hàng hóa đã tồn tại.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/manager/inventory";
+    }
+
     @PostMapping("/manager/inventory/receipts")
     public String createInventoryReceipt(@RequestParam Long itemId,
                                          @RequestParam BigDecimal quantity,
                                          @RequestParam BigDecimal unitCost,
+                                         @RequestParam(defaultValue = "TRANSFER") PaymentMethod fundMethod,
                                          @RequestParam(required = false) String supplier,
                                          @RequestParam(required = false) String note,
                                          Authentication authentication,
@@ -188,7 +217,7 @@ public class ManagerController {
                                          RedirectAttributes redirectAttributes) {
         try {
             inventoryManagementService.createReceipt(
-                    itemId, quantity, unitCost, supplier, note, resolveCurrentUser(authentication, session));
+                    itemId, quantity, unitCost, supplier, note, fundMethod, resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage", "Đã lập phiếu nhập hàng và ghi nhận chi quỹ.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

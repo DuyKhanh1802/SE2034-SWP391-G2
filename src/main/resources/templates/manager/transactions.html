@@ -29,8 +29,10 @@
             <thead>
             <tr>
                 <th>Mã dòng tiền</th>
+                <th>Chứng từ</th>
                 <th>Loại</th>
                 <th>Nhóm</th>
+                <th>Kênh quỹ</th>
                 <th>Số tiền</th>
                 <th>Nguồn</th>
                 <th>Thời gian</th>
@@ -40,19 +42,21 @@
             <tbody>
             <tr th:each="transaction : ${transactions}">
                 <td th:text="${transaction.code}">CT</td>
+                <td th:text="${transaction.documentCode}">PT</td>
                 <td>
                     <span class="status-pill"
                           th:classappend="${transaction.type.name() == 'INCOME'} ? ' income' : ' expense'"
                           th:text="${transaction.type.name() == 'INCOME' ? 'Thu' : 'Chi'}">Thu</span>
                 </td>
                 <td th:text="${transaction.category}">CATEGORY</td>
+                <td th:text="${transaction.fundMethod}">CASH</td>
                 <td th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
                 <td th:text="${transaction.sourceType + (transaction.sourceId != null ? ' #' + transaction.sourceId : '')}">SOURCE</td>
                 <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
                 <td><a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a></td>
             </tr>
             <tr th:if="${#lists.isEmpty(transactions)}">
-                <td colspan="7">Chưa có dòng tiền.</td>
+                <td colspan="9">Chưa có dòng tiền.</td>
             </tr>
             </tbody>
         </table>

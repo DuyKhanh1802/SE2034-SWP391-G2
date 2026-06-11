@@ -93,6 +93,24 @@ textarea {
     font: inherit;
 }
 
+.form-hint {
+    margin: -6px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.secondary-link {
+    color: #0f766e;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.secondary-link:hover {
+    text-decoration: underline;
+}
+
 button,
 .btn-primary-action,
 .btn-secondary-action {

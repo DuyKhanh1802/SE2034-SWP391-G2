@@ -18,8 +18,12 @@
             <dl class="detail-list">
                 <dt>Loại</dt>
                 <dd th:text="${transaction.type.name() == 'INCOME' ? 'Thu' : 'Chi'}">Thu</dd>
+                <dt>Chứng từ</dt>
+                <dd th:text="${transaction.documentCode}">PT</dd>
                 <dt>Nhóm</dt>
                 <dd th:text="${transaction.category}">CATEGORY</dd>
+                <dt>Kênh quỹ</dt>
+                <dd th:text="${transaction.fundMethod}">CASH</dd>
                 <dt>Số tiền</dt>
                 <dd th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</dd>
                 <dt>Mô tả</dt>

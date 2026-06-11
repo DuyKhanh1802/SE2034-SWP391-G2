@@ -29,10 +29,19 @@ public class InventoryReceipt {
     @Column(name = "quantity", nullable = false, precision = 12, scale = 2)
     private BigDecimal quantity;
 
-    @Column(name = "unit_cost", nullable = false, precision = 12, scale = 2)
+    @Column(name = "unit_cost", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal unitCost;
 
-    @Column(name = "total_cost", nullable = false, precision = 12, scale = 2)
+    @Column(name = "subtotal", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal subtotal;
+
+    @Column(name = "vat_rate", nullable = false, precision = 5, scale = 2, columnDefinition = "numeric(5,2) default 0")
+    private BigDecimal vatRate;
+
+    @Column(name = "vat_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal vatAmount;
+
+    @Column(name = "total_cost", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal totalCost;
 
     @Column(name = "supplier", length = 150)
@@ -52,6 +61,18 @@ public class InventoryReceipt {
     protected void onCreate() {
         if (this.createdAt == null) {
             this.createdAt = Instant.now();
+        }
+        if (this.subtotal == null) {
+            this.subtotal = BigDecimal.ZERO;
+        }
+        if (this.vatRate == null) {
+            this.vatRate = BigDecimal.ZERO;
+        }
+        if (this.vatAmount == null) {
+            this.vatAmount = BigDecimal.ZERO;
+        }
+        if (this.totalCost == null) {
+            this.totalCost = BigDecimal.ZERO;
         }
     }
 }

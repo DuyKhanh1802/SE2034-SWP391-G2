@@ -25,7 +25,7 @@ public class RoomType {
     @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "base_price", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal basePrice;
 
     @Column(name = "max_adults", nullable = false)
@@ -47,7 +47,7 @@ public class RoomType {
     @Column(name = "max_extra_beds", nullable = false)
     private Integer maxExtraBeds = 0;
 
-    @Column(name = "extra_bed_price", precision = 12, scale = 2)
+    @Column(name = "extra_bed_price", precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal extraBedPrice;
 
     @Column(name = "extra_bed_note", length = 500)

@@ -110,6 +110,16 @@ DECLARE @hotelAdminId bigint = (SELECT user_id FROM dbo.users WHERE email = N'ho
 DECLARE @receptionistId bigint = (SELECT user_id FROM dbo.users WHERE email = N'receptionist@test.com');
 DECLARE @guestId bigint = (SELECT user_id FROM dbo.users WHERE email = N'guest@test.com');
 
+IF OBJECT_ID(N'dbo.financial_charge_settings', N'U') IS NOT NULL
+   AND NOT EXISTS (SELECT 1 FROM dbo.financial_charge_settings WHERE is_active = 1)
+BEGIN
+    INSERT INTO dbo.financial_charge_settings (
+        service_charge_rate, vat_rate, inventory_vat_rate, tax_on_service_charge,
+        price_display_mode, effective_from, effective_to, is_active, created_by, created_at
+    )
+    VALUES (5.00, 8.00, 8.00, 1, 'PLUS_PLUS', CAST(GETDATE() AS date), NULL, 1, @managerId, @now);
+END;
+
 IF NOT EXISTS (
     SELECT 1 FROM dbo.user_roles ur
     JOIN dbo.roles r ON r.role_id = ur.role_id
@@ -239,8 +249,11 @@ IF NOT EXISTS (SELECT 1 FROM dbo.inventory_transactions WHERE source_type = 'SEE
     VALUES (@towelItemId, 'IN', 30, N'Tồn đầu kỳ seed', 'SEED', @towelItemId, @managerId, @now);
 
 IF NOT EXISTS (SELECT 1 FROM dbo.hotel_fund_settings)
-    INSERT INTO dbo.hotel_fund_settings (opening_balance, configured_by, configured_at)
-    VALUES (50000000, @managerId, @now);
+    INSERT INTO dbo.hotel_fund_settings (
+        opening_balance, opening_cash_balance, opening_transfer_balance, opening_card_balance,
+        configured_by, configured_at
+    )
+    VALUES (50000000, 20000000, 25000000, 5000000, @managerId, @now);
 
 DECLARE @room102Id bigint = (SELECT room_id FROM dbo.rooms WHERE room_number = '102');
 
@@ -249,13 +262,17 @@ BEGIN
     INSERT INTO dbo.bookings (
         guest_first_name, guest_last_name, guest_phone, guest_email, guest_id, discount_amount,
         check_in_date, check_out_date, num_adults, total_rooms, num_children, special_requests,
-        booking_reference, deposit_status, status, total_amount, amount_calculated_at,
+        booking_reference, deposit_status, status, total_amount,
+        room_subtotal, service_subtotal, service_charge_total, vat_total, grand_total,
+        amount_calculated_at,
         created_by, actual_checkout_at, is_deleted, created_at, updated_at
     )
     VALUES (
         N'Guest', N'Test', '0900000004', N'guest@test.com', @guestId, 0,
         CAST(GETDATE() AS date), DATEADD(day, 1, CAST(GETDATE() AS date)), 2, 1, 0, N'Seed booking',
-        'BK-SEED-001', 'PAID', 'CHECKED_IN', 1250000, @now,
+        'BK-SEED-001', 'PAID', 'CHECKED_IN', 963900,
+        800000, 50000, 42500, 71400, 963900,
+        @now,
         @receptionistId, NULL, 0, @now, @now
     );
 END;
@@ -265,21 +282,29 @@ DECLARE @bookingId bigint = (SELECT booking_id FROM dbo.bookings WHERE booking_r
 IF NOT EXISTS (SELECT 1 FROM dbo.booking_details WHERE booking_id = @bookingId AND room_id = @room102Id)
     INSERT INTO dbo.booking_details (
         booking_id, room_type_id, room_id, check_in_date, check_out_date, price_per_night,
-        num_nights, subtotal, room_code, room_code_expires_at, view_type, num_adults, num_children, child_ages,
+        num_nights, subtotal, service_charge_rate, service_charge_amount, vat_rate, vat_amount, total_amount,
+        room_code, room_code_expires_at, view_type, num_adults, num_children, child_ages,
         extra_bed_count, extra_bed_price, extra_bed_total
     )
     VALUES (
         @bookingId, @standardRoomTypeId, @room102Id, CAST(GETDATE() AS date), DATEADD(day, 1, CAST(GETDATE() AS date)),
-        800000, 1, 800000, NULL, NULL, 'CITY', 2, 0, NULL,
+        800000, 1, 800000, 5.00, 40000, 8.00, 67200, 907200,
+        NULL, NULL, 'CITY', 2, 0, NULL,
         0, 0, 0
     );
 
 IF NOT EXISTS (SELECT 1 FROM dbo.folio_items WHERE booking_id = @bookingId AND description = N'Nước suối minibar')
     INSERT INTO dbo.folio_items (
-        booking_id, service_id, description, item_type, amount, quantity, unit_price,
+        booking_id, service_id, description, item_type, amount,
+        base_amount, service_charge_rate, service_charge_amount, vat_rate, vat_amount, total_amount, price_display_mode,
+        quantity, unit_price,
         posted_at, posted_by, adjustment_reason, is_voided, voided_by, voided_at, voided_reason
     )
-    VALUES (@bookingId, @waterServiceId, N'Nước suối minibar', 'FOOD', 50000, 2, 25000, @now, @receptionistId, NULL, 0, NULL, NULL, NULL);
+    VALUES (
+        @bookingId, @waterServiceId, N'Nước suối minibar', 'FOOD', 56700,
+        50000, 5.00, 2500, 8.00, 4200, 56700, 'PLUS_PLUS',
+        2, 25000, @now, @receptionistId, NULL, 0, NULL, NULL, NULL
+    );
 
 IF NOT EXISTS (SELECT 1 FROM dbo.payments WHERE transaction_ref = 'PAY-SEED-001')
     INSERT INTO dbo.payments (
@@ -291,21 +316,27 @@ DECLARE @paymentId bigint = (SELECT payment_id FROM dbo.payments WHERE transacti
 
 IF NOT EXISTS (SELECT 1 FROM dbo.cash_transactions WHERE transaction_code = 'CT-SEED-PAYMENT')
     INSERT INTO dbo.cash_transactions (
-        transaction_code, transaction_type, category, amount, description, source_type, source_id, created_by, created_at
+        transaction_code, document_code, transaction_type, category, amount, fund_method,
+        description, source_type, source_id, created_by, created_at
     )
-    VALUES ('CT-SEED-PAYMENT', 'INCOME', 'DEPOSIT', 300000, N'Đặt cọc booking BK-SEED-001', 'PAYMENT', @paymentId, @receptionistId, @now);
+    VALUES ('CT-SEED-PAYMENT', 'PT-SEED-PAYMENT', 'INCOME', 'DEPOSIT', 300000, 'CASH',
+            N'Đặt cọc booking BK-SEED-001', 'PAYMENT', @paymentId, @receptionistId, @now);
 
 IF NOT EXISTS (SELECT 1 FROM dbo.cash_transactions WHERE transaction_code = 'CT-SEED-MANUAL-IN')
     INSERT INTO dbo.cash_transactions (
-        transaction_code, transaction_type, category, amount, description, source_type, source_id, created_by, created_at
+        transaction_code, document_code, transaction_type, category, amount, fund_method,
+        description, source_type, source_id, created_by, created_at
     )
-    VALUES ('CT-SEED-MANUAL-IN', 'INCOME', 'MANUAL_INCOME', 1500000, N'Thu bổ sung quỹ test', 'MANUAL', NULL, @managerId, DATEADD(minute, 1, @now));
+    VALUES ('CT-SEED-MANUAL-IN', 'PT-SEED-MANUAL-IN', 'INCOME', 'MANUAL_INCOME', 1500000, 'TRANSFER',
+            N'Thu bổ sung quỹ test', 'MANUAL', NULL, @managerId, DATEADD(minute, 1, @now));
 
 IF NOT EXISTS (SELECT 1 FROM dbo.cash_transactions WHERE transaction_code = 'CT-SEED-MANUAL-OUT')
     INSERT INTO dbo.cash_transactions (
-        transaction_code, transaction_type, category, amount, description, source_type, source_id, created_by, created_at
+        transaction_code, document_code, transaction_type, category, amount, fund_method,
+        description, source_type, source_id, created_by, created_at
     )
-    VALUES ('CT-SEED-MANUAL-OUT', 'EXPENSE', 'MANUAL_EXPENSE', 500000, N'Chi vận hành test', 'MANUAL', NULL, @managerId, DATEADD(minute, 2, @now));
+    VALUES ('CT-SEED-MANUAL-OUT', 'PC-SEED-MANUAL-OUT', 'EXPENSE', 'MANUAL_EXPENSE', 500000, 'CASH',
+            N'Chi vận hành test', 'MANUAL', NULL, @managerId, DATEADD(minute, 2, @now));
 
 COMMIT TRANSACTION;
 

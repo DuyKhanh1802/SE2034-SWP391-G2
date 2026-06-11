@@ -19,8 +19,17 @@ public class HotelFundSetting {
     @Column(name = "fund_setting_id")
     private Long id;
 
-    @Column(name = "opening_balance", nullable = false, precision = 12, scale = 2)
+    @Column(name = "opening_balance", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal openingBalance;
+
+    @Column(name = "opening_cash_balance", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal openingCashBalance;
+
+    @Column(name = "opening_transfer_balance", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal openingTransferBalance;
+
+    @Column(name = "opening_card_balance", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal openingCardBalance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "configured_by")
@@ -33,6 +42,18 @@ public class HotelFundSetting {
     protected void onCreate() {
         if (this.configuredAt == null) {
             this.configuredAt = Instant.now();
+        }
+        if (this.openingCashBalance == null) {
+            this.openingCashBalance = BigDecimal.ZERO;
+        }
+        if (this.openingTransferBalance == null) {
+            this.openingTransferBalance = BigDecimal.ZERO;
+        }
+        if (this.openingCardBalance == null) {
+            this.openingCardBalance = BigDecimal.ZERO;
+        }
+        if (this.openingBalance == null) {
+            this.openingBalance = openingCashBalance.add(openingTransferBalance).add(openingCardBalance);
         }
     }
 }

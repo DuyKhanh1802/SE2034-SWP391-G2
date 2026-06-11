@@ -43,7 +43,7 @@ public class BookingDetail {
     private LocalDate checkOutDate;
 
     // Giá phòng / 1 đêm tại thời điểm đặt
-    @Column(name = "price_per_night", nullable = false, precision = 12, scale = 2)
+    @Column(name = "price_per_night", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal pricePerNight = BigDecimal.ZERO;
 
     @Column(name = "num_nights", nullable = false)
@@ -51,8 +51,23 @@ public class BookingDetail {
 
     // Tiền phòng chưa tính giường phụ
     // subtotal = pricePerNight * numNights
-    @Column(name = "subtotal", nullable = false, precision = 12, scale = 2)
+    @Column(name = "subtotal", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal subtotal = BigDecimal.ZERO;
+
+    @Column(name = "service_charge_rate", nullable = false, precision = 5, scale = 2, columnDefinition = "numeric(5,2) default 0")
+    private BigDecimal serviceChargeRate = BigDecimal.ZERO;
+
+    @Column(name = "service_charge_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal serviceChargeAmount = BigDecimal.ZERO;
+
+    @Column(name = "vat_rate", nullable = false, precision = 5, scale = 2, columnDefinition = "numeric(5,2) default 0")
+    private BigDecimal vatRate = BigDecimal.ZERO;
+
+    @Column(name = "vat_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal vatAmount = BigDecimal.ZERO;
+
+    @Column(name = "total_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @Column(name = "room_code", unique = true, length = 8)
     private String roomCode;
@@ -89,12 +104,12 @@ public class BookingDetail {
 
     // THÊM: giá 1 giường phụ / 1 đêm tại thời điểm đặt
     // Cần lưu lại để sau này RoomType đổi giá thì booking cũ không bị sai
-    @Column(name = "extra_bed_price", precision = 12, scale = 2)
+    @Column(name = "extra_bed_price", precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal extraBedPrice = BigDecimal.ZERO;
 
     // THÊM: tổng tiền giường phụ của phòng này
     // extraBedTotal = extraBedCount * extraBedPrice * numNights
-    @Column(name = "extra_bed_total", precision = 12, scale = 2)
+    @Column(name = "extra_bed_total", precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal extraBedTotal = BigDecimal.ZERO;
 
     @PrePersist
@@ -111,6 +126,26 @@ public class BookingDetail {
 
         if (this.subtotal == null) {
             this.subtotal = BigDecimal.ZERO;
+        }
+
+        if (this.serviceChargeRate == null) {
+            this.serviceChargeRate = BigDecimal.ZERO;
+        }
+
+        if (this.serviceChargeAmount == null) {
+            this.serviceChargeAmount = BigDecimal.ZERO;
+        }
+
+        if (this.vatRate == null) {
+            this.vatRate = BigDecimal.ZERO;
+        }
+
+        if (this.vatAmount == null) {
+            this.vatAmount = BigDecimal.ZERO;
+        }
+
+        if (this.totalAmount == null) {
+            this.totalAmount = this.subtotal;
         }
 
         if (this.numAdults == null) {

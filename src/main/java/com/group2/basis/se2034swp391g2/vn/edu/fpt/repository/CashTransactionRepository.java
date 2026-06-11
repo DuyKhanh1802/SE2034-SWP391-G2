@@ -1,6 +1,8 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.repository;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionSourceType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.CashTransaction;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +15,12 @@ import java.util.List;
 
 public interface CashTransactionRepository extends JpaRepository<CashTransaction, Long> {
     boolean existsByCode(String code);
+
+    boolean existsByDocumentCode(String documentCode);
+
+    boolean existsBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
+
+    java.util.Optional<CashTransaction> findBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
 
     List<CashTransaction> findByOrderByCreatedAtDesc(Pageable pageable);
 
@@ -33,6 +41,15 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
             WHERE ct.type = :type
             """)
     BigDecimal sumByType(@Param("type") CashTransactionType type);
+
+    @Query("""
+            SELECT COALESCE(SUM(ct.amount), 0)
+            FROM CashTransaction ct
+            WHERE ct.type = :type
+            AND ct.fundMethod = :fundMethod
+            """)
+    BigDecimal sumByTypeAndFundMethod(@Param("type") CashTransactionType type,
+                                      @Param("fundMethod") PaymentMethod fundMethod);
 
     @Query("""
             SELECT COALESCE(SUM(ct.amount), 0)

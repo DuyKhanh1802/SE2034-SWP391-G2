@@ -12,6 +12,8 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
 
     Optional<InventoryItem> findByIdAndIsDeletedFalse(Long id);
 
+    boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
+
     List<InventoryItem> findByIsDeletedFalseOrderByNameAsc();
 
     long countByIsDeletedFalse();

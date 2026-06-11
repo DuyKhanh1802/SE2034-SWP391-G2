@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionSourceType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,9 @@ public class CashTransaction {
     @Column(name = "transaction_code", nullable = false, unique = true, length = 30)
     private String code;
 
+    @Column(name = "document_code", nullable = false, unique = true, length = 30)
+    private String documentCode;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type", nullable = false, length = 10)
     private CashTransactionType type;
@@ -33,8 +37,12 @@ public class CashTransaction {
     @Column(name = "category", nullable = false, length = 30)
     private CashTransactionCategory category;
 
-    @Column(name = "amount", nullable = false, precision = 12, scale = 2)
+    @Column(name = "amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal amount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fund_method", nullable = false, length = 10)
+    private PaymentMethod fundMethod;
 
     @Column(name = "description", length = 300)
     private String description;
@@ -57,6 +65,9 @@ public class CashTransaction {
     protected void onCreate() {
         if (this.createdAt == null) {
             this.createdAt = Instant.now();
+        }
+        if (this.fundMethod == null) {
+            this.fundMethod = PaymentMethod.CASH;
         }
     }
 }

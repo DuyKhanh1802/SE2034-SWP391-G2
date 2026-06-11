@@ -20,12 +20,17 @@
         <div class="metric-card"><span>Tổng thu</span><strong th:text="${#numbers.formatDecimal(totalIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
         <div class="metric-card"><span>Tổng chi</span><strong th:text="${#numbers.formatDecimal(totalExpense, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
         <div class="metric-card"><span>Tổng quỹ</span><strong th:text="${#numbers.formatDecimal(currentBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
+        <div class="metric-card"><span>Tiền mặt</span><strong th:text="${#numbers.formatDecimal(cashBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
+        <div class="metric-card"><span>Chuyển khoản</span><strong th:text="${#numbers.formatDecimal(transferBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
+        <div class="metric-card"><span>Thẻ</span><strong th:text="${#numbers.formatDecimal(cardBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
     </section>
 
     <section class="detail-grid">
         <form class="panel form-panel" th:action="@{/manager/fund/opening-balance}" method="post">
             <h2>Cấu hình vốn đầu kỳ</h2>
-            <input type="number" min="0" step="1000" name="openingBalance" th:value="${openingBalance}" required>
+            <input type="number" min="0" step="1000" name="openingCashBalance" th:value="${openingCashBalance}" placeholder="Vốn tiền mặt">
+            <input type="number" min="0" step="1000" name="openingTransferBalance" th:value="${openingTransferBalance}" placeholder="Vốn chuyển khoản">
+            <input type="number" min="0" step="1000" name="openingCardBalance" th:value="${openingCardBalance}" placeholder="Vốn thẻ">
             <button type="submit">Lưu vốn đầu kỳ</button>
         </form>
 
@@ -34,6 +39,11 @@
             <select name="type" required>
                 <option value="INCOME">Phiếu thu</option>
                 <option value="EXPENSE">Phiếu chi</option>
+            </select>
+            <select name="fundMethod" required>
+                <option value="CASH">Tiền mặt</option>
+                <option value="TRANSFER">Chuyển khoản</option>
+                <option value="CARD">Thẻ</option>
             </select>
             <input type="number" min="1" step="1000" name="amount" placeholder="Số tiền" required>
             <textarea name="description" rows="3" placeholder="Nội dung"></textarea>
@@ -44,11 +54,13 @@
     <section class="panel">
         <h2>Lịch sử thao tác gần đây</h2>
         <table class="module-table">
-            <thead><tr><th>Mã</th><th>Loại</th><th>Số tiền</th><th>Nội dung</th><th>Thời gian</th></tr></thead>
+            <thead><tr><th>Mã</th><th>Chứng từ</th><th>Loại</th><th>Kênh quỹ</th><th>Số tiền</th><th>Nội dung</th><th>Thời gian</th></tr></thead>
             <tbody>
             <tr th:each="transaction : ${recentTransactions}">
                 <td th:text="${transaction.code}">CT</td>
+                <td th:text="${transaction.documentCode}">PT</td>
                 <td th:text="${transaction.type.name() == 'INCOME' ? 'Thu' : 'Chi'}">Thu</td>
+                <td th:text="${transaction.fundMethod}">CASH</td>
                 <td th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
                 <td th:text="${transaction.description}">Nội dung</td>
                 <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>

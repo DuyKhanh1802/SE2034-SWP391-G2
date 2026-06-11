@@ -43,7 +43,7 @@ public class Booking {
     @JoinColumn(name = "promotion_id")
     private Promotion promotion;
 
-    @Column(name = "discount_amount", nullable = false, precision = 12, scale = 2)
+    @Column(name = "discount_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
     @Column(name = "check_in_date", nullable = false)
@@ -80,8 +80,23 @@ public class Booking {
 
     // Tổng tiền cuối cùng của booking
     // Bao gồm tiền phòng + tiền giường phụ nếu có - giảm giá
-    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
+    @Column(name = "total_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    @Column(name = "room_subtotal", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal roomSubtotal = BigDecimal.ZERO;
+
+    @Column(name = "service_subtotal", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal serviceSubtotal = BigDecimal.ZERO;
+
+    @Column(name = "service_charge_total", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal serviceChargeTotal = BigDecimal.ZERO;
+
+    @Column(name = "vat_total", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal vatTotal = BigDecimal.ZERO;
+
+    @Column(name = "grand_total", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal grandTotal = BigDecimal.ZERO;
 
     @Column(name = "amount_calculated_at")
     private Instant amountCalculatedAt;
@@ -150,6 +165,26 @@ public class Booking {
         // SỬA NHẸ: tổng tiền mặc định là 0
         if (this.totalAmount == null) {
             this.totalAmount = BigDecimal.ZERO;
+        }
+
+        if (this.roomSubtotal == null) {
+            this.roomSubtotal = BigDecimal.ZERO;
+        }
+
+        if (this.serviceSubtotal == null) {
+            this.serviceSubtotal = BigDecimal.ZERO;
+        }
+
+        if (this.serviceChargeTotal == null) {
+            this.serviceChargeTotal = BigDecimal.ZERO;
+        }
+
+        if (this.vatTotal == null) {
+            this.vatTotal = BigDecimal.ZERO;
+        }
+
+        if (this.grandTotal == null) {
+            this.grandTotal = this.totalAmount;
         }
 
         // SỬA NHẸ: mặc định chưa xóa mềm
