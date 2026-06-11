@@ -34,6 +34,13 @@
                 <span>Phòng</span>
             </a>
         </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions')} ? 'active' : ''">
+            <a th:href="@{/hotel-admin/promotions}">
+                <i class="fas fa-tags"></i>
+                <span>Khuyến mãi</span>
+            </a>
+        </li>
     </ul>
 
     <ul class="sidebar-menu"
@@ -46,34 +53,33 @@
             </a>
         </li>
 
-        <li>
-            <a href="#">
-                <i class="fas fa-calendar-check"></i>
-                <span>Đặt phòng</span>
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/transactions')} ? 'active' : ''">
+            <a th:href="@{/manager/transactions}">
+                <i class="fas fa-money-bill-transfer"></i>
+                <span>Lịch sử giao dịch</span>
             </a>
         </li>
 
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/promotions')} ? 'active' : ''">
-            <a th:href="@{/manager/promotions}">
-                <i class="fas fa-tags"></i>
-                <span>Khuyến mãi</span>
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/fund')} ? 'active' : ''">
+            <a th:href="@{/manager/fund}">
+                <i class="fas fa-wallet"></i>
+                <span>Quản lý quỹ</span>
             </a>
         </li>
 
-        <li>
-            <a href="#">
-                <i class="fas fa-users"></i>
-                <span>Khách hàng</span>
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/inventory')} ? 'active' : ''">
+            <a th:href="@{/manager/inventory}">
+                <i class="fas fa-boxes-stacked"></i>
+                <span>Quản lý kho hàng</span>
             </a>
         </li>
 
-        <li>
-            <a href="#">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/reports')} ? 'active' : ''">
+            <a th:href="@{/manager/reports}">
                 <i class="fas fa-chart-pie"></i>
                 <span>Báo cáo</span>
             </a>
         </li>
-
     </ul>
 
     <ul class="sidebar-menu"
@@ -97,6 +103,5 @@
     <div class="sidebar-section-spacer"></div>
 
     <ul class="sidebar-menu">
-
     </ul>
 </div>

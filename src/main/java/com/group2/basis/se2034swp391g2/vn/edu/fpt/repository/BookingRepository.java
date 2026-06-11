@@ -81,4 +81,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                             @Param("checkIn") LocalDate checkIn,
                                             @Param("checkOut") LocalDate checkOut);
 
+    long countByCreatedAtBetween(java.time.Instant from, java.time.Instant to);
+
+    long countByStatusAndIsDeletedFalse(com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus status);
+
+    long countByStatusAndIsDeletedFalseAndCheckInDateLessThanEqualAndCheckOutDateAfter(
+            com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus status,
+            LocalDate checkInDate,
+            LocalDate checkOutDate
+    );
+
 }

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="module-header">
+        <div>
+            <p>Cash Flow</p>
+            <h1>Lịch sử giao dịch</h1>
+        </div>
+        <a class="btn-primary-action" th:href="@{/manager/fund}">Lập phiếu thu/chi</a>
+    </section>
+
+    <section class="panel">
+        <form class="filter-row" th:action="@{/manager/transactions}" method="get">
+            <select name="type">
+                <option value="ALL" th:selected="${selectedType == 'ALL'}">Tất cả</option>
+                <option value="INCOME" th:selected="${selectedType == 'INCOME'}">Thu</option>
+                <option value="EXPENSE" th:selected="${selectedType == 'EXPENSE'}">Chi</option>
+            </select>
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm mã hoặc mô tả">
+            <button type="submit">Lọc</button>
+        </form>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <table class="module-table">
+            <thead>
+            <tr>
+                <th>Mã dòng tiền</th>
+                <th>Loại</th>
+                <th>Nhóm</th>
+                <th>Số tiền</th>
+                <th>Nguồn</th>
+                <th>Thời gian</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="transaction : ${transactions}">
+                <td th:text="${transaction.code}">CT</td>
+                <td>
+                    <span class="status-pill"
+                          th:classappend="${transaction.type.name() == 'INCOME'} ? ' income' : ' expense'"
+                          th:text="${transaction.type.name() == 'INCOME' ? 'Thu' : 'Chi'}">Thu</span>
+                </td>
+                <td th:text="${transaction.category}">CATEGORY</td>
+                <td th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
+                <td th:text="${transaction.sourceType + (transaction.sourceId != null ? ' #' + transaction.sourceId : '')}">SOURCE</td>
+                <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                <td><a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(transactions)}">
+                <td colspan="7">Chưa có dòng tiền.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

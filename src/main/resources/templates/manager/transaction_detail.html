@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="module-header">
+        <div>
+            <p>Cash Flow Detail</p>
+            <h1 th:text="${transaction.code}">CT</h1>
+        </div>
+        <a class="btn-secondary-action" th:href="@{/manager/transactions}">Quay lại</a>
+    </section>
+
+    <section class="detail-grid">
+        <div class="panel">
+            <h2>Thông tin dòng tiền</h2>
+            <dl class="detail-list">
+                <dt>Loại</dt>
+                <dd th:text="${transaction.type.name() == 'INCOME' ? 'Thu' : 'Chi'}">Thu</dd>
+                <dt>Nhóm</dt>
+                <dd th:text="${transaction.category}">CATEGORY</dd>
+                <dt>Số tiền</dt>
+                <dd th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</dd>
+                <dt>Mô tả</dt>
+                <dd th:text="${transaction.description ?: 'Không có'}">Mô tả</dd>
+                <dt>Thời gian</dt>
+                <dd th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</dd>
+            </dl>
+        </div>
+        <div class="panel">
+            <h2>Nguồn phát sinh</h2>
+            <dl class="detail-list">
+                <dt>Loại nguồn</dt>
+                <dd th:text="${transaction.sourceType}">PAYMENT</dd>
+                <dt>Mã nguồn</dt>
+                <dd th:text="${transaction.sourceId ?: 'Không có'}">1</dd>
+                <dt>Người tạo</dt>
+                <dd th:text="${transaction.createdBy != null ? transaction.createdBy.email : 'Hệ thống'}">manager</dd>
+            </dl>
+        </div>
+    </section>
+</main>
+</body>
+</html>

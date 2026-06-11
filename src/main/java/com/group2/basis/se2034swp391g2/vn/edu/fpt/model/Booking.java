@@ -4,11 +4,10 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.DepositStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -18,6 +17,7 @@ import java.util.Set;
 @Entity
 @Table(name = "bookings")
 public class Booking {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_id")
@@ -52,12 +52,15 @@ public class Booking {
     @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
 
+    // Tổng số người lớn của cả booking
     @Column(name = "num_adults", nullable = false)
     private Integer numAdults;
 
+    // Tổng số phòng trong booking
     @Column(name = "total_rooms", nullable = false)
     private Integer totalRooms = 1;
 
+    // Tổng số trẻ em của cả booking
     @Column(name = "num_children", nullable = false)
     private Integer numChildren;
 
@@ -75,6 +78,8 @@ public class Booking {
     @Column(name = "status", nullable = false, length = 15)
     private BookingStatus status = BookingStatus.PENDING;
 
+    // Tổng tiền cuối cùng của booking
+    // Bao gồm tiền phòng + tiền giường phụ nếu có - giảm giá
     @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -110,10 +115,47 @@ public class Booking {
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
+
         if (this.createdAt == null) {
             this.createdAt = now;
         }
+
         this.updatedAt = now;
+
+        // SỬA NHẸ: set default để tránh null khi insert
+        if (this.discountAmount == null) {
+            this.discountAmount = BigDecimal.ZERO;
+        }
+
+        // SỬA NHẸ: nếu không truyền totalRooms thì mặc định 1 phòng
+        if (this.totalRooms == null) {
+            this.totalRooms = 1;
+        }
+
+        // SỬA NHẸ: nếu không có trẻ em thì mặc định 0
+        if (this.numChildren == null) {
+            this.numChildren = 0;
+        }
+
+        // SỬA NHẸ: mặc định chưa thanh toán cọc
+        if (this.depositStatus == null) {
+            this.depositStatus = DepositStatus.UNPAID;
+        }
+
+        // SỬA NHẸ: trạng thái booking ban đầu là PENDING
+        if (this.status == null) {
+            this.status = BookingStatus.PENDING;
+        }
+
+        // SỬA NHẸ: tổng tiền mặc định là 0
+        if (this.totalAmount == null) {
+            this.totalAmount = BigDecimal.ZERO;
+        }
+
+        // SỬA NHẸ: mặc định chưa xóa mềm
+        if (this.isDeleted == null) {
+            this.isDeleted = false;
+        }
     }
 
     @PreUpdate

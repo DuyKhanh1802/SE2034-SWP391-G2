@@ -1,7 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,34 +11,22 @@ import java.time.Instant;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "rooms")
-public class Room {
+@Table(name = "amenities")
+public class Amenity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "room_id")
+    @Column(name = "amenity_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_type_id", nullable = false)
-    private RoomType roomType;
+    @Column(name = "name", nullable = false, unique = true, length = 100)
+    private String name;
 
-    @Column(name = "room_number", nullable = false, unique = true, length = 10)
-    private String roomNumber;
+    @Column(name = "icon", length = 100)
+    private String icon;
 
-    @Column(name = "floor", nullable = false)
-    private Integer floor;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "view_type", length = 30)
-    private ViewType viewType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private RoomStatus status = RoomStatus.AVAILABLE;
-
-    @Column(name = "note", length = 500)
-    private String note;
+    @Column(name = "description", length = 255)
+    private String description;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
@@ -61,10 +47,6 @@ public class Room {
 
         if (this.updatedAt == null) {
             this.updatedAt = now;
-        }
-
-        if (this.status == null) {
-            this.status = RoomStatus.AVAILABLE;
         }
 
         if (this.isDeleted == null) {

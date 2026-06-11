@@ -1,4 +1,4 @@
-package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Manager;
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.PromotionRequest;
@@ -34,7 +34,7 @@ public class PromotionController {
         this.profileService = profileService;
     }
 
-    @GetMapping("/manager/promotions")
+    @GetMapping("/hotel-admin/promotions")
     public String listPromotions(@RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "5") int size,
                                  @RequestParam(required = false) String keyword,
@@ -42,7 +42,7 @@ public class PromotionController {
                                  Model model,
                                  Authentication authentication,
                                  HttpSession session) {
-        addHeaderAttributes(model, authentication, session, "KHUYẾN MÃI");
+        addHeaderAttributes(model, authentication, session, "KHUYáº¾N MÃƒI");
 
         PromotionListResponse response =
                 promotionService.getPromotionListResponse(page, size, keyword, status);
@@ -63,55 +63,55 @@ public class PromotionController {
         model.addAttribute("keyword", keyword == null ? "" : keyword);
         model.addAttribute("selectedStatus", status);
 
-        return "manager/list_promotions";
+        return "hotel_admin/list_promotions";
     }
 
-    @GetMapping("/manager/promotions/{id}")
+    @GetMapping("/hotel-admin/promotions/{id}")
     public String showPromotionDetail(@PathVariable Long id,
                                       Model model,
                                       Authentication authentication,
                                       HttpSession session,
                                       RedirectAttributes redirectAttributes) {
         try {
-            addHeaderAttributes(model, authentication, session, "CHI TIẾT KHUYẾN MÃI");
+            addHeaderAttributes(model, authentication, session, "CHI TIáº¾T KHUYáº¾N MÃƒI");
             model.addAttribute("promotion", promotionService.getPromotionDetail(id));
 
-            return "manager/promotion_detail";
+            return "hotel_admin/promotion_detail";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/manager/promotions";
+            return "redirect:/hotel-admin/promotions";
         }
     }
 
-    @GetMapping("/manager/promotions/add")
+    @GetMapping("/hotel-admin/promotions/add")
     public String showAddPromotionForm(Model model,
                                        Authentication authentication,
                                        HttpSession session) {
-        addHeaderAttributes(model, authentication, session, "THÊM KHUYẾN MÃI");
+        addHeaderAttributes(model, authentication, session, "THÃŠM KHUYáº¾N MÃƒI");
         model.addAttribute("promotion", new PromotionRequest());
 
-        return "manager/add_promotion";
+        return "hotel_admin/add_promotion";
     }
 
-    @GetMapping("/manager/promotions/edit/{id}")
+    @GetMapping("/hotel-admin/promotions/edit/{id}")
     public String showEditPromotionForm(@PathVariable Long id,
                                         Model model,
                                         Authentication authentication,
                                         HttpSession session,
                                         RedirectAttributes redirectAttributes) {
         try {
-            addHeaderAttributes(model, authentication, session, "CHỈNH SỬA KHUYẾN MÃI");
+            addHeaderAttributes(model, authentication, session, "CHá»ˆNH Sá»¬A KHUYáº¾N MÃƒI");
             model.addAttribute("promotion", promotionService.getPromotionEditRequest(id));
             model.addAttribute("promotionId", id);
 
-            return "manager/edit_promotion";
+            return "hotel_admin/edit_promotion";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/manager/promotions";
+            return "redirect:/hotel-admin/promotions";
         }
     }
 
-    @PostMapping("/manager/promotion-images/upload")
+    @PostMapping("/hotel-admin/promotion-images/upload")
     @ResponseBody
     public ResponseEntity<Map<String, String>> uploadPromotionImage(@RequestParam("file") MultipartFile file) {
         try {
@@ -126,11 +126,11 @@ public class PromotionController {
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Tải ảnh khuyến mãi thất bại. Vui lòng thử lại."));
+                    .body(Map.of("error", "Táº£i áº£nh khuyáº¿n mÃ£i tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i."));
         }
     }
 
-    @PostMapping("/manager/promotions/add")
+    @PostMapping("/hotel-admin/promotions/add")
     public String addPromotion(@ModelAttribute("promotion") PromotionRequest request,
                                Model model,
                                Authentication authentication,
@@ -141,21 +141,21 @@ public class PromotionController {
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Thêm khuyến mãi thành công."
+                    "ThÃªm khuyáº¿n mÃ£i thÃ nh cÃ´ng."
             );
 
-            return "redirect:/manager/promotions";
+            return "redirect:/hotel-admin/promotions";
 
         } catch (IllegalArgumentException e) {
-            addHeaderAttributes(model, authentication, session, "THÊM KHUYẾN MÃI");
+            addHeaderAttributes(model, authentication, session, "THÃŠM KHUYáº¾N MÃƒI");
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("promotion", request);
 
-            return "manager/add_promotion";
+            return "hotel_admin/add_promotion";
         }
     }
 
-    @PostMapping("/manager/promotions/edit/{id}")
+    @PostMapping("/hotel-admin/promotions/edit/{id}")
     public String editPromotion(@PathVariable Long id,
                                 @ModelAttribute("promotion") PromotionRequest request,
                                 Model model,
@@ -164,31 +164,31 @@ public class PromotionController {
                                 RedirectAttributes redirectAttributes) {
         try {
             promotionService.updatePromotion(id, request);
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật khuyến mãi thành công.");
+            redirectAttributes.addFlashAttribute("successMessage", "Cáº­p nháº­t khuyáº¿n mÃ£i thÃ nh cÃ´ng.");
 
-            return "redirect:/manager/promotions/" + id;
+            return "redirect:/hotel-admin/promotions/" + id;
 
         } catch (IllegalArgumentException e) {
-            addHeaderAttributes(model, authentication, session, "CHỈNH SỬA KHUYẾN MÃI");
+            addHeaderAttributes(model, authentication, session, "CHá»ˆNH Sá»¬A KHUYáº¾N MÃƒI");
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("promotion", request);
             model.addAttribute("promotionId", id);
 
-            return "manager/edit_promotion";
+            return "hotel_admin/edit_promotion";
         }
     }
 
-    @PostMapping("/manager/promotions/delete/{id}")
+    @PostMapping("/hotel-admin/promotions/delete/{id}")
     public String deletePromotion(@PathVariable Long id,
                                   RedirectAttributes redirectAttributes) {
         try {
             promotionService.deletePromotion(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Xóa khuyến mãi thành công.");
+            redirectAttributes.addFlashAttribute("successMessage", "XÃ³a khuyáº¿n mÃ£i thÃ nh cÃ´ng.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        return "redirect:/manager/promotions";
+        return "redirect:/hotel-admin/promotions";
     }
 
     private void addHeaderAttributes(Model model,
@@ -201,3 +201,4 @@ public class PromotionController {
         model.addAttribute("currentUser", currentUser);
     }
 }
+

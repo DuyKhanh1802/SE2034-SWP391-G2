@@ -1,0 +1,57 @@
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "inventory_receipts")
+public class InventoryReceipt {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "receipt_id")
+    private Long id;
+
+    @Column(name = "receipt_code", nullable = false, unique = true, length = 30)
+    private String code;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_item_id", nullable = false)
+    private InventoryItem item;
+
+    @Column(name = "quantity", nullable = false, precision = 12, scale = 2)
+    private BigDecimal quantity;
+
+    @Column(name = "unit_cost", nullable = false, precision = 12, scale = 2)
+    private BigDecimal unitCost;
+
+    @Column(name = "total_cost", nullable = false, precision = 12, scale = 2)
+    private BigDecimal totalCost;
+
+    @Column(name = "supplier", length = 150)
+    private String supplier;
+
+    @Column(name = "note", length = 300)
+    private String note;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+    }
+}
