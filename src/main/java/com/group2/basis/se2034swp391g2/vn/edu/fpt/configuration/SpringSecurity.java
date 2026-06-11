@@ -76,7 +76,7 @@ public class SpringSecurity {
                  * Bỏ CSRF cho API upload ảnh khuyến mãi.
                  */
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/manager/promotion-images/upload")
+                        .ignoringRequestMatchers("/hotel-admin/promotion-images/upload")
                 );
         return http.build();
     }

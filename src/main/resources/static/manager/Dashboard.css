@@ -10,7 +10,7 @@ body {
     margin: 0;
     background: #f8f8f8;
     color: #111;
-    font-family: Arial, sans-serif;
+    font-family: 'Manrope', sans-serif;
     overflow-x: hidden;
 }
 
@@ -20,7 +20,7 @@ body {
     align-items: center;
     gap: 20px;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 26px;
     letter-spacing: 5px;
     color: #111;
@@ -133,7 +133,7 @@ body {
 .hero h1 {
     margin: 0;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 44px;
     font-weight: 400;
 }
@@ -169,7 +169,7 @@ body {
 .kpi-card h2 {
     margin: 22px 0 18px;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 28px;
     font-weight: 400;
 }
@@ -241,7 +241,7 @@ body {
 .section-title h3 {
     margin: 0;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 28px;
     font-weight: 400;
 }
@@ -320,7 +320,7 @@ body {
 .bottom-title {
     margin: 0 0 26px;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 28px;
     font-weight: 400;
 }

@@ -1,6 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomTypeName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,7 @@ import java.math.BigDecimal;
 public class HomeRoomType {
 
     private Long id;
-    private RoomTypeName name;
+    private String name;
     private BigDecimal basePrice;
     private Integer capacity;
     private String description;
@@ -24,7 +23,7 @@ public class HomeRoomType {
             return "";
         }
 
-        String text = name.name().replace("_", " ").toLowerCase();
+        String text = name.replace("_", " ").toLowerCase();
         String[] words = text.split(" ");
         StringBuilder result = new StringBuilder();
 

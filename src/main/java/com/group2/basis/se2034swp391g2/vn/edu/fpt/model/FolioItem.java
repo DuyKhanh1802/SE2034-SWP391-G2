@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -36,13 +37,35 @@ public class FolioItem {
     @Column(name = "item_type", nullable = false, length = 15)
     private FolioItemType itemType;
 
-    @Column(name = "amount", nullable = false, precision = 12, scale = 2)
+    @Column(name = "amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal amount;
+
+    @Column(name = "base_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal baseAmount = BigDecimal.ZERO;
+
+    @Column(name = "service_charge_rate", nullable = false, precision = 5, scale = 2, columnDefinition = "numeric(5,2) default 0")
+    private BigDecimal serviceChargeRate = BigDecimal.ZERO;
+
+    @Column(name = "service_charge_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal serviceChargeAmount = BigDecimal.ZERO;
+
+    @Column(name = "vat_rate", nullable = false, precision = 5, scale = 2, columnDefinition = "numeric(5,2) default 0")
+    private BigDecimal vatRate = BigDecimal.ZERO;
+
+    @Column(name = "vat_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal vatAmount = BigDecimal.ZERO;
+
+    @Column(name = "total_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "price_display_mode", nullable = false, length = 15, columnDefinition = "varchar(15) default 'PLUS_PLUS'")
+    private PriceDisplayMode priceDisplayMode = PriceDisplayMode.PLUS_PLUS;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "unit_price", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal unitPrice;
 
     @Column(name = "posted_at", nullable = false)
@@ -72,6 +95,30 @@ public class FolioItem {
     protected void onPost() {
         if (this.postedAt == null) {
             this.postedAt = Instant.now();
+        }
+        if (this.baseAmount == null) {
+            this.baseAmount = this.amount == null ? BigDecimal.ZERO : this.amount;
+        }
+        if (this.serviceChargeRate == null) {
+            this.serviceChargeRate = BigDecimal.ZERO;
+        }
+        if (this.serviceChargeAmount == null) {
+            this.serviceChargeAmount = BigDecimal.ZERO;
+        }
+        if (this.vatRate == null) {
+            this.vatRate = BigDecimal.ZERO;
+        }
+        if (this.vatAmount == null) {
+            this.vatAmount = BigDecimal.ZERO;
+        }
+        if (this.totalAmount == null) {
+            this.totalAmount = this.amount == null ? BigDecimal.ZERO : this.amount;
+        }
+        if (this.amount == null) {
+            this.amount = this.totalAmount;
+        }
+        if (this.priceDisplayMode == null) {
+            this.priceDisplayMode = PriceDisplayMode.PLUS_PLUS;
         }
     }
 }
