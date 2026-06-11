@@ -419,6 +419,50 @@ ul {
     font-size: 14px;
 }
 
+.role-form.is-disabled {
+    opacity: 0.55;
+}
+
+.role-form select:disabled {
+    cursor: not-allowed;
+    background: #f3f3f3;
+    color: #777;
+}
+
+.multi-role-form {
+    grid-template-columns: 1fr;
+}
+
+.role-check-list {
+    display: grid;
+    gap: 12px;
+}
+
+.role-check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 1px solid #d8d8d8;
+    background: #fff;
+    color: #222;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.role-check-item input {
+    width: 18px;
+    height: 18px;
+    accent-color: #222;
+}
+
+.role-validation-message {
+    margin: 6px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
 @media (max-width: 900px) {
     .user-detail-layout,
     .settings-grid {

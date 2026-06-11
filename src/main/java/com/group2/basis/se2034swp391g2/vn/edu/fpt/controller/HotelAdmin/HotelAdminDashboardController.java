@@ -1,4 +1,4 @@
-package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Admin;
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 @RequiredArgsConstructor
-public class AdminDashboardController {
+public class HotelAdminDashboardController {
 
     private final ProfileService profileService;
 
-    @GetMapping("/admin/dashboard")
+    @GetMapping("/hotel-admin/dashboard")
     public String dashboard(Model model,
                             Authentication authentication,
                             HttpSession session) {
@@ -24,6 +24,6 @@ public class AdminDashboardController {
 
         model.addAttribute("currentUser", currentUser);
 
-        return "admin/Dashboard";
+        return "hotel_admin/Dashboard";
     }
 }
