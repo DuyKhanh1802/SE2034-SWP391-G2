@@ -34,3 +34,4 @@ build/
 
 # Ignore .properties files
 application.properties
+/scripts/

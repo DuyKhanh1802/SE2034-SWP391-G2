@@ -1,4 +1,4 @@
-USE [Vhotel_HN_test];
+USE [Vhotel_HN];
 GO
 
 SET ANSI_NULLS ON;
