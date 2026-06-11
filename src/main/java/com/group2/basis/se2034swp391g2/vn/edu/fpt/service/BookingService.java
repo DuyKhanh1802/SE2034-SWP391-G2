@@ -399,7 +399,11 @@ public class BookingService {
 
         int totalCapacity = selectedRooms.stream()
                 .map(Room::getRoomType)
-                .mapToInt(roomType -> roomType.getCapacity() == null ? 0 : roomType.getCapacity())
+                .mapToInt(roomType -> {
+                    int adults = roomType.getMaxAdults() == null ? 0 : roomType.getMaxAdults();
+                    int children = roomType.getMaxChildren() == null ? 0 : roomType.getMaxChildren();
+                    return adults + children;
+                })
                 .sum();
 
         if (totalCapacity < totalGuests) {

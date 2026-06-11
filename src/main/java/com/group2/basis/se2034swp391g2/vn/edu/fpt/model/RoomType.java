@@ -69,6 +69,13 @@ public class RoomType {
     )
     private Set<RoomTypeBed> beds = new HashSet<>();
 
+    @OneToMany(
+            mappedBy = "roomType",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<RoomTypeAmenity> amenities = new HashSet<>();
+
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
