@@ -104,7 +104,7 @@
 
                         <div>
                             <span>SỨC CHỨA</span>
-                            <strong th:text="${room.roomType.capacity} + ' khách'">2 khách</strong>
+                            <strong th:text="${room.roomType.maxAdults + room.roomType.maxChildren} + ' khách'">2 khách</strong>
                         </div>
 
                         <div>

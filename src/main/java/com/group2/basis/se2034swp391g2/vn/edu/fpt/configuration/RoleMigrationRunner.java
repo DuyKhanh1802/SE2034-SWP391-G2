@@ -32,6 +32,9 @@ public class RoleMigrationRunner implements CommandLineRunner {
 
                 Long systemAdminRoleId = ensureRole(connection, "SYSTEM_ADMIN");
                 ensureRole(connection, "HOTEL_ADMIN");
+                ensureRole(connection, "MANAGER");
+                ensureRole(connection, "RECEPTIONIST");
+                ensureRole(connection, "GUEST");
 
                 Long legacyAdminRoleId = findRoleId(connection, "ADMIN");
                 if (legacyAdminRoleId != null) {

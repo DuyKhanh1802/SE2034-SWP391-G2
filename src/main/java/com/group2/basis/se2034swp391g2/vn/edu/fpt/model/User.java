@@ -97,7 +97,7 @@ public class User {
     @Column(name = "total_stays", nullable = false)
     private Integer totalStays = 0;
 
-    @Column(name = "total_spent", nullable = false, precision = 15, scale = 2)
+    @Column(name = "total_spent", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal totalSpent = BigDecimal.ZERO;
 
     @Column(name = "last_stay_at")

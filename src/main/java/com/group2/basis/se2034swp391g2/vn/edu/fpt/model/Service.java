@@ -31,7 +31,7 @@ public class Service {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "price", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal price;
 
     @Column(name = "is_available", nullable = false)

@@ -1,6 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomTypeName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,7 @@ public class RoomResponse {
 
     private String roomNumber;
 
-    private RoomTypeName roomTypeName;
+    private String roomTypeName;
 
     private BigDecimal basePrice;
 }

@@ -1,144 +1,89 @@
-﻿<!DOCTYPE html>
-<html lang="en"
+<!DOCTYPE html>
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-<section class="hero">
-            <p>EXECUTIVE SUMMARY</p>
-            <h1>Daily Oversight</h1>
-        </section>
+    <section class="hero">
+        <p>MANAGER OVERVIEW</p>
+        <h1>Tổng quan vận hành</h1>
+    </section>
 
-        <section class="kpi-grid">
+    <section class="kpi-grid">
+        <div class="kpi-card">
+            <p>Doanh thu hôm nay</p>
+            <h2 th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</h2>
+            <span>Dòng tiền thu trong ngày</span>
+        </div>
 
-            <div class="kpi-card">
-                <p>Today's Revenue</p>
-                <h2>â‚«12,450,000</h2>
-                <span class="green">â†— 12.4% vs Yesterday</span>
-            </div>
+        <div class="kpi-card">
+            <p>Doanh thu tháng</p>
+            <h2 th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</h2>
+            <span>Tổng thu tháng hiện tại</span>
+        </div>
 
-            <div class="kpi-card">
-                <p>Occupancy Rate</p>
-                <h2>84%</h2>
-                <span>42 / 50 Rooms Booked</span>
-            </div>
+        <div class="kpi-card">
+            <p>Booking mới hôm nay</p>
+            <h2 th:text="${newBookingsToday}">0</h2>
+            <span>Lượt đặt phòng mới</span>
+        </div>
 
-            <div class="kpi-card">
-                <p>Check-ins Today</p>
-                <h2>12</h2>
-                <div class="progress-line">
-                    <div></div>
-                </div>
-            </div>
+        <div class="kpi-card">
+            <p>Phòng đang ở</p>
+            <h2 th:text="${occupiedRooms + ' / ' + totalRooms}">0 / 0</h2>
+            <span th:text="${occupancyRate + '% lấp phòng'}">0% lấp phòng</span>
+        </div>
 
-            <div class="kpi-card danger">
+        <div class="kpi-card warning">
+            <p>Cảnh báo tồn kho thấp</p>
+            <h2 th:text="${lowStockCount}">0</h2>
+            <span>Hàng hóa cần chú ý</span>
+        </div>
+    </section>
+
+    <section class="bottom-grid">
+        <div>
+            <h3 class="bottom-title">
+                <i class="fa-solid fa-bell-concierge"></i>
+                Dịch vụ bán chạy
+            </h3>
+            <div class="order-box" th:each="serviceStat : ${topServices}">
                 <div class="d-flex justify-content-between">
-                    <p>Escalated Incidents</p>
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-                <h2>2</h2>
-                <span>Requires Immediate Action</span>
-            </div>
-
-            <div class="kpi-card warning">
-                <div class="d-flex justify-content-between">
-                    <p>Orders &gt; 30 Min</p>
-                    <i class="fa-regular fa-clock"></i>
-                </div>
-                <h2>1</h2>
-                <span>Housekeeping Queue</span>
-            </div>
-
-        </section>
-
-        <section class="chart-grid">
-
-            <div class="chart-box">
-                <div class="section-title">
-                    <h3>Revenue (Last 7 Days)</h3>
-                    <span>Million VND</span>
-                </div>
-
-                <div class="bar-chart">
-                    <div><span style="height:60%"></span><p>MON</p></div>
-                    <div><span style="height:75%"></span><p>TUE</p></div>
-                    <div><span style="height:45%"></span><p>WED</p></div>
-                    <div><span style="height:90%"></span><p>THU</p></div>
-                    <div><span style="height:80%"></span><p>FRI</p></div>
-                    <div><span class="active" style="height:95%"></span><p>SAT</p></div>
-                    <div><span style="height:70%"></span><p>SUN</p></div>
-                </div>
-            </div>
-
-            <div class="chart-box">
-                <div class="section-title">
-                    <h3>Occupancy Trends</h3>
-                    <span>Percentage (%)</span>
-                </div>
-
-                <div class="line-chart">
-                    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <path d="M 0 40 L 16.6 30 L 33.2 55 L 49.8 20 L 66.4 25 L 83 15 L 100 35"/>
-                        <circle cx="0" cy="40" r="1.8"/>
-                        <circle cx="16.6" cy="30" r="1.8"/>
-                        <circle cx="33.2" cy="55" r="1.8"/>
-                        <circle cx="49.8" cy="20" r="1.8"/>
-                        <circle cx="66.4" cy="25" r="1.8"/>
-                        <circle cx="83" cy="15" r="1.8"/>
-                        <circle cx="100" cy="35" r="1.8"/>
-                    </svg>
-                </div>
-            </div>
-
-        </section>
-
-        <section class="bottom-grid">
-
-            <div>
-                <h3 class="bottom-title">
-                    <i class="fa-solid fa-triangle-exclamation text-danger"></i>
-                    Escalated Incidents
-                </h3>
-
-                <div class="incident-item">
                     <div>
-                        <h5>Leaking Pipe <span>CRITICAL</span></h5>
-                        <p>Room 204 | Reported 2h ago</p>
+                        <h5 th:text="${serviceStat[0]}">Dịch vụ</h5>
+                        <p th:text="'Số lượng: ' + ${serviceStat[1]}">Số lượng: 0</p>
                     </div>
-                    <a href="#">Resolve</a>
-                </div>
-
-                <div class="incident-item">
-                    <div>
-                        <h5>AC Failure <span class="high">HIGH</span></h5>
-                        <p>Room 301 | Reported 1h ago</p>
-                    </div>
-                    <a href="#">Resolve</a>
+                    <span th:text="${#numbers.formatDecimal(serviceStat[2], 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</span>
                 </div>
             </div>
+            <div class="order-box" th:if="${#lists.isEmpty(topServices)}">
+                <p>Chưa có dữ liệu dịch vụ.</p>
+            </div>
+        </div>
 
-            <div>
-                <h3 class="bottom-title">
-                    <i class="fa-solid fa-bell-concierge"></i>
-                    Stalled Orders
-                </h3>
-
-                <div class="order-box">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5>Extra Towels</h5>
-                            <p>Room 102</p>
-                            <small>Housekeeping</small>
-                        </div>
-                        <span>45m ago</span>
-                    </div>
-
-                    <button>VIEW ALL QUEUE</button>
+        <div>
+            <h3 class="bottom-title">
+                <i class="fa-solid fa-money-bill-transfer"></i>
+                Giao dịch gần đây
+            </h3>
+            <div class="incident-item" th:each="transaction : ${recentTransactions}">
+                <div>
+                    <h5 th:text="${transaction.code}">CT-0000</h5>
+                    <p th:text="${transaction.category + ' - ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        Giao dịch
+                    </p>
+                </div>
+                <a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a>
+            </div>
+            <div class="incident-item" th:if="${#lists.isEmpty(recentTransactions)}">
+                <div>
+                    <h5>Chưa có giao dịch</h5>
+                    <p>Dòng tiền sẽ xuất hiện khi có payment, nhập kho hoặc phiếu thủ công.</p>
                 </div>
             </div>
-
-        </section>
+        </div>
+    </section>
 </main>
 </body>
 </html>
