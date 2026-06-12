@@ -28,6 +28,10 @@ public class RoomType {
     @Column(name = "base_price", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal basePrice;
 
+    // Sức chứa của phòng
+    @Column(name = "capacity", nullable = false)
+    private Integer capacity = 2;
+
     @Column(name = "max_adults", nullable = false)
     private Integer maxAdults = 2;
 
@@ -90,6 +94,10 @@ public class RoomType {
 
         if (this.isDeleted == null) {
             this.isDeleted = false;
+        }
+
+        if (this.capacity == null) {
+            this.capacity = 2;
         }
 
         if (this.maxAdults == null) {
