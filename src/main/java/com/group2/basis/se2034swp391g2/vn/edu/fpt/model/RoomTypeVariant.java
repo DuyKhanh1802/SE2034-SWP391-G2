@@ -18,6 +18,13 @@ import java.util.Set;
 @Table(name = "room_type_variants")
 public class RoomTypeVariant {
 
+    @OneToMany(
+            mappedBy = "variant",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<RoomTypeVariantService> includedServices = new HashSet<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "variant_id")
