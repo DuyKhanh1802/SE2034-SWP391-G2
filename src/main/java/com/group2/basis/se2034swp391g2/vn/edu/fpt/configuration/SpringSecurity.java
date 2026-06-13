@@ -21,7 +21,7 @@ public class SpringSecurity {
         http.authorizeHttpRequests(auth -> auth
                         // 1. Nhóm các đường dẫn Public (Ai cũng vào được)
                         .requestMatchers(
-                                "/",
+                                "/room-types",
                                 "/home",
                                 "/error",
                                 "/common/**",

@@ -26,8 +26,10 @@
 
 <main class="room-type-page">
 
+    <!-- HERO -->
     <section class="room-type-hero">
         <div class="room-type-hero-content">
+            <p class="section-label">V'HOTEL HANOI</p>
             <h1>Rooms & Suites</h1>
             <p>
                 Khám phá các hạng phòng tại V'Hotel, nơi không gian nghỉ dưỡng tinh tế
@@ -36,19 +38,27 @@
         </div>
     </section>
 
+    <!-- BANNER -->
     <section class="room-type-banner">
         <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2000&auto=format&fit=crop"
              alt="V'Hotel rooms and suites">
     </section>
 
+    <!-- LIST -->
     <section class="room-type-list">
 
         <article class="room-type-row"
                  th:each="roomType, iterStat : ${roomTypes}"
                  th:classappend="${iterStat.odd} ? ' reverse' : ''">
 
+            <!-- CONTENT -->
             <div class="room-type-content">
-                <p class="section-label">V'HOTEL HANOI</p>
+
+                <div class="room-type-index">
+                    <span th:text="${#numbers.formatInteger(iterStat.count, 2)}">01</span>
+                </div>
+
+                <p class="section-label">ROOMS & SUITES</p>
 
                 <h2 th:text="${roomType.name}">
                     Deluxe Room
@@ -59,40 +69,100 @@
                     Elegant room description.
                 </p>
 
-                <div class="room-info">
-    <span>
-        <i class="bi bi-people"></i>
-        <span th:text="${roomType.maxAdults}">2</span>
-        adults
-        ·
-        <span th:text="${roomType.maxChildren}">1</span>
-        child
-    </span>
+                <!-- INFO GRID -->
+                <div class="room-info-grid">
 
-                    <span>
-        <i class="bi bi-arrows-fullscreen"></i>
-        <span th:text="${roomType.roomSize}">25</span>
-        m²
-    </span>
+                    <div class="room-info-item">
+                        <i class="bi bi-people"></i>
+                        <div>
+                            <span class="info-label">Guests</span>
+                            <strong>
+                                <span th:text="${roomType.maxAdults}">2</span>
+                                adults ·
+                                <span th:text="${roomType.maxChildren}">1</span>
+                                child
+                            </strong>
+                        </div>
+                    </div>
 
-                    <span>
-        From
-        <strong th:text="${#numbers.formatDecimal(roomType.basePrice, 0, 'COMMA', 0, 'POINT')}">
-            0
-        </strong>
-        VND / night
-    </span>
+                    <div class="room-info-item">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                        <div>
+                            <span class="info-label">Room size</span>
+                            <strong>
+                                <span th:text="${roomType.roomSize}">25</span>
+                                m²
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="room-info-item"
+                         th:if="${roomType.allowExtraBed}">
+                        <i class="bi bi-plus-square"></i>
+                        <div>
+                            <span class="info-label">Extra bed</span>
+                            <strong>
+                                Up to
+                                <span th:text="${roomType.maxExtraBeds}">1</span>
+                                bed
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="room-info-item"
+                         th:if="${!roomType.allowExtraBed}">
+                        <i class="bi bi-dash-circle"></i>
+                        <div>
+                            <span class="info-label">Extra bed</span>
+                            <strong>Not available</strong>
+                        </div>
+                    </div>
+
                 </div>
 
+                <!-- EXTRA BED DETAIL -->
+                <div class="extra-bed-box"
+                     th:if="${roomType.allowExtraBed}">
+                    <div>
+                        <i class="bi bi-info-circle"></i>
+                        <span>Extra bed price</span>
+                    </div>
+
+                    <strong>
+                        <span th:text="${#numbers.formatDecimal(roomType.extraBedPrice, 0, 'COMMA', 0, 'POINT')}">
+                            0
+                        </span>
+                        VND / night
+                    </strong>
+
+                    <p th:if="${roomType.extraBedNote != null}"
+                       th:text="${roomType.extraBedNote}">
+                        Extra bed note
+                    </p>
+                </div>
+
+                <!-- PRICE -->
+                <div class="room-price">
+                    <span>From</span>
+
+                    <strong th:text="${#numbers.formatDecimal(roomType.basePrice, 0, 'COMMA', 0, 'POINT')}">
+                        0
+                    </strong>
+
+                    <span class="currency">VND</span>
+
+                    <small>/ night</small>
+                </div>
+
+                <!-- ACTION -->
                 <div class="room-type-actions">
                     <a th:href="@{/room-types/{id}(id=${roomType.id})}" class="btn-dark-luxury">
                         Khám phá
                     </a>
-
-
                 </div>
             </div>
 
+            <!-- IMAGE -->
             <div class="room-type-image">
                 <img th:if="${roomType.imageUrl != null}"
                      th:src="${roomType.imageUrl}"
