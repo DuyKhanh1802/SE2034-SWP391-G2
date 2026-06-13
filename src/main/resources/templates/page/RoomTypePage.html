@@ -50,7 +50,7 @@
             <div class="room-type-content">
                 <p class="section-label">V'HOTEL HANOI</p>
 
-                <h2 th:text="${roomType.displayName}">
+                <h2 th:text="${roomType.name}">
                     Deluxe Room
                 </h2>
 
@@ -60,23 +60,33 @@
                 </p>
 
                 <div class="room-info">
-                    <span>
-                        <i class="bi bi-person"></i>
-                        <span th:text="${roomType.capacity}">2</span> guests
-                    </span>
+    <span>
+        <i class="bi bi-people"></i>
+        <span th:text="${roomType.maxAdults}">2</span>
+        adults
+        ·
+        <span th:text="${roomType.maxChildren}">1</span>
+        child
+    </span>
 
                     <span>
-                        From
-                        <strong th:text="${#numbers.formatDecimal(roomType.basePrice, 0, 'COMMA', 0, 'POINT')}">
-                            0
-                        </strong>
-                        VND / night
-                    </span>
+        <i class="bi bi-arrows-fullscreen"></i>
+        <span th:text="${roomType.roomSize}">25</span>
+        m²
+    </span>
+
+                    <span>
+        From
+        <strong th:text="${#numbers.formatDecimal(roomType.basePrice, 0, 'COMMA', 0, 'POINT')}">
+            0
+        </strong>
+        VND / night
+    </span>
                 </div>
 
                 <div class="room-type-actions">
                     <a th:href="@{/room-types/{id}(id=${roomType.id})}" class="btn-dark-luxury">
-                        DISCOVER
+                        Khám phá
                     </a>
 
 
@@ -86,10 +96,10 @@
             <div class="room-type-image">
                 <img th:if="${roomType.imageUrl != null}"
                      th:src="${roomType.imageUrl}"
-                     th:alt="${roomType.displayName}">
+                     th:alt="${roomType.name}">
 
                 <div th:if="${roomType.imageUrl == null}" class="room-type-placeholder">
-                    <span th:text="${roomType.displayName}">Room Type</span>
+                    <span th:text="${roomType.name}">Room Type</span>
                 </div>
             </div>
 

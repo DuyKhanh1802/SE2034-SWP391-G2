@@ -103,16 +103,16 @@
 
                     <img th:if="${roomType.imageUrl != null}"
                          th:src="${roomType.imageUrl}"
-                         th:alt="${roomType.displayName}">
+                         th:alt="${roomType.name}">
 
                     <div th:if="${roomType.imageUrl == null}" class="room-category-placeholder">
-                        <span th:text="${roomType.displayName}">Room Type</span>
+                        <span th:text="${roomType.name}">Room Type</span>
                     </div>
 
                     <div class="room-category-overlay"></div>
 
                     <div class="room-category-content">
-                        <h2 th:text="${roomType.displayName}">Suite Sojourn</h2>
+                        <h2 th:text="${roomType.name}">Suite Sojourn</h2>
 
                         <p th:text="${roomType.description}">
                             With breathtaking views and refined interiors, explore our exceptional rooms for an unforgettable V'Hotel experience.
@@ -121,7 +121,7 @@
 
                     <div class="room-category-reserve">
                         <a th:href="@{/booking(roomTypeId=${roomType.id})}">
-                            RESERVE NOW
+                            Đặt ngay
                         </a>
                     </div>
 

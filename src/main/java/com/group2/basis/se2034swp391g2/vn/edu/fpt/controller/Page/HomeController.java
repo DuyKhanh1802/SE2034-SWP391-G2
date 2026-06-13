@@ -7,6 +7,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeRoomType
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.RoomTypeProjection;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import lombok.*;
@@ -27,7 +28,7 @@ public class HomeController {
 
     @GetMapping()
     public String home(Model model){
-        List<HomeRoomType> roomTypes = roomTypeRepository.findAllRoomtypeForHome(ImageEntityType.ROOM_TYPE);
+        List<RoomTypeProjection> roomTypes = roomTypeRepository.findHomeRoomTypes();
 
         List<HomeService> featuredService = serviceRepository.findServiceForHome(ImageEntityType.SERVICE, PageRequest.of(0,3));
 
@@ -51,7 +52,7 @@ public class HomeController {
 
         @GetMapping("/room-types")
         public String roomTypes(Model model){
-            List<HomeRoomType> roomTypes = roomTypeRepository.findAllRoomtypeForHome(ImageEntityType.ROOM_TYPE);
+            List<RoomTypeProjection> roomTypes = roomTypeRepository.findHomeRoomTypes();
             model.addAttribute("roomTypes",roomTypes);
             return "page/RoomTypePage";
         }
