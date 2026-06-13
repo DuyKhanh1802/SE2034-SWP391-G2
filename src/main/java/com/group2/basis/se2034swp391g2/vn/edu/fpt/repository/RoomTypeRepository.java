@@ -15,20 +15,20 @@ public interface RoomTypeRepository extends JpaRepository<RoomType, Long> {
 
     List<RoomType> findByIsDeletedFalse();
 
-    @Query("SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeRoomType(" +
-            " rt.id, " +
-            " rt.name, " +
-            " rt.basePrice, " +
-            " (rt.maxAdults + rt.maxChildren), " +
-            " rt.description, " +
-            " img.imageUrl" +
-            ") " +
-            " FROM RoomType rt " +
-            " LEFT JOIN Image img " +
-            " ON img.entityType = :entityType " +
-            " AND img.entityId = rt.id " +
-            " AND img.isPrimary = true " +
-            " WHERE rt.isDeleted = false " +
-            " ORDER BY rt.id ASC")
+    @Query(value = """
+              SELECT
+                rt.room_type_id AS id,
+                rt.name AS name,
+                rt.base_price AS basePrice,
+                (rt.max_adults + rt.max_children) AS capacity,
+                rt.description AS description,
+                img.image_url AS imageUrl
+            FROM room_types rt
+            LEFT JOIN images img
+                ON img.entity_type = 'ROOM_TYPE'
+                AND img.entity_id = rt.room_type_id
+                AND img.is_primary = 1
+            WHERE rt.is_deleted = 0
+            ORDER BY rt.room_type_id ASC """,nativeQuery = true)
     List<HomeRoomType> findAllRoomtypeForHome(@Param("entityType") ImageEntityType entityType);
 }
