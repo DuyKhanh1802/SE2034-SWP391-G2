@@ -22,8 +22,8 @@ public class Room {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_type_id", nullable = false)
-    private RoomType roomType;
+    @JoinColumn(name = "variant_id", nullable = false)
+    private RoomTypeVariant variant;
 
     @Column(name = "room_number", nullable = false, unique = true, length = 10)
     private String roomNumber;
@@ -32,14 +32,10 @@ public class Room {
     private Integer floor;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "view_type", length = 30)
-    private ViewType viewType;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private RoomStatus status = RoomStatus.AVAILABLE;
 
-    @Column(name = "note", length = 500)
+    @Column(name = "note", length = 500, columnDefinition = "NVARCHAR(500)")
     private String note;
 
     @Column(name = "is_deleted", nullable = false)
@@ -75,5 +71,15 @@ public class Room {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = Instant.now();
+    }
+
+    @Transient
+    public RoomType getRoomType() {
+        return this.variant == null ? null : this.variant.getRoomType();
+    }
+
+    @Transient
+    public ViewType getViewType() {
+        return this.variant == null ? null : this.variant.getViewType();
     }
 }

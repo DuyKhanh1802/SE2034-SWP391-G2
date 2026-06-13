@@ -22,13 +22,13 @@ public class InventoryItem {
     @Column(name = "item_code", nullable = false, unique = true, length = 30)
     private String code;
 
-    @Column(name = "name", nullable = false, length = 150)
+    @Column(name = "name", nullable = false, length = 150, columnDefinition = "NVARCHAR(150)")
     private String name;
 
-    @Column(name = "category", length = 100)
+    @Column(name = "category", length = 100, columnDefinition = "NVARCHAR(100)")
     private String category;
 
-    @Column(name = "unit", nullable = false, length = 30)
+    @Column(name = "unit", nullable = false, length = 30, columnDefinition = "NVARCHAR(30)")
     private String unit;
 
     @Column(name = "opening_quantity", nullable = false, precision = 12, scale = 2)
