@@ -30,7 +30,7 @@ public class FolioItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id") //
     private Service service;
-    @Column(name = "description", nullable = false, length = 200)
+    @Column(name = "description", nullable = false, length = 200, columnDefinition = "NVARCHAR(200)")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -75,7 +75,7 @@ public class FolioItem {
     @JoinColumn(name = "posted_by")
     private User postedBy;
 
-    @Column(name = "adjustment_reason", length = 300)
+    @Column(name = "adjustment_reason", length = 300, columnDefinition = "NVARCHAR(300)")
     private String adjustmentReason;
 
     @Column(name = "is_voided", nullable = false)
@@ -88,7 +88,7 @@ public class FolioItem {
     @Column(name = "voided_at")
     private Instant voidedAt;
 
-    @Column(name = "voided_reason", length = 200)
+    @Column(name = "voided_reason", length = 200, columnDefinition = "NVARCHAR(200)")
     private String voidedReason;
 
     @PrePersist

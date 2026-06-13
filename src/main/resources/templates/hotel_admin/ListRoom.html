@@ -59,15 +59,15 @@
                         101
                     </td>
 
-                    <td th:text="${room.roomType.name}">
+                    <td th:text="${room.variant.roomType.name + ' - ' + room.variant.variantName}">
                         DELUXE
                     </td>
 
-                    <td th:text="${#numbers.formatDecimal(room.roomType.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    <td th:text="${#numbers.formatDecimal(room.variant.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                         1,000,000 VND
                     </td>
 
-                    <td th:text="${room.roomType.maxAdults + room.roomType.maxChildren}">
+                    <td th:text="${room.variant.maxAdults + room.variant.maxChildren}">
                         2
                     </td>
 
@@ -76,14 +76,14 @@
                     </td>
 
                     <td>
-                        <span th:if="${room.viewType == null}">Không có</span>
+                        <span th:if="${room.variant.viewType == null}">Không có</span>
 
-                        <span th:if="${room.viewType != null}" th:switch="${room.viewType.name()}">
+                        <span th:if="${room.variant.viewType != null}" th:switch="${room.variant.viewType.name()}">
                             <span th:case="'SEA'">Hướng biển</span>
                             <span th:case="'CITY'">Hướng thành phố</span>
                             <span th:case="'POOL'">Hướng hồ bơi</span>
                             <span th:case="'GARDEN'">Hướng vườn</span>
-                            <span th:case="*" th:text="${room.viewType}">Khác</span>
+                            <span th:case="*" th:text="${room.variant.viewType}">Khác</span>
                         </span>
                     </td>
 

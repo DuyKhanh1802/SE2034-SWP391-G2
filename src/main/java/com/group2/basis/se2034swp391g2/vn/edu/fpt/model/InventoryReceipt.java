@@ -44,10 +44,10 @@ public class InventoryReceipt {
     @Column(name = "total_cost", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal totalCost;
 
-    @Column(name = "supplier", length = 150)
+    @Column(name = "supplier", length = 150, columnDefinition = "NVARCHAR(150)")
     private String supplier;
 
-    @Column(name = "note", length = 300)
+    @Column(name = "note", length = 300, columnDefinition = "NVARCHAR(300)")
     private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)

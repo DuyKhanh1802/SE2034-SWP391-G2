@@ -38,7 +38,7 @@ public class RoomTypeAmenity {
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
 
-    @Column(name = "note", length = 255)
+    @Column(name = "note", length = 255, columnDefinition = "NVARCHAR(255)")
     private String note;
 
     @Column(name = "created_at", nullable = false, updatable = false)

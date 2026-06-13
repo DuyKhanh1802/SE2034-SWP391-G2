@@ -63,7 +63,7 @@
                             Phòng
                             <span th:text="${room.roomNumber}">305</span>
                             —
-                            <span th:text="${room.roomType.name}">Deluxe</span>
+                            <span th:text="${room.variant.roomType.name + ' - ' + room.variant.variantName}">Deluxe</span>
                         </h1>
 
                         <span th:if="${room.status.name() == 'AVAILABLE'}"
@@ -83,7 +83,7 @@
                     </div>
 
                     <p class="room-detail-description"
-                       th:text="${room.roomType.description != null ? room.roomType.description : 'Chưa có mô tả cho hạng phòng này.'}">
+                       th:text="${room.variant.description != null ? room.variant.description : (room.variant.roomType.description != null ? room.variant.roomType.description : 'Chưa có mô tả cho hạng phòng này.')}">
                         Mô tả hạng phòng sẽ được hiển thị tại đây.
                     </p>
 
@@ -97,25 +97,25 @@
 
                         <div>
                             <span>GIÁ PHÒNG</span>
-                            <strong th:text="${#numbers.formatDecimal(room.roomType.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND / đêm'">
+                            <strong th:text="${#numbers.formatDecimal(room.variant.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND / đêm'">
                                 1,200,000 VND / đêm
                             </strong>
                         </div>
 
                         <div>
                             <span>SỨC CHỨA</span>
-                            <strong th:text="${room.roomType.maxAdults + room.roomType.maxChildren} + ' khách'">2 khách</strong>
+                            <strong th:text="${room.variant.maxAdults + room.variant.maxChildren} + ' khách'">2 khách</strong>
                         </div>
 
                         <div>
                             <span>HƯỚNG NHÌN</span>
-                            <strong th:if="${room.viewType == null}">Không có</strong>
-                            <strong th:if="${room.viewType != null}" th:switch="${room.viewType.name()}">
+                            <strong th:if="${room.variant.viewType == null}">Không có</strong>
+                            <strong th:if="${room.variant.viewType != null}" th:switch="${room.variant.viewType.name()}">
                                 <span th:case="'SEA'">Hướng biển</span>
                                 <span th:case="'CITY'">Hướng thành phố</span>
                                 <span th:case="'POOL'">Hướng hồ bơi</span>
                                 <span th:case="'GARDEN'">Hướng vườn</span>
-                                <span th:case="*" th:text="${room.viewType}">Khác</span>
+                                <span th:case="*" th:text="${room.variant.viewType}">Khác</span>
                             </strong>
                         </div>
                     </div>

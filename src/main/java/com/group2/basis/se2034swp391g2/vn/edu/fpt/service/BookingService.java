@@ -176,13 +176,13 @@ public class BookingService {
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (Room room : selectedRooms) {
-            BigDecimal pricePerNight = room.getRoomType().getBasePrice();
+            BigDecimal pricePerNight = room.getVariant().getPricePerNight();
             BigDecimal subtotal = pricePerNight.multiply(BigDecimal.valueOf(nights));
 
             BookingDetail.BookingDetailBuilder detailBuilder = BookingDetail.builder()
                     .booking(savedBooking)
                     .room(room)
-                    .roomType(room.getRoomType())
+                    .variant(room.getVariant())
                     .checkInDate(checkInDate)
                     .checkOutDate(checkOutDate)
                     .pricePerNight(pricePerNight)
@@ -398,10 +398,10 @@ public class BookingService {
         int totalGuests = request.getAdults() + request.getChildren();
 
         int totalCapacity = selectedRooms.stream()
-                .map(Room::getRoomType)
-                .mapToInt(roomType -> {
-                    int adults = roomType.getMaxAdults() == null ? 0 : roomType.getMaxAdults();
-                    int children = roomType.getMaxChildren() == null ? 0 : roomType.getMaxChildren();
+                .map(Room::getVariant)
+                .mapToInt(variant -> {
+                    int adults = variant.getMaxAdults() == null ? 0 : variant.getMaxAdults();
+                    int children = variant.getMaxChildren() == null ? 0 : variant.getMaxChildren();
                     return adults + children;
                 })
                 .sum();
@@ -629,7 +629,9 @@ public class BookingService {
                     .append(detail.getRoom().getRoomNumber())
                     .append("\n")
                     .append("Room Type: ")
-                    .append(detail.getRoomType().getName())
+                    .append(detail.getVariant().getRoomType().getName())
+                    .append(" - ")
+                    .append(detail.getVariant().getVariantName())
                     .append("\n")
                     .append("Room Code: ")
                     .append(detail.getRoomCode())
