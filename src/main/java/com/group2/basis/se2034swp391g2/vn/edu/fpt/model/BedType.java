@@ -19,10 +19,10 @@ public class BedType {
     @Column(name = "bed_type_id")
     private Long id;
 
-    @Column(name = "name", nullable = false, unique = true, length = 100)
+    @Column(name = "name", nullable = false, unique = true, length = 100, columnDefinition = "NVARCHAR(100)")
     private String name;
 
-    @Column(name = "description", length = 255)
+    @Column(name = "description", length = 255, columnDefinition = "NVARCHAR(255)")
     private String description;
 
     @Column(name = "is_deleted", nullable = false)

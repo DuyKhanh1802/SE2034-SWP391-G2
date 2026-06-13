@@ -7,20 +7,20 @@
     <section class="module-header">
         <div>
             <p>Cash Flow</p>
-            <h1>Lịch sử giao dịch</h1>
+            <h1>Lich su giao dich</h1>
         </div>
-        <a class="btn-primary-action" th:href="@{/manager/fund}">Lập phiếu thu/chi</a>
+        <a class="btn-primary-action" th:href="@{/manager/fund}">Lap phieu thu/chi</a>
     </section>
 
     <section class="panel">
         <form class="filter-row" th:action="@{/manager/transactions}" method="get">
             <select name="type">
-                <option value="ALL" th:selected="${selectedType == 'ALL'}">Tất cả</option>
+                <option value="ALL" th:selected="${selectedType == 'ALL'}">Tat ca</option>
                 <option value="INCOME" th:selected="${selectedType == 'INCOME'}">Thu</option>
                 <option value="EXPENSE" th:selected="${selectedType == 'EXPENSE'}">Chi</option>
             </select>
-            <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm mã hoặc mô tả">
-            <button type="submit">Lọc</button>
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="Tim ma hoac mo ta">
+            <button type="submit">Loc</button>
         </form>
 
         <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
@@ -28,14 +28,13 @@
         <table class="module-table">
             <thead>
             <tr>
-                <th>Mã dòng tiền</th>
-                <th>Chứng từ</th>
-                <th>Loại</th>
-                <th>Nhóm</th>
-                <th>Kênh quỹ</th>
-                <th>Số tiền</th>
-                <th>Nguồn</th>
-                <th>Thời gian</th>
+                <th>Ma dong tien</th>
+                <th>Chung tu</th>
+                <th>Loai</th>
+                <th>Nhom</th>
+                <th>So tien</th>
+                <th>Nguon</th>
+                <th>Thoi gian</th>
                 <th></th>
             </tr>
             </thead>
@@ -49,14 +48,13 @@
                           th:text="${transaction.type.name() == 'INCOME' ? 'Thu' : 'Chi'}">Thu</span>
                 </td>
                 <td th:text="${transaction.category}">CATEGORY</td>
-                <td th:text="${transaction.fundMethod}">CASH</td>
                 <td th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
                 <td th:text="${transaction.sourceType + (transaction.sourceId != null ? ' #' + transaction.sourceId : '')}">SOURCE</td>
                 <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
-                <td><a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a></td>
+                <td><a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiet</a></td>
             </tr>
             <tr th:if="${#lists.isEmpty(transactions)}">
-                <td colspan="9">Chưa có dòng tiền.</td>
+                <td colspan="8">Chua co dong tien.</td>
             </tr>
             </tbody>
         </table>

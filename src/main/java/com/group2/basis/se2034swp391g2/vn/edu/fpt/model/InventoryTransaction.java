@@ -31,7 +31,7 @@ public class InventoryTransaction {
     @Column(name = "quantity", nullable = false, precision = 12, scale = 2)
     private BigDecimal quantity;
 
-    @Column(name = "description", length = 300)
+    @Column(name = "description", length = 300, columnDefinition = "NVARCHAR(300)")
     private String description;
 
     @Column(name = "source_type", length = 50)

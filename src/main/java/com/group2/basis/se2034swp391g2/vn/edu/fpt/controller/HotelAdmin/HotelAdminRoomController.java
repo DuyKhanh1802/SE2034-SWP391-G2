@@ -83,7 +83,7 @@ public class HotelAdminRoomController {
 
         addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-        model.addAttribute("roomTypes", roomService.getAllRoomTypes());
+        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
 
@@ -92,9 +92,8 @@ public class HotelAdminRoomController {
 
     @PostMapping("/hotel-admin/list-room/add")
     public String addRoom(@RequestParam String roomNumber,
-                          @RequestParam Long roomTypeId,
+                          @RequestParam Long variantId,
                           @RequestParam Integer floor,
-                          @RequestParam ViewType viewType,
                           @RequestParam RoomStatus status,
                           @RequestParam(required = false) List<String> imageUrls,
                           @RequestParam(defaultValue = "0") Integer primaryImageIndex,
@@ -107,9 +106,8 @@ public class HotelAdminRoomController {
         try {
             roomService.createRoom(
                     roomNumber,
-                    roomTypeId,
+                    variantId,
                     floor,
-                    viewType,
                     status,
                     imageUrls,
                     primaryImageIndex
@@ -124,14 +122,13 @@ public class HotelAdminRoomController {
 
             model.addAttribute("errorMessage", e.getMessage());
 
-            model.addAttribute("roomTypes", roomService.getAllRoomTypes());
+            model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
             model.addAttribute("viewTypes", ViewType.values());
             model.addAttribute("roomStatuses", RoomStatus.values());
 
             model.addAttribute("roomNumber", roomNumber);
-            model.addAttribute("selectedRoomTypeId", roomTypeId);
+            model.addAttribute("selectedVariantId", variantId);
             model.addAttribute("floor", floor);
-            model.addAttribute("selectedViewType", viewType);
             model.addAttribute("selectedStatus", status);
 
             return "hotel_admin/AddRoom";
@@ -158,7 +155,7 @@ public class HotelAdminRoomController {
         addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
 
         model.addAttribute("room", roomService.getRoomById(id));
-        model.addAttribute("roomTypes", roomService.getAllRoomTypes());
+        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
 
@@ -168,9 +165,8 @@ public class HotelAdminRoomController {
     @PostMapping("/hotel-admin/rooms/edit/{id}")
     public String updateRoom(@PathVariable Long id,
                              @RequestParam String roomNumber,
-                             @RequestParam Long roomTypeId,
+                             @RequestParam Long variantId,
                              @RequestParam Integer floor,
-                             @RequestParam ViewType viewType,
                              @RequestParam RoomStatus status,
                              Model model,
                              RedirectAttributes redirectAttributes,
@@ -182,9 +178,8 @@ public class HotelAdminRoomController {
             roomService.updateRoom(
                     id,
                     roomNumber,
-                    roomTypeId,
+                    variantId,
                     floor,
-                    viewType,
                     status
             );
 
@@ -198,7 +193,7 @@ public class HotelAdminRoomController {
             model.addAttribute("errorMessage", e.getMessage());
 
             model.addAttribute("room", roomService.getRoomById(id));
-            model.addAttribute("roomTypes", roomService.getAllRoomTypes());
+            model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
             model.addAttribute("viewTypes", ViewType.values());
             model.addAttribute("roomStatuses", RoomStatus.values());
 

@@ -45,7 +45,6 @@ public class CashTransactionService {
     public CashTransaction createManualTransaction(CashTransactionType type,
                                                    CashTransactionCategory category,
                                                    BigDecimal amount,
-                                                   PaymentMethod fundMethod,
                                                    String description,
                                                    User createdBy) {
         validateAmount(amount);
@@ -56,7 +55,6 @@ public class CashTransactionService {
                 .type(type)
                 .category(category)
                 .amount(normalizeMoney(amount))
-                .fundMethod(normalizeFundMethod(fundMethod))
                 .description(description)
                 .sourceType(CashTransactionSourceType.MANUAL)
                 .createdBy(createdBy)
@@ -66,10 +64,22 @@ public class CashTransactionService {
     }
 
     @Transactional
+    public CashTransaction createCapitalInjection(BigDecimal amount,
+                                                  String description,
+                                                  User createdBy) {
+        return createManualTransaction(
+                CashTransactionType.INCOME,
+                CashTransactionCategory.CAPITAL_INJECTION,
+                amount,
+                description == null || description.isBlank() ? "Rot von khach san" : description,
+                createdBy
+        );
+    }
+
+    @Transactional
     public CashTransaction createInventoryPurchase(BigDecimal amount,
                                                    String description,
                                                    Long receiptId,
-                                                   PaymentMethod fundMethod,
                                                    User createdBy) {
         validateAmount(amount);
         if (receiptId != null && cashTransactionRepository.existsBySourceTypeAndSourceId(
@@ -84,7 +94,6 @@ public class CashTransactionService {
                 .type(CashTransactionType.EXPENSE)
                 .category(CashTransactionCategory.INVENTORY_PURCHASE)
                 .amount(normalizeMoney(amount))
-                .fundMethod(normalizeFundMethod(fundMethod))
                 .description(description)
                 .sourceType(CashTransactionSourceType.INVENTORY_RECEIPT)
                 .sourceId(receiptId)
@@ -121,7 +130,6 @@ public class CashTransactionService {
                 .type(type)
                 .category(category)
                 .amount(normalizeMoney(payment.getAmount()))
-                .fundMethod(normalizeFundMethod(payment.getMethod()))
                 .description("Payment " + payment.getPaymentType() + " - " + payment.getTransactionRef())
                 .sourceType(CashTransactionSourceType.PAYMENT)
                 .sourceId(payment.getId())
@@ -140,16 +148,6 @@ public class CashTransactionService {
     @Transactional(readOnly = true)
     public BigDecimal getTotalExpense() {
         return cashTransactionRepository.sumByType(CashTransactionType.EXPENSE);
-    }
-
-    @Transactional(readOnly = true)
-    public BigDecimal getTotalIncomeByFundMethod(PaymentMethod fundMethod) {
-        return cashTransactionRepository.sumByTypeAndFundMethod(CashTransactionType.INCOME, fundMethod);
-    }
-
-    @Transactional(readOnly = true)
-    public BigDecimal getTotalExpenseByFundMethod(PaymentMethod fundMethod) {
-        return cashTransactionRepository.sumByTypeAndFundMethod(CashTransactionType.EXPENSE, fundMethod);
     }
 
     @Transactional(readOnly = true)
@@ -186,10 +184,6 @@ public class CashTransactionService {
 
     private BigDecimal normalizeMoney(BigDecimal amount) {
         return amount.setScale(0, java.math.RoundingMode.HALF_UP);
-    }
-
-    private PaymentMethod normalizeFundMethod(PaymentMethod fundMethod) {
-        return fundMethod == null ? PaymentMethod.CASH : fundMethod;
     }
 
     private String generateCode() {

@@ -12,21 +12,21 @@ import java.time.Instant;
 @Builder
 @Entity
 @Table(
-        name = "room_type_beds",
+        name = "room_type_variant_beds",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"room_type_id", "bed_type_id"})
+                @UniqueConstraint(columnNames = {"variant_id", "bed_type_id"})
         }
 )
-public class RoomTypeBed {
+public class RoomTypeVariantBed {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "room_type_bed_id")
+    @Column(name = "variant_bed_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_type_id", nullable = false)
-    private RoomType roomType;
+    @JoinColumn(name = "variant_id", nullable = false)
+    private RoomTypeVariant variant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bed_type_id", nullable = false)
@@ -48,11 +48,9 @@ public class RoomTypeBed {
         if (this.createdAt == null) {
             this.createdAt = now;
         }
-
         if (this.updatedAt == null) {
             this.updatedAt = now;
         }
-
         if (this.quantity == null) {
             this.quantity = 1;
         }
