@@ -17,29 +17,38 @@ import java.util.Optional;
 public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("""
-            SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse(
+        SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse(
                 r.id,
                 r.roomNumber,
-                CONCAT(rt.name, ' - ', v.variantName),
-                v.pricePerNight
-            )
-            FROM Room r
-            JOIN r.variant v
-            JOIN v.roomType rt
-            WHERE r.isDeleted = false
-            AND r.status = :roomStatus
-            AND NOT EXISTS (
-                SELECT bd.id
-                FROM BookingDetail bd
-                JOIN bd.booking b
-                WHERE bd.room = r
-                AND b.isDeleted = false
-                AND b.status IN :blockingStatuses
-                AND bd.checkInDate < :checkOutDate
-                AND bd.checkOutDate > :checkInDate
-            )
-            ORDER BY r.roomNumber
-            """)
+                v.id,
+                v.variantName,
+                v.pricePerNight,
+                CAST(v.viewType AS string),
+                v.capacity,
+                v.maxAdults,
+                v.maxChildren,
+                v.allowExtraBed,
+                v.maxExtraBeds,
+                v.extraBedPrice,
+                v.extraBedNote
+        )
+        FROM Room r
+        JOIN r.variant v
+        WHERE r.isDeleted = false
+        AND r.status = :roomStatus
+        AND v.isDeleted = false
+        AND NOT EXISTS (
+            SELECT bd.id
+            FROM BookingDetail bd
+            JOIN bd.booking b
+            WHERE bd.room = r
+            AND b.isDeleted = false
+            AND b.status IN :blockingStatuses
+            AND bd.checkInDate < :checkOutDate
+            AND bd.checkOutDate > :checkInDate
+        )
+        ORDER BY r.roomNumber
+        """)
     List<RoomResponse> findAvailableRooms(
             @Param("checkInDate") LocalDate checkInDate,
             @Param("checkOutDate") LocalDate checkOutDate,
