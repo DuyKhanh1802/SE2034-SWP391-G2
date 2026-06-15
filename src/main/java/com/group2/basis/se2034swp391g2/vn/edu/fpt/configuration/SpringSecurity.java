@@ -48,7 +48,8 @@ public class SpringSecurity {
                                 "/hotel-admin/rooms/**",
                                 "/hotel-admin/room-images/**",
                                 "/hotel-admin/services/**",
-                                "/hotel-admin/promotions/**"
+                                "/hotel-admin/promotions/**",
+                                "/hotel-admin/promotion-images/**"
                         ).hasRole("HOTEL_ADMIN")
 
                         // 4. Các quyền khác
@@ -76,7 +77,7 @@ public class SpringSecurity {
                  * Bỏ CSRF cho API upload ảnh khuyến mãi.
                  */
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/manager/promotion-images/upload")
+                        .ignoringRequestMatchers("/hotel-admin/promotion-images/upload")
                 );
         return http.build();
     }

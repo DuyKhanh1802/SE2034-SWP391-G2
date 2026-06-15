@@ -14,7 +14,7 @@
             <h1>Khuyến mãi</h1>
         </div>
 
-        <a th:href="@{/manager/promotions/add}" href="/manager/promotions/add" class="btn-add">
+        <a th:href="@{/hotel-admin/promotions/add}" href="/hotel-admin/promotions/add" class="btn-add">
             <span class="material-symbols-outlined">add</span>
             Thêm khuyến mãi
         </a>
@@ -35,33 +35,33 @@
         <!-- Thanh công cụ: lọc theo tab trạng thái và tìm kiếm theo mã/tên chiến dịch. -->
         <div class="toolbar">
             <div class="tabs">
-                <a th:href="@{/manager/promotions(status='all', keyword=${keyword}, size=${pageSize})}"
+                <a th:href="@{/hotel-admin/promotions(status='all', keyword=${keyword}, size=${pageSize})}"
                    th:classappend="${selectedStatus == 'all'} ? 'active' : ''">
                     Tất cả
                 </a>
 
-                <a th:href="@{/manager/promotions(status='active', keyword=${keyword}, size=${pageSize})}"
+                <a th:href="@{/hotel-admin/promotions(status='active', keyword=${keyword}, size=${pageSize})}"
                    th:classappend="${selectedStatus == 'active'} ? 'active' : ''">
                     Đang hoạt động
                 </a>
 
-                <a th:href="@{/manager/promotions(status='scheduled', keyword=${keyword}, size=${pageSize})}"
+                <a th:href="@{/hotel-admin/promotions(status='scheduled', keyword=${keyword}, size=${pageSize})}"
                    th:classappend="${selectedStatus == 'scheduled'} ? 'active' : ''">
                     Sắp diễn ra
                 </a>
 
-                <a th:href="@{/manager/promotions(status='expired', keyword=${keyword}, size=${pageSize})}"
+                <a th:href="@{/hotel-admin/promotions(status='expired', keyword=${keyword}, size=${pageSize})}"
                    th:classappend="${selectedStatus == 'expired'} ? 'active' : ''">
                     Đã hết hạn
                 </a>
 
-                <a th:href="@{/manager/promotions(status='inactive', keyword=${keyword}, size=${pageSize})}"
+                <a th:href="@{/hotel-admin/promotions(status='inactive', keyword=${keyword}, size=${pageSize})}"
                    th:classappend="${selectedStatus == 'inactive'} ? 'active' : ''">
                     Đã tắt
                 </a>
             </div>
 
-            <form th:action="@{/manager/promotions}" method="get" class="search-box">
+            <form th:action="@{/hotel-admin/promotions}" method="get" class="search-box">
                 <span class="material-symbols-outlined">search</span>
 
                 <input type="hidden" name="status" th:value="${selectedStatus}">
@@ -150,19 +150,19 @@
 
                         <td>
                             <div class="actions">
-                                <a th:href="@{/manager/promotions/{id}(id=${promotion.id})}"
+                                <a th:href="@{/hotel-admin/promotions/{id}(id=${promotion.id})}"
                                    class="action-link action-view"
                                    title="Xem chi tiết">
                                     <span class="material-symbols-outlined">visibility</span>
                                 </a>
 
-                                <a th:href="@{/manager/promotions/edit/{id}(id=${promotion.id})}"
+                                <a th:href="@{/hotel-admin/promotions/edit/{id}(id=${promotion.id})}"
                                    class="action-link action-edit"
                                    title="Chỉnh sửa">
                                     <span class="material-symbols-outlined">edit</span>
                                 </a>
 
-                                <form th:action="@{/manager/promotions/toggle-status/{id}(id=${promotion.id})}"
+                                <form th:action="@{/hotel-admin/promotions/toggle-status/{id}(id=${promotion.id})}"
                                       method="post"
                                       class="d-inline">
                                     <input type="hidden"
@@ -203,7 +203,7 @@
 
                 <div class="pagination-custom" th:if="${totalPages > 1}">
                     <a th:if="${hasPrevious}"
-                       th:href="@{/manager/promotions(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
+                       th:href="@{/hotel-admin/promotions(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
                         <span class="material-symbols-outlined">chevron_left</span>
                     </a>
 
@@ -212,14 +212,14 @@
                     </button>
 
                     <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
-                       th:href="@{/manager/promotions(page=${pageNumber}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}"
+                       th:href="@{/hotel-admin/promotions(page=${pageNumber}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}"
                        th:text="${pageNumber + 1}"
                        th:classappend="${pageNumber == currentPage ? 'active' : ''}">
                         1
                     </a>
 
                     <a th:if="${hasNext}"
-                       th:href="@{/manager/promotions(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
+                       th:href="@{/hotel-admin/promotions(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
                         <span class="material-symbols-outlined">chevron_right</span>
                     </a>
 

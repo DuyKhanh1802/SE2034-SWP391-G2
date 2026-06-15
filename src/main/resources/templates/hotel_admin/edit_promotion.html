@@ -24,7 +24,7 @@
             <div id="clientErrorMessage" class="alert alert-danger" style="display: none;"></div>
 
             <form id="promotionForm"
-                  th:action="@{/manager/promotions/edit/{id}(id=${promotionId})}"
+                  th:action="@{/hotel-admin/promotions/edit/{id}(id=${promotionId})}"
                   th:object="${promotion}"
                   method="post"
                   novalidate>
@@ -173,7 +173,7 @@
 
             <!-- Nhóm hành động riêng của màn edit: xóa, hủy hoặc lưu cập nhật. -->
             <div class="form-actions form-actions-split">
-                <form th:action="@{/manager/promotions/delete/{id}(id=${promotionId})}"
+                <form th:action="@{/hotel-admin/promotions/delete/{id}(id=${promotionId})}"
                       method="post"
                       class="delete-inline-form"
                       onsubmit="return confirm('Bạn có chắc muốn xóa khuyến mãi này không?');">
@@ -187,7 +187,7 @@
                 </form>
 
                 <div class="form-actions-group">
-                    <a th:href="@{/manager/promotions}"
+                    <a th:href="@{/hotel-admin/promotions}"
                        href="#"
                        class="btn-cancel">
                         Hủy
@@ -368,7 +368,7 @@
                 const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
                 const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
 
-                const response = await fetch("/manager/promotion-images/upload", {
+                const response = await fetch("/hotel-admin/promotion-images/upload", {
                     method: "POST",
                     headers: csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {},
                     body: formData

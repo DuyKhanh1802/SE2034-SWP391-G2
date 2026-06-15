@@ -55,11 +55,11 @@
           th:href="@{/manager/Dashboard.css}">
 
     <link rel="stylesheet"
-          th:if="${#strings.startsWith(currentUri ?: '', '/manager/promotions')}"
-          th:href="@{/manager/promotions.css}">
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions')}"
+          th:href="@{/hotel_admin/promotions.css}">
 
     <link rel="stylesheet"
-          th:if="${#strings.startsWith(currentUri ?: '', '/manager/promotions/add') or #strings.startsWith(currentUri ?: '', '/manager/promotions/edit/')}"
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions/add') or #strings.startsWith(currentUri ?: '', '/hotel-admin/promotions/edit/')}"
           href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <link rel="stylesheet"

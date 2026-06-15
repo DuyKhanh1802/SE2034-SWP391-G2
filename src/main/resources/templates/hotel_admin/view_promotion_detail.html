@@ -14,7 +14,7 @@
             <h1>Chi tiết khuyến mãi</h1>
         </div>
 
-        <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
+        <a th:href="@{/hotel-admin/promotions}" href="/hotel-admin/promotions" class="btn-cancel">
             Quay lại danh sách
         </a>
     </div>
@@ -161,11 +161,11 @@
 
         <!-- Các hành động cuối trang: quay lại hoặc chuyển sang màn chỉnh sửa. -->
         <div class="form-actions detail-actions">
-            <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
+            <a th:href="@{/hotel-admin/promotions}" href="/hotel-admin/promotions" class="btn-cancel">
                 Quay lại
             </a>
 
-            <a th:href="@{/manager/promotions/edit/{id}(id=${promotion.id})}" href="#" class="btn-save">
+            <a th:href="@{/hotel-admin/promotions/edit/{id}(id=${promotion.id})}" href="#" class="btn-save">
                 Chỉnh sửa khuyến mãi
             </a>
         </div>

@@ -34,6 +34,13 @@
                 <span>Phòng</span>
             </a>
         </li>
+
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions')} ? 'active' : ''">
+            <a th:href="@{/hotel-admin/promotions}">
+                <i class="fas fa-tags"></i>
+                <span>Khuyến mãi</span>
+            </a>
+        </li>
     </ul>
 
     <ul class="sidebar-menu"
@@ -50,13 +57,6 @@
             <a href="#">
                 <i class="fas fa-calendar-check"></i>
                 <span>Đặt phòng</span>
-            </a>
-        </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/promotions')} ? 'active' : ''">
-            <a th:href="@{/manager/promotions}">
-                <i class="fas fa-tags"></i>
-                <span>Khuyến mãi</span>
             </a>
         </li>
 

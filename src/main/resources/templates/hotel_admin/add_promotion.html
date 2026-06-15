@@ -24,7 +24,7 @@
             <div id="clientErrorMessage" class="alert alert-danger" style="display: none;"></div>
 
             <form id="promotionForm"
-                  th:action="@{/manager/promotions/add}"
+                  th:action="@{/hotel-admin/promotions/add}"
                   th:object="${promotion}"
                   method="post"
                   novalidate>
@@ -172,7 +172,7 @@
 
                 <!-- Các nút hành động cuối form. -->
                 <div class="form-actions">
-                    <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
+                    <a th:href="@{/hotel-admin/promotions}" href="/hotel-admin/promotions" class="btn-cancel">
                         Hủy
                     </a>
 
@@ -330,7 +330,7 @@
                 const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
                 const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
 
-                const response = await fetch("/manager/promotion-images/upload", {
+                const response = await fetch("/hotel-admin/promotion-images/upload", {
                     method: "POST",
                     headers: csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {},
                     body: formData

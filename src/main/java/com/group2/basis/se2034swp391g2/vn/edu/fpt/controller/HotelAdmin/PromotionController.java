@@ -1,4 +1,4 @@
-package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Manager;
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.PromotionRequest;
@@ -27,11 +27,11 @@ import java.util.Map;
 @Controller
 public class PromotionController {
 
-    private static final String LIST_VIEW = "manager/list_promotions";
-    private static final String DETAIL_VIEW = "manager/view_promotion_detail";
-    private static final String ADD_VIEW = "manager/add_promotion";
-    private static final String EDIT_VIEW = "manager/edit_promotion";
-    private static final String REDIRECT_LIST = "redirect:/manager/promotions";
+    private static final String LIST_VIEW = "hotel_admin/list_promotions";
+    private static final String DETAIL_VIEW = "hotel_admin/view_promotion_detail";
+    private static final String ADD_VIEW = "hotel_admin/add_promotion";
+    private static final String EDIT_VIEW = "hotel_admin/edit_promotion";
+    private static final String REDIRECT_LIST = "redirect:/hotel-admin/promotions";
 
     private static final String PAGE_TITLE_LIST = "KHUYẾN MÃI";
     private static final String PAGE_TITLE_DETAIL = "CHI TIẾT KHUYẾN MÃI";
@@ -48,7 +48,7 @@ public class PromotionController {
     }
 
     // Hiển thị danh sách khuyến mãi, kèm lọc theo từ khóa, trạng thái và phân trang.
-    @GetMapping("/manager/promotions")
+    @GetMapping("/hotel-admin/promotions")
     public String listPromotions(@RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "5") int size,
                                  @RequestParam(required = false) String keyword,
@@ -65,7 +65,7 @@ public class PromotionController {
     }
 
     // Mở màn hình xem chi tiết. Nếu id không hợp lệ thì quay về danh sách.
-    @GetMapping("/manager/promotions/{id}")
+    @GetMapping("/hotel-admin/promotions/{id}")
     public String showPromotionDetail(@PathVariable Long id,
                                       Model model,
                                       Authentication authentication,
@@ -82,7 +82,7 @@ public class PromotionController {
     }
 
     // Mở form thêm mới với dữ liệu rỗng ban đầu.
-    @GetMapping("/manager/promotions/add")
+    @GetMapping("/hotel-admin/promotions/add")
     public String showAddPromotionForm(Model model,
                                        Authentication authentication,
                                        HttpSession session) {
@@ -92,7 +92,7 @@ public class PromotionController {
     }
 
     // Mở form chỉnh sửa và đổ dữ liệu hiện tại của khuyến mãi lên giao diện.
-    @GetMapping("/manager/promotions/edit/{id}")
+    @GetMapping("/hotel-admin/promotions/edit/{id}")
     public String showEditPromotionForm(@PathVariable Long id,
                                         Model model,
                                         Authentication authentication,
@@ -110,7 +110,7 @@ public class PromotionController {
     }
 
     // Upload ảnh riêng để form add/edit xem trước ảnh trước khi lưu khuyến mãi.
-    @PostMapping("/manager/promotion-images/upload")
+    @PostMapping("/hotel-admin/promotion-images/upload")
     @ResponseBody
     public ResponseEntity<Map<String, String>> uploadPromotionImage(@RequestParam("file") MultipartFile file) {
         try {
@@ -128,7 +128,7 @@ public class PromotionController {
     }
 
     // Controller nhận request, chạy bean validation cơ bản, rồi mới chuyển sang service xử lý nghiệp vụ.
-    @PostMapping("/manager/promotions/add")
+    @PostMapping("/hotel-admin/promotions/add")
     public String addPromotion(@Valid @ModelAttribute("promotion") PromotionRequest request,
                                BindingResult bindingResult,
                                Model model,
@@ -155,7 +155,7 @@ public class PromotionController {
     }
 
     // Controller nhận request, chạy bean validation cơ bản, rồi mới chuyển sang service xử lý nghiệp vụ.
-    @PostMapping("/manager/promotions/edit/{id}")
+    @PostMapping("/hotel-admin/promotions/edit/{id}")
     public String editPromotion(@PathVariable Long id,
                                 @Valid @ModelAttribute("promotion") PromotionRequest request,
                                 BindingResult bindingResult,
@@ -174,7 +174,7 @@ public class PromotionController {
         try {
             promotionService.updatePromotion(id, request);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật khuyến mãi thành công.");
-            return "redirect:/manager/promotions/" + id;
+            return "redirect:/hotel-admin/promotions/" + id;
         } catch (IllegalArgumentException e) {
             addHeaderAttributes(model, authentication, session, PAGE_TITLE_EDIT);
             model.addAttribute("errorMessage", e.getMessage());
@@ -185,7 +185,7 @@ public class PromotionController {
     }
 
     // Xóa khuyến mãi nếu service xác nhận khuyến mãi đó chưa được dùng trong booking.
-    @PostMapping("/manager/promotions/delete/{id}")
+    @PostMapping("/hotel-admin/promotions/delete/{id}")
     public String deletePromotion(@PathVariable Long id,
                                   RedirectAttributes redirectAttributes) {
         try {
@@ -200,7 +200,7 @@ public class PromotionController {
 
     // Gắn thông tin chung cho header của các màn promotion.
     // Bật hoặc tắt trạng thái hoạt động của khuyến mãi ngay trên màn danh sách.
-    @PostMapping("/manager/promotions/toggle-status/{id}")
+    @PostMapping("/hotel-admin/promotions/toggle-status/{id}")
     public String togglePromotionStatus(@PathVariable Long id,
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "5") int size,
@@ -220,7 +220,7 @@ public class PromotionController {
         }
 
         String redirectUrl = String.format(
-                "redirect:/manager/promotions?page=%d&size=%d&status=%s",
+                "redirect:/hotel-admin/promotions?page=%d&size=%d&status=%s",
                 page,
                 size,
                 status == null || status.isBlank() ? "all" : status
