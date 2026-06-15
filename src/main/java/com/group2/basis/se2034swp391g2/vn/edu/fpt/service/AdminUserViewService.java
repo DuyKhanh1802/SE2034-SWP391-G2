@@ -38,8 +38,8 @@ public class AdminUserViewService {
     public String getRoleLabel(User user) {
         if (user.getUserRoles() == null || user.getUserRoles().isEmpty()) {
             return user.getUserType() != null && "GUEST".equals(user.getUserType().name())
-                    ? "Khách hàng"
-                    : "Chưa gán vai trò";
+                    ? "Guest"
+                    : "No role assigned";
         }
 
         return user.getUserRoles().stream()
@@ -63,23 +63,23 @@ public class AdminUserViewService {
     }
 
     public String getStatusLabel(User user) {
-        return Boolean.TRUE.equals(user.getIsActive()) ? "Đang hoạt động" : "Đã vô hiệu hóa";
+        return Boolean.TRUE.equals(user.getIsActive()) ? "Active" : "Disabled";
     }
 
     public String getApprovalLabel(User user) {
         if (user.getApprovalStatus() == null) {
-            return "Chưa có";
+            return "None";
         }
         return switch (user.getApprovalStatus()) {
-            case APPROVED -> "Đã duyệt";
-            case PENDING -> "Chờ duyệt";
-            case REJECTED -> "Từ chối";
+            case APPROVED -> "Approved";
+            case PENDING -> "Pending";
+            case REJECTED -> "Rejected";
         };
     }
 
     public String getGenderLabel(User user) {
         if (user.getGender() == null) {
-            return "Chưa có";
+            return "None";
         }
         return toGenderLabel(user.getGender());
     }
@@ -110,18 +110,20 @@ public class AdminUserViewService {
             case SYSTEM_ADMIN -> 1;
             case HOTEL_ADMIN -> 2;
             case MANAGER -> 3;
-            case RECEPTIONIST -> 4;
-            case GUEST -> 5;
+            case STOREKEEPER -> 4;
+            case RECEPTIONIST -> 5;
+            case GUEST -> 6;
         };
     }
 
     private String toRoleLabel(RoleName roleName) {
         return switch (roleName) {
-            case SYSTEM_ADMIN -> "Quản trị hệ thống";
-            case HOTEL_ADMIN -> "Quản trị khách sạn";
-            case MANAGER -> "Quản lý";
-            case RECEPTIONIST -> "Lễ tân";
-            case GUEST -> "Khách hàng";
+            case SYSTEM_ADMIN -> "Quản trị Hệ Thống";
+            case HOTEL_ADMIN -> "Quản trị khách Sạn";
+            case MANAGER -> "Quản Lý";
+            case STOREKEEPER -> "Thủ Kho";
+            case RECEPTIONIST -> "Lễ Tân";
+            case GUEST -> "Khách Hàng";
         };
     }
 

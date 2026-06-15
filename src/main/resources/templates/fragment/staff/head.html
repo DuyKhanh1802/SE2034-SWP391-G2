@@ -51,16 +51,23 @@
           th:href="@{/hotel_admin/RoomManagement.css}">
 
     <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions')}"
+          th:href="@{/hotel_admin/promotions.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions/add') or #strings.startsWith(currentUri ?: '', '/hotel-admin/promotions/edit/')}"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/manager/dashboard')}"
           th:href="@{/manager/Dashboard.css}">
 
     <link rel="stylesheet"
-          th:if="${#strings.startsWith(currentUri ?: '', '/manager/promotions')}"
-          th:href="@{/manager/promotions.css}">
-
-    <link rel="stylesheet"
-          th:if="${#strings.startsWith(currentUri ?: '', '/manager/promotions/add') or #strings.startsWith(currentUri ?: '', '/manager/promotions/edit/')}"
-          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+          th:if="${#strings.startsWith(currentUri ?: '', '/manager/transactions')
+                  or #strings.startsWith(currentUri ?: '', '/manager/fund')
+                  or #strings.startsWith(currentUri ?: '', '/manager/reports')
+                  or #strings.startsWith(currentUri ?: '', '/storekeeper/inventory')}"
+          th:href="@{/manager/manager-modules.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')}"

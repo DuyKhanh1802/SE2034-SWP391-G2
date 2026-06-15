@@ -187,10 +187,12 @@ public class UserServiceImpl implements UserService {
 
         boolean hasHotelAdmin = roleNames.contains(RoleName.HOTEL_ADMIN);
         boolean hasManager = roleNames.contains(RoleName.MANAGER);
+        boolean hasStorekeeper = roleNames.contains(RoleName.STOREKEEPER);
         boolean hasReceptionist = roleNames.contains(RoleName.RECEPTIONIST);
 
         if (!hasHotelAdmin
                 && !hasManager
+                && !hasStorekeeper
                 && !hasReceptionist
                 && !roleNames.contains(RoleName.GUEST)
                 && !roleNames.contains(RoleName.SYSTEM_ADMIN)) {

@@ -25,13 +25,13 @@ public class Service {
     @JoinColumn(name = "category_id", nullable = false)
     private ServiceCategory category;
 
-    @Column(name = "name", nullable = false, length = 200)
+    @Column(name = "name", nullable = false, length = 200, columnDefinition = "NVARCHAR(200)")
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    @Column(name = "price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "price", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal price;
 
     @Column(name = "is_available", nullable = false)

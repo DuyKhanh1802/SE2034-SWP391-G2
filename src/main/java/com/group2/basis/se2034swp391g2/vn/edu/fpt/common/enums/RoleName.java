@@ -4,6 +4,7 @@ public enum RoleName {
     SYSTEM_ADMIN,
     HOTEL_ADMIN,
     MANAGER,
+    STOREKEEPER,
     RECEPTIONIST,
     GUEST
 }

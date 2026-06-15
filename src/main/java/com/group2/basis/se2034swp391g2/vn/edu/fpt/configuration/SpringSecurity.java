@@ -54,6 +54,7 @@ public class SpringSecurity {
                         // 4. Các quyền khác
                         .requestMatchers("/hotel-admin/**").hasRole("HOTEL_ADMIN")
                         .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
+                        .requestMatchers("/storekeeper/**").hasRole("STOREKEEPER")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
 
                         // 5. Mọi request khác đều phải đăng nhập
@@ -76,7 +77,7 @@ public class SpringSecurity {
                  * Bỏ CSRF cho API upload ảnh khuyến mãi.
                  */
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/manager/promotion-images/upload")
+                        .ignoringRequestMatchers("/hotel-admin/promotion-images/upload")
                 );
         return http.build();
     }
