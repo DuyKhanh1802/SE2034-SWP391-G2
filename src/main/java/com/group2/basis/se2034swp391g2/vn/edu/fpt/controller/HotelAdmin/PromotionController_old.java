@@ -23,13 +23,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Map;
 
 @Controller
-public class PromotionController {
+public class PromotionController_old {
 
     private final PromotionService promotionService;
     private final ProfileService profileService;
 
-    public PromotionController(PromotionService promotionService,
-                               ProfileService profileService) {
+    public PromotionController_old(PromotionService promotionService,
+                                   ProfileService profileService) {
         this.promotionService = promotionService;
         this.profileService = profileService;
     }
@@ -63,7 +63,7 @@ public class PromotionController {
         model.addAttribute("keyword", keyword == null ? "" : keyword);
         model.addAttribute("selectedStatus", status);
 
-        return "hotel_admin/list_promotions";
+        return "list_promotions_old";
     }
 
     @GetMapping("/hotel-admin/promotions/{id}")
@@ -76,7 +76,7 @@ public class PromotionController {
             addHeaderAttributes(model, authentication, session, "CHI TIáº¾T KHUYáº¾N MÃƒI");
             model.addAttribute("promotion", promotionService.getPromotionDetail(id));
 
-            return "hotel_admin/promotion_detail";
+            return "promotion_detail_old";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/hotel-admin/promotions";
@@ -90,7 +90,7 @@ public class PromotionController {
         addHeaderAttributes(model, authentication, session, "THÃŠM KHUYáº¾N MÃƒI");
         model.addAttribute("promotion", new PromotionRequest());
 
-        return "hotel_admin/add_promotion";
+        return "add_promotion_old";
     }
 
     @GetMapping("/hotel-admin/promotions/edit/{id}")
@@ -104,7 +104,7 @@ public class PromotionController {
             model.addAttribute("promotion", promotionService.getPromotionEditRequest(id));
             model.addAttribute("promotionId", id);
 
-            return "hotel_admin/edit_promotion";
+            return "edit_promotion_old";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/hotel-admin/promotions";
@@ -151,7 +151,7 @@ public class PromotionController {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("promotion", request);
 
-            return "hotel_admin/add_promotion";
+            return "add_promotion_old";
         }
     }
 
@@ -174,7 +174,7 @@ public class PromotionController {
             model.addAttribute("promotion", request);
             model.addAttribute("promotionId", id);
 
-            return "hotel_admin/edit_promotion";
+            return "edit_promotion_old";
         }
     }
 
