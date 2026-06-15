@@ -23,6 +23,7 @@ public class SpringSecurity {
                         .requestMatchers(
                                 "/",
                                 "/home",
+                                "/room-types",
                                 "/error",
                                 "/common/**",
                                 "/auth/**",

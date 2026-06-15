@@ -27,16 +27,54 @@
 
     <!-- HERO VIDEO -->
     <section class="hero-video-section">
-        <video class="hero-video" autoplay muted loop playsinline>
-            <source th:src="${heroVideoUrl}" type="video/mp4">
-        </video>
+
+        <!-- SLIDE VIDEO / IMAGE -->
+        <div class="hero-media-slider" id="heroMediaSlider">
+
+            <!-- Slide 1: Video -->
+            <div class="hero-media-slide active">
+                <video class="hero-video" id="heroVideo" autoplay muted loop playsinline>
+                    <source th:src="${heroVideoUrl}" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="hero-media-slide"
+                 th:each="imageUrl : ${heroImageUrls}">
+                <img th:src="${imageUrl}" alt="V'Hotel">
+            </div>
+
+        </div>
 
         <div class="hero-overlay"></div>
 
+        <!-- Nút chuyển slide -->
+        <button type="button" class="hero-arrow hero-arrow-left" id="heroPrevBtn">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+
+        <button type="button" class="hero-arrow hero-arrow-right" id="heroNextBtn">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <!-- Nội dung chữ -->
         <div class="hero-content">
-            <p class="hero-subtitle">A refined stay in the heart of Hanoi</p>
             <h1>V'HOTEL</h1>
+            <p class="hero-subtitle">Một kỳ nghỉ tinh tế ngay giữa lòng Hà Nội</p>
         </div>
+
+        <!-- Control video -->
+        <div class="hero-video-controls">
+
+            <button type="button" class="hero-control-btn" id="heroPlayPauseBtn">
+                <i class="bi bi-pause-fill"></i>
+            </button>
+
+            <button type="button" class="hero-control-btn" id="heroMuteBtn">
+                <i class="bi bi-volume-up-fill"></i>
+            </button>
+
+        </div>
+
     </section>
 
     <!-- FEATURED SERVICES -->
@@ -103,16 +141,16 @@
 
                     <img th:if="${roomType.imageUrl != null}"
                          th:src="${roomType.imageUrl}"
-                         th:alt="${roomType.displayName}">
+                         th:alt="${roomType.name}">
 
                     <div th:if="${roomType.imageUrl == null}" class="room-category-placeholder">
-                        <span th:text="${roomType.displayName}">Room Type</span>
+                        <span th:text="${roomType.name}">Room Type</span>
                     </div>
 
                     <div class="room-category-overlay"></div>
 
                     <div class="room-category-content">
-                        <h2 th:text="${roomType.displayName}">Suite Sojourn</h2>
+                        <h2 th:text="${roomType.name}">Suite Sojourn</h2>
 
                         <p th:text="${roomType.description}">
                             With breathtaking views and refined interiors, explore our exceptional rooms for an unforgettable V'Hotel experience.
@@ -121,7 +159,7 @@
 
                     <div class="room-category-reserve">
                         <a th:href="@{/booking(roomTypeId=${roomType.id})}">
-                            RESERVE NOW
+                            Đặt ngay
                         </a>
                     </div>
 
