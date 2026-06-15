@@ -1,39 +1,42 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
+    <!-- Phần đầu trang: breadcrumb, tiêu đề và nút quay lại danh sách. -->
     <div class="page-action-bar">
         <div>
             <div class="breadcrumb-custom">
-                Quáº£n lÃ½ / Khuyáº¿n mÃ£i / Chi tiáº¿t
+                Quản lý / Khuyến mãi / Chi tiết
             </div>
-            <h1>Chi tiáº¿t khuyáº¿n mÃ£i</h1>
+            <h1>Chi tiết khuyến mãi</h1>
         </div>
 
         <a th:href="@{/hotel-admin/promotions}" href="/hotel-admin/promotions" class="btn-cancel">
-            Quay láº¡i danh sÃ¡ch
+            Quay lại danh sách
         </a>
     </div>
 
     <section class="content-section promotion-detail-page">
+        <!-- Thông báo thành công sau khi vừa chỉnh sửa xong và quay về màn chi tiết. -->
         <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
             <span class="material-symbols-outlined">check_circle</span>
-            <span th:text="${successMessage}">Cáº­p nháº­t khuyáº¿n mÃ£i thÃ nh cÃ´ng.</span>
+            <span th:text="${successMessage}">Cập nhật khuyến mãi thành công.</span>
         </div>
 
+        <!-- Khối hero: ảnh, mã, trạng thái, tên và mô tả ngắn của khuyến mãi. -->
         <section class="detail-hero">
             <div class="detail-hero-media">
                 <img th:if="${promotion.imageUrl != null and !promotion.imageUrl.isBlank()}"
                      th:src="${promotion.imageUrl}"
-                     alt="áº¢nh khuyáº¿n mÃ£i"
+                     alt="Ảnh khuyến mãi"
                      class="promotion-detail-image">
 
                 <div th:if="${promotion.imageUrl == null or promotion.imageUrl.isBlank()}"
                      class="promotion-detail-placeholder">
-                    KhÃ´ng cÃ³ áº£nh
+                    Không có ảnh
                 </div>
             </div>
 
@@ -42,77 +45,79 @@
                     <span class="detail-code" th:text="${promotion.code}">VH-202606-A8K2</span>
                     <span class="status detail-status"
                           th:text="${promotion.status}"
-                          th:classappend="${promotion.status == 'Äang hoáº¡t Ä‘á»™ng'} ? ' active-status' : (${promotion.status == 'Sáº¯p diá»…n ra'} ? ' scheduled-status' : (${promotion.status == 'ÄÃ£ háº¿t háº¡n'} ? ' expired-status' : ' inactive-status'))">
-                        Äang hoáº¡t Ä‘á»™ng
+                          th:classappend="${promotion.status == 'Đang hoạt động'} ? ' active-status' : (${promotion.status == 'Sắp diễn ra'} ? ' scheduled-status' : (${promotion.status == 'Đã hết hạn'} ? ' expired-status' : ' inactive-status'))">
+                        Đang hoạt động
                     </span>
                 </div>
 
-                <h2 th:text="${promotion.name}">Æ¯u Ä‘Ã£i mÃ¹a hÃ¨</h2>
+                <h2 th:text="${promotion.name}">Ưu đãi mùa hè</h2>
 
                 <p class="detail-description" th:text="${promotion.description}">
-                    Giáº£m giÃ¡ cho khÃ¡ch Ä‘áº·t phÃ²ng trong mÃ¹a hÃ¨.
+                    Giảm giá cho khách đặt phòng trong mùa hè.
                 </p>
 
                 <div class="detail-badges">
-                    <span class="detail-badge" th:text="${promotion.displayStatus}">Banner ná»•i báº­t</span>
+                    <span class="detail-badge" th:text="${promotion.displayStatus}">Banner nổi bật</span>
                 </div>
             </div>
         </section>
 
+        <!-- Các chỉ số nổi bật để nhìn nhanh số tiền giảm, lượt dùng và thời gian áp dụng. -->
         <section class="detail-metrics">
             <div class="detail-metric-card detail-metric-emphasis">
-                <span>Sá»‘ tiá»n giáº£m</span>
+                <span>Số tiền giảm</span>
                 <strong th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
                     200.000 VND
                 </strong>
             </div>
 
             <div class="detail-metric-card">
-                <span>LÆ°á»£t dÃ¹ng</span>
+                <span>Lượt dùng</span>
                 <strong th:text="${promotion.usageCount + ' / ' + promotion.usageLimit}">
                     0 / 200
                 </strong>
             </div>
 
             <div class="detail-metric-card">
-                <span>NgÃ y báº¯t Ä‘áº§u</span>
+                <span>Ngày bắt đầu</span>
                 <strong th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy HH:mm')}">
                     03/06/2026 10:00
                 </strong>
             </div>
 
             <div class="detail-metric-card">
-                <span>NgÃ y káº¿t thÃºc</span>
+                <span>Ngày kết thúc</span>
                 <strong th:text="${#temporals.format(promotion.validTo, 'dd/MM/yyyy HH:mm')}">
                     03/07/2026 10:00
                 </strong>
             </div>
         </section>
 
+        <!-- Hai cột thông tin chi tiết: dữ liệu chiến dịch và thiết lập hiển thị. -->
         <div class="detail-sections">
             <section class="detail-panel">
                 <div class="detail-panel-header">
-                    <h3>ThÃ´ng tin chiáº¿n dá»‹ch</h3>
+                    <h3>Thông tin chiến dịch</h3>
                 </div>
 
                 <div class="detail-info-list">
                     <div class="detail-info-row">
-                        <span>MÃ£ khuyáº¿n mÃ£i</span>
+                        <span>Mã khuyến mãi</span>
                         <strong th:text="${promotion.code}">VH-202606-A8K2</strong>
                     </div>
 
                     <div class="detail-info-row">
-                        <span>TÃªn chiáº¿n dá»‹ch</span>
-                        <strong th:text="${promotion.name}">Æ¯u Ä‘Ã£i mÃ¹a hÃ¨</strong>
+                        <span>Tên chiến dịch</span>
+                        <strong th:text="${promotion.name}">Ưu đãi mùa hè</strong>
                     </div>
 
                     <div class="detail-info-row detail-info-row-text">
-                        <span>MÃ´ táº£ ngáº¯n</span>
-                        <p th:text="${promotion.description}">Giáº£m giÃ¡ cho khÃ¡ch Ä‘áº·t phÃ²ng trong mÃ¹a hÃ¨.</p>
+                        <span>Mô tả ngắn</span>
+                        <p th:text="${promotion.description}">Giảm giá cho khách đặt phòng trong mùa hè.</p>
                     </div>
 
                     <div class="detail-info-row">
-                        <span>NgÃ y táº¡o</span>
+                        <span>Ngày tạo</span>
                         <strong th:text="${#temporals.format(promotion.createdAt, 'dd/MM/yyyy HH:mm')}">
                             03/06/2026 10:00
                         </strong>
@@ -122,49 +127,49 @@
 
             <section class="detail-panel">
                 <div class="detail-panel-header">
-                    <h3>Thiáº¿t láº­p hiá»ƒn thá»‹</h3>
+                    <h3>Thiết lập hiển thị</h3>
                 </div>
 
                 <div class="detail-info-list">
                     <div class="detail-info-row">
-                        <span>Tráº¡ng thÃ¡i hoáº¡t Ä‘á»™ng</span>
-                        <strong th:text="${promotion.isActive ? 'Äang báº­t' : 'ÄÃ£ táº¯t'}">Äang báº­t</strong>
+                        <span>Trạng thái hoạt động</span>
+                        <strong th:text="${promotion.isActive ? 'Đang bật' : 'Đã tắt'}">Đang bật</strong>
                     </div>
 
                     <div class="detail-info-row">
-                        <span>Hiá»ƒn thá»‹</span>
-                        <strong th:text="${promotion.displayStatus}">Banner ná»•i báº­t</strong>
+                        <span>Hiển thị</span>
+                        <strong th:text="${promotion.displayStatus}">Banner nổi bật</strong>
                     </div>
 
                     <div class="detail-info-row">
-                        <span>Hiá»ƒn thá»‹ trang chá»§</span>
-                        <strong th:text="${promotion.showOnHomepage ? 'CÃ³' : 'KhÃ´ng'}">CÃ³</strong>
+                        <span>Hiển thị trang chủ</span>
+                        <strong th:text="${promotion.showOnHomepage ? 'Có' : 'Không'}">Có</strong>
                     </div>
 
                     <div class="detail-info-row">
-                        <span>Banner ná»•i báº­t</span>
-                        <strong th:text="${promotion.featured ? 'CÃ³' : 'KhÃ´ng'}">KhÃ´ng</strong>
+                        <span>Banner nổi bật</span>
+                        <strong th:text="${promotion.featured ? 'Có' : 'Không'}">Không</strong>
                     </div>
 
                     <div class="detail-info-row">
-                        <span>LÆ°á»£t dÃ¹ng tá»‘i Ä‘a</span>
+                        <span>Lượt dùng tối đa</span>
                         <strong th:text="${promotion.usageLimit}">200</strong>
                     </div>
                 </div>
             </section>
         </div>
 
+        <!-- Các hành động cuối trang: quay lại hoặc chuyển sang màn chỉnh sửa. -->
         <div class="form-actions detail-actions">
             <a th:href="@{/hotel-admin/promotions}" href="/hotel-admin/promotions" class="btn-cancel">
-                Quay láº¡i
+                Quay lại
             </a>
 
             <a th:href="@{/hotel-admin/promotions/edit/{id}(id=${promotion.id})}" href="#" class="btn-save">
-                Chá»‰nh sá»­a khuyáº¿n mÃ£i
+                Chỉnh sửa khuyến mãi
             </a>
         </div>
     </section>
 </main>
 </body>
 </html>
-
