@@ -1,45 +1,36 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
-
 <head>
     <meta charset="UTF-8">
-    <title>Room Types - V'Hotel</title>
+    <title>Hạng phòng - V'Hotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap"
           rel="stylesheet">
 
-
     <link rel="stylesheet" th:href="@{/page/HomePage.css}">
     <link rel="stylesheet" th:href="@{/page/RoomTypePage.css}">
 </head>
 
-
 <body>
-
 
 <div th:replace="~{fragment/public/header :: publicHeader}"></div>
 
-
 <main class="room-type-page">
-
 
     <!-- HERO -->
     <section class="room-type-hero">
         <div class="room-type-hero-content">
-            <p class="section-label">V'HOTEL HANOI</p>
-            <h1>Rooms & Suites</h1>
+            <p class="section-label">V'HOTEL HÀ NỘI</p>
+            <h1>Phòng & Hạng phòng</h1>
             <p>
                 Khám phá các hạng phòng tại V'Hotel, nơi không gian nghỉ dưỡng tinh tế
                 được kết hợp cùng tiện nghi hiện đại và dịch vụ tận tâm.
@@ -47,68 +38,57 @@
         </div>
     </section>
 
-
     <!-- BANNER -->
     <section class="room-type-banner">
         <img src="https://res.cloudinary.com/dhwtycrov/image/upload/v1781368619/z7931333094845_1da5033044f61c73425a0aab601ed57f_isblsi.jpg"
-             alt="V'Hotel rooms and suites">
+             alt="Phòng và hạng phòng tại V'Hotel">
     </section>
-
 
     <!-- LIST -->
     <section class="room-type-list">
-
 
         <article class="room-type-row"
                  th:each="roomType, iterStat : ${roomTypes}"
                  th:classappend="${iterStat.odd} ? ' reverse' : ''">
 
-
             <!-- CONTENT -->
             <div class="room-type-content">
-
 
                 <div class="room-type-index">
                     <span th:text="${#numbers.formatInteger(iterStat.count, 2)}">01</span>
                 </div>
 
-
-                <p class="section-label">ROOMS & SUITES</p>
-
+                <p class="section-label">PHÒNG & HẠNG PHÒNG</p>
 
                 <h2 th:text="${roomType.name}">
-                    Deluxe Room
+                    Phòng Deluxe
                 </h2>
-
 
                 <p class="room-description"
                    th:text="${roomType.description}">
-                    Elegant room description.
+                    Mô tả hạng phòng.
                 </p>
-
 
                 <!-- INFO GRID -->
                 <div class="room-info-grid">
 
-
                     <div class="room-info-item">
                         <i class="bi bi-people"></i>
                         <div>
-                            <span class="info-label">Guests</span>
+                            <span class="info-label">Số khách</span>
                             <strong>
                                 <span th:text="${roomType.maxAdults}">2</span>
-                                adults ·
+                                người lớn ·
                                 <span th:text="${roomType.maxChildren}">1</span>
-                                child
+                                trẻ em
                             </strong>
                         </div>
                     </div>
 
-
                     <div class="room-info-item">
                         <i class="bi bi-arrows-fullscreen"></i>
                         <div>
-                            <span class="info-label">Room size</span>
+                            <span class="info-label">Diện tích phòng</span>
                             <strong>
                                 <span th:text="${roomType.roomSize}">25</span>
                                 m²
@@ -116,83 +96,71 @@
                         </div>
                     </div>
 
-
                     <div class="room-info-item"
                          th:if="${roomType.allowExtraBed}">
                         <i class="bi bi-plus-square"></i>
                         <div>
-                            <span class="info-label">Extra bed</span>
+                            <span class="info-label">Giường phụ</span>
                             <strong>
-                                Up to
+                                Tối đa
                                 <span th:text="${roomType.maxExtraBeds}">1</span>
-                                bed
+                                giường
                             </strong>
                         </div>
                     </div>
-
 
                     <div class="room-info-item"
                          th:if="${!roomType.allowExtraBed}">
                         <i class="bi bi-dash-circle"></i>
                         <div>
-                            <span class="info-label">Extra bed</span>
-                            <strong>Not available</strong>
+                            <span class="info-label">Giường phụ</span>
+                            <strong>Không hỗ trợ</strong>
                         </div>
                     </div>
 
-
                 </div>
-
 
                 <!-- EXTRA BED DETAIL -->
                 <div class="extra-bed-box"
                      th:if="${roomType.allowExtraBed}">
                     <div>
                         <i class="bi bi-info-circle"></i>
-                        <span>Extra bed price</span>
+                        <span>Giá giường phụ</span>
                     </div>
 
-
                     <strong>
-                       <span th:text="${#numbers.formatDecimal(roomType.extraBedPrice, 0, 'COMMA', 0, 'POINT')}">
-                           0
-                       </span>
-                        VND / night
+                        <span th:text="${#numbers.formatDecimal(roomType.extraBedPrice, 0, 'COMMA', 0, 'POINT')}">
+                            0
+                        </span>
+                        VND / đêm
                     </strong>
-
 
                     <p th:if="${roomType.extraBedNote != null}"
                        th:text="${roomType.extraBedNote}">
-                        Extra bed note
+                        Ghi chú giường phụ
                     </p>
                 </div>
 
-
                 <!-- PRICE -->
                 <div class="room-price">
-                    <span>From</span>
-
+                    <span>Từ</span>
 
                     <strong th:text="${#numbers.formatDecimal(roomType.basePrice, 0, 'COMMA', 0, 'POINT')}">
                         0
                     </strong>
 
-
                     <span class="currency">VND</span>
 
-
-                    <small>/ night</small>
+                    <small>/ đêm</small>
                 </div>
-
 
                 <!-- ACTION -->
                 <div class="room-type-actions">
-                    <a th:href="@{/room-types/{id}(id=${roomType.id})}" class="btn-dark-luxury">
+                    <a th:href="@{/page/rooms(roomTypeId=${roomType.id})}" class="btn-dark-luxury">
                         Khám phá
                     </a>
                 </div>
             </div>
-
 
             <!-- IMAGE -->
             <div class="room-type-image">
@@ -200,29 +168,21 @@
                      th:src="${roomType.imageUrl}"
                      th:alt="${roomType.name}">
 
-
                 <div th:if="${roomType.imageUrl == null}" class="room-type-placeholder">
-                    <span th:text="${roomType.name}">Room Type</span>
+                    <span th:text="${roomType.name}">Hạng phòng</span>
                 </div>
             </div>
 
-
         </article>
-
 
     </section>
 
-
 </main>
 
-
 <div th:replace="~{fragment/public/footer :: publicFooter}"></div>
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/home.js}"></script>
 
-
 </body>
 </html>
-
