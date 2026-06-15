@@ -20,7 +20,7 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
             b.bookingReference,
             CONCAT(b.guestFirstName, ' ', b.guestLastName),
             r.roomNumber,
-            CONCAT(rt.name, ' - ', v.variantName),
+            v.variantName,
             bd.roomCode,
             bd.roomCodeExpiresAt,
             bd.checkInDate,
@@ -40,7 +40,7 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse(
             r.id,
             r.roomNumber,
-            CONCAT(rt.name, ' - ', v.variantName),
+            v.variantName,
             v.pricePerNight
         )
         FROM BookingDetail bd

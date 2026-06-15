@@ -74,6 +74,9 @@ public class Booking {
     @Column(name = "deposit_status", nullable = false, length = 15)
     private DepositStatus depositStatus = DepositStatus.UNPAID;
 
+    @Column(name = "deposit_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
+    private BigDecimal depositAmount = BigDecimal.ZERO;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 15)
     private BookingStatus status = BookingStatus.PENDING;
@@ -155,6 +158,9 @@ public class Booking {
         // SỬA NHẸ: mặc định chưa thanh toán cọc
         if (this.depositStatus == null) {
             this.depositStatus = DepositStatus.UNPAID;
+        }
+        if (this.depositAmount == null) {
+            this.depositAmount = BigDecimal.ZERO;
         }
 
         // SỬA NHẸ: trạng thái booking ban đầu là PENDING

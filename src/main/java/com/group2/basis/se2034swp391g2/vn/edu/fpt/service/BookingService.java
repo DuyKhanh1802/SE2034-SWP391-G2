@@ -21,7 +21,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.IdentityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.UserType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Country;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
-
+import java.time.DayOfWeek;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,6 +34,12 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.time.ZoneId;
 import java.time.Instant;
+
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.VariantServiceProjection;
+import java.util.Map;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -59,13 +65,15 @@ public class BookingService {
     private final CountryRepository countryRepository;
     private final MailService mailService;
     private final PaymentRepository paymentRepository;
+    private final RoomTypeVariantServiceRepository roomTypeVariantServiceRepository;
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
                           UserRepository userRepository,
                           CountryRepository countryRepository,
                           MailService mailService,
-                          PaymentRepository paymentRepository) {
+                          PaymentRepository paymentRepository,
+                          RoomTypeVariantServiceRepository roomTypeVariantServiceRepository) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingDetailRepository = bookingDetailRepository;
@@ -73,6 +81,7 @@ public class BookingService {
         this.countryRepository = countryRepository;
         this.mailService = mailService;
         this.paymentRepository = paymentRepository;
+        this.roomTypeVariantServiceRepository = roomTypeVariantServiceRepository;
     }
 
     public List<BookingResponse> searchBookings(String keyword,
@@ -107,12 +116,49 @@ public class BookingService {
     public List<RoomResponse> getAvailableRooms(LocalDate checkInDate, LocalDate checkOutDate) {
         validateBookingDates(checkInDate, checkOutDate);
 
-        return roomRepository.findAvailableRooms(
+        List<RoomResponse> rooms = roomRepository.findAvailableRooms(
                 checkInDate,
                 checkOutDate,
                 RoomStatus.AVAILABLE,
                 List.of(BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN)
         );
+
+        List<Long> variantIds = rooms.stream()
+                .map(RoomResponse::getVariantId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (variantIds.isEmpty()) {
+            return rooms;
+        }
+
+        List<VariantServiceProjection> services =
+                roomTypeVariantServiceRepository.findIncludedServicesByVariantIds(variantIds);
+
+        Map<Long, List<String>> serviceMap = services.stream()
+                .collect(Collectors.groupingBy(
+                        VariantServiceProjection::getVariantId,
+                        Collectors.mapping(service -> {
+                            String serviceName = service.getServiceName();
+                            Integer quantity = service.getQuantity() == null ? 1 : service.getQuantity();
+                            String includedType = service.getIncludedType();
+
+                            if (includedType == null || includedType.isBlank()) {
+                                return serviceName + " x" + quantity;
+                            }
+
+                            return serviceName + " x" + quantity + " (" + includedType + ")";
+                        }, Collectors.toList())
+                ));
+
+        for (RoomResponse room : rooms) {
+            room.setIncludedServices(
+                    serviceMap.getOrDefault(room.getVariantId(), Collections.emptyList())
+            );
+        }
+
+        return rooms;
     }
 
     @Transactional
@@ -155,7 +201,7 @@ public class BookingService {
                 .checkOutDate(checkOutDate)
                 .numAdults(request.getAdults())
                 .numChildren(request.getChildren())
-                .totalRooms(selectedRooms.size()) // thêm dòng này
+                .totalRooms(selectedRooms.size())
                 .specialRequests(request.getNotes())
                 .bookingReference(generateBookingReference())
                 .depositStatus(Boolean.TRUE.equals(request.getDepositPaid())
@@ -177,7 +223,28 @@ public class BookingService {
 
         for (Room room : selectedRooms) {
             BigDecimal pricePerNight = room.getVariant().getPricePerNight();
-            BigDecimal subtotal = pricePerNight.multiply(BigDecimal.valueOf(nights));
+
+            BigDecimal roomSubtotal = calculateRoomAmount(room, checkInDate, checkOutDate);
+
+            int extraBedCount = getExtraBedCount(request, room.getId());
+
+            if (extraBedCount > 0 && !Boolean.TRUE.equals(room.getVariant().getAllowExtraBed())) {
+                throw new IllegalArgumentException("Room " + room.getRoomNumber() + " does not allow extra bed.");
+            }
+
+            if (extraBedCount > 0 && room.getVariant().getMaxExtraBeds() < extraBedCount) {
+                throw new IllegalArgumentException("Room " + room.getRoomNumber() + " exceeds max extra bed limit.");
+            }
+
+            BigDecimal extraBedPrice = room.getVariant().getExtraBedPrice() == null
+                    ? BigDecimal.ZERO
+                    : room.getVariant().getExtraBedPrice();
+
+            BigDecimal extraBedTotal = extraBedPrice
+                    .multiply(BigDecimal.valueOf(extraBedCount))
+                    .multiply(BigDecimal.valueOf(nights));
+
+            BigDecimal detailTotal = roomSubtotal.add(extraBedTotal);
 
             BookingDetail.BookingDetailBuilder detailBuilder = BookingDetail.builder()
                     .booking(savedBooking)
@@ -189,7 +256,11 @@ public class BookingService {
                     .numNights((int) nights)
                     .numAdults(request.getAdults())
                     .numChildren(request.getChildren())
-                    .subtotal(subtotal);
+                    .subtotal(roomSubtotal)
+                    .extraBedCount(extraBedCount)
+                    .extraBedPrice(extraBedPrice)
+                    .extraBedTotal(extraBedTotal)
+                    .totalAmount(detailTotal);
 
             if (bookingStatus == BookingStatus.CHECKED_IN) {
                 detailBuilder.roomCode(generateRoomCode());
@@ -201,12 +272,32 @@ public class BookingService {
             BookingDetail detail = detailBuilder.build();
 
             bookingDetails.add(detail);
-            totalAmount = totalAmount.add(subtotal);
+            totalAmount = totalAmount.add(detailTotal);
+        }
+        BigDecimal vatTotal = totalAmount.multiply(BigDecimal.valueOf(0.12))
+                .setScale(0, java.math.RoundingMode.HALF_UP);
+
+        BigDecimal grandTotal = totalAmount.add(vatTotal);
+
+        BigDecimal depositAmount = grandTotal.multiply(BigDecimal.valueOf(0.5))
+                .setScale(0, java.math.RoundingMode.HALF_UP);
+
+        savedBooking.setRoomSubtotal(totalAmount);
+        savedBooking.setServiceSubtotal(BigDecimal.ZERO);
+        savedBooking.setServiceChargeTotal(BigDecimal.ZERO);
+        savedBooking.setVatTotal(vatTotal);
+        savedBooking.setTotalAmount(totalAmount);
+        savedBooking.setGrandTotal(grandTotal);
+        savedBooking.setDepositAmount(depositAmount);
+        savedBooking.setAmountCalculatedAt(Instant.now());
+
+        if (Boolean.TRUE.equals(request.getDepositPaid())) {
+            savedBooking.setDepositStatus(DepositStatus.PAID);
+        } else {
+            savedBooking.setDepositStatus(DepositStatus.UNPAID);
         }
 
-        savedBooking.setTotalAmount(totalAmount);
         bookingRepository.save(savedBooking);
-
         bookingDetailRepository.saveAll(bookingDetails);
 
         if (bookingStatus == BookingStatus.CHECKED_IN) {
@@ -395,19 +486,27 @@ public class BookingService {
     }
 
     private void validateRoomCapacity(List<Room> selectedRooms, BookingCreateRequest request) {
-        int totalGuests = request.getAdults() + request.getChildren();
+        int requiredAdults = request.getAdults() == null ? 0 : request.getAdults();
+        int requiredChildren = request.getChildren() == null ? 0 : request.getChildren();
 
-        int totalCapacity = selectedRooms.stream()
+        int totalAdultCapacity = selectedRooms.stream()
                 .map(Room::getVariant)
-                .mapToInt(variant -> {
-                    int adults = variant.getMaxAdults() == null ? 0 : variant.getMaxAdults();
-                    int children = variant.getMaxChildren() == null ? 0 : variant.getMaxChildren();
-                    return adults + children;
-                })
+                .mapToInt(variant -> variant.getMaxAdults() == null ? 0 : variant.getMaxAdults())
                 .sum();
 
-        if (totalCapacity < totalGuests) {
-            throw new IllegalArgumentException("Selected rooms do not have enough capacity for all guests.");
+        int totalChildCapacity = selectedRooms.stream()
+                .map(Room::getVariant)
+                .mapToInt(variant -> variant.getMaxChildren() == null ? 0 : variant.getMaxChildren())
+                .sum();
+
+        if (totalAdultCapacity < requiredAdults || totalChildCapacity < requiredChildren) {
+            throw new IllegalArgumentException(
+                    "Các phòng đã chọn chưa đủ sức chứa. Cần "
+                            + requiredAdults + " người lớn, "
+                            + requiredChildren + " trẻ em. Sức chứa đã chọn: "
+                            + totalAdultCapacity + " người lớn, "
+                            + totalChildCapacity + " trẻ em."
+            );
         }
     }
 
@@ -657,6 +756,39 @@ public class BookingService {
                 booking.getBookingReference(),
                 emailContent.toString()
         );
+    }
+
+    private BigDecimal calculateRoomAmount(Room room, LocalDate checkInDate, LocalDate checkOutDate) {
+        BigDecimal total = BigDecimal.ZERO;
+        LocalDate date = checkInDate;
+
+        while (date.isBefore(checkOutDate)) {
+            BigDecimal nightlyPrice = room.getVariant().getPricePerNight();
+
+            DayOfWeek day = date.getDayOfWeek();
+            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+                nightlyPrice = nightlyPrice.multiply(BigDecimal.valueOf(1.10));
+            }
+
+            total = total.add(nightlyPrice);
+            date = date.plusDays(1);
+        }
+
+        return total.setScale(0, java.math.RoundingMode.HALF_UP);
+    }
+
+    private int getExtraBedCount(BookingCreateRequest request, Long roomId) {
+        if (request.getExtraBedCounts() == null) {
+            return 0;
+        }
+
+        Integer count = request.getExtraBedCounts().get(roomId);
+
+        if (count == null || count < 0) {
+            return 0;
+        }
+
+        return count;
     }
 
 }

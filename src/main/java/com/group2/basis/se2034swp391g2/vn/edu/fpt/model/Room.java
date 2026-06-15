@@ -82,4 +82,5 @@ public class Room {
     public ViewType getViewType() {
         return this.variant == null ? null : this.variant.getViewType();
     }
+
 }
