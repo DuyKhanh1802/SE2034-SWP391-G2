@@ -1,96 +1,100 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
+    <!-- Phần đầu trang: breadcrumb và tiêu đề cho màn chỉnh sửa. -->
     <div class="page-action-bar">
         <div>
             <div class="breadcrumb-custom">
-                Quáº£n lÃ½ / Khuyáº¿n mÃ£i / Chá»‰nh sá»­a
+                Quản lý / Khuyến mãi / Chỉnh sửa
             </div>
-            <h1>Chá»‰nh sá»­a khuyáº¿n mÃ£i</h1>
+            <h1>Chỉnh sửa khuyến mãi</h1>
         </div>
     </div>
 
     <section class="content-section">
         <div class="form-card">
+            <!-- Hiển thị lỗi từ backend hoặc lỗi ngày giờ do client kiểm tra. -->
             <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
-                CÃ³ lá»—i xáº£y ra
+                Có lỗi xảy ra
             </div>
             <div id="clientErrorMessage" class="alert alert-danger" style="display: none;"></div>
 
             <form id="promotionForm"
                   th:action="@{/hotel-admin/promotions/edit/{id}(id=${promotionId})}"
                   th:object="${promotion}"
-                  novalidate
-                  method="post">
+                  method="post"
+                  novalidate>
 
                 <input type="hidden"
                        th:name="${_csrf.parameterName}"
                        th:value="${_csrf.token}">
 
+                <!-- Nhóm trường nhập chính của form chỉnh sửa khuyến mãi. -->
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <label class="form-label" for="name">TÃªn chiáº¿n dá»‹ch</label>
+                        <label class="form-label" for="name">Tên chiến dịch</label>
                         <input type="text"
                                class="form-control"
                                th:field="*{name}"
                                id="name"
                                maxlength="200"
-                               placeholder="VÃ­ dá»¥: Æ¯u Ä‘Ã£i mÃ¹a hÃ¨"
+                               placeholder="Ví dụ: Ưu đãi mùa hè"
                                required>
                         <small class="form-hint">
-                            TÃªn dÃ¹ng Ä‘á»ƒ quáº£n lÃ½ vÃ  phÃ¢n biá»‡t cÃ¡c chiáº¿n dá»‹ch khuyáº¿n mÃ£i.
+                            Tên dùng để quản lý và phân biệt các chiến dịch khuyến mãi.
                         </small>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" for="discountAmount">Sá»‘ tiá»n giáº£m</label>
+                        <label class="form-label" for="discountAmount">Số tiền giảm</label>
                         <input type="number"
                                class="form-control"
                                th:field="*{discountAmount}"
                                id="discountAmount"
                                step="1"
                                inputmode="numeric"
-                               placeholder="VÃ­ dá»¥: 100000"
+                               placeholder="Ví dụ: 100000"
                                required>
                         <small class="form-hint">
-                            Sá»‘ tiá»n Ä‘Æ°á»£c trá»« trá»±c tiáº¿p khi khÃ¡ch Ã¡p dá»¥ng mÃ£ khuyáº¿n mÃ£i.
+                            Số tiền được trừ trực tiếp khi khách áp dụng mã khuyến mãi.
                         </small>
                     </div>
 
                     <div class="col-md-12">
-                        <label class="form-label" for="description">MÃ´ táº£ ngáº¯n</label>
+                        <label class="form-label" for="description">Mô tả ngắn</label>
                         <textarea class="form-control"
                                   th:field="*{description}"
                                   id="description"
                                   rows="3"
                                   maxlength="300"
-                                  placeholder="VÃ­ dá»¥: Giáº£m 100.000 VND cho khÃ¡ch Ä‘áº·t phÃ²ng trong mÃ¹a hÃ¨."
+                                  placeholder="Ví dụ: Giảm 100.000 VND cho khách đặt phòng trong mùa hè."
                                   required></textarea>
                         <small class="form-hint">
-                            Ná»™i dung tÃ³m táº¯t chÃ­nh sÃ¡ch Æ°u Ä‘Ã£i, tá»‘i Ä‘a 300 kÃ½ tá»±.
+                            Nội dung tóm tắt chính sách ưu đãi, tối đa 300 ký tự.
                         </small>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" for="usageLimit">Giá»›i háº¡n lÆ°á»£t dÃ¹ng</label>
+                        <label class="form-label" for="usageLimit">Giới hạn lượt dùng</label>
                         <input type="number"
                                class="form-control"
                                th:field="*{usageLimit}"
                                id="usageLimit"
                                step="1"
-                               placeholder="VÃ­ dá»¥: 200"
+                               inputmode="numeric"
+                               placeholder="Ví dụ: 200"
                                required>
                         <small class="form-hint">
-                            Tá»•ng sá»‘ lÆ°á»£t Ä‘áº·t phÃ²ng Ä‘Æ°á»£c phÃ©p Ã¡p dá»¥ng mÃ£ khuyáº¿n mÃ£i.
+                            Tổng số lượt đặt phòng được phép áp dụng mã khuyến mãi.
                         </small>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" for="promotionImage">áº¢nh khuyáº¿n mÃ£i</label>
+                        <label class="form-label" for="promotionImage">Ảnh khuyến mãi</label>
                         <input type="file"
                                class="form-control"
                                id="promotionImage"
@@ -100,19 +104,19 @@
                         <input type="hidden" th:field="*{imagePublicId}" id="imagePublicId">
 
                         <small class="form-hint">
-                            CÃ³ thá»ƒ giá»¯ áº£nh hiá»‡n táº¡i hoáº·c thay báº±ng áº£nh má»›i, dung lÆ°á»£ng tá»‘i Ä‘a 5MB.
+                            Có thể giữ ảnh hiện tại hoặc thay bằng ảnh mới, dung lượng tối đa 5MB.
                         </small>
 
                         <div id="imagePreview" class="mt-3">
                             <img th:if="${promotion.imageUrl != null and !promotion.imageUrl.isBlank()}"
                                  th:src="${promotion.imageUrl}"
-                                 alt="áº¢nh khuyáº¿n mÃ£i"
+                                 alt="Ảnh khuyến mãi"
                                  class="promotion-image-preview">
                         </div>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" for="validFromInput">NgÃ y báº¯t Ä‘áº§u</label>
+                        <label class="form-label" for="validFromInput">Ngày bắt đầu</label>
                         <input type="text"
                                class="form-control"
                                th:field="*{validFromInput}"
@@ -120,12 +124,12 @@
                                placeholder="dd/mm/yyyy --:--"
                                required>
                         <small class="form-hint">
-                            Thá»i Ä‘iá»ƒm chiáº¿n dá»‹ch báº¯t Ä‘áº§u cÃ³ hiá»‡u lá»±c.
+                            Thời điểm chiến dịch bắt đầu có hiệu lực.
                         </small>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" for="validToInput">NgÃ y káº¿t thÃºc</label>
+                        <label class="form-label" for="validToInput">Ngày kết thúc</label>
                         <input type="text"
                                class="form-control"
                                th:field="*{validToInput}"
@@ -133,12 +137,12 @@
                                placeholder="dd/mm/yyyy --:--"
                                required>
                         <small class="form-hint">
-                            Thá»i Ä‘iá»ƒm chiáº¿n dá»‹ch ngá»«ng Ã¡p dá»¥ng.
+                            Thời điểm chiến dịch ngừng áp dụng.
                         </small>
                     </div>
 
                     <div class="col-md-12">
-                        <label class="form-label">TÃ¹y chá»n hiá»ƒn thá»‹</label>
+                        <label class="form-label">Tùy chọn hiển thị</label>
 
                         <div class="form-check mt-2">
                             <input class="form-check-input"
@@ -146,7 +150,7 @@
                                    th:field="*{showOnHomepage}"
                                    id="showOnHomepage">
                             <label class="form-check-label" for="showOnHomepage">
-                                Hiá»ƒn thá»‹ á»Ÿ trang chá»§
+                                Hiển thị ở trang chủ
                             </label>
                         </div>
 
@@ -156,28 +160,29 @@
                                    th:field="*{featured}"
                                    id="featured">
                             <label class="form-check-label" for="featured">
-                                Äáº·t lÃ m banner ná»•i báº­t
+                                Đặt làm banner nổi bật
                             </label>
                         </div>
 
                         <small class="form-hint">
-                            Cáº¥u hÃ¬nh vá»‹ trÃ­ hiá»ƒn thá»‹ cá»§a chiáº¿n dá»‹ch trÃªn trang chá»§.
+                            Cấu hình vị trí hiển thị của chiến dịch trên trang chủ.
                         </small>
                     </div>
                 </div>
             </form>
 
+            <!-- Nhóm hành động riêng của màn edit: xóa, hủy hoặc lưu cập nhật. -->
             <div class="form-actions form-actions-split">
                 <form th:action="@{/hotel-admin/promotions/delete/{id}(id=${promotionId})}"
                       method="post"
                       class="delete-inline-form"
-                      onsubmit="return confirm('Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a khuyáº¿n mÃ£i nÃ y khÃ´ng?');">
+                      onsubmit="return confirm('Bạn có chắc muốn xóa khuyến mãi này không?');">
                     <input type="hidden"
                            th:name="${_csrf.parameterName}"
                            th:value="${_csrf.token}">
                     <button type="submit" class="btn-delete">
                         <span class="material-symbols-outlined">delete</span>
-                        XÃ³a khuyáº¿n mÃ£i
+                        Xóa khuyến mãi
                     </button>
                 </form>
 
@@ -185,11 +190,11 @@
                     <a th:href="@{/hotel-admin/promotions}"
                        href="#"
                        class="btn-cancel">
-                        Há»§y
+                        Hủy
                     </a>
 
                     <button type="submit" class="btn-save" form="promotionForm">
-                        LÆ°u cáº­p nháº­t
+                        Lưu cập nhật
                     </button>
                 </div>
             </div>
@@ -198,6 +203,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
+        // Gom các input chính để xử lý validate, giữ ảnh cũ và upload ảnh mới.
         const promotionForm = document.getElementById("promotionForm");
         const nameInput = document.getElementById("name");
         const discountAmount = document.getElementById("discountAmount");
@@ -216,6 +222,7 @@
         let currentImagePublicId = imagePublicId.value.trim();
         let isUploadingImage = false;
 
+        // Nếu chọn banner nổi bật thì luôn bật hiển thị trang chủ.
         function syncFeaturedWithHomepage() {
             if (featured.checked) {
                 showOnHomepage.checked = true;
@@ -242,6 +249,33 @@
             clientErrorMessage.style.display = "none";
         }
 
+        // Dùng chung cho các field text để tránh nhập rỗng hoặc chỉ có khoảng trắng.
+        function isBlank(value) {
+            return !value || !value.trim();
+        }
+
+        // Dùng chung cho các field số dương như số tiền giảm và giới hạn lượt dùng.
+        function isInvalidPositiveNumber(input) {
+            if (input.validity.badInput) {
+                return true;
+            }
+
+            const parsedValue = Number(input.value);
+            return !Number.isFinite(parsedValue) || parsedValue <= 0;
+        }
+
+        // Khi người dùng nhập lại thì xóa lỗi cũ của field đó.
+        function bindFieldReset(input) {
+            input.addEventListener("input", function () {
+                clearFieldError(input);
+            });
+
+            input.addEventListener("change", function () {
+                clearFieldError(input);
+            });
+        }
+
+        // Hiển thị preview của ảnh đang dùng trên form.
         function renderImagePreview(url) {
             if (!url) {
                 imagePreview.innerHTML = "";
@@ -250,59 +284,27 @@
 
             imagePreview.innerHTML = `
                 <img src="${url}"
-                     alt="áº¢nh khuyáº¿n mÃ£i"
+                     alt="Ảnh khuyến mãi"
                      class="promotion-image-preview">
             `;
         }
 
+        // Nếu upload ảnh mới lỗi hoặc người dùng bỏ chọn file thì quay lại ảnh cũ.
         function restoreExistingImage() {
             imageUrl.value = currentImageUrl;
             imagePublicId.value = currentImagePublicId;
             renderImagePreview(currentImageUrl);
         }
 
-        function bindVietnameseValidation(input, messages) {
-            input.addEventListener("invalid", function () {
-                if (input.validity.valueMissing) {
-                    input.setCustomValidity(messages.valueMissing);
-                    return;
-                }
+        [
+            nameInput,
+            discountAmount,
+            descriptionInput,
+            usageLimitInput,
+            promotionImage
+        ].forEach(bindFieldReset);
 
-                if (input.validity.badInput && messages.badInput) {
-                    input.setCustomValidity(messages.badInput);
-                    return;
-                }
-
-                input.setCustomValidity("");
-            });
-
-            input.addEventListener("input", function () {
-                input.setCustomValidity("");
-            });
-
-            input.addEventListener("change", function () {
-                input.setCustomValidity("");
-            });
-        }
-
-        bindVietnameseValidation(nameInput, {
-            valueMissing: "TÃªn chiáº¿n dá»‹ch khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng."
-        });
-
-        bindVietnameseValidation(discountAmount, {
-            valueMissing: "Sá»‘ tiá»n giáº£m khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.",
-            badInput: "Vui lÃ²ng nháº­p sá»‘ tiá»n giáº£m há»£p lá»‡."
-        });
-
-        bindVietnameseValidation(descriptionInput, {
-            valueMissing: "MÃ´ táº£ ngáº¯n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng."
-        });
-
-        bindVietnameseValidation(usageLimitInput, {
-            valueMissing: "Giá»›i háº¡n lÆ°á»£t dÃ¹ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.",
-            badInput: "Vui lÃ²ng nháº­p giá»›i háº¡n lÆ°á»£t dÃ¹ng há»£p lá»‡."
-        });
-
+        // Khởi tạo 2 ô ngày giờ bằng flatpickr để chọn thống nhất trên giao diện.
         flatpickr(validFromInput, {
             enableTime: true,
             dateFormat: "Y-m-d\\TH:i",
@@ -326,9 +328,13 @@
         validFromInput.addEventListener("change", clearFormError);
         validToInput.addEventListener("change", clearFormError);
 
-        featured.addEventListener("change", syncFeaturedWithHomepage);
+        featured.addEventListener("change", function () {
+            clearFormError();
+            syncFeaturedWithHomepage();
+        });
         syncFeaturedWithHomepage();
 
+        // Upload ảnh mới ngay khi người dùng chọn file, nhưng vẫn giữ ảnh cũ để fallback.
         promotionImage.addEventListener("change", async function () {
             const file = promotionImage.files[0];
 
@@ -341,14 +347,14 @@
             }
 
             if (!file.type.startsWith("image/")) {
-                showFieldError(promotionImage, "File táº£i lÃªn pháº£i lÃ  áº£nh.");
+                showFieldError(promotionImage, "Ảnh khuyến mãi phải là file ảnh hợp lệ.");
                 promotionImage.value = "";
                 restoreExistingImage();
                 return;
             }
 
             if (file.size > 5 * 1024 * 1024) {
-                showFieldError(promotionImage, "KÃ­ch thÆ°á»›c áº£nh khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ 5MB.");
+                showFieldError(promotionImage, "Ảnh khuyến mãi không được vượt quá 5MB.");
                 promotionImage.value = "";
                 restoreExistingImage();
                 return;
@@ -371,7 +377,7 @@
                 const data = await response.json();
 
                 if (!response.ok || data.error || !data.imageUrl || !data.imagePublicId) {
-                    showFieldError(promotionImage, data.error || "Táº£i áº£nh khuyáº¿n mÃ£i tháº¥t báº¡i.");
+                    showFieldError(promotionImage, data.error || "Tải ảnh khuyến mãi thất bại.");
                     promotionImage.value = "";
                     restoreExistingImage();
                     return;
@@ -383,7 +389,7 @@
                 currentImagePublicId = data.imagePublicId;
                 renderImagePreview(data.imageUrl);
             } catch (error) {
-                showFieldError(promotionImage, "Táº£i áº£nh khuyáº¿n mÃ£i tháº¥t báº¡i.");
+                showFieldError(promotionImage, "Tải ảnh khuyến mãi thất bại.");
                 promotionImage.value = "";
                 restoreExistingImage();
             } finally {
@@ -391,6 +397,7 @@
             }
         });
 
+        // Validate theo đúng thứ tự nghiệp vụ trước khi submit form chỉnh sửa.
         promotionForm.addEventListener("submit", function (event) {
             clearFormError();
             clearFieldError(nameInput);
@@ -398,66 +405,76 @@
             clearFieldError(descriptionInput);
             clearFieldError(usageLimitInput);
             clearFieldError(promotionImage);
-            clearFieldError(validFromInput);
-            clearFieldError(validToInput);
 
-            if (!nameInput.value.trim()) {
+            if (isBlank(nameInput.value)) {
                 event.preventDefault();
-                showFieldError(nameInput, "TÃªn chiáº¿n dá»‹ch khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+                showFieldError(nameInput, "Tên chiến dịch không được để trống.");
                 return;
             }
 
-            if (!descriptionInput.value.trim()) {
+            if (isBlank(discountAmount.value)) {
                 event.preventDefault();
-                showFieldError(descriptionInput, "MÃ´ táº£ ngáº¯n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+                showFieldError(discountAmount, "Số tiền giảm không được để trống.");
                 return;
             }
 
-            if (!discountAmount.value.trim()) {
+            if (discountAmount.validity.badInput) {
                 event.preventDefault();
-                showFieldError(discountAmount, "Sá»‘ tiá»n giáº£m khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+                showFieldError(discountAmount, "Số tiền giảm phải là số hợp lệ và lớn hơn 0.");
                 return;
             }
 
-            if (Number(discountAmount.value) <= 0) {
+            if (isInvalidPositiveNumber(discountAmount)) {
                 event.preventDefault();
-                showFieldError(discountAmount, "Sá»‘ tiá»n giáº£m pháº£i lá»›n hÆ¡n 0.");
+                showFieldError(discountAmount, "Số tiền giảm phải lớn hơn 0.");
                 return;
             }
 
-            if (!usageLimitInput.value.trim()) {
+            if (isBlank(descriptionInput.value)) {
                 event.preventDefault();
-                showFieldError(usageLimitInput, "Giá»›i háº¡n lÆ°á»£t dÃ¹ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+                showFieldError(descriptionInput, "Mô tả ngắn không được để trống.");
                 return;
             }
 
-            if (Number(usageLimitInput.value) <= 0) {
+            if (isBlank(usageLimitInput.value)) {
                 event.preventDefault();
-                showFieldError(usageLimitInput, "Giá»›i háº¡n lÆ°á»£t dÃ¹ng pháº£i lá»›n hÆ¡n 0.");
+                showFieldError(usageLimitInput, "Giới hạn lượt dùng không được để trống.");
+                return;
+            }
+
+            if (usageLimitInput.validity.badInput) {
+                event.preventDefault();
+                showFieldError(usageLimitInput, "Giới hạn lượt dùng phải là số hợp lệ và lớn hơn 0.");
+                return;
+            }
+
+            if (isInvalidPositiveNumber(usageLimitInput)) {
+                event.preventDefault();
+                showFieldError(usageLimitInput, "Giới hạn lượt dùng phải lớn hơn 0.");
                 return;
             }
 
             if (isUploadingImage) {
                 event.preventDefault();
-                showFieldError(promotionImage, "áº¢nh Ä‘ang Ä‘Æ°á»£c táº£i lÃªn. Vui lÃ²ng chá» upload áº£nh xong rá»“i lÆ°u.");
+                showFieldError(promotionImage, "Ảnh đang được tải lên. Vui lòng chờ tải ảnh xong rồi lưu.");
                 return;
             }
 
-            if (imageUrl.value.trim() === "" || imagePublicId.value.trim() === "") {
+            if (isBlank(imageUrl.value) || isBlank(imagePublicId.value)) {
                 event.preventDefault();
-                showFieldError(promotionImage, "Vui lÃ²ng chá»n áº£nh khuyáº¿n mÃ£i há»£p lá»‡ trÆ°á»›c khi lÆ°u.");
+                showFieldError(promotionImage, "Ảnh khuyến mãi không được để trống.");
                 return;
             }
 
-            if (!validFromInput.value.trim()) {
+            if (isBlank(validFromInput.value)) {
                 event.preventDefault();
-                showFormError("NgÃ y báº¯t Ä‘áº§u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+                showFormError("Ngày bắt đầu không được để trống.");
                 return;
             }
 
-            if (!validToInput.value.trim()) {
+            if (isBlank(validToInput.value)) {
                 event.preventDefault();
-                showFormError("NgÃ y káº¿t thÃºc khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+                showFormError("Ngày kết thúc không được để trống.");
                 return;
             }
 
@@ -466,11 +483,14 @@
 
             if (validFromDate && validToDate && validToDate.getTime() <= validFromDate.getTime()) {
                 event.preventDefault();
-                showFormError("NgÃ y káº¿t thÃºc pháº£i sau ngÃ y báº¯t Ä‘áº§u.");
+                showFormError("Ngày kết thúc phải sau ngày bắt đầu.");
+                return;
             }
+
+            nameInput.value = nameInput.value.trim();
+            descriptionInput.value = descriptionInput.value.trim();
         });
     </script>
 </main>
 </body>
 </html>
-

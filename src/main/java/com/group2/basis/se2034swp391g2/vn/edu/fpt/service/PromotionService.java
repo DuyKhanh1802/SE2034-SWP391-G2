@@ -31,6 +31,15 @@ public class PromotionService {
     private static final DateTimeFormatter FORM_DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
+    private static final String STATUS_ACTIVE = "Đang hoạt động";
+    private static final String STATUS_SCHEDULED = "Sắp diễn ra";
+    private static final String STATUS_EXPIRED = "Đã hết hạn";
+    private static final String STATUS_INACTIVE = "Đã tắt";
+
+    private static final String DISPLAY_FEATURED = "Banner nổi bật";
+    private static final String DISPLAY_HOMEPAGE = "Hiển thị trang chủ";
+    private static final String DISPLAY_HIDDEN = "Ẩn";
+
     private final PromotionRepository promotionRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
@@ -46,6 +55,7 @@ public class PromotionService {
         this.cloudinaryService = cloudinaryService;
     }
 
+    // Lấy dữ liệu cho màn danh sách: danh sách đã lọc, số liệu tổng quan và thông tin phân trang.
     public PromotionListResponse getPromotionListResponse(int page,
                                                           int size,
                                                           String keyword,
@@ -68,22 +78,10 @@ public class PromotionService {
                 .toList();
 
         long totalPromotions = allPromotions.size();
-
-        long activePromotions = allPromotions.stream()
-                .filter(promotion -> "Đang hoạt động".equals(promotion.getStatus()))
-                .count();
-
-        long scheduledPromotions = allPromotions.stream()
-                .filter(promotion -> "Sắp diễn ra".equals(promotion.getStatus()))
-                .count();
-
-        long expiredPromotions = allPromotions.stream()
-                .filter(promotion -> "Đã hết hạn".equals(promotion.getStatus()))
-                .count();
-
-        long inactivePromotions = allPromotions.stream()
-                .filter(promotion -> "Đã tắt".equals(promotion.getStatus()))
-                .count();
+        long activePromotions = countPromotionsByStatus(allPromotions, STATUS_ACTIVE);
+        long scheduledPromotions = countPromotionsByStatus(allPromotions, STATUS_SCHEDULED);
+        long expiredPromotions = countPromotionsByStatus(allPromotions, STATUS_EXPIRED);
+        long inactivePromotions = countPromotionsByStatus(allPromotions, STATUS_INACTIVE);
 
         List<PromotionResponse> filteredPromotions = allPromotions.stream()
                 .filter(promotion -> matchKeyword(promotion, normalizedKeyword))
@@ -97,11 +95,7 @@ public class PromotionService {
             page = totalPages - 1;
         }
 
-        int fromIndex = page * size;
-        int toIndex = Math.min(fromIndex + size, totalFiltered);
-
-        List<PromotionResponse> pagedPromotions =
-                totalFiltered == 0 ? List.of() : filteredPromotions.subList(fromIndex, toIndex);
+        List<PromotionResponse> pagedPromotions = getPagedPromotions(filteredPromotions, page, size);
 
         return new PromotionListResponse(
                 pagedPromotions,
@@ -118,12 +112,15 @@ public class PromotionService {
         );
     }
 
+    // Lấy dữ liệu chi tiết của một khuyến mãi để hiển thị ở màn view.
     public PromotionResponse getPromotionDetail(Long id) {
         return toResponse(getPromotionEntity(id));
     }
 
+    // Chuyển entity hiện tại sang request object để form edit có thể đổ dữ liệu sẵn.
     public PromotionRequest getPromotionEditRequest(Long id) {
         Promotion promotion = getPromotionEntity(id);
+
         PromotionRequest request = new PromotionRequest();
         request.setName(promotion.getName());
         request.setDescription(promotion.getDescription());
@@ -135,9 +132,11 @@ public class PromotionService {
         request.setImagePublicId(promotion.getImagePublicId());
         request.setValidFromInput(formatForDateTimeInput(promotion.getValidFrom()));
         request.setValidToInput(formatForDateTimeInput(promotion.getValidTo()));
+
         return request;
     }
 
+    // Upload ảnh lên Cloudinary và chỉ trả về các thông tin form cần giữ lại để lưu DB.
     public Map<String, String> uploadPromotionImage(MultipartFile file) {
         validatePromotionImage(file);
 
@@ -155,6 +154,7 @@ public class PromotionService {
         );
     }
 
+    // Tạo khuyến mãi mới: validate trước, sau đó set các thông tin hệ thống và lưu DB.
     public void createPromotion(PromotionRequest request) {
         validatePromotionRequest(request, null, false);
 
@@ -170,13 +170,17 @@ public class PromotionService {
         promotionRepository.save(promotion);
     }
 
+    // Cập nhật khuyến mãi cũ bằng dữ liệu mới từ form edit.
     public void updatePromotion(Long id, PromotionRequest request) {
         Promotion promotion = getPromotionEntity(id);
+
         validatePromotionRequest(request, promotion.getId(), true);
         applyPromotionRequest(promotion, request);
+
         promotionRepository.save(promotion);
     }
 
+    // Chỉ xóa khi khuyến mãi chưa từng được áp dụng vào booking còn hiệu lực.
     public void deletePromotion(Long id) {
         Promotion promotion = getPromotionEntity(id);
 
@@ -185,6 +189,18 @@ public class PromotionService {
         }
 
         promotionRepository.delete(promotion);
+    }
+
+    // Gán dữ liệu từ request sang entity để dùng chung cho cả create và update.
+    // Bật hoặc tắt khuyến mãi theo trạng thái hiện tại mà không đổi các cấu hình khác.
+    public boolean togglePromotionStatus(Long id) {
+        Promotion promotion = getPromotionEntity(id);
+        boolean newActiveStatus = !Boolean.TRUE.equals(promotion.getIsActive());
+
+        promotion.setIsActive(newActiveStatus);
+        promotionRepository.save(promotion);
+
+        return newActiveStatus;
     }
 
     private void applyPromotionRequest(Promotion promotion, PromotionRequest request) {
@@ -204,6 +220,7 @@ public class PromotionService {
         }
     }
 
+    // Chuyển entity sang response để template chỉ nhận đúng dữ liệu cần hiển thị.
     private PromotionResponse toResponse(Promotion promotion) {
         return PromotionResponse.builder()
                 .id(promotion.getId())
@@ -226,6 +243,7 @@ public class PromotionService {
                 .build();
     }
 
+    // Lấy entity theo id và chặn luôn các trường hợp id không hợp lệ.
     private Promotion getPromotionEntity(Long id) {
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("Khuyến mãi không hợp lệ.");
@@ -235,36 +253,39 @@ public class PromotionService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi."));
     }
 
+    // Xác định trạng thái thời gian của khuyến mãi để hiển thị ở list/detail.
     private String getPromotionStatus(Promotion promotion) {
         Instant now = Instant.now();
 
         if (Boolean.FALSE.equals(promotion.getIsActive())) {
-            return "Đã tắt";
+            return STATUS_INACTIVE;
         }
 
         if (promotion.getValidFrom() != null && promotion.getValidFrom().isAfter(now)) {
-            return "Sắp diễn ra";
+            return STATUS_SCHEDULED;
         }
 
         if (promotion.getValidTo() != null && promotion.getValidTo().isBefore(now)) {
-            return "Đã hết hạn";
+            return STATUS_EXPIRED;
         }
 
-        return "Đang hoạt động";
+        return STATUS_ACTIVE;
     }
 
+    // Xác định kiểu hiển thị trên trang chủ: banner, hiện ở homepage, hay ẩn.
     private String getDisplayStatus(Promotion promotion) {
         if (Boolean.TRUE.equals(promotion.getFeatured())) {
-            return "Banner nổi bật";
+            return DISPLAY_FEATURED;
         }
 
         if (Boolean.TRUE.equals(promotion.getShowOnHomepage())) {
-            return "Hiển thị trang chủ";
+            return DISPLAY_HOMEPAGE;
         }
 
-        return "Ẩn";
+        return DISPLAY_HIDDEN;
     }
 
+    // Gói toàn bộ validate business của form vào một đầu mối duy nhất.
     private void validatePromotionRequest(PromotionRequest request, Long promotionId, boolean isEditMode) {
         validateName(request);
         validateDescription(request);
@@ -275,6 +296,7 @@ public class PromotionService {
         validateFeaturedBanner(request, promotionId);
     }
 
+    // Validate file ảnh trước khi gửi lên Cloudinary.
     private void validatePromotionImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Vui lòng chọn ảnh khuyến mãi.");
@@ -289,6 +311,7 @@ public class PromotionService {
         }
     }
 
+    // Validate tên chiến dịch.
     private void validateName(PromotionRequest request) {
         if (request.getName() == null || request.getName().isBlank()) {
             throw new IllegalArgumentException("Tên chiến dịch không được để trống.");
@@ -299,6 +322,7 @@ public class PromotionService {
         }
     }
 
+    // Validate mô tả ngắn.
     private void validateDescription(PromotionRequest request) {
         if (request.getDescription() == null || request.getDescription().isBlank()) {
             throw new IllegalArgumentException("Mô tả ngắn không được để trống.");
@@ -309,6 +333,7 @@ public class PromotionService {
         }
     }
 
+    // Validate số tiền giảm.
     private void validateDiscountAmount(PromotionRequest request) {
         if (request.getDiscountAmount() == null
                 || request.getDiscountAmount().compareTo(BigDecimal.ZERO) <= 0) {
@@ -316,12 +341,14 @@ public class PromotionService {
         }
     }
 
+    // Validate giới hạn lượt dùng.
     private void validateUsageLimit(PromotionRequest request) {
         if (request.getUsageLimit() == null || request.getUsageLimit() <= 0) {
             throw new IllegalArgumentException("Giới hạn lượt dùng phải lớn hơn 0.");
         }
     }
 
+    // Validate 2 mốc thời gian và quy tắc ngày kết thúc phải sau ngày bắt đầu.
     private void validateDateInput(PromotionRequest request, boolean isEditMode) {
         if (request.getValidFromInput() == null || request.getValidFromInput().isBlank()) {
             throw new IllegalArgumentException("Ngày bắt đầu không được để trống.");
@@ -348,6 +375,7 @@ public class PromotionService {
         }
     }
 
+    // Validate ảnh đã upload thành công trước khi lưu khuyến mãi.
     private void validateUploadedImage(PromotionRequest request) {
         if (request.getImageUrl() == null || request.getImageUrl().isBlank()
                 || request.getImagePublicId() == null || request.getImagePublicId().isBlank()) {
@@ -355,6 +383,7 @@ public class PromotionService {
         }
     }
 
+    // Validate quy tắc chỉ có một banner nổi bật đang hoạt động tại một thời điểm.
     private void validateFeaturedBanner(PromotionRequest request, Long promotionId) {
         if (!Boolean.TRUE.equals(request.getFeatured())) {
             return;
@@ -371,6 +400,7 @@ public class PromotionService {
         }
     }
 
+    // Nếu đã là banner nổi bật thì luôn phải được hiển thị ở trang chủ.
     private Boolean resolveShowOnHomepage(PromotionRequest request) {
         if (Boolean.TRUE.equals(request.getFeatured())) {
             return true;
@@ -379,6 +409,7 @@ public class PromotionService {
         return Boolean.TRUE.equals(request.getShowOnHomepage());
     }
 
+    // Sinh mã khuyến mãi tự động theo định dạng VH-yyyyMM-XXXX.
     private String generatePromotionCode() {
         String yearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
         String code;
@@ -396,6 +427,7 @@ public class PromotionService {
         return code;
     }
 
+    // Chuyển chuỗi ngày giờ từ form sang Instant để lưu DB và so sánh logic thời gian.
     private Instant convertToInstant(String dateTimeInput) {
         try {
             LocalDateTime localDateTime = LocalDateTime.parse(dateTimeInput);
@@ -405,6 +437,7 @@ public class PromotionService {
         }
     }
 
+    // Format ngày giờ từ DB sang đúng định dạng mà form add/edit đang dùng.
     private String formatForDateTimeInput(Instant instant) {
         if (instant == null) {
             return "";
@@ -415,18 +448,22 @@ public class PromotionService {
                 .format(FORM_DATE_TIME_FORMATTER);
     }
 
+    // Chuẩn hóa mô tả trước khi lưu.
     private String normalizeDescription(String description) {
         return description.trim();
     }
 
+    // Chuẩn hóa link ảnh trước khi lưu.
     private String normalizeImageUrl(String imageUrl) {
         return imageUrl.trim();
     }
 
+    // Chuẩn hóa public id của ảnh trước khi lưu.
     private String normalizeImagePublicId(String imagePublicId) {
         return imagePublicId.trim();
     }
 
+    // Đưa số tiền giảm về dạng dễ nhìn hơn khi đổ lên form edit.
     private BigDecimal normalizeEditableAmount(BigDecimal amount) {
         if (amount == null) {
             return null;
@@ -441,6 +478,7 @@ public class PromotionService {
         return normalized;
     }
 
+    // Lấy user hiện tại để gắn vào thông tin người tạo khuyến mãi.
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -454,6 +492,7 @@ public class PromotionService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng hiện tại."));
     }
 
+    // Lọc theo từ khóa: chỉ tìm trong mã khuyến mãi và tên chiến dịch.
     private boolean matchKeyword(PromotionResponse promotion, String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return true;
@@ -465,27 +504,49 @@ public class PromotionService {
         return code.contains(keyword) || name.contains(keyword);
     }
 
+    // Lọc theo trạng thái mà người dùng đang chọn trên tab.
     private boolean matchStatus(PromotionResponse promotion, String status) {
         if ("all".equals(status)) {
             return true;
         }
 
         if ("active".equals(status)) {
-            return "Đang hoạt động".equals(promotion.getStatus());
+            return STATUS_ACTIVE.equals(promotion.getStatus());
         }
 
         if ("scheduled".equals(status)) {
-            return "Sắp diễn ra".equals(promotion.getStatus());
+            return STATUS_SCHEDULED.equals(promotion.getStatus());
         }
 
         if ("expired".equals(status)) {
-            return "Đã hết hạn".equals(promotion.getStatus());
+            return STATUS_EXPIRED.equals(promotion.getStatus());
         }
 
         if ("inactive".equals(status)) {
-            return "Đã tắt".equals(promotion.getStatus());
+            return STATUS_INACTIVE.equals(promotion.getStatus());
         }
 
         return true;
+    }
+
+    // Đếm nhanh số khuyến mãi theo một trạng thái cụ thể để hiển thị phần tổng quan.
+    private long countPromotionsByStatus(List<PromotionResponse> promotions, String status) {
+        return promotions.stream()
+                .filter(promotion -> status.equals(promotion.getStatus()))
+                .count();
+    }
+
+    // Cắt danh sách theo trang hiện tại để trả về đúng dữ liệu cần hiển thị.
+    private List<PromotionResponse> getPagedPromotions(List<PromotionResponse> promotions, int page, int size) {
+        int totalFiltered = promotions.size();
+
+        if (totalFiltered == 0) {
+            return List.of();
+        }
+
+        int fromIndex = page * size;
+        int toIndex = Math.min(fromIndex + size, totalFiltered);
+
+        return promotions.subList(fromIndex, toIndex);
     }
 }
