@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Room Types - V'Hotel</title>
+    <title>Hạng phòng - V'Hotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap -->
@@ -26,9 +26,11 @@
 
 <main class="room-type-page">
 
+    <!-- HERO -->
     <section class="room-type-hero">
         <div class="room-type-hero-content">
-            <h1>Rooms & Suites</h1>
+            <p class="section-label">V'HOTEL HÀ NỘI</p>
+            <h1>Phòng & Hạng phòng</h1>
             <p>
                 Khám phá các hạng phòng tại V'Hotel, nơi không gian nghỉ dưỡng tinh tế
                 được kết hợp cùng tiện nghi hiện đại và dịch vụ tận tâm.
@@ -36,60 +38,138 @@
         </div>
     </section>
 
+    <!-- BANNER -->
     <section class="room-type-banner">
-        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2000&auto=format&fit=crop"
-             alt="V'Hotel rooms and suites">
+        <img src="https://res.cloudinary.com/dhwtycrov/image/upload/v1781368619/z7931333094845_1da5033044f61c73425a0aab601ed57f_isblsi.jpg"
+             alt="Phòng và hạng phòng tại V'Hotel">
     </section>
 
+    <!-- LIST -->
     <section class="room-type-list">
 
         <article class="room-type-row"
                  th:each="roomType, iterStat : ${roomTypes}"
                  th:classappend="${iterStat.odd} ? ' reverse' : ''">
 
+            <!-- CONTENT -->
             <div class="room-type-content">
-                <p class="section-label">V'HOTEL HANOI</p>
 
-                <h2 th:text="${roomType.displayName}">
-                    Deluxe Room
+                <div class="room-type-index">
+                    <span th:text="${#numbers.formatInteger(iterStat.count, 2)}">01</span>
+                </div>
+
+                <p class="section-label">PHÒNG & HẠNG PHÒNG</p>
+
+                <h2 th:text="${roomType.name}">
+                    Phòng Deluxe
                 </h2>
 
                 <p class="room-description"
                    th:text="${roomType.description}">
-                    Elegant room description.
+                    Mô tả hạng phòng.
                 </p>
 
-                <div class="room-info">
-                    <span>
-                        <i class="bi bi-person"></i>
-                        <span th:text="${roomType.capacity}">2</span> guests
-                    </span>
+                <!-- INFO GRID -->
+                <div class="room-info-grid">
 
-                    <span>
-                        From
-                        <strong th:text="${#numbers.formatDecimal(roomType.basePrice, 0, 'COMMA', 0, 'POINT')}">
-                            0
-                        </strong>
-                        VND / night
-                    </span>
+                    <div class="room-info-item">
+                        <i class="bi bi-people"></i>
+                        <div>
+                            <span class="info-label">Số khách</span>
+                            <strong>
+                                <span th:text="${roomType.maxAdults}">2</span>
+                                người lớn ·
+                                <span th:text="${roomType.maxChildren}">1</span>
+                                trẻ em
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="room-info-item">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                        <div>
+                            <span class="info-label">Diện tích phòng</span>
+                            <strong>
+                                <span th:text="${roomType.roomSize}">25</span>
+                                m²
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="room-info-item"
+                         th:if="${roomType.allowExtraBed}">
+                        <i class="bi bi-plus-square"></i>
+                        <div>
+                            <span class="info-label">Giường phụ</span>
+                            <strong>
+                                Tối đa
+                                <span th:text="${roomType.maxExtraBeds}">1</span>
+                                giường
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="room-info-item"
+                         th:if="${!roomType.allowExtraBed}">
+                        <i class="bi bi-dash-circle"></i>
+                        <div>
+                            <span class="info-label">Giường phụ</span>
+                            <strong>Không hỗ trợ</strong>
+                        </div>
+                    </div>
+
                 </div>
 
+                <!-- EXTRA BED DETAIL -->
+                <div class="extra-bed-box"
+                     th:if="${roomType.allowExtraBed}">
+                    <div>
+                        <i class="bi bi-info-circle"></i>
+                        <span>Giá giường phụ</span>
+                    </div>
+
+                    <strong>
+                        <span th:text="${#numbers.formatDecimal(roomType.extraBedPrice, 0, 'COMMA', 0, 'POINT')}">
+                            0
+                        </span>
+                        VND / đêm
+                    </strong>
+
+                    <p th:if="${roomType.extraBedNote != null}"
+                       th:text="${roomType.extraBedNote}">
+                        Ghi chú giường phụ
+                    </p>
+                </div>
+
+                <!-- PRICE -->
+                <div class="room-price">
+                    <span>Từ</span>
+
+                    <strong th:text="${#numbers.formatDecimal(roomType.basePrice, 0, 'COMMA', 0, 'POINT')}">
+                        0
+                    </strong>
+
+                    <span class="currency">VND</span>
+
+                    <small>/ đêm</small>
+                </div>
+
+                <!-- ACTION -->
                 <div class="room-type-actions">
-                    <a th:href="@{/room-types/{id}(id=${roomType.id})}" class="btn-dark-luxury">
-                        DISCOVER
+                    <a th:href="@{/page/rooms(roomTypeId=${roomType.id})}" class="btn-dark-luxury">
+                        Khám phá
                     </a>
-
-
                 </div>
             </div>
 
+            <!-- IMAGE -->
             <div class="room-type-image">
                 <img th:if="${roomType.imageUrl != null}"
                      th:src="${roomType.imageUrl}"
-                     th:alt="${roomType.displayName}">
+                     th:alt="${roomType.name}">
 
                 <div th:if="${roomType.imageUrl == null}" class="room-type-placeholder">
-                    <span th:text="${roomType.displayName}">Room Type</span>
+                    <span th:text="${roomType.name}">Hạng phòng</span>
                 </div>
             </div>
 
