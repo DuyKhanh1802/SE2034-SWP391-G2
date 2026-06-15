@@ -5,6 +5,7 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
+    <!-- Phần đầu trang: breadcrumb, tiêu đề và nút quay lại danh sách. -->
     <div class="page-action-bar">
         <div>
             <div class="breadcrumb-custom">
@@ -19,11 +20,13 @@
     </div>
 
     <section class="content-section promotion-detail-page">
+        <!-- Thông báo thành công sau khi vừa chỉnh sửa xong và quay về màn chi tiết. -->
         <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
             <span class="material-symbols-outlined">check_circle</span>
             <span th:text="${successMessage}">Cập nhật khuyến mãi thành công.</span>
         </div>
 
+        <!-- Khối hero: ảnh, mã, trạng thái, tên và mô tả ngắn của khuyến mãi. -->
         <section class="detail-hero">
             <div class="detail-hero-media">
                 <img th:if="${promotion.imageUrl != null and !promotion.imageUrl.isBlank()}"
@@ -59,6 +62,7 @@
             </div>
         </section>
 
+        <!-- Các chỉ số nổi bật để nhìn nhanh số tiền giảm, lượt dùng và thời gian áp dụng. -->
         <section class="detail-metrics">
             <div class="detail-metric-card detail-metric-emphasis">
                 <span>Số tiền giảm</span>
@@ -89,6 +93,7 @@
             </div>
         </section>
 
+        <!-- Hai cột thông tin chi tiết: dữ liệu chiến dịch và thiết lập hiển thị. -->
         <div class="detail-sections">
             <section class="detail-panel">
                 <div class="detail-panel-header">
@@ -154,6 +159,7 @@
             </section>
         </div>
 
+        <!-- Các hành động cuối trang: quay lại hoặc chuyển sang màn chỉnh sửa. -->
         <div class="form-actions detail-actions">
             <a th:href="@{/manager/promotions}" href="/manager/promotions" class="btn-cancel">
                 Quay lại

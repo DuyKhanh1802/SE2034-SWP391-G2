@@ -5,6 +5,7 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
+    <!-- Phần đầu trang: tiêu đề màn hình và nút tạo khuyến mãi mới. -->
     <div class="page-action-bar">
         <div>
             <div class="breadcrumb-custom">
@@ -20,6 +21,7 @@
     </div>
 
     <section class="content-section">
+        <!-- Thông báo thao tác thành công hoặc lỗi trả về từ controller. -->
         <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
             <span class="material-symbols-outlined">check_circle</span>
             <span th:text="${successMessage}">Thêm khuyến mãi thành công.</span>
@@ -30,6 +32,7 @@
             <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
         </div>
 
+        <!-- Thanh công cụ: lọc theo tab trạng thái và tìm kiếm theo mã/tên chiến dịch. -->
         <div class="toolbar">
             <div class="tabs">
                 <a th:href="@{/manager/promotions(status='all', keyword=${keyword}, size=${pageSize})}"
@@ -71,6 +74,7 @@
             </form>
         </div>
 
+        <!-- Bảng danh sách khuyến mãi với các thông tin chính và nút thao tác. -->
         <div class="table-card">
             <div class="table-responsive">
                 <table class="table align-middle promotion-table">
@@ -158,11 +162,26 @@
                                     <span class="material-symbols-outlined">edit</span>
                                 </a>
 
-                                <button type="button"
-                                        class="action-toggle"
-                                        title="Bật / Tắt">
-                                    <span class="material-symbols-outlined">power_settings_new</span>
-                                </button>
+                                <form th:action="@{/manager/promotions/toggle-status/{id}(id=${promotion.id})}"
+                                      method="post"
+                                      class="d-inline">
+                                    <input type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}">
+                                    <input type="hidden" name="page" th:value="${currentPage}">
+                                    <input type="hidden" name="size" th:value="${pageSize}">
+                                    <input type="hidden" name="status" th:value="${selectedStatus}">
+                                    <input type="hidden" name="keyword" th:value="${keyword}">
+
+                                    <button type="submit"
+                                            class="action-toggle"
+                                            th:title="${promotion.isActive} ? 'Tắt khuyến mãi' : 'Bật khuyến mãi'"
+                                            th:onclick="${promotion.isActive}
+                                                ? 'return confirm(''' + 'Bạn có chắc muốn tắt khuyến mãi này không?' + ''');'
+                                                : 'return confirm(''' + 'Bạn có chắc muốn bật lại khuyến mãi này không?' + ''');'">
+                                        <span class="material-symbols-outlined">power_settings_new</span>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -176,6 +195,7 @@
                 </table>
             </div>
 
+            <!-- Phần cuối bảng: số lượng đang hiển thị và điều hướng phân trang. -->
             <div class="table-bottom">
                 <p th:text="'Hiển thị ' + ${#lists.size(promotions)} + ' / ' + ${totalPromotions} + ' khuyến mãi'">
                     Hiển thị 0 / 0 khuyến mãi
@@ -210,6 +230,7 @@
             </div>
         </div>
 
+        <!-- Khối tổng quan nhanh để manager nhìn số lượng khuyến mãi theo từng trạng thái. -->
         <section class="summary-section">
             <h3>Tổng quan khuyến mãi</h3>
 
