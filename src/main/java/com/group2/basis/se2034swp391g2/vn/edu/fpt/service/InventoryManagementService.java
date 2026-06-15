@@ -3,7 +3,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.InventoryTransactionType;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -158,7 +157,6 @@ public class InventoryManagementService {
                                           BigDecimal unitCost,
                                           String supplier,
                                           String note,
-                                          PaymentMethod fundMethod,
                                           User createdBy) {
         InventoryItem item = getItem(itemId);
         validatePositive(quantity, "Số lượng nhập phải lớn hơn 0.");
@@ -195,7 +193,6 @@ public class InventoryManagementService {
         cashTransactionService.createInventoryPurchase(totalCost,
                 "Chi nhập kho " + savedReceipt.getCode() + " - " + item.getName(),
                 savedReceipt.getId(),
-                fundMethod,
                 createdBy);
 
         return savedReceipt;

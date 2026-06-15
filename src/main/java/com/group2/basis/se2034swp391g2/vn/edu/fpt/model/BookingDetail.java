@@ -1,6 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,8 +26,8 @@ public class BookingDetail {
     private Booking booking;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_type_id", nullable = false)
-    private RoomType roomType;
+    @JoinColumn(name = "variant_id", nullable = false)
+    private RoomTypeVariant variant;
 
     // Có thể null nếu lúc booking chỉ chọn loại phòng,
     // đến check-in mới gán phòng thật.
@@ -36,10 +35,10 @@ public class BookingDetail {
     @JoinColumn(name = "room_id")
     private Room room;
 
-    @Column(name = "check_in_date")
+    @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;
 
-    @Column(name = "check_out_date")
+    @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
 
     // Giá phòng / 1 đêm tại thời điểm đặt
@@ -77,10 +76,6 @@ public class BookingDetail {
 
     // Nếu khách chọn view khi đặt phòng thì giữ trường này.
     // Ví dụ: CITY_VIEW, GARDEN_VIEW.
-    @Enumerated(EnumType.STRING)
-    @Column(name = "view_type", length = 30)
-    private ViewType viewType;
-
     // Số người lớn ở riêng phòng này
     @Column(name = "num_adults", nullable = false)
     private Integer numAdults = 1;

@@ -20,11 +20,12 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse(
                 r.id,
                 r.roomNumber,
-                rt.name,
-                rt.basePrice
+                CONCAT(rt.name, ' - ', v.variantName),
+                v.pricePerNight
             )
             FROM Room r
-            JOIN r.roomType rt
+            JOIN r.variant v
+            JOIN v.roomType rt
             WHERE r.isDeleted = false
             AND r.status = :roomStatus
             AND NOT EXISTS (
@@ -61,7 +62,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("""
             SELECT r
             FROM Room r
-            JOIN FETCH r.roomType rt
+            JOIN FETCH r.variant v
+            JOIN FETCH v.roomType rt
             WHERE r.id IN :roomIds
             AND r.isDeleted = false
             AND r.status = :roomStatus

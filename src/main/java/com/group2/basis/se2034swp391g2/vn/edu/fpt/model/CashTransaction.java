@@ -3,7 +3,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionSourceType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,11 +39,7 @@ public class CashTransaction {
     @Column(name = "amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal amount;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "fund_method", nullable = false, length = 10)
-    private PaymentMethod fundMethod;
-
-    @Column(name = "description", length = 300)
+    @Column(name = "description", length = 300, columnDefinition = "NVARCHAR(300)")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -65,9 +60,6 @@ public class CashTransaction {
     protected void onCreate() {
         if (this.createdAt == null) {
             this.createdAt = Instant.now();
-        }
-        if (this.fundMethod == null) {
-            this.fundMethod = PaymentMethod.CASH;
         }
     }
 }

@@ -7,62 +7,72 @@
     <section class="module-header">
         <div>
             <p>Hotel Fund</p>
-            <h1>Quản lý quỹ</h1>
+            <h1>Quan ly quy</h1>
         </div>
-        <a class="btn-secondary-action" th:href="@{/manager/transactions}">Lịch sử giao dịch</a>
+        <a class="btn-secondary-action" th:href="@{/manager/transactions}">Lich su giao dich</a>
     </section>
 
     <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
     <section class="metric-grid">
-        <div class="metric-card"><span>Vốn đầu kỳ</span><strong th:text="${#numbers.formatDecimal(openingBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-        <div class="metric-card"><span>Tổng thu</span><strong th:text="${#numbers.formatDecimal(totalIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-        <div class="metric-card"><span>Tổng chi</span><strong th:text="${#numbers.formatDecimal(totalExpense, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-        <div class="metric-card"><span>Tổng quỹ</span><strong th:text="${#numbers.formatDecimal(currentBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-        <div class="metric-card"><span>Tiền mặt</span><strong th:text="${#numbers.formatDecimal(cashBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-        <div class="metric-card"><span>Chuyển khoản</span><strong th:text="${#numbers.formatDecimal(transferBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-        <div class="metric-card"><span>Thẻ</span><strong th:text="${#numbers.formatDecimal(cardBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
+        <div class="metric-card">
+            <span>Von dau ky</span>
+            <strong th:text="${#numbers.formatDecimal(openingBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+        </div>
+        <div class="metric-card">
+            <span>Tong thu</span>
+            <strong th:text="${#numbers.formatDecimal(totalIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+        </div>
+        <div class="metric-card">
+            <span>Tong chi</span>
+            <strong th:text="${#numbers.formatDecimal(totalExpense, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+        </div>
+        <div class="metric-card">
+            <span>Tong quy</span>
+            <strong th:text="${#numbers.formatDecimal(currentBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+        </div>
     </section>
 
     <section class="detail-grid">
-        <form class="panel form-panel" th:action="@{/manager/fund/opening-balance}" method="post">
-            <h2>Cấu hình vốn đầu kỳ</h2>
-            <input type="number" min="0" step="1000" name="openingCashBalance" th:value="${openingCashBalance}" placeholder="Vốn tiền mặt">
-            <input type="number" min="0" step="1000" name="openingTransferBalance" th:value="${openingTransferBalance}" placeholder="Vốn chuyển khoản">
-            <input type="number" min="0" step="1000" name="openingCardBalance" th:value="${openingCardBalance}" placeholder="Vốn thẻ">
-            <button type="submit">Lưu vốn đầu kỳ</button>
+        <form class="panel form-panel" th:action="@{/manager/fund/add-capital}" method="post">
+            <h2>Rot von</h2>
+            <input type="number" min="1" step="1000" name="amount" placeholder="So tien" required>
+            <button type="submit" th:text="${fundSetting == null ? 'Luu von dau ky' : 'Rot them von'}">Rot von</button>
         </form>
 
         <form class="panel form-panel" th:action="@{/manager/fund/manual-transaction}" method="post">
-            <h2>Lập phiếu thu/chi thủ công</h2>
+            <h2>Lap phieu thu/chi thu cong</h2>
             <select name="type" required>
-                <option value="INCOME">Phiếu thu</option>
-                <option value="EXPENSE">Phiếu chi</option>
+                <option value="INCOME">Phieu thu</option>
+                <option value="EXPENSE">Phieu chi</option>
             </select>
-            <select name="fundMethod" required>
-                <option value="CASH">Tiền mặt</option>
-                <option value="TRANSFER">Chuyển khoản</option>
-                <option value="CARD">Thẻ</option>
-            </select>
-            <input type="number" min="1" step="1000" name="amount" placeholder="Số tiền" required>
-            <textarea name="description" rows="3" placeholder="Nội dung"></textarea>
-            <button type="submit">Tạo phiếu</button>
+            <input type="number" min="1" step="1000" name="amount" placeholder="So tien" required>
+            <textarea name="description" rows="3" placeholder="Noi dung"></textarea>
+            <button type="submit">Tao phieu</button>
         </form>
     </section>
 
     <section class="panel">
-        <h2>Lịch sử thao tác gần đây</h2>
+        <h2>Lich su thao tac quy gan day</h2>
         <table class="module-table">
-            <thead><tr><th>Mã</th><th>Chứng từ</th><th>Loại</th><th>Kênh quỹ</th><th>Số tiền</th><th>Nội dung</th><th>Thời gian</th></tr></thead>
+            <thead>
+            <tr>
+                <th>Ma</th>
+                <th>Chung tu</th>
+                <th>Loai</th>
+                <th>So tien</th>
+                <th>Noi dung</th>
+                <th>Thoi gian</th>
+            </tr>
+            </thead>
             <tbody>
             <tr th:each="transaction : ${recentTransactions}">
                 <td th:text="${transaction.code}">CT</td>
                 <td th:text="${transaction.documentCode}">PT</td>
                 <td th:text="${transaction.type.name() == 'INCOME' ? 'Thu' : 'Chi'}">Thu</td>
-                <td th:text="${transaction.fundMethod}">CASH</td>
                 <td th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
-                <td th:text="${transaction.description}">Nội dung</td>
+                <td th:text="${transaction.description}">Noi dung</td>
                 <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
             </tr>
             </tbody>

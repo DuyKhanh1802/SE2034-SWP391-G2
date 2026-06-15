@@ -44,13 +44,13 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Hạng phòng</label>
-                        <select name="roomTypeId" class="form-select room-input" required>
+                        <select name="variantId" class="form-select room-input" required>
                             <option value="">Chọn hạng phòng</option>
 
-                            <option th:each="type : ${roomTypes}"
-                                    th:value="${type.id}"
-                                    th:text="${type.name}"
-                                    th:selected="${type.id == selectedRoomTypeId}">
+                            <option th:each="variant : ${roomTypeVariants}"
+                                    th:value="${variant.id}"
+                                    th:text="${variant.roomType.name + ' - ' + variant.variantName}"
+                                    th:selected="${variant.id == selectedVariantId}">
                                 STANDARD
                             </option>
                         </select>

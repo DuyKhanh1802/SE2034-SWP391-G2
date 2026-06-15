@@ -42,6 +42,7 @@ public class ActiveRoleAccessFilter extends OncePerRequestFilter {
         return uri.startsWith("/system-admin")
                 || uri.startsWith("/hotel-admin")
                 || uri.startsWith("/manager")
+                || uri.startsWith("/storekeeper")
                 || uri.startsWith("/receptionist");
     }
 
@@ -54,6 +55,9 @@ public class ActiveRoleAccessFilter extends OncePerRequestFilter {
         }
         if (uri.startsWith("/manager")) {
             return RoleName.MANAGER;
+        }
+        if (uri.startsWith("/storekeeper")) {
+            return RoleName.STOREKEEPER;
         }
         if (uri.startsWith("/receptionist")) {
             return RoleName.RECEPTIONIST;
