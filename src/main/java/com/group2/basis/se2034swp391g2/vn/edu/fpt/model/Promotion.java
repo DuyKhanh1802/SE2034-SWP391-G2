@@ -40,7 +40,7 @@ public class Promotion {
     /*
      * Nghiệp vụ mới chỉ dùng giảm số tiền cố định.
      */
-    @Column(name = "discount_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
+    @Column(name = "discount_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal discountAmount;
 
     @Column(name = "usage_limit", nullable = false)

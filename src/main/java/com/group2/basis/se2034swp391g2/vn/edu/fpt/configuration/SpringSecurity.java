@@ -48,7 +48,8 @@ public class SpringSecurity {
                                 "/hotel-admin/rooms/**",
                                 "/hotel-admin/room-images/**",
                                 "/hotel-admin/services/**",
-                                "/hotel-admin/promotions/**"
+                                "/hotel-admin/promotions/**",
+                                "/hotel-admin/promotion-images/**"
                         ).hasRole("HOTEL_ADMIN")
 
                         // 4. Các quyền khác
