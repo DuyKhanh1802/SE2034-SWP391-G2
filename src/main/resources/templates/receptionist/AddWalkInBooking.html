@@ -62,15 +62,30 @@
 
                     </div>
 
+                    <button type="submit"
+                            class="btn-apply-room"
+                            formmethod="get"
+                            formnovalidate
+                            th:formaction="@{/receptionist/bookings/add-walk-in}">
+                        ÁP DỤNG
+                    </button>
+
                     <!-- Available Rooms -->
                     <div class="room-section">
                         <div class="room-section-header">
-                            <label>PHÒNG CÒN TRỐNG</label>
-                            <span th:text="${availableRooms != null ? #lists.size(availableRooms) + ' PHÒNG TRỐNG' : '0 PHÒNG TRỐNG'}">
-                                0 PHÒNG TRỐNG
+                            <label>PHÒNG CÓ THỂ CHỌN</label>
+                            <span th:if="${hasApplied}"
+                                  th:text="${#lists.size(availableRooms) + ' PHÒNG CÓ THỂ CHỌN'}">
+                                        0 PHÒNG CÓ THỂ CHỌN
+                            </span>
+
+                            <span th:unless="${hasApplied}">
+                                    CHƯA TÌM PHÒNG
                             </span>
                         </div>
-
+                        <p class="room-section-note" th:if="${hasApplied}">
+                            Với nhóm đông người, vui lòng chọn nhiều phòng. Hệ thống sẽ kiểm tra tổng sức chứa khi tạo đặt phòng.
+                        </p>
                         <div class="room-grid">
 
                             <div class="room-option" th:each="room : ${availableRooms}">
@@ -82,27 +97,85 @@
 
                                 <label class="room-card"
                                        th:for="'room' + ${room.roomId}"
-                                       th:attr="data-price=${room.basePrice}">
-                                    <span class="room-number" th:text="${room.roomNumber}">
-                                        101
-                                    </span>
+                                       th:attr="data-price=${room.basePrice},
+                data-room-id=${room.roomId},
+                data-adults=${room.maxAdults},
+                data-children=${room.maxChildren}">
+    <span class="room-number" th:text="${room.roomNumber}">
+        101
+    </span>
 
                                     <span class="room-info">
-                                        <span class="room-type" th:text="${room.roomTypeName}">
-                                            Deluxe
-                                        </span>
+        <span class="room-type" th:text="${room.roomTypeName}">
+            Deluxe Room - City View
+        </span>
 
-                                        <span class="room-price"
-                                              th:text="${#numbers.formatDecimal(room.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                                            0 VND
-                                        </span>
-                                    </span>
+        <span class="room-price"
+              th:text="${#numbers.formatDecimal(room.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+            0 VND
+        </span>
+
+        <span class="room-meta">
+            Sức chứa:
+            <span th:text="${room.maxAdults}">2</span> người lớn,
+            <span th:text="${room.maxChildren}">0</span> trẻ em
+        </span>
+
+        <span class="room-meta" th:if="${room.allowExtraBed}">
+            Giường phụ:
+            tối đa <span th:text="${room.maxExtraBeds}">1</span>
+            •
+            <span th:text="${#numbers.formatDecimal(room.extraBedPrice, 0, 'COMMA', 0, 'POINT')} + ' VND/đêm'">
+                0 VND/đêm
+            </span>
+        </span>
+
+        <span class="room-meta" th:if="${!room.allowExtraBed}">
+            Không hỗ trợ giường phụ
+        </span>
+
+        <div class="extra-bed-select-wrap" th:if="${room.allowExtraBed}">
+    <label>Giường phụ</label>
+
+    <select class="extra-bed-select"
+            th:name="'extraBedCounts[' + ${room.roomId} + ']'"
+            th:attr="data-extra-price=${room.extraBedPrice}">
+        <option value="0">Không thêm</option>
+        <option th:each="i : ${#numbers.sequence(1, room.maxExtraBeds)}"
+                th:value="${i}"
+                th:text="${i + ' giường'}">
+            1 giường
+        </option>
+    </select>
+</div>
+                                        <div class="room-more"
+                                             th:if="${room.includedServices != null and !#lists.isEmpty(room.includedServices)}">
+
+    <button type="button" class="room-more-btn">
+        Xem thêm
+    </button>
+
+    <div class="included-services">
+        <span class="service-title">Dịch vụ đi kèm</span>
+
+        <span class="service-chip"
+              th:each="service : ${room.includedServices}"
+              th:text="${service}">
+            Bữa sáng Việt Nam x2
+        </span>
+    </div>
+</div>
+    </span>
                                 </label>
                             </div>
 
-                            <div th:if="${availableRooms == null or #lists.isEmpty(availableRooms)}"
+                            <div th:if="${!hasApplied}" class="empty-rooms">
+                                Vui lòng chọn ngày nhận phòng, ngày trả phòng, số khách rồi bấm ÁP DỤNG.
+                            </div>
+
+                            <div th:if="${hasApplied and #lists.isEmpty(availableRooms)}"
                                  class="empty-rooms">
-                                Không có phòng trống trong khoảng thời gian đã chọn.
+                                Không có phòng trống phù hợp trong khoảng thời gian đã chọn.
                             </div>
 
                         </div>
@@ -240,7 +313,8 @@
                                        name="depositAmount"
                                        min="0"
                                        step="1000"
-                                       placeholder="Ví dụ: 500000">
+                                       readonly
+                                       placeholder="Hệ thống tự tính 50%">
                             </div>
 
                             <div class="form-group-line">
@@ -257,6 +331,10 @@
 
                     <!-- Price Summary -->
                     <div class="price-summary">
+                        <div class="summary-row">
+                            <span>Sức chứa đã chọn</span>
+                            <span id="selectedCapacity">0 khách</span>
+                        </div>
                         <div class="summary-row">
                             <span id="nightLabel">Tiền phòng</span>
                             <span id="roomCharge">0 VND</span>
@@ -330,9 +408,30 @@
                 const remainingAmount = document.getElementById("remainingAmount");
 
                 const walkinForm = document.querySelector(".walkin-form");
+                const extraBedSelects = document.querySelectorAll(".extra-bed-select");
 
+                const selectedCapacity = document.getElementById("selectedCapacity");
+                const adultsInput = document.querySelector("input[name='adults']");
+                const childrenInput = document.querySelector("input[name='children']");
                 function formatVnd(amount) {
                     return new Intl.NumberFormat("vi-VN").format(amount) + " VND";
+                }
+                function getSelectedCapacity() {
+                    let adults = 0;
+                    let children = 0;
+
+                    roomCheckboxes.forEach(function (checkbox) {
+                        if (checkbox.checked) {
+                            const card = checkbox.nextElementSibling;
+                            adults += Number(card.dataset.adults || 0);
+                            children += Number(card.dataset.children || 0);
+                        }
+                    });
+
+                    return {
+                        adults: adults,
+                        children: children
+                    };
                 }
 
                 function getNights() {
@@ -375,27 +474,47 @@
                 function updateSummary() {
                     const nights = getNights();
                     const selectedRoomTotalPerNight = getSelectedRoomTotalPerNight();
+                    const capacity = getSelectedCapacity();
+                    const requiredAdults = Number(adultsInput ? adultsInput.value || 0 : 0);
+                    const requiredChildren = Number(childrenInput ? childrenInput.value || 0 : 0);
+
+                    if (selectedCapacity) {
+                        selectedCapacity.textContent =
+                            capacity.adults + "/" + requiredAdults + " người lớn, "
+                            + capacity.children + "/" + requiredChildren + " trẻ em";
+
+                        if (capacity.adults >= requiredAdults && capacity.children >= requiredChildren) {
+                            selectedCapacity.classList.remove("capacity-warning");
+                            selectedCapacity.classList.add("capacity-ok");
+                        } else {
+                            selectedCapacity.classList.remove("capacity-ok");
+                            selectedCapacity.classList.add("capacity-warning");
+                        }
+                    }
+
+                    let extraBedTotal = 0;
+
+                    extraBedSelects.forEach(function (select) {
+                        const count = Number(select.value || 0);
+                        const extraPrice = Number(select.dataset.extraPrice || 0);
+
+                        extraBedTotal += count * extraPrice * nights;
+                    });
 
                     const roomTotal = selectedRoomTotalPerNight * nights;
-                    const tax = Math.round(roomTotal * 0.12);
-                    const total = roomTotal + tax;
+                    const beforeTaxTotal = roomTotal + extraBedTotal;
+                    const tax = Math.round(beforeTaxTotal * 0.12);
+                    const total = beforeTaxTotal + tax;
+
+                    const suggestedDeposit = Math.round(total * 0.5);
 
                     let deposit = 0;
 
                     if (depositPaidCheckbox && depositPaidCheckbox.checked && depositAmountInput) {
-                        deposit = Number(depositAmountInput.value || 0);
-                    }
-
-                    if (deposit < 0) {
-                        deposit = 0;
-                    }
-
-                    if (deposit > total) {
-                        deposit = total;
-
-                        if (depositAmountInput) {
-                            depositAmountInput.value = total;
-                        }
+                        deposit = suggestedDeposit;
+                        depositAmountInput.value = suggestedDeposit;
+                    } else if (depositAmountInput) {
+                        depositAmountInput.value = "";
                     }
 
                     const remaining = total - deposit;
@@ -407,7 +526,7 @@
                     }
 
                     if (roomCharge) {
-                        roomCharge.textContent = formatVnd(roomTotal);
+                        roomCharge.textContent = formatVnd(roomTotal + extraBedTotal);
                     }
 
                     if (taxAmount) {
@@ -487,6 +606,9 @@
                 roomCheckboxes.forEach(function (checkbox) {
                     checkbox.addEventListener("change", updateSummary);
                 });
+                extraBedSelects.forEach(function (select) {
+                    select.addEventListener("change", updateSummary);
+                });
 
                 if (checkInInput) {
                     checkInInput.addEventListener("change", updateSummary);
@@ -521,6 +643,30 @@
                 updatePhoneCode();
                 toggleDepositFields();
                 updateSummary();
+
+                const moreButtons = document.querySelectorAll(".room-more-btn");
+
+                moreButtons.forEach(function (button) {
+                    button.addEventListener("click", function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        const moreBlock = button.closest(".room-more");
+                        const serviceBox = moreBlock.querySelector(".included-services");
+
+                        if (!serviceBox) {
+                            return;
+                        }
+
+                        serviceBox.classList.toggle("show");
+
+                        if (serviceBox.classList.contains("show")) {
+                            button.textContent = "Thu gọn";
+                        } else {
+                            button.textContent = "Xem thêm";
+                        }
+                    });
+                });
             });
         </script>
 

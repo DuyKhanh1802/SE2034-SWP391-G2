@@ -216,8 +216,8 @@ body {
 
 .room-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
 }
 
 .room-option {
@@ -232,15 +232,16 @@ body {
 }
 
 .room-card {
-    aspect-ratio: 1 / 1;
     width: 100%;
+    min-height: 330px;
     border: 1px solid var(--bg-border);
     background: transparent;
-    padding: 18px;
+    padding: 18px 18px 16px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 14px;
     transition: 0.2s ease;
     margin: 0;
 }
@@ -265,21 +266,45 @@ body {
 .room-info {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
 }
 
 .room-type {
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1.2;
+    min-height: 30px;
 }
 
 .room-price {
     font-family: var(--font-heading);
     color: var(--black);
-    font-size: 19px;
-    line-height: 1.3;
+    font-size: 24px;
+    line-height: 1.05;
+}
+
+.room-meta {
+    color: var(--text-soft);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.extra-bed-check {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-main);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.extra-bed-check input {
+    width: 15px;
+    height: 15px;
+    accent-color: #9b7a45;
 }
 
 /* Guest Card */
@@ -629,4 +654,122 @@ body {
 .deposit-fields select:focus {
     border-bottom-color: #9b7a45;
 }
+.btn-apply-room {
+    width: 180px;
+    height: 42px;
+    margin: -34px 0 38px;
+    border: 1px solid var(--black);
+    background: var(--black);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+}
 
+.btn-apply-room:hover {
+    background: #222;
+}
+.room-meta {
+    color: var(--text-soft);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.extra-bed-check {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-main);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.extra-bed-check input {
+    width: 13px;
+    height: 13px;
+}
+
+.room-section-note {
+    margin: -14px 0 24px;
+    color: var(--text-soft);
+    font-size: 13px;
+    line-height: 1.5;
+}
+.capacity-ok {
+    color: #2f6f3e;
+    font-weight: 800;
+}
+
+.capacity-warning {
+    color: #ba1a1a;
+    font-weight: 800;
+}
+.extra-bed-select-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.extra-bed-select-wrap label {
+    color: var(--text-soft);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.extra-bed-select {
+    width: 100%;
+    height: 32px;
+    border: 1px solid #d2cbc6;
+    background: transparent;
+    padding: 0 8px;
+    font-size: 12px;
+    color: var(--text-main);
+    outline: none;
+}
+
+.room-more {
+    margin-top: 4px;
+}
+
+.room-more-btn {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: #8a6a3d;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.included-services {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.included-services.show {
+    display: flex;
+}
+
+.service-title {
+    color: var(--text-main);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.service-chip {
+    width: fit-content;
+    max-width: 100%;
+    padding: 4px 7px;
+    border: 1px solid #d2cbc6;
+    border-radius: 999px;
+    color: #6f5834;
+    background: rgba(232, 228, 225, 0.45);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+}

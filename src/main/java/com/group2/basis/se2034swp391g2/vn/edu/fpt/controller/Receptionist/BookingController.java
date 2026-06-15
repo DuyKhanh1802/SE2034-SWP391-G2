@@ -68,25 +68,41 @@ public class BookingController {
                                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
                                            @RequestParam(required = false)
                                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOutDate,
+                                           @RequestParam(required = false) Integer adults,
+                                           @RequestParam(required = false) Integer children,
                                            Model model) {
 
-        if (checkInDate == null) {
-            checkInDate = LocalDate.now();
-        }
-
-        if (checkOutDate == null) {
-            checkOutDate = checkInDate.plusDays(1);
-        }
-
         BookingCreateRequest request = new BookingCreateRequest();
+
         request.setCheckInDate(checkInDate);
         request.setCheckOutDate(checkOutDate);
-        request.setAdults(1);
-        request.setChildren(0);
+        request.setAdults(adults);
+        request.setChildren(children);
 
         model.addAttribute("countries", countryRepository.findAll());
         model.addAttribute("request", request);
-        model.addAttribute("availableRooms", bookingService.getAvailableRooms(checkInDate, checkOutDate));
+
+        boolean hasApplied =
+                checkInDate != null
+                        && checkOutDate != null
+                        && adults != null
+                        && children != null;
+
+        model.addAttribute("hasApplied", hasApplied);
+
+        if (hasApplied) {
+            try {
+                model.addAttribute(
+                        "availableRooms",
+                        bookingService.getAvailableRooms(checkInDate, checkOutDate)
+                );
+            } catch (IllegalArgumentException e) {
+                model.addAttribute("errorMessage", e.getMessage());
+                model.addAttribute("availableRooms", java.util.Collections.emptyList());
+            }
+        } else {
+            model.addAttribute("availableRooms", java.util.Collections.emptyList());
+        }
 
         return "receptionist/AddWalkInBooking";
     }
