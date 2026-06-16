@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant, Long> {
@@ -41,80 +42,140 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
           END AS availableRooms
 
        FROM room_type_variants rtv
+
        JOIN room_types rt
           ON rtv.room_type_id = rt.room_type_id
 
-       OUTER APPLY (
+       LEFT JOIN (
           SELECT
-              MAX(CASE WHEN x.rn = 1 THEN x.image_url END) AS primaryImageUrl,
-              STRING_AGG(x.image_url, '|') WITHIN GROUP (ORDER BY x.sort_order ASC) AS imageUrls,
+              t.entity_id AS variantId,
+              MAX(CASE WHEN t.rn = 1 THEN t.image_url END) AS primaryImageUrl,
+              STRING_AGG(t.image_url, '|') WITHIN GROUP (ORDER BY t.sort_order ASC) AS imageUrls,
               COUNT(*) AS totalImages
           FROM (
               SELECT
+                  i.entity_id,
                   i.image_url,
                   i.sort_order,
                   ROW_NUMBER() OVER (
+                      PARTITION BY i.entity_id
                       ORDER BY i.is_primary DESC, i.sort_order ASC
                   ) AS rn
               FROM images i
               WHERE i.entity_type = 'ROOM_TYPE_VARIANT'
-                AND i.entity_id = rtv.variant_id
-          ) x
+          ) t
+          GROUP BY t.entity_id
        ) img
+          ON img.variantId = rtv.variant_id
 
-       OUTER APPLY (
-          SELECT STRING_AGG(
-             CONCAT(bt.name, ' x', rtvb.quantity),
-             ', '
-          ) AS bedSummary
+       LEFT JOIN (
+          SELECT
+              rtvb.variant_id AS variantId,
+              STRING_AGG(
+                  CONCAT(bt.name, ' x', rtvb.quantity),
+                  ', '
+              ) AS bedSummary
           FROM room_type_variant_beds rtvb
           JOIN bed_types bt
-             ON rtvb.bed_type_id = bt.bed_type_id
-          WHERE rtvb.variant_id = rtv.variant_id
+              ON rtvb.bed_type_id = bt.bed_type_id
+          GROUP BY rtvb.variant_id
        ) beds
+          ON beds.variantId = rtv.variant_id
 
-       OUTER APPLY (
-          SELECT STRING_AGG(
-             a.name,
-             ', '
-          ) WITHIN GROUP (ORDER BY rta.sort_order ASC) AS amenitySummary
+       LEFT JOIN (
+          SELECT
+              rta.room_type_id AS roomTypeId,
+              STRING_AGG(
+                  a.name,
+                  ', '
+              ) WITHIN GROUP (ORDER BY rta.sort_order ASC) AS amenitySummary
           FROM room_type_amenities rta
           JOIN amenities a
-             ON rta.amenity_id = a.amenity_id
-          WHERE rta.room_type_id = rt.room_type_id
+              ON rta.amenity_id = a.amenity_id
+          GROUP BY rta.room_type_id
        ) amenities
+          ON amenities.roomTypeId = rt.room_type_id
 
-       OUTER APPLY (
-          SELECT STRING_AGG(
-             CONCAT(s.name, ' x', rtvs.quantity),
-             ', '
-          ) AS serviceSummary
+       LEFT JOIN (
+          SELECT
+              rtvs.variant_id AS variantId,
+              STRING_AGG(
+                  CONCAT(s.name, ' x', rtvs.quantity),
+                  ', '
+              ) AS serviceSummary
           FROM room_type_variant_services rtvs
           JOIN services s
-             ON rtvs.service_id = s.service_id
-          WHERE rtvs.variant_id = rtv.variant_id
-            AND rtvs.is_deleted = 0
+              ON rtvs.service_id = s.service_id
+          WHERE rtvs.is_deleted = 0
+          GROUP BY rtvs.variant_id
        ) services
+          ON services.variantId = rtv.variant_id
 
-       OUTER APPLY (
+       LEFT JOIN (
           SELECT
-              COUNT(r.room_id)
-              -
-              (
-                  SELECT COUNT(bd.booking_detail_id)
-                  FROM booking_details bd
-                  JOIN bookings b
-                      ON bd.booking_id = b.booking_id
-                  WHERE bd.variant_id = rtv.variant_id
-                    AND b.status NOT IN ('CANCELLED', 'EXPIRED')
-                    AND bd.check_in_date < :checkOutDate
-                    AND bd.check_out_date > :checkInDate
-              ) AS availableRooms
+              r.variant_id AS variantId,
+              COUNT(r.room_id) AS totalRooms
           FROM rooms r
-          WHERE r.variant_id = rtv.variant_id
-            AND r.is_deleted = 0
+          WHERE r.is_deleted = 0
             AND r.status NOT IN ('MAINTENANCE', 'OUT_OF_SERVICE')
+          GROUP BY r.variant_id
+       ) room_count
+          ON room_count.variantId = rtv.variant_id
+
+       LEFT JOIN (
+          SELECT
+              bd.variant_id AS variantId,
+              COUNT(bd.booking_detail_id) AS bookedRooms
+          FROM booking_details bd
+          JOIN bookings b
+              ON bd.booking_id = b.booking_id
+          WHERE b.status NOT IN ('CANCELLED', 'EXPIRED')
+            AND (
+                :checkInDate IS NULL
+                OR :checkOutDate IS NULL
+                OR (
+                    bd.check_in_date < :checkOutDate
+                    AND bd.check_out_date > :checkInDate
+                )
+            )
+          GROUP BY bd.variant_id
+       ) booked
+          ON booked.variantId = rtv.variant_id
+
+       LEFT JOIN (
+          SELECT
+              rc.variantId,
+              rc.totalRooms - ISNULL(b.bookedRooms, 0) AS availableRooms
+          FROM (
+              SELECT
+                  r.variant_id AS variantId,
+                  COUNT(r.room_id) AS totalRooms
+              FROM rooms r
+              WHERE r.is_deleted = 0
+                AND r.status NOT IN ('MAINTENANCE', 'OUT_OF_SERVICE')
+              GROUP BY r.variant_id
+          ) rc
+          LEFT JOIN (
+              SELECT
+                  bd.variant_id AS variantId,
+                  COUNT(bd.booking_detail_id) AS bookedRooms
+              FROM booking_details bd
+              JOIN bookings b
+                  ON bd.booking_id = b.booking_id
+              WHERE b.status NOT IN ('CANCELLED', 'EXPIRED')
+                AND (
+                    :checkInDate IS NULL
+                    OR :checkOutDate IS NULL
+                    OR (
+                        bd.check_in_date < :checkOutDate
+                        AND bd.check_out_date > :checkInDate
+                    )
+                )
+              GROUP BY bd.variant_id
+          ) b
+              ON b.variantId = rc.variantId
        ) available
+          ON available.variantId = rtv.variant_id
 
        WHERE rtv.is_deleted = 0
          AND rt.is_deleted = 0
@@ -128,6 +189,7 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
               OR :checkOutDate IS NULL
               OR available.availableRooms >= :roomCount
          )
+
          AND rtv.capacity >= CEILING(1.0 * (:adults + :children) / :roomCount)
          AND rtv.max_adults >= CEILING(1.0 * :adults / :roomCount)
          AND rtv.max_children >= CEILING(1.0 * :children / :roomCount)
@@ -148,4 +210,5 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
             @Param("children") Integer children,
             @Param("roomCount") Integer roomCount
     );
+
 }

@@ -210,7 +210,8 @@
                     checkOutDate=${checkOutDate},
                     adults=${adults},
                     children=${children},
-                    roomCount=${roomCount}
+                    roomCount=${roomCount},
+                    roomGuests=${roomGuests}
                )}"
                th:classappend="${selectedRoomTypeId == null} ? 'active' : ''">
                 Tất cả
@@ -218,15 +219,16 @@
 
             <a th:each="type : ${roomTypes}"
                th:href="@{/page/rooms(
-                    roomTypeId=${type.id},
-                    viewType=${selectedViewType},
-                    sort=${selectedSort},
-                    checkInDate=${checkInDate},
-                    checkOutDate=${checkOutDate},
-                    adults=${adults},
-                    children=${children},
-                    roomCount=${roomCount}
-               )}"
+        roomTypeId=${type.id},
+        viewType=${selectedViewType},
+        sort=${selectedSort},
+        checkInDate=${checkInDate},
+        checkOutDate=${checkOutDate},
+        adults=${adults},
+        children=${children},
+        roomCount=${roomCount},
+        roomGuests=${roomGuests}
+   )}"
                th:text="${type.name}"
                th:classappend="${type.id == selectedRoomTypeId} ? 'active' : ''">
                 Phòng tiêu chuẩn
@@ -244,11 +246,11 @@
                 </span>
 
                 <div class="rose-dropdown-menu">
-                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='recommended', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount})}">Đề
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='recommended', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Đề
                         xuất</a>
-                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='priceAsc', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount})}">Giá
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='priceAsc', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Giá
                         thấp đến cao</a>
-                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='priceDesc', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount})}">Giá
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='priceDesc', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Giá
                         cao đến thấp</a>
                 </div>
             </div>
@@ -266,15 +268,15 @@
                 </span>
 
                 <div class="rose-dropdown-menu">
-                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount})}">Tất
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Tất
                         cả hướng nhìn</a>
-                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='CITY', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount})}">Hướng
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='CITY', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Hướng
                         thành phố</a>
-                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='SEA', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount})}">Hướng
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='SEA', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Hướng
                         biển</a>
-                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='POOL', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount})}">Hướng
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='POOL', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Hướng
                         hồ bơi</a>
-                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='GARDEN', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount})}">Hướng
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='GARDEN', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Hướng
                         vườn</a>
                 </div>
             </div>
@@ -362,7 +364,8 @@
                                     checkOutDate=${checkOutDate},
                                     adults=${adults},
                                     children=${children},
-                                    roomCount=${roomCount}
+                                    roomCount=${roomCount},
+                                     roomGuests=${roomGuests}
                                )}">
                                 Chi tiết phòng
                             </a>
@@ -1041,6 +1044,7 @@
                 hienThiTuoiTreEm(block);
             });
         }
+
         const applyGuestBtn = document.getElementById("applyGuestBtn");
 
         if (applyGuestBtn) {
@@ -1082,49 +1086,48 @@
         }
 
         document.querySelectorAll(".reserve-btn").forEach(button => {
-            button.addEventListener("click", function () {
-                const variantId = this.dataset.variantId;
+                button.addEventListener("click", function () {
+                    const variantId = this.dataset.variantId;
 
-                const checkIn = checkInInput ? checkInInput.value : this.dataset.checkIn;
-                const checkOut = checkOutInput ? checkOutInput.value : this.dataset.checkOut;
+                    const checkIn = checkInInput ? checkInInput.value : this.dataset.checkIn;
+                    const checkOut = checkOutInput ? checkOutInput.value : this.dataset.checkOut;
 
-                const adultsInput = document.getElementById("adultsInput");
-                const childrenInput = document.getElementById("childrenInput");
-                const roomCountInput = document.getElementById("roomCountInput");
+                    const adultsInput = document.getElementById("adultsInput");
+                    const childrenInput = document.getElementById("childrenInput");
+                    const roomCountInput = document.getElementById("roomCountInput");
 
-                const adults = adultsInput ? adultsInput.value : 1;
-                const children = childrenInput ? childrenInput.value : 0;
-                const totalRooms = roomCountInput ? parseInt(roomCountInput.value) : 1;
+                    const adults = adultsInput ? adultsInput.value : 1;
+                    const children = childrenInput ? childrenInput.value : 0;
+                    const totalRooms = roomCountInput ? parseInt(roomCountInput.value) : 1;
 
-                danhSachPhongDaChon[phongDangChon - 1] = variantId;
+                    danhSachPhongDaChon[phongDangChon - 1] = variantId;
 
-                if (totalRooms > 1 && phongDangChon < totalRooms) {
-                    phongDangChon++;
-                    capNhatThanhChonPhong();
+                    if (totalRooms > 1 && phongDangChon < totalRooms) {
+                        phongDangChon++;
+                        capNhatThanhChonPhong();
 
-                    const filterBar = document.querySelector(".rose-filter-bar");
+                        const filterBar = document.querySelector(".rose-filter-bar");
 
-                    if (filterBar) {
-                        window.scrollTo({
-                            top: filterBar.offsetTop,
-                            behavior: "smooth"
-                        });
+                        if (filterBar) {
+                            window.scrollTo({
+                                top: filterBar.offsetTop,
+                                behavior: "smooth"
+                            });
+                        }
+
+                        return;
                     }
 
-                    return;
-                }
+                    let url = `/page/booking/create?variantIds=${danhSachPhongDaChon.join(",")}`;
+                    url += `&adults=${adults}&children=${children}&roomCount=${totalRooms}`;
 
-                let url = `/page/booking/create?variantIds=${danhSachPhongDaChon.join(",")}`;
-                url += `&adults=${adults}&children=${children}&roomCount=${totalRooms}`;
+                    if (checkIn && checkOut && checkIn !== "null" && checkOut !== "null") {
+                        url += `&checkInDate=${checkIn}&checkOutDate=${checkOut}`;
+                    }
 
-                if (checkIn && checkOut && checkIn !== "null" && checkOut !== "null") {
-                    url += `&checkInDate=${checkIn}&checkOutDate=${checkOut}`;
-                }
-
-                window.location.href = url;
-            });
-        }
-
+                    window.location.href = url;
+                });
+            }
         );
 
         khoiPhucPhongTuHiddenInput();
