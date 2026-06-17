@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Hạng phòng - V'Hotel</title>
+    <title>Các hạng phòng - V'Hotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap -->
@@ -132,7 +132,7 @@
                         <span th:text="${#numbers.formatDecimal(roomType.extraBedPrice, 0, 'COMMA', 0, 'POINT')}">
                             0
                         </span>
-                        VND / đêm
+                        VNĐ / đêm
                     </strong>
 
                     <p th:if="${roomType.extraBedNote != null}"
@@ -149,7 +149,7 @@
                         0
                     </strong>
 
-                    <span class="currency">VND</span>
+                    <span class="currency">VNĐ</span>
 
                     <small>/ đêm</small>
                 </div>
@@ -157,7 +157,7 @@
                 <!-- ACTION -->
                 <div class="room-type-actions">
                     <a th:href="@{/page/rooms(roomTypeId=${roomType.id})}" class="btn-dark-luxury">
-                        Khám phá
+                        KHÁM PHÁ
                     </a>
                 </div>
             </div>
