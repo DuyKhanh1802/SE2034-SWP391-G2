@@ -7,6 +7,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingCreateRequest;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingUpdateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingDetailResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse;
@@ -28,6 +29,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ViewBookingDetailResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -167,7 +172,7 @@ public class BookingService {
 
         LocalDate checkInDate = request.getCheckInDate();
         LocalDate checkOutDate = request.getCheckOutDate();
-
+        User currentStaff = getCurrentStaffUser();
         List<Room> selectedRooms = roomRepository.findAvailableRoomsByIds(
                 request.getRoomIds(),
                 checkInDate,
@@ -177,7 +182,7 @@ public class BookingService {
         );
 
         if (selectedRooms.size() != request.getRoomIds().size()) {
-            throw new IllegalArgumentException("One or more selected rooms are no longer available.");
+            throw new IllegalArgumentException("Một hoặc nhiều phòng đã chọn không còn khả dụng. Vui lòng chọn lại phòng.");
         }
 
         validateRoomCapacity(selectedRooms, request);
@@ -197,6 +202,7 @@ public class BookingService {
                 .guestPhone(request.getPhoneNumber().trim())
                 .guestEmail(request.getEmail().trim())
                 .guest(guest)
+                .createdBy(currentStaff)
                 .checkInDate(checkInDate)
                 .checkOutDate(checkOutDate)
                 .numAdults(request.getAdults())
@@ -229,11 +235,11 @@ public class BookingService {
             int extraBedCount = getExtraBedCount(request, room.getId());
 
             if (extraBedCount > 0 && !Boolean.TRUE.equals(room.getVariant().getAllowExtraBed())) {
-                throw new IllegalArgumentException("Room " + room.getRoomNumber() + " does not allow extra bed.");
+                throw new IllegalArgumentException("Phòng " + room.getRoomNumber() + " không hỗ trợ giường phụ.");
             }
 
             if (extraBedCount > 0 && room.getVariant().getMaxExtraBeds() < extraBedCount) {
-                throw new IllegalArgumentException("Room " + room.getRoomNumber() + " exceeds max extra bed limit.");
+                throw new IllegalArgumentException("Phòng " + room.getRoomNumber() + " vượt quá số lượng giường phụ cho phép.");
             }
 
             BigDecimal extraBedPrice = room.getVariant().getExtraBedPrice() == null
@@ -244,7 +250,17 @@ public class BookingService {
                     .multiply(BigDecimal.valueOf(extraBedCount))
                     .multiply(BigDecimal.valueOf(nights));
 
-            BigDecimal detailTotal = roomSubtotal.add(extraBedTotal);
+            // Tổng tiền phòng + giường phụ trước VAT
+            BigDecimal detailTotalBeforeVat = roomSubtotal.add(extraBedTotal);
+
+            // VAT từng dòng phòng
+            BigDecimal vatRate = BigDecimal.valueOf(0.12);
+
+            BigDecimal detailVatAmount = detailTotalBeforeVat.multiply(vatRate)
+                    .setScale(0, java.math.RoundingMode.HALF_UP);
+
+            // Tổng từng dòng sau VAT
+            BigDecimal detailTotalWithVat = detailTotalBeforeVat.add(detailVatAmount);
 
             BookingDetail.BookingDetailBuilder detailBuilder = BookingDetail.builder()
                     .booking(savedBooking)
@@ -260,7 +276,9 @@ public class BookingService {
                     .extraBedCount(extraBedCount)
                     .extraBedPrice(extraBedPrice)
                     .extraBedTotal(extraBedTotal)
-                    .totalAmount(detailTotal);
+                    .vatRate(vatRate)
+                    .vatAmount(detailVatAmount)
+                    .totalAmount(detailTotalWithVat);
 
             if (bookingStatus == BookingStatus.CHECKED_IN) {
                 detailBuilder.roomCode(generateRoomCode());
@@ -272,7 +290,7 @@ public class BookingService {
             BookingDetail detail = detailBuilder.build();
 
             bookingDetails.add(detail);
-            totalAmount = totalAmount.add(detailTotal);
+            totalAmount = totalAmount.add(detailTotalBeforeVat);
         }
         BigDecimal vatTotal = totalAmount.multiply(BigDecimal.valueOf(0.12))
                 .setScale(0, java.math.RoundingMode.HALF_UP);
@@ -292,6 +310,7 @@ public class BookingService {
         savedBooking.setAmountCalculatedAt(Instant.now());
 
         if (Boolean.TRUE.equals(request.getDepositPaid())) {
+            validateDepositRequest(request);
             savedBooking.setDepositStatus(DepositStatus.PAID);
         } else {
             savedBooking.setDepositStatus(DepositStatus.UNPAID);
@@ -300,135 +319,146 @@ public class BookingService {
         bookingRepository.save(savedBooking);
         bookingDetailRepository.saveAll(bookingDetails);
 
+        if(Boolean.TRUE.equals(request.getDepositPaid())){
+            createDepositPayment(savedBooking,depositAmount,request,currentStaff);
+        }
+
         if (bookingStatus == BookingStatus.CHECKED_IN) {
             roomRepository.saveAll(selectedRooms);
         }
         return savedBooking.getId();
     }
 
+    private User getCurrentStaffUser() {
+        String email = org.springframework.security.core.context.SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return userRepository.findByEmailAndIsDeletedFalse(email)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin nhân viên đang đăng nhập."));
+    }
+
     private void validateCreateBookingRequest(BookingCreateRequest request) {
         if (request == null) {
-            throw new IllegalArgumentException("Booking request is required.");
+            throw new IllegalArgumentException("Thông tin đặt phòng không được để trống.");
         }
 
         if (request.getFirstName() == null || request.getFirstName().trim().isEmpty()) {
-            throw new IllegalArgumentException("First name is required.");
+            throw new IllegalArgumentException("Vui lòng nhập tên của khách.");
         }
 
         if (request.getLastName() == null || request.getLastName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Last name is required.");
+            throw new IllegalArgumentException("Vui lòng nhập họ của khách.");
         }
 
         String firstName = request.getFirstName().trim();
         String lastName = request.getLastName().trim();
 
         if (firstName.length() > 50) {
-            throw new IllegalArgumentException("First name must not exceed 50 characters.");
+            throw new IllegalArgumentException("Tên của khách không được vượt quá 50 ký tự.");
         }
 
         if (lastName.length() > 50) {
-            throw new IllegalArgumentException("Last name must not exceed 50 characters.");
+            throw new IllegalArgumentException("Họ của khách không được vượt quá 50 ký tự.");
         }
 
         if (request.getPhoneNumber() == null || request.getPhoneNumber().trim().isEmpty()) {
-            throw new IllegalArgumentException("Guest phone number is required.");
+            throw new IllegalArgumentException("Vui lòng nhập số điện thoại của khách.");
         }
 
         String phoneNumber = request.getPhoneNumber().trim();
         if (phoneNumber.length() > MAX_PHONE_LENGTH) {
-            throw new IllegalArgumentException("Guest phone number must not exceed 20 characters.");
+            throw new IllegalArgumentException("Số điện thoại không được vượt quá 20 ký tự.");
         }
 
         if (!PHONE_PATTERN.matcher(phoneNumber).matches()) {
-            throw new IllegalArgumentException("Invalid phone number format.");
-        }
-
-        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
-            String email = request.getEmail().trim();
-
-            if (email.length() > MAX_EMAIL_LENGTH) {
-                throw new IllegalArgumentException("Email must not exceed 150 characters.");
-            }
-
-            if (!EMAIL_PATTERN.matcher(email).matches()) {
-                throw new IllegalArgumentException("Invalid email format.");
-            }
+            throw new IllegalArgumentException("Số điện thoại không đúng định dạng.");
         }
 
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email is required.");
+            throw new IllegalArgumentException("Vui lòng nhập email của khách.");
+        }
+
+        String email = request.getEmail().trim();
+
+        if (email.length() > MAX_EMAIL_LENGTH) {
+            throw new IllegalArgumentException("Email không được vượt quá 150 ký tự.");
+        }
+
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("Email không đúng định dạng.");
         }
 
         if (request.getCountryId() == null) {
-            throw new IllegalArgumentException("Country is required.");
+            throw new IllegalArgumentException("Vui lòng chọn quốc gia của khách.");
         }
 
         if (request.getIdentityNumber() == null || request.getIdentityNumber().trim().isEmpty()) {
-            throw new IllegalArgumentException("Identity number is required.");
+            throw new IllegalArgumentException("Vui lòng nhập số giấy tờ tùy thân.");
         }
 
         if (request.getDateOfBirth() != null && request.getDateOfBirth().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Date of birth cannot be in the future.");
+            throw new IllegalArgumentException("Ngày sinh không được lớn hơn ngày hiện tại.");
         }
 
         validateBookingDates(request.getCheckInDate(), request.getCheckOutDate());
 
         if (request.getAdults() == null || request.getAdults() < 1) {
-            throw new IllegalArgumentException("Adults must be at least 1.");
+            throw new IllegalArgumentException("Số người lớn phải ít nhất là 1.");
         }
 
         if (request.getChildren() == null || request.getChildren() < 0) {
-            throw new IllegalArgumentException("Children must be at least 0.");
+            throw new IllegalArgumentException("Số trẻ em không được nhỏ hơn 0.");
         }
 
         int totalGuests = request.getAdults() + request.getChildren();
         if (totalGuests < 1) {
-            throw new IllegalArgumentException("Total guests must be at least 1.");
+            throw new IllegalArgumentException("Tổng số khách phải ít nhất là 1.");
         }
 
         if (request.getRoomIds() == null || request.getRoomIds().isEmpty()) {
-            throw new IllegalArgumentException("Please select at least one room.");
+            throw new IllegalArgumentException("Vui lòng chọn ít nhất một phòng.");
         }
 
         Set<Long> uniqueRoomIds = new HashSet<>(request.getRoomIds());
         if (uniqueRoomIds.size() != request.getRoomIds().size()) {
-            throw new IllegalArgumentException("Duplicate room selection is not allowed.");
+            throw new IllegalArgumentException("Không được chọn trùng phòng.");
         }
 
         if (request.getNotes() != null && request.getNotes().length() > MAX_NOTES_LENGTH) {
-            throw new IllegalArgumentException("Notes must not exceed 500 characters.");
+            throw new IllegalArgumentException("Ghi chú không được vượt quá 500 ký tự.");
         }
 
         if (request.getAction() == null ||
                 (!request.getAction().equals("create-only")
                         && !request.getAction().equals("create-check-in"))) {
-            throw new IllegalArgumentException("Invalid booking action.");
+            throw new IllegalArgumentException("Thao tác tạo đặt phòng không hợp lệ.");
         }
 
         if ("create-check-in".equals(request.getAction())
                 && request.getCheckInDate().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Cannot check in before the check-in date.");
+            throw new IllegalArgumentException("Không thể nhận phòng trước ngày nhận phòng.");
         }
-
     }
 
     private void validateBookingDates(LocalDate checkInDate, LocalDate checkOutDate) {
         if (checkInDate == null || checkOutDate == null) {
-            throw new IllegalArgumentException("Check-in and check-out dates are required.");
+            throw new IllegalArgumentException("Vui lòng chọn ngày nhận phòng và ngày trả phòng.");
         }
 
         if (checkInDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Check-in date cannot be in the past.");
+            throw new IllegalArgumentException("Ngày nhận phòng không được nhỏ hơn ngày hiện tại.");
         }
 
         if (!checkOutDate.isAfter(checkInDate)) {
-            throw new IllegalArgumentException("Check-out date must be after check-in date.");
+            throw new IllegalArgumentException("Ngày trả phòng phải sau ngày nhận phòng.");
         }
 
         long nights = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
 
         if (nights > MAX_BOOKING_NIGHTS) {
-            throw new IllegalArgumentException("Booking duration must not exceed 30 nights.");
+            throw new IllegalArgumentException("Thời gian đặt phòng không được vượt quá 30 đêm.");
         }
     }
 
@@ -448,7 +478,7 @@ public class BookingService {
         }
 
         Country country = countryRepository.findById(request.getCountryId())
-                .orElseThrow(() -> new IllegalArgumentException("Country not found."));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quốc gia đã chọn."));
 
         User guest = User.builder()
                 .userType(UserType.GUEST)
@@ -548,7 +578,7 @@ public class BookingService {
                 bookingDetailRepository.findRoomCodesByBookingId(bookingId);
 
         if (roomCodes.isEmpty()) {
-            throw new IllegalArgumentException("No room code found for booking id: " + bookingId);
+            throw new IllegalArgumentException("Không tìm thấy mã phòng cho mã đặt phòng: " + bookingId);
         }
 
         return roomCodes;
@@ -577,43 +607,43 @@ public class BookingService {
     @Transactional
     public Long confirmCheckIn(Long bookingId) {
         if (bookingId == null) {
-            throw new IllegalArgumentException("Booking id is required.");
+            throw new IllegalArgumentException("Thiếu mã đặt phòng.");
         }
 
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found."));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
 
         if (Boolean.TRUE.equals(booking.getIsDeleted())) {
-            throw new IllegalArgumentException("Booking has been deleted.");
+            throw new IllegalArgumentException("Đặt phòng này đã bị xóa.");
         }
 
         if (booking.getStatus() != BookingStatus.CONFIRMED) {
-            throw new IllegalArgumentException("Only confirmed bookings can be checked in.");
+            throw new IllegalArgumentException("Chỉ có đặt phòng đã xác nhận mới được nhận phòng.");
         }
 
         if (booking.getCheckInDate().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Cannot check in before the check-in date.");
+            throw new IllegalArgumentException("Không thể nhận phòng trước ngày nhận phòng.");
         }
 
         List<BookingDetail> details = bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
 
         if (details.isEmpty()) {
-            throw new IllegalArgumentException("No room assigned for this booking.");
+            throw new IllegalArgumentException("Đặt phòng này chưa có phòng được gán.");
         }
 
         for (BookingDetail detail : details) {
             Room room = detail.getRoom();
 
             if (room == null) {
-                throw new IllegalArgumentException("Booking detail has no assigned room.");
+                throw new IllegalArgumentException("Chi tiết đặt phòng chưa được gán phòng.");
             }
 
             if (Boolean.TRUE.equals(room.getIsDeleted())) {
-                throw new IllegalArgumentException("Room " + room.getRoomNumber() + " has been deleted.");
+                throw new IllegalArgumentException("Phòng " + room.getRoomNumber() + " đã bị xóa.");
             }
 
             if (room.getStatus() != RoomStatus.AVAILABLE) {
-                throw new IllegalArgumentException("Room " + room.getRoomNumber() + " is not available.");
+                throw new IllegalArgumentException("Phòng " + room.getRoomNumber() + " hiện không khả dụng.");
             }
 
             if (detail.getRoomCode() == null || detail.getRoomCode().isBlank()) {
@@ -642,24 +672,24 @@ public class BookingService {
     @Transactional
     public void sendRoomCodeEmail(Long bookingDetailId) {
         if (bookingDetailId == null) {
-            throw new IllegalArgumentException("Booking detail id is required.");
+            throw new IllegalArgumentException("Thiếu mã chi tiết đặt phòng.");
         }
 
         BookingDetail detail = bookingDetailRepository.findById(bookingDetailId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking detail not found."));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy chi tiết đặt phòng."));
 
         Booking booking = detail.getBooking();
 
         if (booking == null) {
-            throw new IllegalArgumentException("Booking not found.");
+            throw new IllegalArgumentException("Không tìm thấy đặt phòng.");
         }
 
         if (booking.getGuestEmail() == null || booking.getGuestEmail().isBlank()) {
-            throw new IllegalArgumentException("Guest email is missing.");
+            throw new IllegalArgumentException("Khách chưa có email để gửi thông tin phòng.");
         }
 
         if (detail.getRoom() == null) {
-            throw new IllegalArgumentException("Room has not been assigned.");
+            throw new IllegalArgumentException("Phòng chưa được gán.");
         }
 
         if (detail.getRoomCode() == null || detail.getRoomCode().isBlank()) {
@@ -688,31 +718,31 @@ public class BookingService {
     @Transactional
     public void sendRoomCodesEmail(Long bookingId) {
         if (bookingId == null) {
-            throw new IllegalArgumentException("Booking id is required.");
+            throw new IllegalArgumentException("Thiếu mã đặt phòng.");
         }
 
         List<BookingDetail> details = bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
 
         if (details == null || details.isEmpty()) {
-            throw new IllegalArgumentException("No room code found for this booking.");
+            throw new IllegalArgumentException("Không tìm thấy mã phòng cho đặt phòng này.");
         }
 
         Booking booking = details.get(0).getBooking();
 
         if (booking == null) {
-            throw new IllegalArgumentException("Booking not found.");
+            throw new IllegalArgumentException("Không tìm thấy đặt phòng.");
         }
 
         if (booking.getGuestEmail() == null || booking.getGuestEmail().isBlank()) {
-            throw new IllegalArgumentException("Guest email is missing.");
+            throw new IllegalArgumentException("Khách chưa có email để gửi thông tin phòng.");
         }
 
         StringBuilder emailContent = new StringBuilder();
-        emailContent.append("Your room access information:\n\n");
+        emailContent.append("Thông tin truy cập phòng của bạn:\n\n");
 
         for (BookingDetail detail : details) {
             if (detail.getRoom() == null) {
-                throw new IllegalArgumentException("Room has not been assigned.");
+                throw new IllegalArgumentException("Phòng chưa được gán.");
             }
 
             if (detail.getRoomCode() == null || detail.getRoomCode().isBlank()) {
@@ -789,6 +819,312 @@ public class BookingService {
         }
 
         return count;
+    }
+
+    @Transactional(readOnly = true)
+    public ViewBookingDetailResponse getBookingDetail(Long bookingId) {
+        if (bookingId == null) {
+            throw new IllegalArgumentException("Thiếu mã đặt phòng.");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (Boolean.TRUE.equals(booking.getIsDeleted())) {
+            throw new IllegalArgumentException("Đặt phòng này đã bị xóa.");
+        }
+
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+
+        List<Payment> payments = paymentRepository.findByBookingId(bookingId);
+
+        BigDecimal roomTotal = booking.getRoomSubtotal() == null
+                ? BigDecimal.ZERO
+                : booking.getRoomSubtotal();
+
+        BigDecimal vatTotal = booking.getVatTotal() == null
+                ? BigDecimal.ZERO
+                : booking.getVatTotal();
+
+        BigDecimal grandTotal = booking.getGrandTotal() == null
+                ? BigDecimal.ZERO
+                : booking.getGrandTotal();
+
+        BigDecimal depositRequired = booking.getDepositAmount() == null
+                ? BigDecimal.ZERO
+                : booking.getDepositAmount();
+
+        BigDecimal depositPaid = payments.stream()
+                .filter(payment -> payment.getPaymentType() == PaymentType.DEPOSIT)
+                .filter(payment -> payment.getStatus() == PaymentStatus.SUCCESS)
+                .map(Payment::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal remainingEstimate = grandTotal.subtract(depositPaid);
+
+        if (remainingEstimate.compareTo(BigDecimal.ZERO) < 0) {
+            remainingEstimate = BigDecimal.ZERO;
+        }
+
+        User guest = booking.getGuest();
+
+        String guestName = (booking.getGuestFirstName() + " " + booking.getGuestLastName()).trim();
+
+        List<ViewBookingDetailResponse.RoomLine> roomLines = details.stream()
+                .map(detail -> ViewBookingDetailResponse.RoomLine.builder()
+                        .bookingDetailId(detail.getId())
+                        .roomNumber(detail.getRoom() != null
+                                ? detail.getRoom().getRoomNumber()
+                                : "Chưa phân phòng")
+                        .roomTypeName(
+                                detail.getVariant() != null && detail.getVariant().getRoomType() != null
+                                        ? detail.getVariant().getRoomType().getName()
+                                        : null
+                        )
+                        .variantName(
+                                detail.getVariant() != null
+                                        ? detail.getVariant().getVariantName()
+                                        : null
+                        )
+                        .viewType(
+                                detail.getVariant() != null && detail.getVariant().getViewType() != null
+                                        ? String.valueOf(detail.getVariant().getViewType())
+                                        : null
+                        )
+                        .pricePerNight(detail.getPricePerNight())
+                        .numNights(detail.getNumNights())
+                        .subtotal(detail.getSubtotal())
+                        .extraBedCount(detail.getExtraBedCount())
+                        .extraBedTotal(detail.getExtraBedTotal())
+                        .totalAmount(detail.getTotalAmount())
+                        .roomCode(detail.getRoomCode())
+                        .roomCodeExpiresAt(detail.getRoomCodeExpiresAt())
+                        .checkOutDate(detail.getCheckOutDate())
+                        .build())
+                .toList();
+
+        List<ViewBookingDetailResponse.PaymentLine> paymentLines = payments.stream()
+                .map(payment -> ViewBookingDetailResponse.PaymentLine.builder()
+                        .paymentType(payment.getPaymentType() != null
+                                ? payment.getPaymentType().getLabel()
+                                : "N/A")
+                        .method(payment.getMethod() != null
+                                ? payment.getMethod().getLabel()
+                                : "N/A")
+                        .amount(payment.getAmount())
+                        .status(payment.getStatus() != null
+                                ? payment.getStatus().getLabel()
+                                : "N/A")
+                        .paidAt(payment.getPaidAt())
+                        .build())
+                .toList();
+
+        return ViewBookingDetailResponse.builder()
+                .bookingId(booking.getId())
+                .bookingReference(booking.getBookingReference())
+                .bookingStatus(booking.getStatus())
+                .depositStatus(booking.getDepositStatus())
+
+                .guestName(guestName)
+                .guestEmail(booking.getGuestEmail())
+                .guestPhone(booking.getGuestPhone())
+                .gender(guest != null && guest.getGender() != null
+                        ? guest.getGender().getLabel()
+                        : "N/A")
+                .dateOfBirth(guest != null ? guest.getDateOfBirth() : null)
+                .countryName(guest != null && guest.getCountry() != null ? guest.getCountry().getCountryName() : "N/A")
+                .identityType(guest != null && guest.getIdentityType() != null
+                        ? guest.getIdentityType().getLabel()
+                        : "N/A")
+                .identityNumber(guest != null ? guest.getIdentityNumber() : "N/A")
+
+                .checkInDate(booking.getCheckInDate())
+                .checkOutDate(booking.getCheckOutDate())
+                .nights(ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate()))
+                .adults(booking.getNumAdults())
+                .children(booking.getNumChildren())
+                .specialRequests(booking.getSpecialRequests())
+                .createdAt(booking.getCreatedAt())
+
+                .roomTotal(roomTotal)
+                .vatTotal(vatTotal)
+                .grandTotal(grandTotal)
+                .depositRequired(depositRequired)
+                .depositPaid(depositPaid)
+                .remainingEstimate(remainingEstimate)
+
+                .rooms(roomLines)
+                .payments(paymentLines)
+                .build();
+    }
+
+    private void validateDepositRequest(BookingCreateRequest request){
+        if(request.getDepositMethod() == null){
+            throw new IllegalArgumentException("Cần cung cấp phương thức thanh toán tiền đặt cọc.");
+        }
+    }
+    private void createDepositPayment(Booking booking,
+                                      BigDecimal depositAmount,
+                                      BookingCreateRequest request,
+                                      User processBy){
+
+        Payment payment = Payment.builder()
+                .booking(booking)
+                .paymentType(PaymentType.DEPOSIT)
+                .method(request.getDepositMethod())
+                .amount(depositAmount)
+                .status(PaymentStatus.SUCCESS)
+                .processedBy(processBy)
+                .paidAt(Instant.now())
+                .build();
+
+        paymentRepository.save(payment);
+    }
+
+    @Transactional(readOnly = true)
+    public BookingUpdateRequest getBookingUpdateForm(Long bookingId){
+        if ( bookingId == null){
+            throw new IllegalArgumentException("Thiếu mã đặt phòng");
+        }
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if(Boolean.TRUE.equals(booking.getIsDeleted())){
+            throw new IllegalArgumentException("Đặt phòng này bị xóa");
+        }
+
+        User guest = booking.getGuest();
+
+        return BookingUpdateRequest.builder()
+                .bookingId(booking.getId())
+                .firstName(booking.getGuestFirstName())
+                .lastName(booking.getGuestLastName())
+                .phoneNumber(booking.getGuestPhone())
+                .email(booking.getGuestEmail())
+                .gender(guest != null ? guest.getGender() : null)
+                .dateOfBirth(guest != null ? guest.getDateOfBirth() : null)
+                .countryId(guest != null && guest.getCountry() != null
+                        ? guest.getCountry().getId()
+                        : null)
+                .identityNumber(guest != null ? guest.getIdentityNumber() : null)
+                .notes(booking.getSpecialRequests())
+                .build();
+    }
+
+    @Transactional
+    public void updateBookingGuestInfo(Long bookingId, BookingUpdateRequest request) {
+        if (bookingId == null) {
+            throw new IllegalArgumentException("Thiếu mã đặt phòng.");
+        }
+
+        validateUpdateBookingRequest(request);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (Boolean.TRUE.equals(booking.getIsDeleted())) {
+            throw new IllegalArgumentException("Đặt phòng này đã bị xóa.");
+        }
+
+        Country country = countryRepository.findById(request.getCountryId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quốc gia đã chọn."));
+
+        String firstName = request.getFirstName().trim();
+        String lastName = request.getLastName().trim();
+        String phone = request.getPhoneNumber().trim();
+        String email = request.getEmail().trim();
+        String identityNumber = request.getIdentityNumber().trim();
+
+        booking.setGuestFirstName(firstName);
+        booking.setGuestLastName(lastName);
+        booking.setGuestPhone(phone);
+        booking.setGuestEmail(email);
+        booking.setSpecialRequests(request.getNotes());
+
+        User guest = booking.getGuest();
+
+        if (guest != null) {
+            guest.setFirstName(firstName);
+            guest.setLastName(lastName);
+            guest.setPhone(phone);
+            guest.setEmail(email);
+            guest.setGender(request.getGender());
+            guest.setDateOfBirth(request.getDateOfBirth());
+            guest.setCountry(country);
+            guest.setIdentityNumber(identityNumber);
+            guest.setIdentityType(resolveIdentityType(country));
+
+            userRepository.save(guest);
+        }
+
+        bookingRepository.save(booking);
+    }
+
+    private void validateUpdateBookingRequest(BookingUpdateRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Thông tin chỉnh sửa không được để trống.");
+        }
+
+        if (request.getFirstName() == null || request.getFirstName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập tên của khách.");
+        }
+
+        if (request.getLastName() == null || request.getLastName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập họ của khách.");
+        }
+
+        if (request.getFirstName().trim().length() > 50) {
+            throw new IllegalArgumentException("Tên của khách không được vượt quá 50 ký tự.");
+        }
+
+        if (request.getLastName().trim().length() > 50) {
+            throw new IllegalArgumentException("Họ của khách không được vượt quá 50 ký tự.");
+        }
+
+        if (request.getPhoneNumber() == null || request.getPhoneNumber().trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập số điện thoại của khách.");
+        }
+
+        String phone = request.getPhoneNumber().trim();
+
+        if (phone.length() > MAX_PHONE_LENGTH) {
+            throw new IllegalArgumentException("Số điện thoại không được vượt quá 20 ký tự.");
+        }
+
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
+            throw new IllegalArgumentException("Số điện thoại không đúng định dạng.");
+        }
+
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập email của khách.");
+        }
+
+        String email = request.getEmail().trim();
+
+        if (email.length() > MAX_EMAIL_LENGTH) {
+            throw new IllegalArgumentException("Email không được vượt quá 150 ký tự.");
+        }
+
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("Email không đúng định dạng.");
+        }
+
+        if (request.getCountryId() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn quốc gia của khách.");
+        }
+
+        if (request.getIdentityNumber() == null || request.getIdentityNumber().trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập số giấy tờ tùy thân.");
+        }
+
+        if (request.getDateOfBirth() != null && request.getDateOfBirth().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày sinh không được lớn hơn ngày hiện tại.");
+        }
+
+        if (request.getNotes() != null && request.getNotes().length() > MAX_NOTES_LENGTH) {
+            throw new IllegalArgumentException("Ghi chú không được vượt quá 500 ký tự.");
+        }
     }
 
 }
