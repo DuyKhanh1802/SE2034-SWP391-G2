@@ -39,26 +39,25 @@ public class ActiveRoleAccessFilter extends OncePerRequestFilter {
     }
 
     private boolean isManagedStaffPath(String uri) {
-        return uri.startsWith("/admin/list-user")
-                || uri.startsWith("/admin/dashboard")
-                || uri.startsWith("/admin/list_room")
-                || uri.startsWith("/admin/rooms")
-                || uri.startsWith("/admin/room-images")
-                || uri.startsWith("/admin/services")
-                || uri.startsWith("/admin/promotions")
+        return uri.startsWith("/system-admin")
+                || uri.startsWith("/hotel-admin")
                 || uri.startsWith("/manager")
+                || uri.startsWith("/storekeeper")
                 || uri.startsWith("/receptionist");
     }
 
     private RoleName resolveRequiredRole(String uri) {
-        if (uri.startsWith("/admin/list-user")) {
+        if (uri.startsWith("/system-admin")) {
             return RoleName.SYSTEM_ADMIN;
         }
-        if (uri.startsWith("/admin/")) {
+        if (uri.startsWith("/hotel-admin")) {
             return RoleName.HOTEL_ADMIN;
         }
         if (uri.startsWith("/manager")) {
             return RoleName.MANAGER;
+        }
+        if (uri.startsWith("/storekeeper")) {
+            return RoleName.STOREKEEPER;
         }
         if (uri.startsWith("/receptionist")) {
             return RoleName.RECEPTIONIST;

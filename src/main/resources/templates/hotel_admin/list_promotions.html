@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <!-- Phần đầu trang: tiêu đề màn hình và nút tạo khuyến mãi mới. -->
+    <div class="page-action-bar">
+        <div>
+            <div class="breadcrumb-custom">
+                Quản lý / Khuyến mãi
+            </div>
+            <h1>Khuyến mãi</h1>
+        </div>
+
+        <a th:href="@{/hotel-admin/promotions/add}" href="/hotel-admin/promotions/add" class="btn-add">
+            <span class="material-symbols-outlined">add</span>
+            Thêm khuyến mãi
+        </a>
+    </div>
+
+    <section class="content-section">
+        <!-- Thông báo thao tác thành công hoặc lỗi trả về từ controller. -->
+        <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span th:text="${successMessage}">Thêm khuyến mãi thành công.</span>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger promotion-alert promotion-alert-danger" role="alert">
+            <span class="material-symbols-outlined">error</span>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+
+        <!-- Thanh công cụ: lọc theo tab trạng thái và tìm kiếm theo mã/tên chiến dịch. -->
+        <div class="toolbar">
+            <div class="tabs">
+                <a th:href="@{/hotel-admin/promotions(status='all', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'all'} ? 'active' : ''">
+                    Tất cả
+                </a>
+
+                <a th:href="@{/hotel-admin/promotions(status='active', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'active'} ? 'active' : ''">
+                    Đang hoạt động
+                </a>
+
+                <a th:href="@{/hotel-admin/promotions(status='scheduled', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'scheduled'} ? 'active' : ''">
+                    Sắp diễn ra
+                </a>
+
+                <a th:href="@{/hotel-admin/promotions(status='expired', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'expired'} ? 'active' : ''">
+                    Đã hết hạn
+                </a>
+
+                <a th:href="@{/hotel-admin/promotions(status='inactive', keyword=${keyword}, size=${pageSize})}"
+                   th:classappend="${selectedStatus == 'inactive'} ? 'active' : ''">
+                    Đã tắt
+                </a>
+            </div>
+
+            <form th:action="@{/hotel-admin/promotions}" method="get" class="search-box">
+                <span class="material-symbols-outlined">search</span>
+
+                <input type="hidden" name="status" th:value="${selectedStatus}">
+                <input type="hidden" name="size" th:value="${pageSize}">
+
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       placeholder="Tìm theo mã hoặc tên chiến dịch...">
+            </form>
+        </div>
+
+        <!-- Bảng danh sách khuyến mãi với các thông tin chính và nút thao tác. -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table align-middle promotion-table">
+                    <thead>
+                    <tr>
+                        <th>Mã KM</th>
+                        <th>Chiến dịch</th>
+                        <th>Số tiền giảm</th>
+                        <th>Thời gian</th>
+                        <th>Lượt dùng</th>
+                        <th>Hiển thị</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="promotion : ${promotions}">
+                        <td class="code" th:text="${promotion.code}">
+                            VH-202606-A8K2
+                        </td>
+
+                        <td>
+                            <div class="promotion-name" th:text="${promotion.name}">
+                                Ưu đãi mùa hè
+                            </div>
+                        </td>
+
+                        <td class="discount-amount">
+                            <span th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 'POINT', 0, 'COMMA')}">
+                                200.000
+                            </span>
+                            <span> VND</span>
+                        </td>
+
+                        <td class="muted valid-period">
+                            <span th:text="${#temporals.format(promotion.validFrom, 'dd/MM/yyyy')}">
+                                01/06/2026
+                            </span>
+                            <br>
+                            <span th:text="${#temporals.format(promotion.validTo, 'dd/MM/yyyy')}">
+                                31/08/2026
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="usage">
+                                <span th:text="${promotion.usageCount + ' / ' + promotion.usageLimit}">
+                                    0 / 200
+                                </span>
+
+                                <div class="progress-line">
+                                    <div th:style="'width:' + ${promotion.usageLimit > 0 ? T(java.lang.Math).min(100, promotion.usageCount * 100 / promotion.usageLimit) : 0} + '%'"></div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="status"
+                                  th:text="${promotion.displayStatus}"
+                                  th:classappend="${promotion.displayStatus == 'Banner nổi bật'} ? ' featured-status' : (${promotion.displayStatus == 'Hiển thị trang chủ'} ? ' homepage-status' : ' hidden-status')">
+                                Banner nổi bật
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="status"
+                                  th:text="${promotion.status}"
+                                  th:classappend="${promotion.status == 'Đang hoạt động'} ? ' active-status' : (${promotion.status == 'Sắp diễn ra'} ? ' scheduled-status' : (${promotion.status == 'Đã hết hạn'} ? ' expired-status' : ' inactive-status'))">
+                                Đang hoạt động
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="actions">
+                                <a th:href="@{/hotel-admin/promotions/{id}(id=${promotion.id})}"
+                                   class="action-link action-view"
+                                   title="Xem chi tiết">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </a>
+
+                                <a th:href="@{/hotel-admin/promotions/edit/{id}(id=${promotion.id})}"
+                                   class="action-link action-edit"
+                                   title="Chỉnh sửa">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </a>
+
+                                <form th:action="@{/hotel-admin/promotions/toggle-status/{id}(id=${promotion.id})}"
+                                      method="post"
+                                      class="d-inline">
+                                    <input type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}">
+                                    <input type="hidden" name="page" th:value="${currentPage}">
+                                    <input type="hidden" name="size" th:value="${pageSize}">
+                                    <input type="hidden" name="status" th:value="${selectedStatus}">
+                                    <input type="hidden" name="keyword" th:value="${keyword}">
+
+                                    <button type="submit"
+                                            class="action-toggle"
+                                            th:title="${promotion.isActive} ? 'Tắt khuyến mãi' : 'Bật khuyến mãi'"
+                                            th:onclick="${promotion.isActive}
+                                                ? 'return confirm(''' + 'Bạn có chắc muốn tắt khuyến mãi này không?' + ''');'
+                                                : 'return confirm(''' + 'Bạn có chắc muốn bật lại khuyến mãi này không?' + ''');'">
+                                        <span class="material-symbols-outlined">power_settings_new</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(promotions)}">
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            Chưa có khuyến mãi nào.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phần cuối bảng: số lượng đang hiển thị và điều hướng phân trang. -->
+            <div class="table-bottom">
+                <p th:text="'Hiển thị ' + ${#lists.size(promotions)} + ' / ' + ${totalPromotions} + ' khuyến mãi'">
+                    Hiển thị 0 / 0 khuyến mãi
+                </p>
+
+                <div class="pagination-custom" th:if="${totalPages > 1}">
+                    <a th:if="${hasPrevious}"
+                       th:href="@{/hotel-admin/promotions(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </a>
+
+                    <button type="button" disabled th:if="${!hasPrevious}">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+
+                    <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
+                       th:href="@{/hotel-admin/promotions(page=${pageNumber}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == currentPage ? 'active' : ''}">
+                        1
+                    </a>
+
+                    <a th:if="${hasNext}"
+                       th:href="@{/hotel-admin/promotions(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, status=${selectedStatus})}">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </a>
+
+                    <button type="button" disabled th:if="${!hasNext}">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khối tổng quan nhanh để manager nhìn số lượng khuyến mãi theo từng trạng thái. -->
+        <section class="summary-section">
+            <h3>Tổng quan khuyến mãi</h3>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <span>Tổng khuyến mãi</span>
+                    <strong th:text="${totalPromotions}">0</strong>
+                </div>
+
+                <div class="summary-card dark">
+                    <span>Đang hoạt động</span>
+                    <strong th:text="${activePromotions}">0</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Sắp diễn ra</span>
+                    <strong th:text="${scheduledPromotions}">0</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Đã hết hạn</span>
+                    <strong th:text="${expiredPromotions}">0</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Đã tắt</span>
+                    <strong th:text="${inactivePromotions}">0</strong>
+                </div>
+            </div>
+        </section>
+    </section>
+</main>
+</body>
+</html>

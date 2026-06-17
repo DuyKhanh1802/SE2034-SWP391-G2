@@ -13,6 +13,7 @@ public class AccountUpdateRequest {
     private String phone;
     @NotEmpty(message = "Vui lòng chọn ít nhất một vai trò.")
     private List<Long> roleIds;
+    private Boolean roleUpdateRequested;
     private Boolean isActive;
 
     // Cập nhật theo BR-23

@@ -119,8 +119,9 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(existingUser);
 
-        if (request.getRoleIds() != null) {
-            List<Long> requestedRoleIds = request.getRoleIds().stream()
+        if (Boolean.TRUE.equals(request.getRoleUpdateRequested())) {
+            List<Long> submittedRoleIds = request.getRoleIds() == null ? List.of() : request.getRoleIds();
+            List<Long> requestedRoleIds = submittedRoleIds.stream()
                     .filter(roleId -> roleId != null)
                     .toList();
             List<Long> roleIds = requestedRoleIds.stream()
@@ -186,10 +187,12 @@ public class UserServiceImpl implements UserService {
 
         boolean hasHotelAdmin = roleNames.contains(RoleName.HOTEL_ADMIN);
         boolean hasManager = roleNames.contains(RoleName.MANAGER);
+        boolean hasStorekeeper = roleNames.contains(RoleName.STOREKEEPER);
         boolean hasReceptionist = roleNames.contains(RoleName.RECEPTIONIST);
 
         if (!hasHotelAdmin
                 && !hasManager
+                && !hasStorekeeper
                 && !hasReceptionist
                 && !roleNames.contains(RoleName.GUEST)
                 && !roleNames.contains(RoleName.SYSTEM_ADMIN)) {
@@ -239,6 +242,7 @@ public class UserServiceImpl implements UserService {
 
         if (isCurrentUser) {
             request.setRoleIds(null);
+            request.setRoleUpdateRequested(false);
         }
     }
 }

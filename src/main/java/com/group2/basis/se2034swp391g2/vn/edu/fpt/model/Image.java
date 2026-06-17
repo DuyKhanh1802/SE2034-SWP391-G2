@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ImageEntityType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -44,6 +45,10 @@ public class Image {
 
     @Column(name = "uploaded_at", nullable = false)
     private Instant uploadedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "view_type", length = 20)
+    private ViewType viewType;
 
     @PrePersist
     protected void onCreate() {

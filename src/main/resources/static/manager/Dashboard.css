@@ -10,29 +10,17 @@ body {
     margin: 0;
     background: #f8f8f8;
     color: #111;
-    font-family: Arial, sans-serif;
+    font-family: 'Manrope', sans-serif;
     overflow-x: hidden;
 }
 
 /* TOP BAR */
-.topbar {
-    height: 78px;
-    border-bottom: 1px solid #111;
-    background: #f8f8f8;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0 60px;
-}
-
 .brand {
     display: flex;
     align-items: center;
     gap: 20px;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 26px;
     letter-spacing: 5px;
     color: #111;
@@ -62,22 +50,7 @@ body {
 }
 
 /* LAYOUT */
-.dashboard-wrapper {
-    display: flex;
-    min-height: calc(100vh - 78px);
-}
-
 /* SIDEBAR */
-.sidebar {
-    width: 240px;
-    flex-shrink: 0;
-
-    border-right: 1px solid #111;
-    background: #f3f3f3;
-
-    padding: 34px 22px;
-}
-
 .portal-box {
     display: flex;
     align-items: center;
@@ -143,13 +116,6 @@ body {
 }
 
 /* MAIN CONTENT */
-.main-content {
-    flex: 1;
-    min-width: 0;
-
-    padding: 46px 48px 70px;
-}
-
 /* HERO */
 .hero {
     margin-bottom: 42px;
@@ -167,7 +133,7 @@ body {
 .hero h1 {
     margin: 0;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 44px;
     font-weight: 400;
 }
@@ -203,7 +169,7 @@ body {
 .kpi-card h2 {
     margin: 22px 0 18px;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 28px;
     font-weight: 400;
 }
@@ -275,7 +241,7 @@ body {
 .section-title h3 {
     margin: 0;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 28px;
     font-weight: 400;
 }
@@ -354,7 +320,7 @@ body {
 .bottom-title {
     margin: 0 0 26px;
 
-    font-family: Georgia, serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 28px;
     font-weight: 400;
 }
@@ -464,16 +430,7 @@ body {
 
 /* DESKTOP SAFE */
 @media (max-width: 1400px) {
-    .sidebar {
-        width: 220px;
-        padding: 30px 20px;
-    }
-
-    .main-content {
-        padding: 42px 42px 64px;
-    }
-
-    .kpi-grid {
+.kpi-grid {
         gap: 18px;
     }
 
@@ -485,3 +442,4 @@ body {
         font-size: 26px;
     }
 }
+

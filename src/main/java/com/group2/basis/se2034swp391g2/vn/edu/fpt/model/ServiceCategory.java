@@ -22,14 +22,14 @@ public class ServiceCategory {
     @Column(name = "service_category_id")
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(name = "name", nullable = false, length = 100, columnDefinition = "NVARCHAR(100)")
     private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 15)
     private ServiceCategoryType type;
 
-    @Column(name = "description", length = 300)
+    @Column(name = "description", length = 300, columnDefinition = "NVARCHAR(300)")
     private String description;
 
     @Column(name = "is_deleted", nullable = false)

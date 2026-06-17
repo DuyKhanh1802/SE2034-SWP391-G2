@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="module-header">
+        <div>
+            <p>Reports</p>
+            <h1>Báo cáo</h1>
+        </div>
+    </section>
+
+    <section class="metric-grid">
+        <div class="metric-card"><span>Doanh thu hôm nay</span><strong th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
+        <div class="metric-card"><span>Doanh thu tháng</span><strong th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
+        <div class="metric-card"><span>Tỉ lệ lấp phòng</span><strong th:text="${occupancyRate + '%'}">0%</strong></div>
+        <div class="metric-card"><span>Chênh lệch thu chi</span><strong th:text="${#numbers.formatDecimal(totalIncome.subtract(totalExpense), 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
+    </section>
+
+    <section class="detail-grid">
+        <div class="panel">
+            <h2>Báo cáo dịch vụ</h2>
+            <table class="module-table">
+                <thead><tr><th>Dịch vụ</th><th>Số lượng</th><th>Doanh thu</th></tr></thead>
+                <tbody>
+                <tr th:each="serviceStat : ${topServices}">
+                    <td th:text="${serviceStat[0]}">Dịch vụ</td>
+                    <td th:text="${serviceStat[1]}">0</td>
+                    <td th:text="${#numbers.formatDecimal(serviceStat[2], 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <h2>Báo cáo tồn kho thấp</h2>
+            <table class="module-table">
+                <thead><tr><th>Hàng hóa</th><th>Tồn hiện tại</th><th>Ngưỡng</th></tr></thead>
+                <tbody>
+                <tr th:each="item : ${lowStockItems}">
+                    <td th:text="${item.name}">Hàng hóa</td>
+                    <td th:text="${item.currentQuantity + ' ' + item.unit}">0</td>
+                    <td th:text="${item.minimumQuantity + ' ' + item.unit}">0</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(lowStockItems)}"><td colspan="3">Không có cảnh báo tồn kho thấp.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

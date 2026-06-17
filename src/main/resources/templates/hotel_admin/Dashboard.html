@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+<!-- WELCOME -->
+        <section class="welcome-section">
+            <h1>
+                Morning,
+                <span th:text="${currentUser != null ? currentUser.firstName : 'Admin'}">Admin</span>.
+            </h1>
+            <p>System operational across all property sectors.</p>
+        </section>
+
+
+        <!-- STATS -->
+        <section class="stats-grid">
+
+            <div class="stat-card">
+                <div class="card-top d-flex justify-content-between">
+                    <i class="fa-regular fa-id-badge"></i>
+                    <span>STAFF</span>
+                </div>
+
+                <div class="card-bottom">
+                    <h2>12 <small>ACTIVE</small></h2>
+                    <p>2 inactive accounts</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="card-top d-flex justify-content-between">
+                    <i class="fa-solid fa-bed"></i>
+                    <span>ROOMS</span>
+                </div>
+
+                <div class="room-stats d-flex gap-4 mt-4">
+                    <div>
+                        <h3 class="green">8</h3>
+                        <small>AVAIL</small>
+                    </div>
+
+                    <div>
+                        <h3 class="blue">14</h3>
+                        <small>OCCU</small>
+                    </div>
+
+                    <div>
+                        <h3 class="yellow">3</h3>
+                        <small>DIRTY</small>
+                    </div>
+
+                    <div>
+                        <h3 class="red">1</h3>
+                        <small>MAIN</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="card-top d-flex justify-content-between">
+                    <i class="fa-solid fa-bell-concierge"></i>
+                    <span>SERVICES</span>
+                </div>
+
+                <div class="card-bottom">
+                    <h2>24 <small>LIVE</small></h2>
+                    <p>3 currently unavailable</p>
+                </div>
+            </div>
+
+            <div class="stat-card alert-card">
+                <div class="card-top d-flex justify-content-between">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>ALERTS</span>
+                </div>
+
+                <div class="card-bottom">
+                    <h2 class="red">2 <small>INCIDENTS</small></h2>
+                    <p>High priority status</p>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- CONTENT -->
+        <section class="content-grid">
+
+            <!-- ROOM OVERVIEW -->
+            <div class="room-overview">
+                <div class="section-title d-flex justify-content-between align-items-center">
+                    <h3>Room Overview</h3>
+
+                    <div class="legend">
+                        <span class="green-dot"></span> AVAIL
+                        <span class="blue-dot"></span> OCCU
+                        <span class="yellow-dot"></span> DIRTY
+                    </div>
+                </div>
+
+                <div class="room-grid">
+                    <div class="room green">101</div>
+                    <div class="room blue">102</div>
+                    <div class="room blue">103</div>
+                    <div class="room yellow">104</div>
+                    <div class="room purple">105</div>
+                    <div class="room green">106</div>
+                    <div class="room red">201</div>
+                    <div class="room blue">202</div>
+                    <div class="room green">203</div>
+                    <div class="room blue">204</div>
+                    <div class="room blue">205</div>
+                    <div class="room yellow">206</div>
+                    <div class="room green">301</div>
+                    <div class="room red">302</div>
+                    <div class="room blue">303</div>
+                    <div class="room green">304</div>
+                </div>
+
+                <div class="quote-box">
+                    <p>
+                        â€œTrue architecture is more than just spaces.
+                        It's about how those spaces are managed.â€
+                    </p>
+
+                    <span>â€” NORDIC ESTATE DIRECTIVE</span>
+                </div>
+            </div>
+
+
+            <!-- RECENT ACTIVITY -->
+            <div class="recent-activity">
+
+                <div class="section-title d-flex justify-content-between align-items-center">
+                    <h3>Recent Activity</h3>
+                    <button>VIEW LOGS</button>
+                </div>
+
+                <div class="activity-list">
+
+                    <div class="activity-item">
+                        <div class="icon yellow-bg">
+                            <i class="fa-solid fa-broom"></i>
+                        </div>
+
+                        <div>
+                            <h6>Room 104 status changed to Dirty</h6>
+                            <p>2 mins ago</p>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="icon black-bg">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+
+                        <div>
+                            <h6>New staff account created: Elena R.</h6>
+                            <p>14 mins ago</p>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="icon red-bg">
+                            <i class="fa-solid fa-wifi"></i>
+                        </div>
+
+                        <div>
+                            <h6 class="text-danger">Incident opened: WiFi down in Room 302</h6>
+                            <p>45 mins ago</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+
+        <!-- BOTTOM -->
+        <section class="bottom-section row align-items-center">
+            <div class="col-lg-6">
+                <img class="bottom-image"
+                     src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1200&auto=format&fit=crop"
+                     alt="hotel">
+            </div>
+
+            <div class="col-lg-6 bottom-text">
+                <span>PROPERTY SPOTLIGHT</span>
+                <h2>Stockholm North Extension</h2>
+
+                <p>
+                    Ongoing integration of the new northern wing is at 84% completion.
+                    Final staff training for automated concierge services begins next week.
+                </p>
+
+                <button class="report-btn">REPORTS</button>
+            </div>
+        </section>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</main>
+</body>
+</html>

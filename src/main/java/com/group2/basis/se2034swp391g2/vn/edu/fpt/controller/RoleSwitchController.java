@@ -8,8 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -49,6 +49,9 @@ public class RoleSwitchController {
         if (authorities.contains("ROLE_MANAGER")) {
             return RoleName.MANAGER;
         }
+        if (authorities.contains("ROLE_STOREKEEPER")) {
+            return RoleName.STOREKEEPER;
+        }
         if (authorities.contains("ROLE_RECEPTIONIST")) {
             return RoleName.RECEPTIONIST;
         }
@@ -57,16 +60,23 @@ public class RoleSwitchController {
 
     public static String getDashboardPath(RoleName role) {
         return switch (role) {
-            case SYSTEM_ADMIN -> "/admin/list-user";
-            case HOTEL_ADMIN -> "/admin/dashboard";
+            case SYSTEM_ADMIN -> "/system-admin/list-user";
+            case HOTEL_ADMIN -> "/hotel-admin/dashboard";
             case MANAGER -> "/manager/dashboard";
+            case STOREKEEPER -> "/storekeeper/inventory";
             case RECEPTIONIST -> "/receptionist/dashboard";
             case GUEST -> "/home";
         };
     }
 
     public static List<ActiveRoleOption> getAvailableActiveRoleOptions(Set<String> authorities) {
-        return List.of(RoleName.SYSTEM_ADMIN, RoleName.HOTEL_ADMIN, RoleName.MANAGER, RoleName.RECEPTIONIST).stream()
+        return List.of(
+                        RoleName.SYSTEM_ADMIN,
+                        RoleName.HOTEL_ADMIN,
+                        RoleName.MANAGER,
+                        RoleName.STOREKEEPER,
+                        RoleName.RECEPTIONIST
+                ).stream()
                 .filter(role -> authorities.contains("ROLE_" + role.name()))
                 .map(role -> new ActiveRoleOption(role.name(), getRoleLabel(role)))
                 .toList();
@@ -74,11 +84,12 @@ public class RoleSwitchController {
 
     public static String getRoleLabel(RoleName role) {
         return switch (role) {
-            case SYSTEM_ADMIN -> "Quản trị hệ thống";
-            case HOTEL_ADMIN -> "Quản trị khách sạn";
-            case MANAGER -> "Quản lý";
-            case RECEPTIONIST -> "Lễ tân";
-            case GUEST -> "Khách hàng";
+            case SYSTEM_ADMIN -> "Quản Trị Hệ Thống";
+            case HOTEL_ADMIN -> "Quản Trị Khách Sạn";
+            case MANAGER -> "Quản Lý";
+            case STOREKEEPER -> "Thủ Kho";
+            case RECEPTIONIST -> "Lễ Tân";
+            case GUEST -> "Khách Hàng";
         };
     }
 }

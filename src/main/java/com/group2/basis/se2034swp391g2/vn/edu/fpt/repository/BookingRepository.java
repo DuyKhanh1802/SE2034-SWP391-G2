@@ -8,13 +8,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+
 import java.time.LocalDate;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     boolean existsByBookingReference(String bookingReference);
+
+    boolean existsByPromotion_IdAndIsDeletedFalse(Long promotionId);
 
 
     @Query("""
@@ -22,7 +23,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                 b.id,
                 b.bookingReference,
                 CONCAT(b.guestFirstName, ' ', b.guestLastName),
-                CONCAT(rt.name, ' ', r.roomNumber),
+                CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
                 b.checkInDate,
                 b.checkOutDate,
                 CAST(b.status AS string),
@@ -31,7 +32,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             FROM Booking b
             JOIN BookingDetail bd ON bd.booking = b
             JOIN Room r ON bd.room = r
-            JOIN RoomType rt ON r.roomType = rt
+            JOIN r.variant v
+            JOIN v.roomType rt
             WHERE b.isDeleted = false
             ORDER BY b.id DESC
             """)
@@ -43,7 +45,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             b.id,
             b.bookingReference,
             CONCAT(b.guestFirstName, ' ', b.guestLastName),
-            CONCAT(rt.name, ' ', r.roomNumber),
+            CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
             b.checkInDate,
             b.checkOutDate,
             CAST(b.status AS string),
@@ -52,7 +54,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         FROM Booking b
         JOIN BookingDetail bd ON bd.booking = b
         JOIN Room r ON bd.room = r
-        JOIN RoomType rt ON r.roomType = rt
+        JOIN r.variant v
+        JOIN v.roomType rt
         WHERE b.isDeleted = false
         AND (
             :keyword = ''
@@ -62,7 +65,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(rt.name, ' ', r.roomNumber)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(CONCAT(v.variantName, ' - Phòng ', r.roomNumber)) LIKE LOWER(CONCAT('%', :keyword, '%'))
         )
         AND (
             :status = ''
@@ -83,13 +87,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                             @Param("checkIn") LocalDate checkIn,
                                             @Param("checkOut") LocalDate checkOut);
 
-    @Query(
-            value = """
+    @Query(value = """
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(
             b.id,
             b.bookingReference,
             CONCAT(b.guestFirstName, ' ', b.guestLastName),
-            CONCAT(rt.name, ' ', r.roomNumber),
+            CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
             b.checkInDate,
             b.checkOutDate,
             CAST(b.status AS string),
@@ -98,7 +101,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         FROM Booking b
         JOIN BookingDetail bd ON bd.booking = b
         JOIN Room r ON bd.room = r
-        JOIN RoomType rt ON r.roomType = rt
+        JOIN r.variant v
+        JOIN v.roomType rt
         WHERE b.isDeleted = false
         AND (
             :keyword = ''
@@ -108,28 +112,20 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(rt.name, ' ', r.roomNumber)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(CONCAT(v.variantName, ' - Phòng ', r.roomNumber)) LIKE LOWER(CONCAT('%', :keyword, '%'))
         )
-        AND (
-            :status = ''
-            OR CAST(b.status AS string) = :status
-        )
-        AND (
-            :checkIn IS NULL
-            OR b.checkInDate >= :checkIn
-        )
-        AND (
-            :checkOut IS NULL
-            OR b.checkOutDate <= :checkOut
-        )
-        ORDER BY b.id DESC
+        AND (:status = '' OR CAST(b.status AS string) = :status)
+        AND (:checkIn IS NULL OR b.checkInDate >= :checkIn)
+        AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
         """,
-            countQuery = """
-        SELECT COUNT(b.id)
+        countQuery = """
+        SELECT COUNT(bd.id)
         FROM Booking b
         JOIN BookingDetail bd ON bd.booking = b
         JOIN Room r ON bd.room = r
-        JOIN RoomType rt ON r.roomType = rt
+        JOIN r.variant v
+        JOIN v.roomType rt
         WHERE b.isDeleted = false
         AND (
             :keyword = ''
@@ -139,28 +135,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(rt.name, ' ', r.roomNumber)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(CONCAT(v.variantName, ' - Phòng ', r.roomNumber)) LIKE LOWER(CONCAT('%', :keyword, '%'))
         )
-        AND (
-            :status = ''
-            OR CAST(b.status AS string) = :status
-        )
-        AND (
-            :checkIn IS NULL
-            OR b.checkInDate >= :checkIn
-        )
-        AND (
-            :checkOut IS NULL
-            OR b.checkOutDate <= :checkOut
-        )
-        """
-    )
+        AND (:status = '' OR CAST(b.status AS string) = :status)
+        AND (:checkIn IS NULL OR b.checkInDate >= :checkIn)
+        AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
+        """)
     Page<BookingResponse> searchBookingListPaging(@Param("keyword") String keyword,
                                                   @Param("status") String status,
                                                   @Param("checkIn") LocalDate checkIn,
                                                   @Param("checkOut") LocalDate checkOut,
                                                   Pageable pageable);
-
 
     @Query("""
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse(
@@ -179,13 +165,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         """)
     CheckInProcedureResponse findCheckInProcedureByBookingId(@Param("bookingId") Long bookingId);
 
-    @Query(
-            value = """
+    @Query(value = """
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(
             b.id,
             b.bookingReference,
             CONCAT(b.guestFirstName, ' ', b.guestLastName),
-            CONCAT(rt.name, ' ', r.roomNumber),
+            CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
             b.checkInDate,
             b.checkOutDate,
             CAST(b.status AS string),
@@ -194,9 +179,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         FROM Booking b
         JOIN BookingDetail bd ON bd.booking = b
         JOIN Room r ON bd.room = r
-        JOIN RoomType rt ON r.roomType = rt
+        JOIN r.variant v
+        JOIN v.roomType rt
         WHERE b.isDeleted = false
-        AND CAST(b.status AS string) = 'CONFIRMED'
+        AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED
         AND (
             :keyword = ''
             OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
@@ -205,18 +191,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(rt.name, ' ', r.roomNumber)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
         )
-        ORDER BY b.checkInDate ASC, b.id DESC
         """,
-            countQuery = """
-        SELECT COUNT(b.id)
+        countQuery = """
+        SELECT COUNT(bd.id)
         FROM Booking b
         JOIN BookingDetail bd ON bd.booking = b
         JOIN Room r ON bd.room = r
-        JOIN RoomType rt ON r.roomType = rt
+        JOIN r.variant v
+        JOIN v.roomType rt
         WHERE b.isDeleted = false
-        AND CAST(b.status AS string) = 'CONFIRMED'
+        AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED
         AND (
             :keyword = ''
             OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
@@ -225,11 +211,19 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(rt.name, ' ', r.roomNumber)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
         )
-        """
-    )
-    Page<BookingResponse> findConfirmedBookingsForCheckIn(@Param("keyword") String keyword,
-                                                          Pageable pageable);
+        """)
+    Page<BookingResponse> findConfirmedBookingsForCheckIn(@Param("keyword") String keyword, Pageable pageable);
+
+    long countByCreatedAtBetween(java.time.Instant from, java.time.Instant to);
+
+    long countByStatusAndIsDeletedFalse(com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus status);
+
+    long countByStatusAndIsDeletedFalseAndCheckInDateLessThanEqualAndCheckOutDateAfter(
+            com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus status,
+            LocalDate checkInDate,
+            LocalDate checkOutDate
+    );
 
 }

@@ -20,7 +20,7 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
             b.bookingReference,
             CONCAT(b.guestFirstName, ' ', b.guestLastName),
             r.roomNumber,
-            rt.name,
+            v.variantName,
             bd.roomCode,
             bd.roomCodeExpiresAt,
             bd.checkInDate,
@@ -29,7 +29,8 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
         FROM BookingDetail bd
         JOIN bd.booking b
         JOIN bd.room r
-        JOIN bd.roomType rt
+        JOIN bd.variant v
+        JOIN v.roomType rt
         WHERE b.id = :bookingId
         ORDER BY r.roomNumber
         """)
@@ -39,12 +40,13 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse(
             r.id,
             r.roomNumber,
-            rt.name,
-            rt.basePrice
+            v.variantName,
+            v.pricePerNight
         )
         FROM BookingDetail bd
         JOIN bd.room r
-        JOIN bd.roomType rt
+        JOIN bd.variant v
+        JOIN v.roomType rt
         WHERE bd.booking.id = :bookingId
         ORDER BY r.roomNumber
         """)
@@ -55,7 +57,8 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
         FROM BookingDetail bd
         JOIN FETCH bd.booking b
         JOIN FETCH bd.room r
-        JOIN FETCH bd.roomType rt
+        JOIN FETCH bd.variant v
+        JOIN FETCH v.roomType rt
         WHERE b.id = :bookingId
         """)
     List<BookingDetail> findDetailsWithRoomsByBookingId(@Param("bookingId") Long bookingId);

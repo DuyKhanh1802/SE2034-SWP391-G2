@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+
+<body>
+
+<main layout:fragment="content">
+    <section class="page-title">
+        <h1>Chỉnh sửa người dùng</h1>
+        <p>Thực hiện các thao tác quản trị tài khoản: đặt lại mật khẩu, bật hoặc tắt tài khoản và thay đổi vai trò.</p>
+    </section>
+
+    <section class="admin-card">
+        <div class="detail-header">
+            <a th:href="@{/system-admin/list-user}" class="btn-admin-outline">
+                <i class="fa-solid fa-arrow-left"></i>
+                Quay lại
+            </a>
+        </div>
+
+        <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}">
+            Đã cập nhật thành công.
+        </div>
+
+        <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}">
+            Có lỗi xảy ra.
+        </div>
+
+        <div th:if="${temporaryPassword}" class="admin-alert warning">
+            Mật khẩu tạm thời:
+            <strong th:text="${temporaryPassword}">Vh@Temp123</strong>
+        </div>
+
+        <div class="user-summary">
+            <div class="user-avatar small">
+                <i class="fa-regular fa-user"></i>
+            </div>
+            <div>
+                <span>ĐANG CHỈNH SỬA</span>
+                <h3 th:text="${displayName}">Nguyễn Văn A</h3>
+                <p>
+                    <span th:text="${user.email != null ? user.email : 'Chưa có email'}">email@example.com</span>
+                    <span>•</span>
+                    <span th:text="${roleLabel}">Quản trị hệ thống</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="settings-grid">
+        <div class="admin-card settings-card">
+            <div class="section-header">
+                <span>BẢO MẬT</span>
+                <h3>Đặt lại mật khẩu</h3>
+            </div>
+            <p class="settings-note">Tạo mật khẩu tạm thời mới cho tài khoản này. Mật khẩu chỉ hiển thị một lần sau khi đặt lại.</p>
+
+            <form th:action="@{/system-admin/list-user/{id}/reset-password(id=${user.id})}" method="post">
+                <button type="submit" class="btn-admin-primary">
+                    <i class="fa-solid fa-key"></i>
+                    Đặt lại mật khẩu
+                </button>
+            </form>
+        </div>
+
+        <div class="admin-card settings-card">
+            <div class="section-header">
+                <span>TRẠNG THÁI TÀI KHOẢN</span>
+                <h3>Bật hoặc tắt tài khoản</h3>
+            </div>
+            <p class="settings-note">
+                Trạng thái hiện tại:
+                <strong class="status-text"
+                        th:classappend="${user.isActive} ? ' text-success' : ' text-danger'"
+                        th:text="${user.isActive} ? 'Đang hoạt động' : 'Đã vô hiệu hóa'">
+                    Đang hoạt động
+                </strong>
+            </p>
+
+            <form th:action="@{/system-admin/list-user/{id}/edit(id=${user.id})}" method="post">
+                <input type="hidden" name="isActive" th:value="${!user.isActive}">
+                <button type="submit"
+                        class="btn-admin-primary"
+                        th:classappend="${isCurrentUser} ? ' danger is-disabled' : (user.isActive ? ' danger' : '')"
+                        th:disabled="${isCurrentUser}"
+                        th:title="${isCurrentUser} ? 'Không thể vô hiệu hóa chính tài khoản đang đăng nhập' : ''">
+                    <i class="fa-solid" th:classappend="${user.isActive} ? ' fa-user-slash' : ' fa-user-check'"></i>
+                    <span th:text="${user.isActive} ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản'">
+                        Vô hiệu hóa tài khoản
+                    </span>
+                </button>
+            </form>
+
+            <p th:if="${isCurrentUser}" class="settings-note mt-3">
+                Không thể vô hiệu hóa chính tài khoản đang đăng nhập.
+            </p>
+        </div>
+
+        <div class="admin-card settings-card wide">
+            <div class="section-header">
+                <span>PHÂN QUYỀN</span>
+                <h3>Thay đổi vai trò</h3>
+                <p id="roleValidationMessage" class="settings-note role-validation-message">
+                    Vui lòng chọn ít nhất một vai trò.
+                </p>
+            </div>
+
+            <form th:action="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
+                  th:object="${updateRequest}"
+                  method="post"
+                  class="role-form multi-role-form"
+                  th:classappend="${isCurrentUser} ? ' is-disabled' : ''">
+                <input type="hidden" name="roleUpdateRequested" value="true">
+                <div class="role-check-list">
+                    <label class="role-check-item"
+                           th:each="roleOption : ${roleOptions}"
+                           th:for="${'role-' + roleOption.key}">
+                        <input type="checkbox"
+                               th:id="${'role-' + roleOption.key}"
+                               th:field="*{roleIds}"
+                               th:value="${roleOption.key}"
+                               th:data-role-code="${roleCodesById[roleOption.key]}"
+                               th:disabled="${isCurrentUser}">
+                        <span th:text="${roleOption.value}">Vai trò</span>
+                    </label>
+                </div>
+
+                <button type="submit"
+                        class="btn-admin-primary"
+                        th:classappend="${isCurrentUser} ? ' is-disabled' : ''"
+                        th:disabled="${isCurrentUser}">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Lưu vai trò
+                </button>
+            </form>
+
+            <p th:if="${isCurrentUser}" class="settings-note mt-3">
+                Không thể thay đổi vai trò của chính tài khoản đang đăng nhập.
+            </p>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkboxes = Array.from(document.querySelectorAll('.multi-role-form input[type="checkbox"]'));
+            const message = document.getElementById('roleValidationMessage');
+
+            function roleLabel(roleCode) {
+                const labels = {
+                    SYSTEM_ADMIN: 'Quản trị hệ thống',
+                    HOTEL_ADMIN: 'Quản trị khách sạn',
+                    MANAGER: 'Quản lý',
+                    RECEPTIONIST: 'Lễ tân',
+                    GUEST: 'Khách hàng'
+                };
+                return labels[roleCode] || roleCode;
+            }
+
+            function updateRoleMessage() {
+                const selected = checkboxes
+                    .filter(function (checkbox) { return checkbox.checked; })
+                    .map(function (checkbox) { return checkbox.dataset.roleCode; });
+
+                message.classList.remove('text-success', 'text-danger', 'text-warning');
+
+                if (selected.length === 0) {
+                    message.textContent = 'Vui lòng chọn ít nhất một vai trò.';
+                    message.classList.add('text-warning');
+                    return;
+                }
+
+                if (selected.includes('GUEST') && selected.length > 1) {
+                    message.textContent = 'Không hợp lệ: Khách hàng không thể có thêm vai trò nhân viên.';
+                    message.classList.add('text-danger');
+                    return;
+                }
+
+                if (selected.includes('SYSTEM_ADMIN') && selected.length > 1) {
+                    message.textContent = 'Không hợp lệ: Quản trị viên hệ thống không thể kiêm nhiệm vai trò khác.';
+                    message.classList.add('text-danger');
+                    return;
+                }
+
+                message.textContent = 'Hợp lệ: ' + selected.map(roleLabel).join(', ');
+                message.classList.add('text-success');
+            }
+
+            checkboxes.forEach(function (checkbox) {
+                checkbox.addEventListener('change', updateRoleMessage);
+            });
+            updateRoleMessage();
+        });
+    </script>
+</main>
+
+</body>
+</html>
