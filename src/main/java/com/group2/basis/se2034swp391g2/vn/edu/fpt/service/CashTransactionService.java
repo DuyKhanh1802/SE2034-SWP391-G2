@@ -4,6 +4,9 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.CashTransaction;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.TransactionRequest;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.TransactionListResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.TransactionResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CashTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -36,9 +40,60 @@ public class CashTransactionService {
     }
 
     @Transactional(readOnly = true)
+    public TransactionListResponse getTransactionListResponse(TransactionRequest request) {
+        if (request == null) {
+            request = new TransactionRequest();
+        }
+
+        List<TransactionResponse> transactions = searchTransactions(
+                request.getType(),
+                request.getCategory(),
+                request.getSourceType(),
+                request.getFromDate(),
+                request.getToDate(),
+                request.getKeyword()
+        )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+
+        return new TransactionListResponse(transactions);
+    }
+
+    @Transactional(readOnly = true)
     public List<CashTransaction> searchTransactions(String type, String keyword) {
         CashTransactionType selectedType = parseType(type);
-        return cashTransactionRepository.search(selectedType, keyword == null ? "" : keyword.trim());
+        return cashTransactionRepository.search(
+                selectedType,
+                null,
+                null,
+                null,
+                null,
+                keyword == null ? "" : keyword.trim()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<CashTransaction> searchTransactions(String type,
+                                                    String category,
+                                                    String sourceType,
+                                                    LocalDate fromDate,
+                                                    LocalDate toDate,
+                                                    String keyword) {
+        CashTransactionType selectedType = parseType(type);
+        CashTransactionCategory selectedCategory = parseCategory(category);
+        CashTransactionSourceType selectedSourceType = parseSourceType(sourceType);
+        Instant fromDateTime = fromDate == null ? null : fromDate.atStartOfDay(APP_ZONE).toInstant();
+        Instant toDateTime = toDate == null ? null : toDate.plusDays(1).atStartOfDay(APP_ZONE).toInstant();
+
+        return cashTransactionRepository.search(
+                selectedType,
+                selectedCategory,
+                selectedSourceType,
+                fromDateTime,
+                toDateTime,
+                keyword == null ? "" : keyword.trim()
+        );
     }
 
     @Transactional
@@ -176,6 +231,20 @@ public class CashTransactionService {
         return CashTransactionType.valueOf(type.trim().toUpperCase());
     }
 
+    private CashTransactionCategory parseCategory(String category) {
+        if (category == null || category.isBlank() || "ALL".equalsIgnoreCase(category)) {
+            return null;
+        }
+        return CashTransactionCategory.valueOf(category.trim().toUpperCase());
+    }
+
+    private CashTransactionSourceType parseSourceType(String sourceType) {
+        if (sourceType == null || sourceType.isBlank() || "ALL".equalsIgnoreCase(sourceType)) {
+            return null;
+        }
+        return CashTransactionSourceType.valueOf(sourceType.trim().toUpperCase());
+    }
+
     private void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Số tiền phải lớn hơn 0.");
@@ -184,6 +253,19 @@ public class CashTransactionService {
 
     private BigDecimal normalizeMoney(BigDecimal amount) {
         return amount.setScale(0, java.math.RoundingMode.HALF_UP);
+    }
+
+    private TransactionResponse toResponse(CashTransaction transaction) {
+        return TransactionResponse.builder()
+                .id(transaction.getId())
+                .documentCode(transaction.getDocumentCode())
+                .createdAt(transaction.getCreatedAt())
+                .type(transaction.getType().name())
+                .typeDisplayName(transaction.getType().getDisplayName())
+                .categoryDisplayName(transaction.getCategory().getDisplayName())
+                .amount(transaction.getAmount())
+                .sourceDisplayName(transaction.getSourceType().getDisplayName())
+                .build();
     }
 
     private String generateCode() {

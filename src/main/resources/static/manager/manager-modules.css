@@ -73,6 +73,7 @@
 }
 
 .filter-row,
+.transaction-filter,
 .form-panel {
     display: grid;
     gap: 12px;
@@ -81,6 +82,16 @@
 .filter-row {
     grid-template-columns: 160px 1fr auto;
     margin-bottom: 18px;
+}
+
+.transaction-filter {
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    margin-bottom: 18px;
+}
+
+.transaction-filter button,
+.transaction-filter .btn-secondary-action {
+    text-align: center;
 }
 
 input,
@@ -188,7 +199,8 @@ button,
 @media (max-width: 900px) {
     .module-header,
     .detail-grid,
-    .filter-row {
+    .filter-row,
+    .transaction-filter {
         grid-template-columns: 1fr;
     }
 

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="module-header">
+        <div>
+            <p>Dòng tiền</p>
+            <h1>Lịch sử giao dịch</h1>
+        </div>
+        <a class="btn-primary-action" th:href="@{/manager/transactions/create}">Lập phiếu thu/chi</a>
+    </section>
+
+    <section class="panel">
+        <form class="transaction-filter" th:action="@{/manager/transactions}" method="get">
+            <select name="type">
+                <option value="ALL" th:selected="${searchRequest.type == 'ALL'}">Tất cả loại phiếu</option>
+                <option th:each="typeOption : ${transactionTypes}"
+                        th:value="${typeOption.name()}"
+                        th:text="${typeOption.displayName}"
+                        th:selected="${searchRequest.type == typeOption.name()}">
+                    Phiếu thu
+                </option>
+            </select>
+
+            <select name="category">
+                <option value="ALL" th:selected="${searchRequest.category == 'ALL'}">Tất cả nhóm giao dịch</option>
+                <option th:each="categoryOption : ${transactionCategories}"
+                        th:value="${categoryOption.name()}"
+                        th:text="${categoryOption.displayName}"
+                        th:selected="${searchRequest.category == categoryOption.name()}">
+                    Đặt cọc
+                </option>
+            </select>
+
+            <select name="sourceType">
+                <option value="ALL" th:selected="${searchRequest.sourceType == 'ALL'}">Tất cả nguồn</option>
+                <option th:each="sourceOption : ${sourceTypes}"
+                        th:value="${sourceOption.name()}"
+                        th:text="${sourceOption.displayName}"
+                        th:selected="${searchRequest.sourceType == sourceOption.name()}">
+                    Thanh toán booking
+                </option>
+            </select>
+
+            <input type="date" name="fromDate" th:value="${searchRequest.fromDate}" aria-label="Từ ngày">
+            <input type="date" name="toDate" th:value="${searchRequest.toDate}" aria-label="Đến ngày">
+            <input type="text" name="keyword" th:value="${searchRequest.keyword}" placeholder="Tìm mã chứng từ hoặc mô tả">
+
+            <button type="submit">Lọc</button>
+            <a class="btn-secondary-action" th:href="@{/manager/transactions}">Xóa lọc</a>
+        </form>
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <table class="module-table">
+            <thead>
+            <tr>
+                <th>Mã chứng từ</th>
+                <th>Ngày lập</th>
+                <th>Loại phiếu</th>
+                <th>Nhóm giao dịch</th>
+                <th>Số tiền</th>
+                <th>Nguồn</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="transaction : ${transactions}">
+                <td th:text="${transaction.documentCode}">PT-260617-1234</td>
+                <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">17/06/2026 10:00</td>
+                <td>
+                    <span class="status-pill"
+                          th:classappend="${transaction.type == 'INCOME'} ? ' income' : ' expense'"
+                          th:text="${transaction.typeDisplayName}">
+                        Phiếu thu
+                    </span>
+                </td>
+                <td th:text="${transaction.categoryDisplayName}">Đặt cọc</td>
+                <td th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                    0 VND
+                </td>
+                <td th:text="${transaction.sourceDisplayName}">Thanh toán booking</td>
+                <td>
+                    <a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(transactions)}">
+                <td colspan="7">Chưa có giao dịch phù hợp.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

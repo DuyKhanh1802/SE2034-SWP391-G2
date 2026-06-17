@@ -6,39 +6,39 @@
 <main layout:fragment="content">
     <section class="module-header">
         <div>
-            <p>Cash Flow Detail</p>
+            <p>Chi tiết dòng tiền</p>
             <h1 th:text="${transaction.code}">CT</h1>
         </div>
-        <a class="btn-secondary-action" th:href="@{/manager/transactions}">Quay lai</a>
+        <a class="btn-secondary-action" th:href="@{/manager/transactions}">Quay lại</a>
     </section>
 
     <section class="detail-grid">
         <div class="panel">
-            <h2>Thong tin dong tien</h2>
+            <h2>Thông tin dòng tiền</h2>
             <dl class="detail-list">
-                <dt>Loai</dt>
-                <dd th:text="${transaction.type.name() == 'INCOME' ? 'Thu' : 'Chi'}">Thu</dd>
-                <dt>Chung tu</dt>
+                <dt>Loại</dt>
+                <dd th:text="${transaction.type.displayName}">Thu</dd>
+                <dt>Chứng từ</dt>
                 <dd th:text="${transaction.documentCode}">PT</dd>
-                <dt>Nhom</dt>
-                <dd th:text="${transaction.category}">CATEGORY</dd>
-                <dt>So tien</dt>
+                <dt>Nhóm</dt>
+                <dd th:text="${transaction.category.displayName}">Nhóm giao dịch</dd>
+                <dt>Số tiền</dt>
                 <dd th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</dd>
-                <dt>Mo ta</dt>
-                <dd th:text="${transaction.description ?: 'Khong co'}">Mo ta</dd>
-                <dt>Thoi gian</dt>
+                <dt>Mô tả</dt>
+                <dd th:text="${transaction.description ?: 'Không có'}">Mô tả</dd>
+                <dt>Thời gian</dt>
                 <dd th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</dd>
             </dl>
         </div>
         <div class="panel">
-            <h2>Nguon phat sinh</h2>
+            <h2>Nguồn phát sinh</h2>
             <dl class="detail-list">
-                <dt>Loai nguon</dt>
-                <dd th:text="${transaction.sourceType}">PAYMENT</dd>
-                <dt>Ma nguon</dt>
-                <dd th:text="${transaction.sourceId ?: 'Khong co'}">1</dd>
-                <dt>Nguoi tao</dt>
-                <dd th:text="${transaction.createdBy != null ? transaction.createdBy.email : 'He thong'}">manager</dd>
+                <dt>Loại nguồn</dt>
+                <dd th:text="${transaction.sourceType.displayName}">Thanh toán</dd>
+                <dt>Mã nguồn</dt>
+                <dd th:text="${transaction.sourceId ?: 'Không có'}">1</dd>
+                <dt>Người tạo</dt>
+                <dd th:text="${transaction.createdBy != null ? transaction.createdBy.email : 'Hệ thống'}">manager</dd>
             </dl>
         </div>
     </section>
