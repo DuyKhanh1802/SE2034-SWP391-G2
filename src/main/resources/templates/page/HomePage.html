@@ -27,9 +27,23 @@
 
     <!-- HERO VIDEO -->
     <section class="hero-video-section">
-        <video class="hero-video" autoplay muted loop playsinline>
-            <source th:src="${heroVideoUrl}" type="video/mp4">
-        </video>
+
+        <!-- SLIDE VIDEO / IMAGE -->
+        <div class="hero-media-slider" id="heroMediaSlider">
+
+            <!-- Slide 1: Video -->
+            <div class="hero-media-slide active">
+                <video class="hero-video" id="heroVideo" autoplay muted loop playsinline>
+                    <source th:src="${heroVideoUrl}" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="hero-media-slide"
+                 th:each="imageUrl : ${heroImageUrls}">
+                <img th:src="${imageUrl}" alt="V'Hotel">
+            </div>
+
+        </div>
 
         <div class="hero-video-controls">
             <button id="videoToggle" class="hero-video-btn" type="button">
@@ -43,10 +57,34 @@
 
         <div class="hero-overlay"></div>
 
+        <!-- Nút chuyển slide -->
+        <button type="button" class="hero-arrow hero-arrow-left" id="heroPrevBtn">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+
+        <button type="button" class="hero-arrow hero-arrow-right" id="heroNextBtn">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <!-- Nội dung chữ -->
         <div class="hero-content">
-            <p class="hero-subtitle">Một kỳ nghỉ tinh tế ngay giữa lòng Hà Nội</p>
             <h1>V'HOTEL</h1>
+            <p class="hero-subtitle">Một kỳ nghỉ tinh tế ngay giữa lòng Hà Nội</p>
         </div>
+
+        <!-- Control video -->
+        <div class="hero-video-controls">
+
+            <button type="button" class="hero-control-btn" id="heroPlayPauseBtn">
+                <i class="bi bi-pause-fill"></i>
+            </button>
+
+            <button type="button" class="hero-control-btn" id="heroMuteBtn">
+                <i class="bi bi-volume-up-fill"></i>
+            </button>
+
+        </div>
+
     </section>
     <!-- FEATURED SERVICES -->
     <section class="featured-section section-space">

@@ -6,6 +6,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Image;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariant;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomNumberOption;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ImageRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeRepository;
@@ -16,10 +17,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class RoomService {
+
+    private static final int TOTAL_FLOORS = 6;
+    private static final int ROOMS_PER_FLOOR = 4;
 
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
@@ -53,8 +60,27 @@ public class RoomService {
     }
 
     public Room getRoomById(Long id) {
-        return roomRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay phong!"));
+        return roomRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
+    }
+
+    public List<RoomNumberOption> getAvailableRoomNumberOptions() {
+        Set<String> existingRoomNumbers = new HashSet<>(roomRepository.findExistingRoomNumbers());
+
+        List<RoomNumberOption> options = new ArrayList<>();
+
+        for (int floor = 1; floor <= TOTAL_FLOORS; floor++) {
+            for (int roomIndex = 1; roomIndex <= ROOMS_PER_FLOOR; roomIndex++) {
+
+                String roomNumber = floor + String.format("%02d", roomIndex);
+
+                if (!existingRoomNumbers.contains(roomNumber)) {
+                    options.add(new RoomNumberOption(roomNumber, floor));
+                }
+            }
+        }
+
+        return options;
     }
 
     @Transactional
@@ -62,27 +88,43 @@ public class RoomService {
                            Long variantId,
                            Integer floor,
                            RoomStatus status,
+                           String note,
                            List<String> imageUrls,
                            Integer primaryImageIndex) {
 
         if (roomNumber == null || roomNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("So phong khong duoc de trong!");
+            throw new IllegalArgumentException("Số phòng không được để trống!");
         }
 
         roomNumber = roomNumber.trim();
 
+        if (!isValidRoomNumber(roomNumber)) {
+            throw new IllegalArgumentException("Số phòng không hợp lệ!");
+        }
+
+        floor = getFloorFromRoomNumber(roomNumber);
+
         if (roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
-            throw new IllegalArgumentException("So phong da ton tai!");
+            throw new IllegalArgumentException("Số phòng đã tồn tại!");
         }
 
         RoomTypeVariant variant = roomTypeVariantRepository.findById(variantId)
-                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay phien ban phong!"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng!"));
+
+        if (variant.getIsDeleted()) {
+            throw new IllegalArgumentException("Hạng phòng này đã bị xóa!");
+        }
+
+        if (status == null) {
+            status = RoomStatus.AVAILABLE;
+        }
 
         Room room = new Room();
         room.setRoomNumber(roomNumber);
         room.setVariant(variant);
         room.setFloor(floor);
         room.setStatus(status);
+        room.setNote(normalizeNote(note));
         room.setIsDeleted(false);
 
         Room savedRoom;
@@ -90,45 +132,88 @@ public class RoomService {
         try {
             savedRoom = roomRepository.saveAndFlush(room);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("So phong da ton tai!");
+            throw new IllegalArgumentException("Số phòng đã tồn tại!");
         }
 
         try {
             saveRoomImages(savedRoom.getId(), imageUrls, primaryImageIndex);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("Luu anh phong that bai. Vui long kiem tra lai du lieu anh.");
+            throw new IllegalArgumentException("Lưu ảnh phòng thất bại. Vui lòng kiểm tra lại dữ liệu ảnh.");
         }
     }
 
+    @Transactional
     public void updateRoom(Long id,
                            String roomNumber,
                            Long variantId,
                            Integer floor,
-                           RoomStatus status) {
+                           RoomStatus status,
+                           String note) {
 
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay phong!"));
+        Room room = roomRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
 
         if (roomNumber == null || roomNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("So phong khong duoc de trong!");
+            throw new IllegalArgumentException("Số phòng không được để trống!");
         }
 
         roomNumber = roomNumber.trim();
 
+        if (!isValidRoomNumber(roomNumber)) {
+            throw new IllegalArgumentException("Số phòng không hợp lệ!");
+        }
+
+        floor = getFloorFromRoomNumber(roomNumber);
+
         if (!room.getRoomNumber().equalsIgnoreCase(roomNumber)
                 && roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
-            throw new IllegalArgumentException("So phong da ton tai!");
+            throw new IllegalArgumentException("Số phòng đã tồn tại!");
         }
 
         RoomTypeVariant variant = roomTypeVariantRepository.findById(variantId)
-                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay phien ban phong!"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng!"));
+
+        if (variant.getIsDeleted()) {
+            throw new IllegalArgumentException("Hạng phòng này đã bị xóa!");
+        }
+
+        if (status == null) {
+            status = RoomStatus.AVAILABLE;
+        }
 
         room.setRoomNumber(roomNumber);
         room.setVariant(variant);
         room.setFloor(floor);
         room.setStatus(status);
+        room.setNote(normalizeNote(note));
 
         roomRepository.save(room);
+    }
+
+    private boolean isValidRoomNumber(String roomNumber) {
+        if (roomNumber == null || !roomNumber.matches("\\d{3}")) {
+            return false;
+        }
+
+        int floor = Integer.parseInt(roomNumber.substring(0, 1));
+        int roomIndex = Integer.parseInt(roomNumber.substring(1));
+
+        return floor >= 1
+                && floor <= TOTAL_FLOORS
+                && roomIndex >= 1
+                && roomIndex <= ROOMS_PER_FLOOR;
+    }
+
+    private Integer getFloorFromRoomNumber(String roomNumber) {
+        return Integer.parseInt(roomNumber.substring(0, 1));
+    }
+
+    private String normalizeNote(String note) {
+        if (note == null || note.trim().isEmpty()) {
+            return null;
+        }
+
+        return note.trim();
     }
 
     private void saveRoomImages(Long roomId,
@@ -167,9 +252,10 @@ public class RoomService {
         }
     }
 
+    @Transactional
     public void deleteRoom(Long id) {
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay phong!"));
+        Room room = roomRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
 
         room.setIsDeleted(true);
         roomRepository.save(room);

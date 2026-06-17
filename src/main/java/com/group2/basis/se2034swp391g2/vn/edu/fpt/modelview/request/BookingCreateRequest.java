@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class BookingCreateRequest {
@@ -51,4 +52,6 @@ public class BookingCreateRequest {
     private BigDecimal depositAmount;
 
     private PaymentMethod depositMethod;
+
+    private Map<Long, Integer> extraBedCounts;
 }
