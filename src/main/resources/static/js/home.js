@@ -36,4 +36,40 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     });
+
+    // =========================
+    // HERO VIDEO CONTROLS
+    // =========================
+    const heroVideo = document.querySelector(".hero-video");
+    const soundToggle = document.getElementById("soundToggle");
+    const videoToggle = document.getElementById("videoToggle");
+
+    if (heroVideo && soundToggle) {
+        soundToggle.addEventListener("click", function () {
+            const icon = soundToggle.querySelector("i");
+
+            heroVideo.muted = !heroVideo.muted;
+
+            if (heroVideo.muted) {
+                icon.className = "bi bi-volume-mute-fill";
+            } else {
+                icon.className = "bi bi-volume-up-fill";
+                heroVideo.play();
+            }
+        });
+    }
+
+    if (heroVideo && videoToggle) {
+        videoToggle.addEventListener("click", function () {
+            const icon = videoToggle.querySelector("i");
+
+            if (heroVideo.paused) {
+                heroVideo.play();
+                icon.className = "bi bi-pause-fill";
+            } else {
+                heroVideo.pause();
+                icon.className = "bi bi-play-fill";
+            }
+        });
+    }
 });

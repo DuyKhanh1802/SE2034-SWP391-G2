@@ -1158,163 +1158,58 @@ body {
     display: none !important;
 }
 
-/* ============================= */
-/* RESPONSIVE */
-/* ============================= */
-
-@media (max-width: 1200px) {
-    .booking-area {
-        width: calc(100% - 48px);
-    }
-
-    .rose-filter-bar {
-        grid-template-columns: 1fr;
-        height: auto;
-    }
-
-    .rose-actions {
-        width: 100%;
-        min-width: 0;
-        grid-template-columns: 1fr 1fr;
-        border-left: none;
-        border-top: 1px solid var(--border);
-    }
-
-    .room-list {
-        width: calc(100% - 48px);
-    }
-
-    .room-card {
-        height: auto;
-        min-height: auto;
-        grid-template-columns: 1fr;
-    }
-
-    .room-image-box,
-    .room-info {
-        height: auto;
-        min-height: auto;
-    }
-
-    .room-top,
-    .rate-panel {
-        grid-template-columns: 1fr;
-    }
-
-    .room-links,
-    .rate-right {
-        justify-content: flex-start;
-        text-align: left;
-    }
-
-    .rate-right p {
-        margin-left: 0;
-    }
+.room-detail-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
 }
 
-@media (max-width: 768px) {
-    .room-hero {
-        padding: 24px 20px 50px;
-    }
-
-    .currency-switch {
-        left: 20px;
-    }
-
-    .booking-close-btn {
-        right: 20px;
-    }
-
-    .booking-area {
-        width: calc(100% - 32px);
-    }
-
-    .booking-search {
-        height: auto;
-        grid-template-columns: 1fr;
-    }
-
-    .search-item {
-        height: 82px;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .search-item:last-child {
-        border-bottom: none;
-    }
-
-    .booking-panel {
-        top: 246px;
-        left: 0;
-        width: 100%;
-    }
-
-    .date-panel,
-    .guest-panel,
-    .promo-panel {
-        left: 0;
-        right: auto;
-        width: 100%;
-        padding: 32px 20px;
-    }
-
-    .calendar-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .calendar-month + .calendar-month {
-        border-left: none;
-        border-top: 1px solid var(--border);
-        padding-top: 34px;
-    }
-
-    .guest-row {
-        grid-template-columns: 1fr;
-    }
-
-    .counter {
-        justify-content: start;
-    }
-
-    .guest-actions {
-        margin-top: 24px;
-    }
-
-    .room-list {
-        width: calc(100% - 32px);
-        gap: 32px;
-    }
-
-    .room-info {
-        padding: 28px 24px;
-    }
-
-    .room-carousel,
-    .room-carousel .carousel-inner,
-    .room-carousel .carousel-item,
-    .room-carousel img,
-    .room-image-box img,
-    .image-placeholder {
-        height: 300px;
-        min-height: 300px;
-    }
+.room-detail-modal.is-open {
+    display: block;
 }
+
+.room-detail-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.48);
+}
+
+.room-detail-modal-content {
+    position: relative;
+    z-index: 2;
+    width: min(995px, 78vw);
+    height: 100vh;
+    margin: 0 auto;
+    background: #f8f8f3;
+    overflow: hidden;
+}
+
+.room-detail-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #f8f8f3;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
 /* ============================= */
 /* SELECT ROOM PROGRESS */
 /* ============================= */
 
 .select-progress {
     width: 100%;
-    min-height: 120px;
-    margin-top: 0;
-    padding: 28px 0 26px;
+    min-height: 118px;
+    padding: 30px 40px;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    background: #f3f0e4;
+    background: var(--soft-cream);
 
     display: grid;
-    grid-template-columns: 80px 1fr 80px;
+    grid-template-columns: 64px 1fr 64px;
     align-items: center;
 }
 
@@ -1323,26 +1218,52 @@ body {
 }
 
 .progress-center p {
-    margin: 0 0 10px;
+    margin: 0 0 12px;
+    color: #000;
     font-family: var(--body-font);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 7px;
+    letter-spacing: 4px;
     text-transform: uppercase;
 }
 
 .progress-center small {
     display: block;
+    color: #000;
     font-family: var(--heading-font);
     font-size: 15px;
-    font-style: italic;
-    color: #000;
+    font-weight: 400;
 }
 
 .progress-arrow {
-    border: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
     background: transparent;
-    color: #aaa28f;
-    font-size: 30px;
+    color: #000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: var(--heading-font);
+    font-size: 28px;
+    line-height: 1;
     cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.progress-arrow:hover {
+    border-color: #000;
+    background: #000;
+    color: #fff;
+}
+
+.progress-arrow:first-child {
+    justify-self: start;
+}
+
+.progress-arrow:last-child {
+    justify-self: end;
 }

@@ -38,7 +38,7 @@ public class HomeController {
 
         List<HomeService> wellnessService = serviceRepository.findServiceByCategoryType(ServiceCategoryType.SPA,ImageEntityType.SERVICE,PageRequest.of(0,3));
 
-        String heroVideoUrl = "https://res.cloudinary.com/dhwtycrov/video/upload/v1781112819/video_ic3vyn.mp4";
+        String heroVideoUrl = "https://res.cloudinary.com/dhwtycrov/video/upload/v1781691399/homepage_kpuwig.mp4";
 
         model.addAttribute("heroVideoUrl", heroVideoUrl);
         model.addAttribute("roomTypes",roomTypes);

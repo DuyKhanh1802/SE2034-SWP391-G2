@@ -4,6 +4,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeVariantRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.RoomVariantDetailProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,4 +66,17 @@ public class RoomTypeVariantService {
                 roomCount
         );
     }
+
+    public RoomVariantDetailProjection getRoomVariantDetail(
+            Long variantId,
+            LocalDate checkInDate,
+            LocalDate checkOutdate
+    ){
+       return roomTypeVariantRepository
+               .findRoomVariantDetailById(variantId,checkInDate,checkOutdate)
+               .orElseThrow(() -> new RuntimeException("Không tìm thấy hạng phòng nào"));
+    }
+
+
+
 }
