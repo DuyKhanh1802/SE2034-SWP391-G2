@@ -5,216 +5,398 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-<section class="room-detail-luxury">
 
-            <!-- BREADCRUMB + EDIT -->
-            <div class="room-detail-top">
-                <div class="room-breadcrumb">
-                    <a th:href="@{/hotel-admin/dashboard}">QUẢN TRỊ</a>
-                    <span>›</span>
-                    <a th:href="@{/hotel-admin/list-room}">QUẢN LÝ PHÒNG</a>
-                    <span>›</span>
-                    <strong th:text="'PHÒNG ' + ${room.roomNumber}">PHÒNG 305</strong>
-                </div>
+    <section class="room-detail-luxury">
 
-                <a th:href="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}" class="detail-edit-btn">
-                    CHỈNH SỬA PHÒNG
-                </a>
+        <!-- BREADCRUMB + EDIT -->
+        <div class="room-detail-top">
+            <div class="room-breadcrumb">
+                <a th:href="@{/hotel-admin/dashboard}">QUẢN TRỊ</a>
+                <span>›</span>
+                <a th:href="@{/hotel-admin/list-room}">DANH SÁCH PHÒNG</a>
+                <span>›</span>
+                <strong th:text="'PHÒNG ' + ${room.roomNumber}">PHÒNG 305</strong>
             </div>
 
-            <!-- HERO IMAGE -->
-            <div class="room-hero-image"
-                 th:if="${roomImages != null and !#lists.isEmpty(roomImages)}">
-                <img th:src="${roomImages[0].imageUrl}"
-                     alt="Hình ảnh phòng"
+            <a th:href="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}" class="detail-edit-btn">
+                CHỈNH SỬA PHÒNG
+            </a>
+        </div>
+
+        <!-- HERO IMAGE: ẢNH CỦA ROOM VARIANT -->
+        <div class="room-hero-image"
+             th:if="${roomImages != null and !#lists.isEmpty(roomImages)}">
+            <img th:src="${roomImages[0].imageUrl}"
+                 alt="Hình ảnh loại phòng"
+                 data-bs-toggle="modal"
+                 data-bs-target="#roomImageModal"
+                 th:attr="data-image-url=${roomImages[0].imageUrl}">
+        </div>
+
+        <div class="room-hero-empty"
+             th:if="${roomImages == null or #lists.isEmpty(roomImages)}">
+            <i class="fa-regular fa-image"></i>
+            <p>Loại phòng này chưa có hình ảnh.</p>
+        </div>
+
+        <!-- THUMBNAILS -->
+        <div class="room-thumb-list"
+             th:if="${roomImages != null and !#lists.isEmpty(roomImages)}">
+            <div class="room-thumb-item"
+                 th:each="image : ${roomImages}">
+                <img th:src="${image.imageUrl}"
+                     alt="Hình ảnh loại phòng"
                      data-bs-toggle="modal"
                      data-bs-target="#roomImageModal"
-                     th:attr="data-image-url=${roomImages[0].imageUrl}">
+                     th:attr="data-image-url=${image.imageUrl}">
             </div>
+        </div>
 
-            <!-- EMPTY IMAGE -->
-            <div class="room-hero-empty"
-                 th:if="${roomImages == null or #lists.isEmpty(roomImages)}">
-                <i class="fa-regular fa-image"></i>
-                <p>Phòng này chưa có hình ảnh.</p>
-            </div>
+        <!-- CONTENT -->
+        <div class="room-detail-content">
 
-            <!-- THUMBNAILS -->
-            <div class="room-thumb-list"
-                 th:if="${roomImages != null and !#lists.isEmpty(roomImages)}">
-                <div class="room-thumb-item"
-                     th:each="image : ${roomImages}">
-                    <img th:src="${image.imageUrl}"
-                         alt="Hình ảnh phòng"
-                         data-bs-toggle="modal"
-                         data-bs-target="#roomImageModal"
-                         th:attr="data-image-url=${image.imageUrl}">
+            <!-- LEFT CONTENT -->
+            <div class="room-detail-main">
+
+                <!-- TITLE -->
+                <div class="room-title-row">
+                    <h1>
+                        Phòng
+                        <span th:text="${room.roomNumber}">305</span>
+                        —
+                        <span th:text="${room.variant.roomType.name}">Standard Room</span>
+                        <span> - </span>
+                        <span th:text="${room.variant.variantName}">Sea View</span>
+                    </h1>
+
+                    <span th:if="${room.status.name() == 'AVAILABLE'}"
+                          class="detail-status status-available">
+                        CÒN TRỐNG
+                    </span>
+
+                    <span th:if="${room.status.name() == 'OCCUPIED'}"
+                          class="detail-status status-occupied">
+                        ĐANG SỬ DỤNG
+                    </span>
+
+                    <span th:if="${room.status.name() == 'MAINTENANCE'}"
+                          class="detail-status status-maintenance">
+                        BẢO TRÌ
+                    </span>
                 </div>
-            </div>
 
-            <!-- CONTENT -->
-            <div class="room-detail-content">
+                <!-- DESCRIPTION -->
+                <p class="room-detail-description"
+                   th:text="${room.variant.description != null
+                        ? room.variant.description
+                        : (room.variant.roomType.description != null
+                            ? room.variant.roomType.description
+                            : 'Chưa có mô tả cho loại phòng này.')}">
+                    Mô tả loại phòng sẽ được hiển thị tại đây.
+                </p>
 
-                <!-- LEFT CONTENT -->
-                <div class="room-detail-main">
+                <div class="room-info-line"></div>
 
-                    <div class="room-title-row">
-                        <h1>
-                            Phòng
-                            <span th:text="${room.roomNumber}">305</span>
-                            —
-                            <span th:text="${room.variant.roomType.name + ' - ' + room.variant.variantName}">Deluxe</span>
-                        </h1>
+                <!-- 1. THÔNG TIN PHÒNG VẬT LÝ -->
+                <h3 class="detail-section-title">Thông tin phòng vật lý</h3>
 
-                        <span th:if="${room.status.name() == 'AVAILABLE'}"
-                              class="detail-status status-available">
-                            CÒN TRỐNG
-                        </span>
-
-                        <span th:if="${room.status.name() == 'OCCUPIED'}"
-                              class="detail-status status-occupied">
-                            ĐANG SỬ DỤNG
-                        </span>
-
-                        <span th:if="${room.status.name() == 'MAINTENANCE'}"
-                              class="detail-status status-maintenance">
-                            BẢO TRÌ
-                        </span>
+                <div class="room-info-grid">
+                    <div>
+                        <span>SỐ PHÒNG</span>
+                        <strong th:text="${room.roomNumber}">305</strong>
                     </div>
 
-                    <p class="room-detail-description"
-                       th:text="${room.variant.description != null ? room.variant.description : (room.variant.roomType.description != null ? room.variant.roomType.description : 'Chưa có mô tả cho hạng phòng này.')}">
-                        Mô tả hạng phòng sẽ được hiển thị tại đây.
-                    </p>
-
-                    <div class="room-info-line"></div>
-
-                    <div class="room-info-grid">
-                        <div>
-                            <span>TẦNG</span>
-                            <strong th:text="'Tầng ' + ${room.floor}">Tầng 3</strong>
-                        </div>
-
-                        <div>
-                            <span>GIÁ PHÒNG</span>
-                            <strong th:text="${#numbers.formatDecimal(room.variant.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND / đêm'">
-                                1,200,000 VND / đêm
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>SỨC CHỨA</span>
-                            <strong th:text="${room.variant.maxAdults + room.variant.maxChildren} + ' khách'">2 khách</strong>
-                        </div>
-
-                        <div>
-                            <span>HƯỚNG NHÌN</span>
-                            <strong th:if="${room.variant.viewType == null}">Không có</strong>
-                            <strong th:if="${room.variant.viewType != null}" th:switch="${room.variant.viewType.name()}">
-                                <span th:case="'SEA'">Hướng biển</span>
-                                <span th:case="'CITY'">Hướng thành phố</span>
-                                <span th:case="'POOL'">Hướng hồ bơi</span>
-                                <span th:case="'GARDEN'">Hướng vườn</span>
-                                <span th:case="*" th:text="${room.variant.viewType}">Khác</span>
-                            </strong>
-                        </div>
+                    <div>
+                        <span>TẦNG</span>
+                        <strong th:text="'Tầng ' + ${room.floor}">Tầng 3</strong>
                     </div>
 
-                    <div class="room-detail-actions">
-                        <a th:href="@{/hotel-admin/list-room}" class="detail-back-btn">
-                            <i class="fa-solid fa-arrow-left"></i>
-                            QUAY LẠI DANH SÁCH
-                        </a>
+                    <div>
+                        <span>TRẠNG THÁI</span>
+                        <strong th:switch="${room.status.name()}">
+                            <span th:case="'AVAILABLE'">Còn trống</span>
+                            <span th:case="'OCCUPIED'">Đang sử dụng</span>
+                            <span th:case="'MAINTENANCE'">Bảo trì</span>
+                            <span th:case="*" th:text="${room.status}">Khác</span>
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>GHI CHÚ</span>
+                        <strong th:text="${room.note != null and !#strings.isEmpty(room.note) ? room.note : 'Không có ghi chú'}">
+                            Không có ghi chú
+                        </strong>
                     </div>
                 </div>
 
-                <!-- RIGHT CONTENT -->
-                <aside class="room-detail-side">
+                <div class="room-info-line"></div>
 
-                    <!-- ROOM OPERATION -->
-                    <div class="side-card">
-                        <div class="side-card-title">
-                            <i class="fa-solid fa-clipboard-check"></i>
-                            VẬN HÀNH PHÒNG
-                        </div>
+                <!-- 2. THÔNG TIN LOẠI PHÒNG -->
+                <h3 class="detail-section-title">Thông tin loại phòng</h3>
 
-                        <div class="side-info">
-                            <span>CHẾ ĐỘ QUẢN LÝ</span>
-                            <strong>Chi tiết phòng Admin</strong>
-                        </div>
-
-                        <div class="side-info">
-                            <span>TRẠNG THÁI HIỂN THỊ</span>
-                            <strong th:switch="${room.status.name()}">
-                                <span th:case="'AVAILABLE'">Còn trống</span>
-                                <span th:case="'OCCUPIED'">Đang sử dụng</span>
-                                <span th:case="'MAINTENANCE'">Bảo trì</span>
-                                <span th:case="*" th:text="${room.status}">Khác</span>
-                            </strong>
-                        </div>
-
-                        <div class="side-info">
-                            <span>MÃ BẢN GHI</span>
-                            <strong th:text="'ID #' + ${room.id}">ID #1</strong>
-                        </div>
+                <div class="room-info-grid">
+                    <div>
+                        <span>HẠNG PHÒNG</span>
+                        <strong th:text="${room.variant.roomType.name}">Standard Room</strong>
                     </div>
 
-                    <!-- ROOM MEDIA -->
-                    <div class="side-card">
-                        <div class="side-card-title">
-                            <i class="fa-regular fa-images"></i>
-                            HÌNH ẢNH PHÒNG
-                        </div>
-
-                        <div class="quick-row">
-                            <span>Tổng số ảnh</span>
-                            <strong th:text="${roomImages != null ? #lists.size(roomImages) : 0}">
-                                0
-                            </strong>
-                        </div>
-
-                        <div class="quick-row">
-                            <span>Ảnh chính</span>
-                            <strong th:text="${roomImages != null and !#lists.isEmpty(roomImages) ? 'Đã có' : 'Chưa có'}">
-                                Đã có
-                            </strong>
-                        </div>
-
-                        <div class="quick-row">
-                            <span>Lưu trữ</span>
-                            <strong>Cloudinary</strong>
-                        </div>
+                    <div>
+                        <span>LOẠI PHÒNG</span>
+                        <strong th:text="${room.variant.variantName}">Sea View</strong>
                     </div>
 
-                </aside>
+                    <div>
+                        <span>GIÁ / ĐÊM</span>
+                        <strong th:text="${#numbers.formatDecimal(room.variant.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            1,500,000 VND
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>HƯỚNG NHÌN</span>
+                        <strong th:if="${room.variant.viewType == null}">Không có</strong>
+                        <strong th:if="${room.variant.viewType != null}" th:switch="${room.variant.viewType.name()}">
+                            <span th:case="'SEA'">Hướng biển</span>
+                            <span th:case="'CITY'">Hướng thành phố</span>
+                            <span th:case="'POOL'">Hướng hồ bơi</span>
+                            <span th:case="'GARDEN'">Hướng vườn</span>
+                            <span th:case="*" th:text="${room.variant.viewType}">Khác</span>
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>SỨC CHỨA</span>
+                        <strong th:text="${room.variant.capacity} + ' khách'">3 khách</strong>
+                    </div>
+
+                    <div>
+                        <span>NGƯỜI LỚN TỐI ĐA</span>
+                        <strong th:text="${room.variant.maxAdults} + ' người lớn'">2 người lớn</strong>
+                    </div>
+
+                    <div>
+                        <span>TRẺ EM TỐI ĐA</span>
+                        <strong th:text="${room.variant.maxChildren} + ' trẻ em'">1 trẻ em</strong>
+                    </div>
+
+                    <div>
+                        <span>DIỆN TÍCH</span>
+                        <strong th:text="${room.variant.roomSize} + ' m²'">30 m²</strong>
+                    </div>
+                </div>
+
+                <div class="room-info-line"></div>
+
+                <!-- 3. GIƯỜNG -->
+                <h3 class="detail-section-title">Cấu hình giường</h3>
+
+                <div class="detail-empty-box"
+                     th:if="${variantBeds == null or #lists.isEmpty(variantBeds)}">
+                    Chưa có thông tin giường cho loại phòng này.
+                </div>
+
+                <div class="detail-table-wrapper"
+                     th:if="${variantBeds != null and !#lists.isEmpty(variantBeds)}">
+                    <table class="detail-table">
+                        <thead>
+                        <tr>
+                            <th>Loại giường</th>
+                            <th>Số lượng</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="bed : ${variantBeds}">
+                            <td th:text="${bed.bedType.name}">Queen Bed</td>
+                            <td th:text="${bed.quantity}">1</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="room-info-line"></div>
+
+                <!-- 4. TIỆN NGHI -->
+                <h3 class="detail-section-title">Tiện nghi theo hạng phòng</h3>
+
+                <div class="detail-empty-box"
+                     th:if="${amenities == null or #lists.isEmpty(amenities)}">
+                    Chưa có tiện nghi cho hạng phòng này.
+                </div>
+
+                <div class="amenity-chip-list"
+                     th:if="${amenities != null and !#lists.isEmpty(amenities)}">
+                    <span class="amenity-chip"
+                          th:each="amenity : ${amenities}">
+                        <i th:if="${amenity.amenity.icon != null}"
+                           th:class="${amenity.amenity.icon}"></i>
+                        <span th:text="${amenity.amenity.name}">Wifi</span>
+                    </span>
+                </div>
+
+                <div class="room-info-line"></div>
+
+                <!-- 5. DỊCH VỤ ĐI KÈM -->
+                <h3 class="detail-section-title">Dịch vụ đi kèm loại phòng</h3>
+
+                <div class="detail-empty-box"
+                     th:if="${variantServices == null or #lists.isEmpty(variantServices)}">
+                    Chưa có dịch vụ đi kèm cho loại phòng này.
+                </div>
+
+                <div class="detail-table-wrapper"
+                     th:if="${variantServices != null and !#lists.isEmpty(variantServices)}">
+                    <table class="detail-table">
+                        <thead>
+                        <tr>
+                            <th>Dịch vụ</th>
+                            <th>Danh mục</th>
+                            <th>Loại đi kèm</th>
+                            <th>Số lượng</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="vs : ${variantServices}">
+                            <td th:text="${vs.service.name}">Breakfast Buffet</td>
+                            <td th:text="${vs.service.category != null ? vs.service.category.name : 'Không có'}">FOOD</td>
+                            <td th:text="${vs.includedType}">INCLUDED</td>
+                            <td th:text="${vs.quantity != null ? vs.quantity : 1}">1</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="room-detail-actions">
+                    <a th:href="@{/hotel-admin/list-room}" class="detail-back-btn">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        QUAY LẠI DANH SÁCH
+                    </a>
+                </div>
             </div>
-        </section>
-<!-- IMAGE MODAL -->
-<div class="modal fade" id="roomImageModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content room-image-modal-content">
-            <button type="button"
-                    class="btn-close room-modal-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Đóng"></button>
 
-            <img id="roomModalImage" src="" alt="Xem trước hình ảnh phòng">
+            <!-- RIGHT CONTENT -->
+            <aside class="room-detail-side">
+
+                <!-- ROOM OPERATION -->
+                <div class="side-card">
+                    <div class="side-card-title">
+                        <i class="fa-solid fa-door-open"></i>
+                        PHÒNG VẬT LÝ
+                    </div>
+
+                    <div class="side-info">
+                        <span>SỐ PHÒNG</span>
+                        <strong th:text="${room.roomNumber}">305</strong>
+                    </div>
+
+                    <div class="side-info">
+                        <span>TẦNG</span>
+                        <strong th:text="'Tầng ' + ${room.floor}">Tầng 3</strong>
+                    </div>
+
+                    <div class="side-info">
+                        <span>TRẠNG THÁI</span>
+                        <strong th:switch="${room.status.name()}">
+                            <span th:case="'AVAILABLE'">Còn trống</span>
+                            <span th:case="'OCCUPIED'">Đang sử dụng</span>
+                            <span th:case="'MAINTENANCE'">Bảo trì</span>
+                            <span th:case="*" th:text="${room.status}">Khác</span>
+                        </strong>
+                    </div>
+
+                    <div class="side-info">
+                        <span>MÃ PHÒNG</span>
+                        <strong th:text="'ID #' + ${room.id}">ID #1</strong>
+                    </div>
+                </div>
+
+                <!-- VARIANT SUMMARY -->
+                <div class="side-card">
+                    <div class="side-card-title">
+                        <i class="fa-solid fa-layer-group"></i>
+                        LOẠI PHÒNG ĐANG GÁN
+                    </div>
+
+                    <div class="quick-row">
+                        <span>Hạng phòng</span>
+                        <strong th:text="${room.variant.roomType.name}">Standard Room</strong>
+                    </div>
+
+                    <div class="quick-row">
+                        <span>Loại phòng</span>
+                        <strong th:text="${room.variant.variantName}">Sea View</strong>
+                    </div>
+
+                    <div class="quick-row">
+                        <span>Giá / đêm</span>
+                        <strong th:text="${#numbers.formatDecimal(room.variant.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            1,500,000 VND
+                        </strong>
+                    </div>
+
+                    <div class="quick-row">
+                        <span>Sức chứa</span>
+                        <strong th:text="${room.variant.capacity} + ' khách'">3 khách</strong>
+                    </div>
+                </div>
+
+                <!-- ROOM MEDIA -->
+                <div class="side-card">
+                    <div class="side-card-title">
+                        <i class="fa-regular fa-images"></i>
+                        HÌNH ẢNH LOẠI PHÒNG
+                    </div>
+
+                    <div class="quick-row">
+                        <span>Tổng số ảnh</span>
+                        <strong th:text="${roomImages != null ? #lists.size(roomImages) : 0}">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="quick-row">
+                        <span>Ảnh chính</span>
+                        <strong th:text="${roomImages != null and !#lists.isEmpty(roomImages) ? 'Đã có' : 'Chưa có'}">
+                            Đã có
+                        </strong>
+                    </div>
+
+                    <div class="quick-row">
+                        <span>Nguồn ảnh</span>
+                        <strong>Room Variant</strong>
+                    </div>
+                </div>
+
+            </aside>
+        </div>
+    </section>
+
+    <!-- IMAGE MODAL -->
+    <div class="modal fade" id="roomImageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content room-image-modal-content">
+                <button type="button"
+                        class="btn-close room-modal-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+
+                <img id="roomModalImage" src="" alt="Xem trước hình ảnh phòng">
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    const roomImageModal = document.getElementById('roomImageModal');
-    const roomModalImage = document.getElementById('roomModalImage');
+    <script>
+        const roomImageModal = document.getElementById('roomImageModal');
+        const roomModalImage = document.getElementById('roomModalImage');
 
-    if (roomImageModal && roomModalImage) {
-        roomImageModal.addEventListener('show.bs.modal', function (event) {
-            const clickedImage = event.relatedTarget;
-            const imageUrl = clickedImage.getAttribute('data-image-url');
-            roomModalImage.setAttribute('src', imageUrl);
-        });
-    }
-</script>
+        if (roomImageModal && roomModalImage) {
+            roomImageModal.addEventListener('show.bs.modal', function (event) {
+                const clickedImage = event.relatedTarget;
+                const imageUrl = clickedImage.getAttribute('data-image-url');
+                roomModalImage.setAttribute('src', imageUrl);
+            });
+        }
+    </script>
+
 </main>
 </body>
 </html>
