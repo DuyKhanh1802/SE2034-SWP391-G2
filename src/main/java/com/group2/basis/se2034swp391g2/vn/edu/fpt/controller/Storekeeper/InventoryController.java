@@ -1,10 +1,13 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Storekeeper;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryTransaction;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.InventoryManagementService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +22,7 @@ import java.math.BigDecimal;
 
 @Controller
 @RequiredArgsConstructor
-public class StorekeeperController {
+public class InventoryController {
 
     private final ProfileService profileService;
     private final InventoryManagementService inventoryManagementService;
@@ -27,13 +30,28 @@ public class StorekeeperController {
     @GetMapping("/storekeeper/inventory")
     public String inventory(Model model,
                             Authentication authentication,
-                            HttpSession session) {
-        addHeaderAttributes(model, authentication, session, "Quan ly kho hang");
-        model.addAttribute("items", inventoryManagementService.getItems());
-        model.addAttribute("services", inventoryManagementService.getAvailableServices());
-        model.addAttribute("roomTypes", inventoryManagementService.getRoomTypes());
-        model.addAttribute("recentTransactions", inventoryManagementService.getRecentTransactions());
-        model.addAttribute("recentReceipts", inventoryManagementService.getRecentReceipts());
+                            HttpSession session,
+                            @RequestParam(required = false) String keyword,
+                            @RequestParam(required = false) String category,
+                            @RequestParam(defaultValue = "ALL") String stockStatus,
+                            @RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "10") int size) {
+        addHeaderAttributes(model, authentication, session, "Quản lý kho hàng");
+        Page<InventoryItem> itemPage = inventoryManagementService.getItems(
+                keyword, category, stockStatus, page, size);
+        model.addAttribute("items", itemPage.getContent());
+        model.addAttribute("allItems", inventoryManagementService.getItems());
+        model.addAttribute("categories", inventoryManagementService.getCategories());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedCategory", category);
+        model.addAttribute("stockStatus", stockStatus);
+        model.addAttribute("currentPage", itemPage.getNumber());
+        model.addAttribute("totalPages", itemPage.getTotalPages());
+        model.addAttribute("totalElements", itemPage.getTotalElements());
+        model.addAttribute("pageSize", itemPage.getSize());
+        model.addAttribute("hasPrevious", itemPage.hasPrevious());
+        model.addAttribute("hasNext", itemPage.hasNext());
+        model.addAttribute("lowStockCount", inventoryManagementService.countLowStockItems());
         return "storekeeper/inventory";
     }
 
@@ -51,6 +69,39 @@ public class StorekeeperController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/storekeeper/inventory";
+    }
+
+    @GetMapping("/storekeeper/inventory/{id}/edit")
+    public String editInventoryItem(@PathVariable Long id,
+                                    Model model,
+                                    Authentication authentication,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            addHeaderAttributes(model, authentication, session, "Chỉnh sửa hàng hóa");
+            model.addAttribute("item", inventoryManagementService.getItem(id));
+            return "storekeeper/inventory_edit";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/storekeeper/inventory";
+        }
+    }
+
+    @PostMapping("/storekeeper/inventory/{id}/edit")
+    public String updateInventoryItem(@PathVariable Long id,
+                                      @RequestParam String name,
+                                      @RequestParam(required = false) String category,
+                                      @RequestParam String unit,
+                                      @RequestParam BigDecimal minimumQuantity,
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            inventoryManagementService.updateItem(id, name, category, unit, minimumQuantity);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật hàng hóa.");
+            return "redirect:/storekeeper/inventory/" + id;
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/storekeeper/inventory/" + id + "/edit";
+        }
     }
 
     @PostMapping("/storekeeper/inventory/items/import")
@@ -132,6 +183,34 @@ public class StorekeeperController {
             model.addAttribute("services", inventoryManagementService.getAvailableServices());
             model.addAttribute("roomTypes", inventoryManagementService.getRoomTypes());
             return "storekeeper/inventory_detail";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/storekeeper/inventory";
+        }
+    }
+
+    @GetMapping("/storekeeper/inventory/history")
+    public String inventoryHistory(@RequestParam(required = false) Long itemId,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "15") int size,
+                                   Model model,
+                                   Authentication authentication,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            addHeaderAttributes(model, authentication, session, "Lịch sử biến động kho");
+            Page<InventoryTransaction> transactionPage =
+                    inventoryManagementService.getTransactions(itemId, page, size);
+            model.addAttribute("transactions", transactionPage.getContent());
+            model.addAttribute("items", inventoryManagementService.getItems());
+            model.addAttribute("selectedItemId", itemId);
+            model.addAttribute("currentPage", transactionPage.getNumber());
+            model.addAttribute("totalPages", transactionPage.getTotalPages());
+            model.addAttribute("totalElements", transactionPage.getTotalElements());
+            model.addAttribute("pageSize", transactionPage.getSize());
+            model.addAttribute("hasPrevious", transactionPage.hasPrevious());
+            model.addAttribute("hasNext", transactionPage.hasNext());
+            return "storekeeper/inventory_history";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/storekeeper/inventory";

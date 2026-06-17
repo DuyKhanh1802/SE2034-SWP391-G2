@@ -4,101 +4,192 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-    <section class="module-header">
+    <section class="page-title">
+        <h1>Quản lý kho hàng</h1>
+        <p>Theo dõi số lượng tồn, ngưỡng tối thiểu và thực hiện các nghiệp vụ nhập kho trên một màn hình.</p>
+    </section>
+
+    <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+
+    <section class="admin-card inventory-toolbar">
         <div>
-            <p>Inventory</p>
-            <h1>Quan ly kho hang</h1>
+            <span class="eyebrow">INVENTORY ITEMS</span>
+            <h2>Danh sách hàng hóa</h2>
+        </div>
+        <div class="toolbar-actions">
+            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history}">
+                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử kho
+            </a>
+            <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="fa-solid fa-file-import"></i> Import hàng hóa
+            </button>
+            <button class="btn-admin-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal"
+                    th:disabled="${#lists.isEmpty(allItems)}">
+                <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
+            </button>
         </div>
     </section>
 
-    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-
-    <section class="detail-grid">
-        <form class="panel form-panel" th:action="@{/storekeeper/inventory/items/import}" method="post" enctype="multipart/form-data">
-            <h2>Import hang hoa</h2>
-            <p class="form-hint">File .xlsx gom cac cot: ten hang, loai, don vi, ton dau ky, nguong canh bao, gia von.</p>
-            <input type="file" name="file" accept=".xlsx" required>
-            <button type="submit">Import Excel</button>
-        </form>
-
-        <form class="panel form-panel" th:action="@{/storekeeper/inventory/receipts}" method="post">
-            <h2>Phieu nhap hang</h2>
-            <select name="itemId" required>
-                <option th:each="item : ${items}" th:value="${item.id}" th:text="${item.name}">Hang hoa</option>
+    <section class="admin-card">
+        <form class="inventory-filters" method="get" th:action="@{/storekeeper/inventory}">
+            <label class="search-control">
+                <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+                <input name="keyword" th:value="${keyword}" placeholder="Tìm theo mã, tên hoặc loại hàng...">
+            </label>
+            <select class="filter-control" name="category">
+                <option value="">Tất cả loại hàng</option>
+                <option th:each="categoryOption : ${categories}"
+                        th:value="${categoryOption}"
+                        th:text="${categoryOption}"
+                        th:selected="${categoryOption == selectedCategory}"></option>
             </select>
-            <input type="number" step="0.01" min="0.01" name="quantity" placeholder="So luong" required>
-            <input type="number" step="1000" min="1" name="unitCost" placeholder="Don gia truoc VAT" required>
-            <input name="supplier" placeholder="Nha cung cap">
-            <textarea name="note" rows="2" placeholder="Ghi chu"></textarea>
-            <button type="submit">Nhap hang</button>
+            <select class="filter-control" name="stockStatus">
+                <option value="ALL" th:selected="${stockStatus == null or stockStatus == 'ALL'}">Tất cả tồn kho</option>
+                <option value="LOW" th:selected="${stockStatus == 'LOW'}">Sắp hết hàng</option>
+                <option value="NORMAL" th:selected="${stockStatus == 'NORMAL'}">Tồn kho ổn định</option>
+            </select>
+            <input type="hidden" name="size" th:value="${pageSize}">
+            <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
         </form>
     </section>
 
-    <section class="panel">
-        <h2>Danh sach hang hoa</h2>
-        <table class="module-table">
-            <thead>
-            <tr>
-                <th>Ma</th>
-                <th>Ten</th>
-                <th>Loai</th>
-                <th>Ton dau ky</th>
-                <th>Ton hien tai</th>
-                <th>Gia von</th>
-                <th>Don vi</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="item : ${items}">
-                <td th:text="${item.code}">IT</td>
-                <td th:text="${item.name}">Ten hang</td>
-                <td th:text="${item.category ?: '-'}">Loai</td>
-                <td th:text="${item.openingQuantity}">0</td>
-                <td th:text="${item.currentQuantity}">0</td>
-                <td th:text="${#numbers.formatDecimal(item.unitCost, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
-                <td th:text="${item.unit}">cai</td>
-                <td><a th:href="@{/storekeeper/inventory/{id}(id=${item.id})}">Chi tiet</a></td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(items)}"><td colspan="8">Chua co hang hoa.</td></tr>
-            </tbody>
-        </table>
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table admin-table align-middle">
+                <thead>
+                <tr>
+                    <th>Mã hàng</th>
+                    <th>Tên hàng hóa</th>
+                    <th>Loại</th>
+                    <th>Đơn vị</th>
+                    <th>Tồn hiện tại</th>
+                    <th>Mức tối thiểu</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${items}">
+                    <td><span class="item-code" th:text="${item.code}">IT-0001</span></td>
+                    <td><strong th:text="${item.name}">Hàng hóa</strong></td>
+                    <td th:text="${item.category ?: 'Chưa phân loại'}">Loại</td>
+                    <td th:text="${item.unit}">Cái</td>
+                    <td>
+                        <span class="quantity"
+                              th:classappend="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' low'"
+                              th:text="${#numbers.formatDecimal(item.currentQuantity, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(item.minimumQuantity, 1, 'POINT', 0, 'COMMA')}">0</td>
+                    <td>
+                        <span th:if="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0}"
+                              class="admin-badge badge-danger">Sắp hết hàng</span>
+                        <span th:unless="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0}"
+                              class="admin-badge badge-success">Ổn định</span>
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/{id}(id=${item.id})}" title="Xem chi tiết">
+                                <i class="fa-regular fa-eye"></i>
+                            </a>
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/{id}/edit(id=${item.id})}" title="Chỉnh sửa">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </a>
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/history(itemId=${item.id})}" title="Lịch sử biến động">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(items)}">
+                    <td colspan="8" class="text-center py-5 text-muted">Không tìm thấy hàng hóa phù hợp.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
+            <div class="text-muted small">
+                <span th:text="${totalElements}">0</span> hàng hóa
+                <span th:if="${lowStockCount > 0}"> · <strong class="text-danger" th:text="${lowStockCount + ' sắp hết'}"></strong></span>
+            </div>
+            <nav th:if="${totalPages > 1}" aria-label="Phân trang kho hàng">
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
+                        <a class="page-link" th:href="@{/storekeeper/inventory(page=${currentPage - 1},size=${pageSize},keyword=${keyword},category=${selectedCategory},stockStatus=${stockStatus})}">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${pageNumber == currentPage} ? ' active'">
+                        <a class="page-link"
+                           th:href="@{/storekeeper/inventory(page=${pageNumber},size=${pageSize},keyword=${keyword},category=${selectedCategory},stockStatus=${stockStatus})}"
+                           th:text="${pageNumber + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
+                        <a class="page-link" th:href="@{/storekeeper/inventory(page=${currentPage + 1},size=${pageSize},keyword=${keyword},category=${selectedCategory},stockStatus=${stockStatus})}">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </section>
 
-    <section class="panel">
-        <h2>Phieu nhap gan day</h2>
-        <table class="module-table">
-            <thead><tr><th>Ma phieu</th><th>Hang hoa</th><th>Truoc VAT</th><th>VAT</th><th>Tong chi</th><th>Thoi gian</th></tr></thead>
-            <tbody>
-            <tr th:each="receipt : ${recentReceipts}">
-                <td th:text="${receipt.code}">IR</td>
-                <td th:text="${receipt.item.name}">Hang hoa</td>
-                <td th:text="${#numbers.formatDecimal(receipt.subtotal, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
-                <td th:text="${#numbers.formatDecimal(receipt.vatAmount, 0, 'POINT', 0, 'COMMA') + ' VND (' + receipt.vatRate + '%)'}">0 VND</td>
-                <td th:text="${#numbers.formatDecimal(receipt.totalCost, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
-                <td th:text="${#temporals.format(receipt.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(recentReceipts)}"><td colspan="6">Chua co phieu nhap.</td></tr>
-            </tbody>
-        </table>
-    </section>
+    <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="@{/storekeeper/inventory/items/import}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <div><span class="eyebrow">EXCEL IMPORT</span><h2 class="modal-title">Import hàng hóa</h2></div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="eyebrow mb-2 d-block">FILE DỮ LIỆU (.XLSX)</label>
+                        <input class="form-control-admin" type="file" name="file" accept=".xlsx" required>
+                        <p class="form-hint">Thứ tự cột: tên hàng, loại, đơn vị, tồn đầu kỳ, ngưỡng cảnh báo, giá vốn.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn-admin-primary">Import Excel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <section class="panel">
-        <h2>Lich su xuat nhap kho</h2>
-        <table class="module-table">
-            <thead><tr><th>Hang hoa</th><th>Loai</th><th>So luong</th><th>Noi dung</th><th>Thoi gian</th></tr></thead>
-            <tbody>
-            <tr th:each="transaction : ${recentTransactions}">
-                <td th:text="${transaction.item.name}">Hang hoa</td>
-                <td th:text="${transaction.type}">IN</td>
-                <td th:text="${transaction.quantity}">0</td>
-                <td th:text="${transaction.description}">Noi dung</td>
-                <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
+    <div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="@{/storekeeper/inventory/receipts}" method="post">
+                    <div class="modal-header">
+                        <div><span class="eyebrow">INVENTORY RECEIPT</span><h2 class="modal-title">Lập phiếu nhập</h2></div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body admin-form">
+                        <div>
+                            <label>Hàng hóa</label>
+                            <select class="form-control-admin" name="itemId" required>
+                                <option value="" selected disabled>Chọn hàng hóa</option>
+                                <option th:each="item : ${allItems}" th:value="${item.id}"
+                                        th:text="${item.code + ' - ' + item.name}"></option>
+                            </select>
+                        </div>
+                        <div class="form-grid">
+                            <div><label>Số lượng</label><input class="form-control-admin" type="number" step="0.01" min="0.01" name="quantity" required></div>
+                            <div><label>Đơn giá trước VAT</label><input class="form-control-admin" type="number" step="1000" min="1" name="unitCost" required></div>
+                        </div>
+                        <div><label>Nhà cung cấp</label><input class="form-control-admin" name="supplier" maxlength="150"></div>
+                        <div><label>Ghi chú</label><textarea class="form-control-admin" name="note" rows="3" maxlength="300"></textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn-admin-primary">Tạo phiếu nhập</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </main>
 </body>
 </html>

@@ -14,6 +14,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -44,6 +48,27 @@ public class InventoryManagementService {
     }
 
     @Transactional(readOnly = true)
+    public Page<InventoryItem> getItems(String keyword,
+                                        String category,
+                                        String stockStatus,
+                                        int page,
+                                        int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 5), 100);
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by("name").ascending());
+        return inventoryItemRepository.searchItems(
+                normalizeText(keyword),
+                normalizeText(category),
+                normalizeStockStatus(stockStatus),
+                pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getCategories() {
+        return inventoryItemRepository.findDistinctCategories();
+    }
+
+    @Transactional(readOnly = true)
     public InventoryItem getItem(Long id) {
         return inventoryItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hàng hóa."));
@@ -56,6 +81,32 @@ public class InventoryManagementService {
                                     BigDecimal openingQuantity,
                                     BigDecimal minimumQuantity) {
         return createItem(name, category, unit, openingQuantity, minimumQuantity, BigDecimal.ZERO);
+    }
+
+    @Transactional
+    public InventoryItem updateItem(Long id,
+                                    String name,
+                                    String category,
+                                    String unit,
+                                    BigDecimal minimumQuantity) {
+        InventoryItem item = getItem(id);
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Tên hàng hóa là bắt buộc.");
+        }
+        if (unit == null || unit.isBlank()) {
+            throw new IllegalArgumentException("Đơn vị tính là bắt buộc.");
+        }
+
+        String normalizedName = name.trim();
+        if (inventoryItemRepository.existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(normalizedName, id)) {
+            throw new IllegalArgumentException("Tên hàng hóa đã tồn tại.");
+        }
+
+        item.setName(normalizedName);
+        item.setCategory(normalizeText(category));
+        item.setUnit(unit.trim());
+        item.setMinimumQuantity(normalizeNonNegative(minimumQuantity));
+        return inventoryItemRepository.save(item);
     }
 
     @Transactional
@@ -320,6 +371,18 @@ public class InventoryManagementService {
     }
 
     @Transactional(readOnly = true)
+    public Page<InventoryTransaction> getTransactions(Long itemId, int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 5), 100);
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by("createdAt").descending());
+        if (itemId == null) {
+            return inventoryTransactionRepository.findAll(pageable);
+        }
+        getItem(itemId);
+        return inventoryTransactionRepository.findByItem_Id(itemId, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public List<com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service> getAvailableServices() {
         return serviceRepository.findByIsDeletedFalseAndIsAvailableTrueOrderByNameAsc();
     }
@@ -403,6 +466,17 @@ public class InventoryManagementService {
 
     private String normalizeText(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private String normalizeStockStatus(String value) {
+        if (value == null || value.isBlank() || "ALL".equalsIgnoreCase(value)) {
+            return null;
+        }
+        String normalized = value.trim().toUpperCase();
+        if (!"LOW".equals(normalized) && !"NORMAL".equals(normalized)) {
+            return null;
+        }
+        return normalized;
     }
 
     private BigDecimal calculateWeightedUnitCost(BigDecimal currentCost,

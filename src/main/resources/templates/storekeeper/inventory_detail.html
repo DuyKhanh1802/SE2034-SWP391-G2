@@ -4,92 +4,121 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-    <section class="module-header">
+    <section class="page-title">
+        <h1>Chi tiết hàng hóa</h1>
+        <p>Thông tin tồn kho, chi phí bình quân và các liên kết tiêu hao của hàng hóa.</p>
+    </section>
+
+    <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+
+    <section class="admin-card detail-header">
         <div>
-            <p>Inventory Detail</p>
-            <h1 th:text="${item.name}">Hang hoa</h1>
+            <span class="eyebrow" th:text="${item.code}">ITEM CODE</span>
+            <h2 th:text="${item.name}">Hàng hóa</h2>
         </div>
-        <a class="btn-secondary-action" th:href="@{/storekeeper/inventory}">Quay lai</a>
+        <div class="detail-actions">
+            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory}"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history(itemId=${item.id})}"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</a>
+            <a class="btn-admin-primary" th:href="@{/storekeeper/inventory/{id}/edit(id=${item.id})}"><i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa</a>
+        </div>
     </section>
 
-    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-
-    <section class="metric-grid">
-        <div class="metric-card"><span>Ton dau ky</span><strong th:text="${item.openingQuantity + ' ' + item.unit}">0</strong></div>
-        <div class="metric-card"><span>Da nhap</span><strong th:text="${totalIn + ' ' + item.unit}">0</strong></div>
-        <div class="metric-card"><span>Da tieu thu</span><strong th:text="${totalOut + ' ' + item.unit}">0</strong></div>
-        <div class="metric-card"><span>Ton hien tai</span><strong th:text="${item.currentQuantity + ' ' + item.unit}">0</strong></div>
-        <div class="metric-card"><span>Gia von binh quan</span><strong th:text="${#numbers.formatDecimal(item.unitCost, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
+    <section class="summary-grid">
+        <div class="summary-card"><span>Tồn đầu kỳ</span><strong th:text="${item.openingQuantity + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tổng nhập</span><strong th:text="${totalIn + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tổng xuất</span><strong th:text="${totalOut + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tồn hiện tại</span><strong th:classappend="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' text-danger'" th:text="${item.currentQuantity + ' ' + item.unit}">0</strong></div>
     </section>
 
-    <section class="detail-grid">
-        <div class="panel">
-            <h2>Dich vu lien ket</h2>
-            <table class="module-table">
-                <thead><tr><th>Dich vu</th><th>Tieu hao/lan</th><th>Cost/lan</th></tr></thead>
+    <section class="admin-card">
+        <div class="detail-grid">
+            <div class="detail-item"><span>Mã hàng</span><strong th:text="${item.code}"></strong></div>
+            <div class="detail-item"><span>Loại hàng</span><strong th:text="${item.category ?: 'Chưa phân loại'}"></strong></div>
+            <div class="detail-item"><span>Đơn vị tính</span><strong th:text="${item.unit}"></strong></div>
+            <div class="detail-item"><span>Mức tồn tối thiểu</span><strong th:text="${item.minimumQuantity + ' ' + item.unit}"></strong></div>
+            <div class="detail-item"><span>Giá vốn bình quân</span><strong th:text="${#numbers.formatDecimal(item.unitCost, 0, 'POINT', 0, 'COMMA') + ' VND'}"></strong></div>
+            <div class="detail-item"><span>Trạng thái</span>
+                <strong th:if="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0}" class="text-danger">Sắp hết hàng</strong>
+                <strong th:unless="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0}" class="text-success">Tồn kho ổn định</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="px-4 pt-4"><span class="eyebrow">STOCK MOVEMENTS</span><h2 class="modal-title">Biến động gần đây</h2></div>
+        <div class="table-responsive mt-3">
+            <table class="table admin-table">
+                <thead><tr><th>Loại</th><th>Số lượng</th><th>Nội dung</th><th>Thời gian</th></tr></thead>
+                <tbody>
+                <tr th:each="transaction : ${transactions}">
+                    <td><span class="admin-badge" th:classappend="${transaction.type.name() == 'IN'} ? ' badge-success' : ' badge-info'" th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : 'Xuất kho'}"></span></td>
+                    <td th:text="${transaction.quantity + ' ' + item.unit}"></td>
+                    <td th:text="${transaction.description ?: '-'}"></td>
+                    <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="4" class="text-center py-5 text-muted">Chưa có biến động kho.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="px-4 pt-4"><span class="eyebrow">CONSUMPTION MAPPINGS</span><h2 class="modal-title">Liên kết tiêu hao</h2></div>
+        <div class="table-responsive mt-3">
+            <table class="table admin-table">
+                <thead><tr><th>Nguồn sử dụng</th><th>Loại</th><th>Tiêu hao/lần</th><th>Chi phí/lần</th></tr></thead>
                 <tbody>
                 <tr th:each="mapping : ${mappings}">
-                    <td th:text="${mapping.service.name}">Dich vu</td>
-                    <td th:text="${mapping.quantityPerUse + ' ' + item.unit}">1</td>
-                    <td th:text="${#numbers.formatDecimal(mapping.quantityPerUse.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
+                    <td th:text="${mapping.service.name}"></td><td>Dịch vụ</td>
+                    <td th:text="${mapping.quantityPerUse + ' ' + item.unit}"></td>
+                    <td th:text="${#numbers.formatDecimal(mapping.quantityPerUse.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}"></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(mappings)}"><td colspan="3">Chua lien ket dich vu.</td></tr>
+                <tr th:each="mapping : ${refreshMappings}">
+                    <td th:text="${mapping.roomType.name}"></td><td>Refresh phòng</td>
+                    <td th:text="${mapping.quantityPerRefresh + ' ' + item.unit}"></td>
+                    <td th:text="${#numbers.formatDecimal(mapping.quantityPerRefresh.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(mappings) and #lists.isEmpty(refreshMappings)}"><td colspan="4" class="text-center py-5 text-muted">Chưa có liên kết tiêu hao.</td></tr>
                 </tbody>
             </table>
         </div>
-
-        <form class="panel form-panel" th:action="@{/storekeeper/inventory/service-mappings}" method="post">
-            <h2>Lien ket dich vu</h2>
-            <input type="hidden" name="itemId" th:value="${item.id}">
-            <select name="serviceId" required>
-                <option th:each="service : ${services}" th:value="${service.id}" th:text="${service.name}">Dich vu</option>
-            </select>
-            <input type="number" step="0.01" min="0.01" name="quantityPerUse" placeholder="So luong tieu hao/lan" required>
-            <button type="submit">Lien ket</button>
-        </form>
     </section>
 
     <section class="detail-grid">
-        <div class="panel">
-            <h2>Refresh phong sau checkout</h2>
-            <table class="module-table">
-                <thead><tr><th>Hang phong</th><th>Tieu hao/lan</th><th>Cost/lan</th></tr></thead>
-                <tbody>
-                <tr th:each="mapping : ${refreshMappings}">
-                    <td th:text="${mapping.roomType.name}">Hang phong</td>
-                    <td th:text="${mapping.quantityPerRefresh + ' ' + item.unit}">1</td>
-                    <td th:text="${#numbers.formatDecimal(mapping.quantityPerRefresh.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(refreshMappings)}"><td colspan="3">Chua lien ket refresh phong.</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <form class="panel form-panel" th:action="@{/storekeeper/inventory/room-refresh-mappings}" method="post">
-            <h2>Lien ket refresh phong</h2>
+        <form class="admin-card admin-form" th:action="@{/storekeeper/inventory/service-mappings}" method="post">
+            <div><span class="eyebrow">SERVICE MAPPING</span><h2 class="modal-title">Liên kết dịch vụ</h2></div>
             <input type="hidden" name="itemId" th:value="${item.id}">
-            <select name="roomTypeId" required>
-                <option th:each="roomType : ${roomTypes}" th:value="${roomType.id}" th:text="${roomType.name}">Hang phong</option>
-            </select>
-            <input type="number" step="0.01" min="0.01" name="quantityPerRefresh" placeholder="So luong tieu hao/lan refresh" required>
-            <button type="submit">Lien ket</button>
+            <div>
+                <label>Dịch vụ</label>
+                <select class="form-control-admin" name="serviceId" required>
+                    <option value="" selected disabled>Chọn dịch vụ</option>
+                    <option th:each="service : ${services}" th:value="${service.id}" th:text="${service.name}"></option>
+                </select>
+            </div>
+            <div>
+                <label>Số lượng tiêu hao/lần</label>
+                <input class="form-control-admin" type="number" step="0.01" min="0.01" name="quantityPerUse" required>
+            </div>
+            <button class="btn-admin-primary" type="submit">Tạo liên kết</button>
         </form>
-    </section>
 
-    <section class="panel">
-        <h2>Lich su xuat nhap</h2>
-        <table class="module-table">
-            <thead><tr><th>Loai</th><th>So luong</th><th>Noi dung</th><th>Thoi gian</th></tr></thead>
-            <tbody>
-            <tr th:each="transaction : ${transactions}">
-                <td th:text="${transaction.type}">IN</td>
-                <td th:text="${transaction.quantity + ' ' + item.unit}">0</td>
-                <td th:text="${transaction.description}">Noi dung</td>
-                <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
-            </tr>
-            </tbody>
-        </table>
+        <form class="admin-card admin-form" th:action="@{/storekeeper/inventory/room-refresh-mappings}" method="post">
+            <div><span class="eyebrow">ROOM REFRESH MAPPING</span><h2 class="modal-title">Liên kết refresh phòng</h2></div>
+            <input type="hidden" name="itemId" th:value="${item.id}">
+            <div>
+                <label>Hạng phòng</label>
+                <select class="form-control-admin" name="roomTypeId" required>
+                    <option value="" selected disabled>Chọn hạng phòng</option>
+                    <option th:each="roomType : ${roomTypes}" th:value="${roomType.id}" th:text="${roomType.name}"></option>
+                </select>
+            </div>
+            <div>
+                <label>Số lượng tiêu hao/lần refresh</label>
+                <input class="form-control-admin" type="number" step="0.01" min="0.01" name="quantityPerRefresh" required>
+            </div>
+            <button class="btn-admin-primary" type="submit">Tạo liên kết</button>
+        </form>
     </section>
 </main>
 </body>

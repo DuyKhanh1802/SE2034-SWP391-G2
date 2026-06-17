@@ -65,9 +65,12 @@
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/manager/transactions')
                   or #strings.startsWith(currentUri ?: '', '/manager/fund')
-                  or #strings.startsWith(currentUri ?: '', '/manager/reports')
-                  or #strings.startsWith(currentUri ?: '', '/storekeeper/inventory')}"
+                  or #strings.startsWith(currentUri ?: '', '/manager/reports')}"
           th:href="@{/manager/manager-modules.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/storekeeper/inventory')}"
+          th:href="@{/storekeeper/Inventory.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')}"
