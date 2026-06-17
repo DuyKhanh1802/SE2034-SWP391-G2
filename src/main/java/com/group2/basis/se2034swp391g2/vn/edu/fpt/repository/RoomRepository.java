@@ -87,6 +87,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                 AND bd.checkOutDate > :checkInDate
             )
             """)
+
     List<Room> findAvailableRoomsByIds(
             @Param("roomIds") List<Long> roomIds,
             @Param("checkInDate") LocalDate checkInDate,
@@ -94,4 +95,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             @Param("roomStatus") RoomStatus roomStatus,
             @Param("blockingStatuses") List<BookingStatus> blockingStatuses
     );
+
+    @Query("""
+        SELECT r.roomNumber
+        FROM Room r
+        WHERE r.isDeleted = false
+        """)
+    List<String> findExistingRoomNumbers();
 }

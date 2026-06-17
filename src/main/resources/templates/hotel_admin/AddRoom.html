@@ -3,229 +3,166 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
+
 <body>
 <main layout:fragment="content">
-<!-- PAGE TITLE -->
-        <section class="welcome-section room-page-title">
-            <h1>Thêm phòng</h1>
-            <p>
-                Tạo phòng mới bằng cách nhập số phòng, hạng phòng, tầng,
-                hướng nhìn, trạng thái và hình ảnh phòng.
-            </p>
-        </section>
 
-        <!-- ERROR MESSAGE -->
-        <div th:if="${errorMessage}" class="error-toast">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}">Số phòng đã tồn tại!</span>
+    <!-- PAGE TITLE -->
+    <section class="welcome-section room-page-title">
+        <h1>Thêm phòng</h1>
+        <p>
+            Tạo phòng mới bằng cách chọn hạng phòng,
+            số phòng, tầng, trạng thái và ghi chú phòng.
+        </p>
+    </section>
+
+    <!-- ERROR MESSAGE -->
+    <div th:if="${errorMessage}" class="error-toast">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span th:text="${errorMessage}">Số phòng đã tồn tại!</span>
+    </div>
+
+    <!-- FORM -->
+    <section class="room-form-card">
+
+        <div class="form-heading">
+            <span>QUẢN LÝ PHÒNG</span>
+            <h3>Thông tin phòng</h3>
         </div>
 
-        <!-- FORM -->
-        <section class="room-form-card">
+        <form th:action="@{/hotel-admin/list-room/add}" method="post">
 
-            <div class="form-heading">
-                <span>QUẢN LÝ PHÒNG</span>
-                <h3>Thông tin phòng</h3>
+            <div class="row g-4">
+
+                <!-- HẠNG PHÒNG -->
+                <div class="col-md-6">
+                    <label class="form-label">Hạng phòng</label>
+
+                    <select name="variantId"
+                            id="variantSelect"
+                            class="form-select room-input"
+                            required>
+                        <option value="">Chọn hạng phòng</option>
+
+                        <option th:each="variant : ${roomTypeVariants}"
+                                th:value="${variant.id}"
+                                th:text="${variant.variantName}"
+                                th:selected="${variant.id == selectedVariantId}">
+                            Standard Room - City View
+                        </option>
+                    </select>
+                </div>
+
+                <!-- SỐ PHÒNG -->
+                <div class="col-md-6">
+                    <label class="form-label">Số phòng</label>
+
+                    <select name="roomNumber"
+                            id="roomNumberSelect"
+                            class="form-select room-input"
+                            required>
+                        <option value="">Chọn số phòng</option>
+
+                        <option th:each="option : ${roomNumberOptions}"
+                                th:value="${option.roomNumber}"
+                                th:text="${option.roomNumber}"
+                                th:attr="data-floor=${option.floor}"
+                                th:selected="${option.roomNumber == roomNumber}">
+                            101
+                        </option>
+                    </select>
+                </div>
+
+                <!-- TẦNG -->
+                <div class="col-md-6">
+                    <label class="form-label">Tầng</label>
+
+                    <input type="number"
+                           name="floor"
+                           id="floorInput"
+                           class="form-control room-input"
+                           placeholder="Tầng sẽ tự hiển thị"
+                           th:value="${floor}"
+                           readonly
+                           required>
+                </div>
+
+                <!-- TRẠNG THÁI -->
+                <div class="col-md-6">
+                    <label class="form-label">Trạng thái</label>
+
+                    <select name="status"
+                            class="form-select room-input"
+                            required>
+                        <option value="">Chọn trạng thái</option>
+
+                        <option th:each="status : ${roomStatuses}"
+                                th:value="${status}"
+                                th:selected="${status == selectedStatus}"
+                                th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
+                                         (status.name() == 'OCCUPIED' ? 'Đang sử dụng' :
+                                         (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status))}">
+                            Còn trống
+                        </option>
+                    </select>
+                </div>
+
+                <!-- GHI CHÚ -->
+                <div class="col-md-12">
+                    <label class="form-label">Ghi chú</label>
+
+                    <textarea name="note"
+                              class="form-control room-input"
+                              rows="3"
+                              maxlength="500"
+                              placeholder="Ví dụ: Phòng gần thang máy, phòng cần kiểm tra điều hòa..."
+                              th:text="${note}"></textarea>
+                </div>
+
             </div>
 
-            <form th:action="@{/hotel-admin/list-room/add}" method="post">
+            <div class="form-actions">
+                <a th:href="@{/hotel-admin/list-room}" class="cancel-btn">
+                    Hủy
+                </a>
 
-                <div class="row g-4">
+                <button type="submit" class="save-room-btn">
+                    <i class="fa-solid fa-check"></i>
+                    Lưu phòng
+                </button>
+            </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Số phòng</label>
-                        <input type="text"
-                               name="roomNumber"
-                               class="form-control room-input"
-                               placeholder="Ví dụ: 101"
-                               th:value="${roomNumber}"
-                               required>
-                    </div>
+        </form>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Hạng phòng</label>
-                        <select name="variantId" class="form-select room-input" required>
-                            <option value="">Chọn hạng phòng</option>
+    </section>
 
-                            <option th:each="variant : ${roomTypeVariants}"
-                                    th:value="${variant.id}"
-                                    th:text="${variant.roomType.name + ' - ' + variant.variantName}"
-                                    th:selected="${variant.id == selectedVariantId}">
-                                STANDARD
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Tầng</label>
-                        <input type="number"
-                               name="floor"
-                               class="form-control room-input"
-                               placeholder="Ví dụ: 1"
-                               min="1"
-                               th:value="${floor}"
-                               required>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Hướng nhìn</label>
-                        <select name="viewType" class="form-select room-input" required>
-                            <option value="">Chọn hướng nhìn</option>
-
-                            <option th:each="view : ${viewTypes}"
-                                    th:value="${view}"
-                                    th:selected="${view == selectedViewType}"
-                                    th:text="${view.name() == 'SEA' ? 'Hướng biển' :
-                                             (view.name() == 'CITY' ? 'Hướng thành phố' :
-                                             (view.name() == 'POOL' ? 'Hướng hồ bơi' :
-                                             (view.name() == 'GARDEN' ? 'Hướng vườn' : view)))}">
-                                Hướng thành phố
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Trạng thái</label>
-                        <select name="status" class="form-select room-input" required>
-                            <option value="">Chọn trạng thái</option>
-
-                            <option th:each="status : ${roomStatuses}"
-                                    th:value="${status}"
-                                    th:selected="${status == selectedStatus}"
-                                    th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
-                                             (status.name() == 'OCCUPIED' ? 'Đang sử dụng' :
-                                             (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status))}">
-                                Còn trống
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- ROOM IMAGES -->
-                    <div class="col-md-12">
-                        <label class="form-label">Hình ảnh phòng</label>
-
-                        <input type="file"
-                               id="roomImages"
-                               class="form-control room-input"
-                               accept="image/*"
-                               multiple>
-
-                        <p class="image-note">
-                            Có thể chọn nhiều ảnh. Ảnh sẽ được tự động tải lên Cloudinary.
-                            Ảnh đầu tiên sẽ được chọn làm ảnh chính mặc định.
-                        </p>
-
-                        <div id="imagePreviewList" class="image-preview-list"></div>
-
-                        <!-- Hidden inputs will be added here after upload -->
-                        <div id="uploadedImagesContainer"></div>
-                    </div>
-
-                </div>
-
-                <div class="form-actions">
-                    <a th:href="@{/hotel-admin/list-room}" class="cancel-btn">
-                        Hủy
-                    </a>
-
-                    <button type="submit" class="save-room-btn">
-                        <i class="fa-solid fa-check"></i>
-                        Lưu phòng
-                    </button>
-                </div>
-
-            </form>
-
-        </section>
-<script>
-    setTimeout(function () {
-        const toast = document.querySelector('.error-toast');
-        if (toast) {
-            toast.style.display = 'none';
-        }
-    }, 3000);
-
-    const imageInput = document.getElementById('roomImages');
-    const previewList = document.getElementById('imagePreviewList');
-    const hiddenContainer = document.getElementById('uploadedImagesContainer');
-
-    let uploadedImages = [];
-
-    imageInput.addEventListener('change', async function () {
-        const files = Array.from(imageInput.files);
-
-        for (const file of files) {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            try {
-                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-                const response = await fetch('/hotel-admin/room-images/upload', {
-                    method: 'POST',
-                    headers: {
-                        [csrfHeader]: csrfToken
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    alert('Tải ảnh lên thất bại. Vui lòng thử lại.');
-                    continue;
-                }
-
-                const data = await response.json();
-
-                if (!data.imageUrl) {
-                    alert('Không nhận được đường dẫn ảnh. Vui lòng thử lại.');
-                    continue;
-                }
-
-                uploadedImages.push({
-                    imageUrl: data.imageUrl
-                });
-
-            } catch (error) {
-                alert('Tải ảnh lên thất bại. Vui lòng thử lại.');
+    <script>
+        setTimeout(function () {
+            const toast = document.querySelector('.error-toast');
+            if (toast) {
+                toast.style.display = 'none';
             }
+        }, 3000);
+
+        const roomNumberSelect = document.getElementById('roomNumberSelect');
+        const floorInput = document.getElementById('floorInput');
+
+        function updateFloorByRoomNumber() {
+            const selectedOption = roomNumberSelect.options[roomNumberSelect.selectedIndex];
+
+            if (!selectedOption || !selectedOption.value) {
+                floorInput.value = '';
+                return;
+            }
+
+            floorInput.value = selectedOption.getAttribute('data-floor');
         }
 
-        renderImages();
-        imageInput.value = '';
-    });
+        roomNumberSelect.addEventListener('change', updateFloorByRoomNumber);
 
-    function renderImages() {
-        previewList.innerHTML = '';
-        hiddenContainer.innerHTML = '';
+        updateFloorByRoomNumber();
+    </script>
 
-        uploadedImages.forEach((image, index) => {
-            const isPrimary = index === 0;
-
-            previewList.innerHTML += `
-                <div class="image-preview-item">
-                    <img src="${image.imageUrl}" alt="Hình ảnh phòng">
-
-                    <div class="image-preview-info">
-                        <label>
-                            <input type="radio"
-                                   name="primaryImageIndex"
-                                   value="${index}"
-                                   ${isPrimary ? 'checked' : ''}>
-                            Ảnh chính
-                        </label>
-
-                        <span>Thứ tự: ${index + 1}</span>
-                    </div>
-                </div>
-            `;
-
-            hiddenContainer.innerHTML += `
-                <input type="hidden" name="imageUrls" value="${image.imageUrl}">
-            `;
-        });
-    }
-</script>
 </main>
 </body>
 </html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+
+<body>
+<main layout:fragment="content">
+
+    <section class="variant-management-page">
+
+        <div class="variant-page-header">
+            <div>
+                <p class="variant-eyebrow">QUẢN LÝ HẠNG PHÒNG</p>
+                <h1>Hạng phòng / Variant</h1>
+                <p>Danh sách các biến thể hạng phòng đang có trong khách sạn.</p>
+            </div>
+        </div>
+
+        <div class="variant-card">
+
+            <form th:action="@{/hotel-admin/room-type-variants}"
+                  method="get"
+                  class="variant-filter-form">
+
+                <div class="variant-form-group">
+                    <label>Tìm kiếm</label>
+                    <input type="text"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="Tên variant hoặc hạng phòng">
+                </div>
+
+                <div class="variant-form-group">
+                    <label>Hướng nhìn</label>
+                    <select name="viewType">
+                        <option value="">Tất cả hướng nhìn</option>
+                        <option th:each="vt : ${viewTypes}"
+                                th:value="${vt}"
+                                th:text="${vt}"
+                                th:selected="${selectedViewType != null and selectedViewType == vt}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="variant-filter-actions">
+                    <button type="submit" class="variant-btn variant-btn-dark">
+                        <i class="fas fa-search"></i>
+                        Tìm kiếm
+                    </button>
+
+                    <a th:href="@{/hotel-admin/room-type-variants}"
+                       class="variant-btn variant-btn-light">
+                        Làm mới
+                    </a>
+                </div>
+            </form>
+
+            <div class="variant-table-wrapper">
+                <table class="variant-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tên variant</th>
+                        <th>Hạng phòng cha</th>
+                        <th>Hướng nhìn</th>
+                        <th>Giá / đêm</th>
+                        <th>Sức chứa</th>
+                        <th>Người lớn</th>
+                        <th>Trẻ em</th>
+                        <th>Giường phụ</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(variants)}">
+                        <td colspan="10" class="variant-empty-row">
+                            Chưa có dữ liệu variant.
+                        </td>
+                    </tr>
+
+                    <tr th:each="variant, stat : ${variants}">
+                        <td th:text="${currentPage * 5 + stat.index + 1}">1</td>
+
+                        <td>
+                            <div class="variant-name" th:text="${variant.variantName}">
+                                Deluxe Room - City View
+                            </div>
+                            <span class="variant-sub"
+                                  th:text="${variant.roomSize != null ? variant.roomSize + ' m²' : 'Chưa có diện tích'}">
+                                35 m²
+                            </span>
+                        </td>
+
+                        <td th:text="${variant.roomType != null ? variant.roomType.name : 'N/A'}">
+                            Deluxe Room
+                        </td>
+
+                        <td class="variant-view-text" th:text="${variant.viewType}">
+                            CITY
+                        </td>
+
+                        <td>
+                            <span class="variant-price"
+                                  th:text="${#numbers.formatDecimal(variant.pricePerNight, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                                2,200,000 VND
+                            </span>
+                        </td>
+
+                        <td th:text="${variant.capacity}">3</td>
+
+                        <td th:text="${variant.maxAdults}">3</td>
+
+                        <td th:text="${variant.maxChildren}">1</td>
+
+                        <td>
+                            <span th:if="${variant.allowExtraBed}" class="variant-extra-text yes">
+                                Có
+                            </span>
+                            <span th:unless="${variant.allowExtraBed}" class="variant-extra-text no">
+                                Không
+                            </span>
+                        </td>
+
+                        <td>
+                            <span th:if="${!variant.isDeleted}" class="variant-status-text active">
+                                Đang dùng
+                            </span>
+                            <span th:if="${variant.isDeleted}" class="variant-status-text deleted">
+                                Đã xóa
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="variant-pagination" th:if="${totalPages > 1}">
+                <a th:if="${currentPage > 0}"
+                   th:href="@{/hotel-admin/room-type-variants(page=${currentPage - 1}, keyword=${keyword}, viewType=${selectedViewType})}">
+                    <i class="fas fa-chevron-left"></i>
+                    Trước
+                </a>
+
+                <span th:text="${currentPage + 1} + ' / ' + ${totalPages}">
+                    1 / 1
+                </span>
+
+                <a th:if="${currentPage + 1 < totalPages}"
+                   th:href="@{/hotel-admin/room-type-variants(page=${currentPage + 1}, keyword=${keyword}, viewType=${selectedViewType})}">
+                    Sau
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+</body>
+</html>

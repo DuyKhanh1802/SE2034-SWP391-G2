@@ -805,3 +805,178 @@ img {
 .public-header.is-compact .main-nav a::after {
     bottom: 30px;
 }
+
+/* HERO VIDEO / IMAGE SLIDER */
+.hero-video-section {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 680px;
+    overflow: hidden;
+    background: #000;
+}
+
+.hero-media-slider {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-media-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.hero-media-slide.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hero-video,
+.hero-media-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Lớp phủ tối */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.28);
+    z-index: 2;
+}
+
+/* Chữ ở giữa */
+.hero-content {
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    top: 74%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #fff;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.hero-content h1 {
+    font-family: var(--font-heading, 'EB Garamond', serif);
+    font-size: clamp(42px, 4.8vw, 72px);
+    font-weight: 500;
+    letter-spacing: 10px;
+    margin-bottom: 18px;
+}
+
+.hero-subtitle {
+    font-family: var(--font-heading, 'EB Garamond', serif);
+    font-size: clamp(17px, 1.45vw, 25px);
+    font-weight: 400;
+    letter-spacing: 5px;
+    margin: 0;
+}
+
+/* Nút chuyển trái phải */
+.hero-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 4;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.hero-arrow:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.hero-arrow-left {
+    left: 42px;
+}
+
+.hero-arrow-right {
+    right: 42px;
+}
+
+/* Nút play/pause + âm thanh */
+.hero-video-controls {
+    position: absolute;
+    right: 42px;
+    bottom: 54px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.hero-control-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.9;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hero-control-btn:hover {
+    opacity: 1;
+    transform: scale(1.08);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-video-section {
+        height: 82vh;
+        min-height: 560px;
+    }
+
+    .hero-content h1 {
+        font-size: 44px;
+        letter-spacing: 8px;
+    }
+
+    .hero-subtitle {
+        font-size: 22px;
+    }
+
+    .hero-arrow {
+        width: 46px;
+        height: 46px;
+        font-size: 18px;
+    }
+
+    .hero-arrow-left {
+        left: 18px;
+    }
+
+    .hero-arrow-right {
+        right: 18px;
+    }
+
+    .hero-video-controls {
+        right: 20px;
+        bottom: 34px;
+        gap: 12px;
+    }
+}
