@@ -118,6 +118,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         AND (:status = '' OR CAST(b.status AS string) = :status)
         AND (:checkIn IS NULL OR b.checkInDate >= :checkIn)
         AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
+        ORDER BY b.createdAt DESC, b.id DESC
         """,
         countQuery = """
         SELECT COUNT(bd.id)

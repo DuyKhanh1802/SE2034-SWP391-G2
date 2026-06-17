@@ -83,6 +83,15 @@
           th:href="@{/receptionist/ListBooking.css}">
 
     <link rel="stylesheet"
+          th:if="${#strings.equals(currentUri ?: '', '/receptionist/check-in')}"
+          th:href="@{/receptionist/CheckInQueue.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/view')
+              or #strings.startsWith(currentUri ?: '', '/receptionist/bookings/edit')}"
+          th:href="@{/receptionist/ViewBookingDetail.css}">
+
+    <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/add-walk-in')}"
           th:href="@{/receptionist/AddWalkInBooking.css}">
 
