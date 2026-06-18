@@ -7,6 +7,7 @@
         <h2>V'Hotel</h2>
     </div>
 
+    <!-- SYSTEM ADMIN -->
     <ul class="sidebar-menu"
         sec:authorize="hasRole('SYSTEM_ADMIN')"
         th:if="${session.CURRENT_ACTIVE_ROLE == 'SYSTEM_ADMIN'}">
@@ -26,6 +27,7 @@
         </li>
     </ul>
 
+    <!-- HOTEL ADMIN -->
     <ul class="sidebar-menu"
         sec:authorize="hasRole('HOTEL_ADMIN')"
         th:if="${session.CURRENT_ACTIVE_ROLE == 'HOTEL_ADMIN'}">
@@ -52,6 +54,7 @@
         </li>
     </ul>
 
+    <!-- MANAGER -->
     <ul class="sidebar-menu"
         sec:authorize="hasRole('MANAGER')"
         th:if="${session.CURRENT_ACTIVE_ROLE == 'MANAGER'}">
@@ -85,6 +88,7 @@
         </li>
     </ul>
 
+    <!-- STOREKEEPER -->
     <ul class="sidebar-menu"
         sec:authorize="hasRole('STOREKEEPER')"
         th:if="${session.CURRENT_ACTIVE_ROLE == 'STOREKEEPER'}">
@@ -97,6 +101,7 @@
         </li>
     </ul>
 
+    <!-- RECEPTIONIST -->
     <ul class="sidebar-menu"
         sec:authorize="hasRole('RECEPTIONIST')"
         th:if="${session.CURRENT_ACTIVE_ROLE == 'RECEPTIONIST'}">
@@ -107,6 +112,7 @@
                 <span>Tổng quan</span>
             </a>
         </li>
+
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/rooms')} ? 'active' : ''">
             <a th:href="@{/receptionist/rooms}">
                 <i class="fas fa-bed"></i>
@@ -127,12 +133,14 @@
                 <span>Nhận phòng</span>
             </a>
         </li>
+
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/check-out')} ? 'active' : ''">
             <a th:href="@{/receptionist/check-out}">
                 <i class="fas fa-right-from-bracket"></i>
                 <span>Trả phòng</span>
             </a>
         </li>
+
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/invoices')} ? 'active' : ''">
             <a th:href="@{/receptionist/invoices}">
                 <i class="fas fa-file-invoice-dollar"></i>

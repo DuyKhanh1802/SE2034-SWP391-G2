@@ -128,9 +128,14 @@ public class SpringSecurity {
                 /*
                  * Bỏ CSRF cho API upload ảnh khuyến mãi.
                  */
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+                )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/hotel-admin/promotion-images/upload")
+
                 );
+
         return http.build();
     }
 
