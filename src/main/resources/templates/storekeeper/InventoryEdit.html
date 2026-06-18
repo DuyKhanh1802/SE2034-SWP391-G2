@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="page-title">
+        <h1>Chỉnh sửa hàng hóa</h1>
+        <p>Cập nhật thông tin, ngưỡng cảnh báo và quản lý các quy tắc tiêu hao liên quan.</p>
+    </section>
+
+    <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+
+    <section class="admin-card detail-header">
+        <div><span class="eyebrow" th:text="${item.code}"></span><h2 th:text="${item.name}"></h2></div>
+        <div class="detail-actions">
+            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/{id}(id=${item.id})}">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
+            <form th:action="@{/storekeeper/inventory/{id}/delete(id=${item.id})}" method="post"
+                  onsubmit="return confirm('Bạn chắc chắn muốn xóa hàng hóa này?');">
+                <button class="btn-admin-outline danger" type="submit" th:disabled="${!canDelete}">
+                    <i class="fa-regular fa-trash-can"></i> Xóa hàng hóa
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <div th:unless="${canDelete}" class="admin-alert warning">
+        Chỉ có thể xóa khi tồn kho bằng 0 và không còn quy tắc tiêu hao.
+    </div>
+
+    <section class="admin-card">
+        <form class="admin-form" method="post" th:action="@{/storekeeper/inventory/{id}/edit(id=${item.id})}">
+            <div class="form-grid">
+                <div><label>Tên hàng hóa</label><input class="form-control-admin" name="name" th:value="${item.name}" maxlength="150" required></div>
+                <div><label>Loại hàng</label><input class="form-control-admin" name="category" th:value="${item.category}" maxlength="100" required></div>
+                <div><label>Đơn vị tính</label><input class="form-control-admin" name="unit" th:value="${item.unit}" maxlength="30" required></div>
+                <div><label>Mức tồn tối thiểu</label><input class="form-control-admin" type="number" name="minimumQuantity" th:value="${item.minimumQuantity}" step="0.01" min="0" required></div>
+                <div><label>Tồn hiện tại</label><input class="form-control-admin" th:value="${item.currentQuantity + ' ' + item.unit}" disabled></div>
+                <div><label>Giá vốn bình quân</label><input class="form-control-admin" th:value="${#numbers.formatDecimal(item.unitCost, 0, 'POINT', 0, 'COMMA') + ' VND'}" disabled></div>
+            </div>
+            <div class="detail-actions mt-2">
+                <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/{id}(id=${item.id})}">Hủy</a>
+                <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="detail-grid">
+        <form class="admin-card admin-form" th:action="@{/storekeeper/inventory/service-mappings}" method="post">
+            <div><span class="eyebrow">SERVICE RULE</span><h2 class="modal-title">Thêm hoặc cập nhật dịch vụ</h2></div>
+            <input type="hidden" name="itemId" th:value="${item.id}">
+            <div>
+                <label>Dịch vụ</label>
+                <select class="form-control-admin" name="serviceId" required>
+                    <option value="" selected disabled>Chọn dịch vụ</option>
+                    <option th:each="service : ${services}" th:value="${service.id}" th:text="${service.name}"></option>
+                </select>
+            </div>
+            <div><label>Số lượng tiêu hao/lần</label><input class="form-control-admin" type="number" step="0.01" min="0.01" name="quantityPerUse" required></div>
+            <button class="btn-admin-primary" type="submit">Lưu quy tắc</button>
+        </form>
+
+        <form class="admin-card admin-form" th:action="@{/storekeeper/inventory/room-refresh-mappings}" method="post">
+            <div><span class="eyebrow">ROOM-FILL RULE</span><h2 class="modal-title">Thêm hoặc cập nhật refresh phòng</h2></div>
+            <input type="hidden" name="itemId" th:value="${item.id}">
+            <div>
+                <label>Hạng phòng</label>
+                <select class="form-control-admin" name="roomTypeId" required>
+                    <option value="" selected disabled>Chọn hạng phòng</option>
+                    <option th:each="roomType : ${roomTypes}" th:value="${roomType.id}" th:text="${roomType.name}"></option>
+                </select>
+            </div>
+            <div><label>Số lượng tiêu hao/lần refresh</label><input class="form-control-admin" type="number" step="0.01" min="0.01" name="quantityPerRefresh" required></div>
+            <button class="btn-admin-primary" type="submit">Lưu quy tắc</button>
+        </form>
+    </section>
+
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="px-4 pt-4"><span class="eyebrow">CONSUMPTION RULES</span><h2 class="modal-title">Quy tắc đang áp dụng</h2></div>
+        <div class="table-responsive mt-3">
+            <table class="table admin-table">
+                <thead><tr><th>Nguồn sử dụng</th><th>Loại</th><th>Tiêu hao/lần</th><th>Thao tác</th></tr></thead>
+                <tbody>
+                <tr th:each="mapping : ${mappings}">
+                    <td th:text="${mapping.service.name}"></td>
+                    <td>Dịch vụ</td>
+                    <td th:text="${mapping.quantityPerUse + ' ' + item.unit}"></td>
+                    <td>
+                        <form th:action="@{/storekeeper/inventory/{itemId}/service-mappings/{mappingId}/delete(itemId=${item.id},mappingId=${mapping.id})}" method="post">
+                            <button class="action-btn action-btn-delete" type="submit" title="Xóa quy tắc"><i class="fa-regular fa-trash-can"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:each="mapping : ${refreshMappings}">
+                    <td th:text="${mapping.roomType.name}"></td>
+                    <td>Refresh phòng</td>
+                    <td th:text="${mapping.quantityPerRefresh + ' ' + item.unit}"></td>
+                    <td>
+                        <form th:action="@{/storekeeper/inventory/{itemId}/room-refresh-mappings/{mappingId}/delete(itemId=${item.id},mappingId=${mapping.id})}" method="post">
+                            <button class="action-btn action-btn-delete" type="submit" title="Xóa quy tắc"><i class="fa-regular fa-trash-can"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(mappings) and #lists.isEmpty(refreshMappings)}">
+                    <td colspan="4" class="text-center py-5 text-muted">Chưa có quy tắc tiêu hao.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

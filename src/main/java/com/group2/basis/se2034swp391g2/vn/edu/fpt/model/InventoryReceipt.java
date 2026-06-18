@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -50,6 +51,9 @@ public class InventoryReceipt {
     @Column(name = "note", length = 300, columnDefinition = "NVARCHAR(300)")
     private String note;
 
+    @Column(name = "receipt_date")
+    private LocalDate receiptDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
@@ -73,6 +77,9 @@ public class InventoryReceipt {
         }
         if (this.totalCost == null) {
             this.totalCost = BigDecimal.ZERO;
+        }
+        if (this.receiptDate == null) {
+            this.receiptDate = LocalDate.now();
         }
     }
 }

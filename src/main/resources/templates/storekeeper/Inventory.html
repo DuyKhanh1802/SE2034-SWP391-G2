@@ -11,6 +11,8 @@
 
     <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
     <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${configurationError}" class="admin-alert warning"
+         th:text="${configurationError + ' Chức năng lập phiếu nhập tạm thời bị khóa.'}"></div>
 
     <section class="admin-card inventory-toolbar">
         <div>
@@ -25,7 +27,7 @@
                 <i class="fa-solid fa-file-import"></i> Import hàng hóa
             </button>
             <button class="btn-admin-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal"
-                    th:disabled="${#lists.isEmpty(allItems)}">
+                    th:disabled="${#lists.isEmpty(allItems) or !financialChargeConfigured}">
                 <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
             </button>
         </div>
@@ -147,7 +149,7 @@
                     <div class="modal-body">
                         <label class="eyebrow mb-2 d-block">FILE DỮ LIỆU (.XLSX)</label>
                         <input class="form-control-admin" type="file" name="file" accept=".xlsx" required>
-                        <p class="form-hint">Thứ tự cột: tên hàng, loại, đơn vị, tồn đầu kỳ, ngưỡng cảnh báo, giá vốn.</p>
+                        <p class="form-hint">Thứ tự cột: tên hàng, loại, đơn vị, tồn đầu kỳ, ngưỡng cảnh báo, giá vốn. Tên, loại và đơn vị là bắt buộc.</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
@@ -161,7 +163,8 @@
     <div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form th:action="@{/storekeeper/inventory/receipts}" method="post">
+                <form id="receiptForm" th:action="@{/storekeeper/inventory/receipts}" method="post"
+                      th:attr="data-vat-rate=${inventoryVatRate}">
                     <div class="modal-header">
                         <div><span class="eyebrow">INVENTORY RECEIPT</span><h2 class="modal-title">Lập phiếu nhập</h2></div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -176,8 +179,16 @@
                             </select>
                         </div>
                         <div class="form-grid">
-                            <div><label>Số lượng</label><input class="form-control-admin" type="number" step="0.01" min="0.01" name="quantity" required></div>
-                            <div><label>Đơn giá trước VAT</label><input class="form-control-admin" type="number" step="1000" min="1" name="unitCost" required></div>
+                            <div><label>Số lượng</label><input id="receiptQuantity" class="form-control-admin" type="number" step="0.01" min="0.01" name="quantity" required></div>
+                            <div><label>Đơn giá trước VAT</label><input id="receiptUnitCost" class="form-control-admin" type="number" step="1000" min="1" name="unitCost" required></div>
+                        </div>
+                        <div class="form-grid">
+                            <div><label>Ngày nhập kho</label><input class="form-control-admin" type="date" name="receiptDate" th:value="${today}" required></div>
+                            <div><label>Thuế VAT</label><input class="form-control-admin" th:value="${inventoryVatRate + '%'}" disabled></div>
+                        </div>
+                        <div class="form-grid">
+                            <div><label>Tiền VAT dự kiến</label><input id="receiptVatAmount" class="form-control-admin" value="0 VND" disabled></div>
+                            <div><label>Tổng thanh toán dự kiến</label><input id="receiptTotalCost" class="form-control-admin" value="0 VND" disabled></div>
                         </div>
                         <div><label>Nhà cung cấp</label><input class="form-control-admin" name="supplier" maxlength="150"></div>
                         <div><label>Ghi chú</label><textarea class="form-control-admin" name="note" rows="3" maxlength="300"></textarea></div>
@@ -190,6 +201,31 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("receiptForm");
+            const quantity = document.getElementById("receiptQuantity");
+            const unitCost = document.getElementById("receiptUnitCost");
+            const vatAmount = document.getElementById("receiptVatAmount");
+            const totalCost = document.getElementById("receiptTotalCost");
+            if (!form || !quantity || !unitCost) return;
+
+            const vatRate = Number(form.dataset.vatRate || 0);
+            const formatter = new Intl.NumberFormat("vi-VN");
+
+            function updateReceiptPreview() {
+                const subtotal = Math.max(Number(quantity.value || 0), 0)
+                    * Math.max(Number(unitCost.value || 0), 0);
+                const vat = Math.round(subtotal * vatRate / 100);
+                vatAmount.value = formatter.format(vat) + " VND";
+                totalCost.value = formatter.format(Math.round(subtotal + vat)) + " VND";
+            }
+
+            quantity.addEventListener("input", updateReceiptPreview);
+            unitCost.addEventListener("input", updateReceiptPreview);
+        });
+    </script>
 </main>
 </body>
 </html>

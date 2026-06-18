@@ -3,11 +3,13 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Storekeeper;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryTransaction;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.InventoryTransactionType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.InventoryManagementService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Controller
 @RequiredArgsConstructor
@@ -52,7 +55,16 @@ public class InventoryController {
         model.addAttribute("hasPrevious", itemPage.hasPrevious());
         model.addAttribute("hasNext", itemPage.hasNext());
         model.addAttribute("lowStockCount", inventoryManagementService.countLowStockItems());
-        return "storekeeper/inventory";
+        try {
+            model.addAttribute("inventoryVatRate", inventoryManagementService.getInventoryVatRate());
+            model.addAttribute("financialChargeConfigured", true);
+        } catch (IllegalStateException e) {
+            model.addAttribute("inventoryVatRate", BigDecimal.ZERO);
+            model.addAttribute("financialChargeConfigured", false);
+            model.addAttribute("configurationError", e.getMessage());
+        }
+        model.addAttribute("today", LocalDate.now());
+        return "storekeeper/Inventory";
     }
 
     @PostMapping("/storekeeper/inventory/items")
@@ -80,10 +92,28 @@ public class InventoryController {
         try {
             addHeaderAttributes(model, authentication, session, "Chỉnh sửa hàng hóa");
             model.addAttribute("item", inventoryManagementService.getItem(id));
-            return "storekeeper/inventory_edit";
+            model.addAttribute("mappings", inventoryManagementService.getMappingsForItem(id));
+            model.addAttribute("refreshMappings", inventoryManagementService.getRefreshMappingsForItem(id));
+            model.addAttribute("services", inventoryManagementService.getAvailableServices());
+            model.addAttribute("roomTypes", inventoryManagementService.getRoomTypes());
+            model.addAttribute("canDelete", inventoryManagementService.canDeleteItem(id));
+            return "storekeeper/InventoryEdit";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/storekeeper/inventory";
+        }
+    }
+
+    @PostMapping("/storekeeper/inventory/{id}/delete")
+    public String deleteInventoryItem(@PathVariable Long id,
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            inventoryManagementService.softDeleteItem(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa hàng hóa.");
+            return "redirect:/storekeeper/inventory";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/storekeeper/inventory/" + id + "/edit";
         }
     }
 
@@ -125,17 +155,45 @@ public class InventoryController {
                                          @RequestParam BigDecimal unitCost,
                                          @RequestParam(required = false) String supplier,
                                          @RequestParam(required = false) String note,
+                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate receiptDate,
                                          Authentication authentication,
                                          HttpSession session,
                                          RedirectAttributes redirectAttributes) {
         try {
             inventoryManagementService.createReceipt(
-                    itemId, quantity, unitCost, supplier, note, resolveCurrentUser(authentication, session));
+                    itemId, quantity, unitCost, supplier, note, receiptDate,
+                    resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage", "Da lap phieu nhap hang va ghi nhan chi quy.");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/storekeeper/inventory";
+    }
+
+    @PostMapping("/storekeeper/inventory/{itemId}/service-mappings/{mappingId}/delete")
+    public String deleteServiceMapping(@PathVariable Long itemId,
+                                       @PathVariable Long mappingId,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            inventoryManagementService.deleteServiceMapping(itemId, mappingId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa quy tắc tiêu hao dịch vụ.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/storekeeper/inventory/" + itemId + "/edit";
+    }
+
+    @PostMapping("/storekeeper/inventory/{itemId}/room-refresh-mappings/{mappingId}/delete")
+    public String deleteRoomRefreshMapping(@PathVariable Long itemId,
+                                           @PathVariable Long mappingId,
+                                           RedirectAttributes redirectAttributes) {
+        try {
+            inventoryManagementService.deleteRoomRefreshMapping(itemId, mappingId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa quy tắc refresh phòng.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/storekeeper/inventory/" + itemId + "/edit";
     }
 
     @PostMapping("/storekeeper/inventory/service-mappings")
@@ -149,7 +207,7 @@ public class InventoryController {
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/storekeeper/inventory/" + itemId;
+        return "redirect:/storekeeper/inventory/" + itemId + "/edit";
     }
 
     @PostMapping("/storekeeper/inventory/room-refresh-mappings")
@@ -163,7 +221,7 @@ public class InventoryController {
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/storekeeper/inventory/" + itemId;
+        return "redirect:/storekeeper/inventory/" + itemId + "/edit";
     }
 
     @GetMapping("/storekeeper/inventory/{id}")
@@ -182,7 +240,7 @@ public class InventoryController {
             model.addAttribute("transactions", inventoryManagementService.getTransactionsForItem(id));
             model.addAttribute("services", inventoryManagementService.getAvailableServices());
             model.addAttribute("roomTypes", inventoryManagementService.getRoomTypes());
-            return "storekeeper/inventory_detail";
+            return "storekeeper/InventoryDetail";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/storekeeper/inventory";
@@ -191,6 +249,9 @@ public class InventoryController {
 
     @GetMapping("/storekeeper/inventory/history")
     public String inventoryHistory(@RequestParam(required = false) Long itemId,
+                                   @RequestParam(required = false) InventoryTransactionType type,
+                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
                                    @RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "15") int size,
                                    Model model,
@@ -200,20 +261,24 @@ public class InventoryController {
         try {
             addHeaderAttributes(model, authentication, session, "Lịch sử biến động kho");
             Page<InventoryTransaction> transactionPage =
-                    inventoryManagementService.getTransactions(itemId, page, size);
+                    inventoryManagementService.getTransactions(itemId, type, dateFrom, dateTo, page, size);
             model.addAttribute("transactions", transactionPage.getContent());
             model.addAttribute("items", inventoryManagementService.getItems());
             model.addAttribute("selectedItemId", itemId);
+            model.addAttribute("selectedType", type);
+            model.addAttribute("dateFrom", dateFrom);
+            model.addAttribute("dateTo", dateTo);
+            model.addAttribute("transactionTypes", InventoryTransactionType.values());
             model.addAttribute("currentPage", transactionPage.getNumber());
             model.addAttribute("totalPages", transactionPage.getTotalPages());
             model.addAttribute("totalElements", transactionPage.getTotalElements());
             model.addAttribute("pageSize", transactionPage.getSize());
             model.addAttribute("hasPrevious", transactionPage.hasPrevious());
             model.addAttribute("hasNext", transactionPage.hasNext());
-            return "storekeeper/inventory_history";
+            return "storekeeper/InventoryHistory";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/storekeeper/inventory";
+            return "redirect:/storekeeper/inventory/history";
         }
     }
 

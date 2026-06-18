@@ -74,11 +74,31 @@ a { text-decoration: none; }
 .btn-admin-primary:hover { background: #333; color: #fff; }
 .btn-admin-outline { background: #fff; color: #111; }
 .btn-admin-outline:hover { background: #f1f1f1; color: #111; }
+.btn-admin-outline.danger { border-color: #b42318; color: #b42318; }
+.btn-admin-outline.danger:hover { background: #fff1f0; }
+.btn-admin-outline:disabled { opacity: .45; cursor: not-allowed; }
 
 .inventory-filters {
     display: grid;
     grid-template-columns: minmax(240px, 1fr) 190px 170px auto;
     gap: 12px;
+}
+
+.history-filters {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.4fr) minmax(150px, .8fr) 150px 150px auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.history-filters label {
+    display: block;
+    margin-bottom: 6px;
+    color: #777;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
 }
 
 .search-control,
@@ -242,12 +262,14 @@ a { text-decoration: none; }
     .inventory-toolbar { align-items: flex-start; flex-direction: column; }
     .inventory-filters { grid-template-columns: 1fr 1fr; }
     .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .history-filters { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 640px) {
     .inventory-filters,
     .summary-grid,
     .detail-grid,
-    .form-grid { grid-template-columns: 1fr; }
+    .form-grid,
+    .history-filters { grid-template-columns: 1fr; }
     .page-title h1 { font-size: 38px; }
 }

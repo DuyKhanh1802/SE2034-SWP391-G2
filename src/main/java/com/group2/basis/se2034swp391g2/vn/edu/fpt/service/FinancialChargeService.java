@@ -19,11 +19,12 @@ public class FinancialChargeService {
 
     @Transactional(readOnly = true)
     public FinancialChargeSetting getCurrentSetting() {
-        LocalDate today = LocalDate.now();
         return financialChargeSettingRepository
-                .findTopByIsActiveTrueAndEffectiveFromLessThanEqualAndEffectiveToIsNullOrderByEffectiveFromDesc(today)
-                .or(() -> financialChargeSettingRepository.findTopByIsActiveTrueOrderByEffectiveFromDesc())
-                .orElseGet(this::defaultSetting);
+                .findCurrentSettings(LocalDate.now())
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Không tìm thấy cấu hình phí và thuế đang có hiệu lực."));
     }
 
     public BigDecimal calculateRateAmount(BigDecimal baseAmount, BigDecimal rate) {
@@ -31,16 +32,5 @@ public class FinancialChargeService {
             return BigDecimal.ZERO;
         }
         return baseAmount.multiply(rate).divide(ONE_HUNDRED, 0, RoundingMode.HALF_UP);
-    }
-
-    private FinancialChargeSetting defaultSetting() {
-        return FinancialChargeSetting.builder()
-                .serviceChargeRate(BigDecimal.valueOf(5))
-                .vatRate(BigDecimal.valueOf(8))
-                .inventoryVatRate(BigDecimal.valueOf(8))
-                .taxOnServiceCharge(true)
-                .effectiveFrom(LocalDate.now())
-                .isActive(true)
-                .build();
     }
 }
