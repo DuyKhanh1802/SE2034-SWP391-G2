@@ -2,6 +2,8 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.configuration;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.RoleSwitchController;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -65,7 +67,15 @@ public class SpringSecurity {
                 .formLogin(form -> form
                         .loginPage("/auth/login")
                         .successHandler(cusAuthenticationSuccessHandler())
-                        .failureUrl("/auth/login?error=true")
+                        .failureHandler((request, response, exception) -> {
+                            if (exception instanceof LockedException) {
+                                response.sendRedirect("/auth/login?error=inactive");
+                            } else if (exception instanceof DisabledException) {
+                                response.sendRedirect("/auth/login?error=pending");
+                            } else {
+                                response.sendRedirect("/auth/login?error=credentials");
+                            }
+                        })
                         .permitAll()
                 )
                 .logout(logout -> logout

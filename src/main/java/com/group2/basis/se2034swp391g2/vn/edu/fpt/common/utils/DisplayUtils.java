@@ -2,28 +2,34 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public final class DisplayUtils {
+
+    private static final String DEFAULT_NAME = "Chưa có tên";
 
     private DisplayUtils() {
     }
 
     public static String formatDisplayName(User user) {
         if (user == null) {
-            return "Chưa có tên";
+            return DEFAULT_NAME;
         }
 
-        String firstPart = user.getFirstName() != null ? user.getFirstName().trim() : "";
-        String lastPart = user.getLastName() != null ? user.getLastName().trim() : "";
+        String displayName = joinParts(user.getLastName(), user.getFirstName());
 
-        if (!firstPart.isEmpty() && !lastPart.isEmpty()) {
-            return lastPart + " " + firstPart;
-        }
-        if (!lastPart.isEmpty()) {
-            return lastPart;
-        }
-        if (!firstPart.isEmpty()) {
-            return firstPart;
-        }
-        return "Chưa có tên";
+        return displayName.isEmpty() ? DEFAULT_NAME : displayName;
+    }
+
+    private static String joinParts(String... parts) {
+        return Arrays.stream(parts)
+                .filter(DisplayUtils::hasText)
+                .map(String::trim)
+                .collect(Collectors.joining(" "));
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }

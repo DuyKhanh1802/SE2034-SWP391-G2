@@ -23,8 +23,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Optional<User> findByIdentityNumberAndIsDeletedFalse(String identityNumber);
 
-    boolean existsByEmailAndIsDeletedFalse(String email);
-
     @Query("Select u From User u " +
             "Left join fetch u.userRoles ur " +
             "Left join fetch ur.role " +
@@ -38,12 +36,4 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             "Left join fetch u.country " +
             "Where u.id = :id")
     Optional<User> findUserWithRoleById(Long id);
-    boolean existsByPhoneAndIsDeletedFalse(String phone);
-
-    boolean existsByIdentityNumberAndIsDeletedFalse(String identityNumber);
-    List<User> findAllByOrderByCreatedAtDesc();
-    List<User> findByIsDeletedFalseOrderByCreatedAtDesc();
-
-    boolean existsByEmail(String email);
-    boolean existsByPhone(String phone);
 }
