@@ -1,6 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Role;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,7 +8,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class CustomerUserDetails implements UserDetails {
     private final User user;
@@ -19,18 +20,23 @@ public class CustomerUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getUserRoles().stream()
-                .map(userRole -> {
-                    // 1. Lấy đối tượng Role thật từ bảng trung gian
-                    Role role = userRole.getRole();
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
 
-                    // 2. Lấy giá trị chuỗi của Enum RoleName (Ví dụ: "SYSTEM_ADMIN", "MANAGER", "GUEST")
-                    String roleString = role.getRoleName().name();
+        user.getUserRoles().stream()
+                .map(userRole -> userRole.getRole())
+                .filter(role -> role != null && role.getRoleName() != null)
+                .forEach(role -> {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName().name()));
+                    role.getRolePermissions().stream()
+                            .map(rolePermission -> rolePermission.getPermission())
+                            .filter(permission -> permission != null
+                                    && permission.getCode() != null
+                                    && !permission.getCode().isBlank())
+                            .map(permission -> new SimpleGrantedAuthority(permission.getCode()))
+                            .forEach(authorities::add);
+                });
 
-                    // 3. Ghép chuỗi tạo thành quyền hoàn chỉnh cho Spring Security (Ví dụ: "ROLE_SYSTEM_ADMIN")
-                    return new SimpleGrantedAuthority("ROLE_" + roleString);
-                })
-                .collect(Collectors.toList());
+        return authorities;
     }
 
     @Override
@@ -60,7 +66,7 @@ public class CustomerUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return Boolean.TRUE.equals(user.getIsActive());
+        return user.getApprovalStatus() == ApprovalStatus.APPROVED;
     }
 
     public User getUser() {
