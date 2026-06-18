@@ -24,6 +24,7 @@ public class SpringSecurity {
                                 "/",
                                 "/home",
                                 "/room-types",
+                                "/services",
                                 "/error",
                                 "/common/**",
                                 "/auth/**",

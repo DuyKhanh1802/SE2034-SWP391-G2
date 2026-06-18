@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dining | V'Hotel Hanoi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/page/HomePage.css}">
+    <link rel="stylesheet" th:href="@{/page/Dining.css}">
+</head>
+
+<body>
+
+<!-- Header bạn đã có -->
+<div th:replace="~{fragment/public/header :: publicHeader}"></div>
+
+<main class="dining-page">
+
+    <!-- Page Intro giống trang Room Type của bạn -->
+    <section class="dining-intro">
+        <p class="dining-eyebrow">V'HOTEL HÀ NỘI</p>
+        <h1>Ẩm thực & Trải nghiệm</h1>
+        <p class="dining-description">
+            Khám phá những hương vị tinh tế tại V'Hotel, nơi ẩm thực hiện đại được kết hợp
+            cùng không gian sang trọng và dịch vụ tận tâm.
+        </p>
+    </section>
+
+    <!-- Video section -->
+    <section class="hero-video-section">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source th:src="${heroVideoUrl}" type="video/mp4">
+        </video>
+
+        <div class="hero-video-controls">
+            <button id="videoToggle" class="hero-video-btn" type="button">
+                <i class="bi bi-pause-fill"></i>
+            </button>
+
+            <button id="soundToggle" class="hero-video-btn" type="button">
+                <i class="bi bi-volume-mute-fill"></i>
+            </button>
+        </div>
+
+        <div class="hero-overlay"></div>
+
+    </section>
+
+    <!-- Dining list -->
+    <section class="dining-list-section">
+
+        <div class="dining-section-header">
+            <p class="dining-eyebrow">SIGNATURE DINING</p>
+            <h2>Danh sách món ăn & dịch vụ</h2>
+            <p>
+                Lựa chọn các món ăn và dịch vụ ẩm thực nổi bật đang được phục vụ tại V'Hotel.
+            </p>
+        </div>
+
+        <!-- Nếu không có món -->
+        <div class="dining-empty"
+             th:if="${diningList == null || diningList.isEmpty()}">
+            Hiện chưa có dịch vụ Dining nào được hiển thị.
+        </div>
+
+        <!-- Grid 6 món / page -->
+        <div class="dining-grid"
+             th:if="${diningList != null && !diningList.isEmpty()}">
+
+            <article class="dining-card" th:each="item : ${diningList}">
+
+                <div class="dining-card-image">
+                    <img th:if="${item.imageUrl != null}"
+                         th:src="${item.imageUrl}"
+                         th:alt="${item.name}">
+
+                    <img th:if="${item.imageUrl == null}"
+                         src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200&auto=format&fit=crop"
+                         th:alt="${item.name}">
+                </div>
+
+                <div class="dining-card-content">
+                    <h3 th:text="${item.name}">Signature Breakfast</h3>
+
+                    <p class="dining-card-description"
+                       th:text="${item.description}">
+                        Mô tả món ăn hoặc dịch vụ dining.
+                    </p>
+
+                    <div class="dining-card-bottom">
+                        <p class="dining-price"
+                           th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            250,000 VND
+                        </p>
+
+                        <a class="dining-detail-link" href="javascript:void(0)">
+                            Chi tiết
+                        </a>
+                    </div>
+                </div>
+
+            </article>
+
+        </div>
+
+        <!-- Pagination -->
+        <nav class="dining-pagination"
+             th:if="${totalPages > 1}">
+
+            <!-- Previous -->
+            <a class="page-button"
+               th:classappend="${currentPage == 0} ? ' disabled'"
+               th:href="${currentPage == 0} ? 'javascript:void(0)' : @{/services/dining(page=${currentPage - 1})}">
+                Trước
+            </a>
+
+            <!-- Page numbers -->
+            <a class="page-number"
+               th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? ' active'"
+               th:href="@{/services/dining(page=${i})}">
+                1
+            </a>
+
+            <!-- Next -->
+            <a class="page-button"
+               th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
+               th:href="${currentPage + 1 >= totalPages} ? 'javascript:void(0)' : @{/services/dining(page=${currentPage + 1})}">
+                Sau
+            </a>
+
+        </nav>
+
+    </section>
+
+</main>
+
+<!-- Footer bạn đã có -->
+<div th:replace="~{fragment/public/footer :: publicFooter}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/home.js}"></script>
+</body>
+</html>
