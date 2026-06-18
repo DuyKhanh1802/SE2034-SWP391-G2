@@ -2,6 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.SystemAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.constants.PermissionCode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.DisplayUtils;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.AccountUpdateRequest;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +39,7 @@ public class UserController {
     private final AdminUserViewService adminUserViewService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + PermissionCode.USER_VIEW + "')")
     public String listUsers(@RequestParam(value = "keyword", required = false) String keyword,
                             @RequestParam(value = "role", required = false) RoleName role,
                             @RequestParam(value = "activeStatus", defaultValue = "ALL") String activeStatus,
@@ -68,6 +71,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('" + PermissionCode.USER_VIEW + "')")
     public String viewUserDetail(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserById(id);
         model.addAttribute("user", user);
@@ -79,6 +83,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/review")
+    @PreAuthorize("hasAuthority('" + PermissionCode.USER_APPROVE + "')")
     public String processReviewUser(@PathVariable("id") Long id,
                                     @RequestParam("action") String action,
                                     @RequestParam(value = "approvalNote", required = false) String approvalNote,
@@ -112,6 +117,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}/edit")
+    @PreAuthorize("hasAnyAuthority('" + PermissionCode.USER_MANAGE + "','"
+            + PermissionCode.USER_APPROVE + "','" + PermissionCode.USER_RESET_PASSWORD + "')")
     public String showEditUserForm(@PathVariable("id") Long id,
                                    Authentication authentication,
                                    Model model,
@@ -139,6 +146,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/edit")
+    @PreAuthorize("hasAuthority('" + PermissionCode.USER_MANAGE + "')")
     public String processEditUser(@PathVariable("id") Long id,
                                   @ModelAttribute("updateRequest") AccountUpdateRequest request,
                                   Authentication authentication,
@@ -158,6 +166,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasAuthority('" + PermissionCode.USER_RESET_PASSWORD + "')")
     public String resetPassword(@PathVariable("id") Long id,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes) {

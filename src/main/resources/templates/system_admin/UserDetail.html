@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 
@@ -19,7 +20,8 @@
                 Quay lại
             </a>
 
-            <a th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}" class="btn-admin-primary">
+            <a sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE','USER_RESET_PASSWORD')"
+               th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}" class="btn-admin-primary">
                 <i class="fa-regular fa-pen-to-square"></i>
                 Chỉnh sửa
             </a>

@@ -1,11 +1,14 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.configuration;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.constants.PermissionCode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.RoleSwitchController;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,6 +19,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import java.util.Set;
 
 @Configuration
+@EnableMethodSecurity
 public class SpringSecurity {
 
     @Bean
@@ -40,26 +44,62 @@ public class SpringSecurity {
                                 "/guest/**"
                         ).permitAll()
 
-                        // 2. Nhóm quyền SYSTEM_ADMIN
-                        .requestMatchers("/profile/**", "/api/user/switch-role").authenticated()
-                        .requestMatchers("/system-admin/**").hasRole("SYSTEM_ADMIN")
+                        .requestMatchers("/api/user/switch-role").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/profile/**").hasAuthority(PermissionCode.PROFILE_VIEW)
+                        .requestMatchers(HttpMethod.POST, "/profile/**").hasAuthority(PermissionCode.PROFILE_EDIT)
 
-                        // 3. Nhóm quyền HOTEL_ADMIN
-                        .requestMatchers(
-                                "/hotel-admin/dashboard",
-                                "/hotel-admin/list-room/**",
-                                "/hotel-admin/rooms/**",
-                                "/hotel-admin/room-images/**",
-                                "/hotel-admin/services/**",
-                                "/hotel-admin/promotions/**",
-                                "/hotel-admin/promotion-images/**"
-                        ).hasRole("HOTEL_ADMIN")
+                        .requestMatchers("/system-admin/role-permissions/**")
+                        .hasAuthority(PermissionCode.ROLE_PERMISSION_MANAGE)
+                        .requestMatchers(HttpMethod.POST, "/system-admin/list-user/*/review")
+                        .hasAuthority(PermissionCode.USER_APPROVE)
+                        .requestMatchers(HttpMethod.POST, "/system-admin/list-user/*/reset-password")
+                        .hasAuthority(PermissionCode.USER_RESET_PASSWORD)
+                        .requestMatchers(HttpMethod.GET, "/system-admin/list-user/*/edit")
+                        .hasAnyAuthority(
+                                PermissionCode.USER_MANAGE,
+                                PermissionCode.USER_APPROVE,
+                                PermissionCode.USER_RESET_PASSWORD
+                        )
+                        .requestMatchers(HttpMethod.POST, "/system-admin/list-user/**")
+                        .hasAuthority(PermissionCode.USER_MANAGE)
+                        .requestMatchers(HttpMethod.GET, "/system-admin/**")
+                        .hasAuthority(PermissionCode.USER_VIEW)
 
-                        // 4. Các quyền khác
-                        .requestMatchers("/hotel-admin/**").hasRole("HOTEL_ADMIN")
-                        .requestMatchers("/receptionist/**").hasRole("RECEPTIONIST")
-                        .requestMatchers("/storekeeper/**").hasRole("STOREKEEPER")
-                        .requestMatchers("/manager/**").hasRole("MANAGER")
+                        .requestMatchers("/hotel-admin/dashboard")
+                        .hasAuthority(PermissionCode.HOTEL_DASHBOARD_VIEW)
+                        .requestMatchers(HttpMethod.GET, "/hotel-admin/promotions/**")
+                        .hasAuthority(PermissionCode.PROMOTION_VIEW)
+                        .requestMatchers(HttpMethod.POST, "/hotel-admin/promotions/**",
+                                "/hotel-admin/promotion-images/**")
+                        .hasAuthority(PermissionCode.PROMOTION_MANAGE)
+                        .requestMatchers(HttpMethod.GET, "/hotel-admin/**")
+                        .hasAuthority(PermissionCode.ROOM_VIEW)
+                        .requestMatchers(HttpMethod.POST, "/hotel-admin/**")
+                        .hasAuthority(PermissionCode.ROOM_MANAGE)
+
+                        .requestMatchers("/manager/dashboard")
+                        .hasAuthority(PermissionCode.MANAGER_DASHBOARD_VIEW)
+                        .requestMatchers(HttpMethod.GET, "/manager/reports/**")
+                        .hasAuthority(PermissionCode.REPORT_VIEW)
+                        .requestMatchers(HttpMethod.GET, "/manager/**")
+                        .hasAuthority(PermissionCode.FINANCE_VIEW)
+                        .requestMatchers(HttpMethod.POST, "/manager/**")
+                        .hasAuthority(PermissionCode.FINANCE_MANAGE)
+
+                        .requestMatchers(HttpMethod.GET, "/storekeeper/**")
+                        .hasAuthority(PermissionCode.INVENTORY_VIEW)
+                        .requestMatchers(HttpMethod.POST, "/storekeeper/**")
+                        .hasAuthority(PermissionCode.INVENTORY_MANAGE)
+
+                        .requestMatchers("/receptionist/dashboard")
+                        .hasAuthority(PermissionCode.RECEPTION_DASHBOARD_VIEW)
+                        .requestMatchers(HttpMethod.POST, "/receptionist/check-in/**",
+                                "/receptionist/bookings/*/confirm-check-in")
+                        .hasAuthority(PermissionCode.CHECK_IN)
+                        .requestMatchers(HttpMethod.GET, "/receptionist/**")
+                        .hasAuthority(PermissionCode.BOOKING_VIEW)
+                        .requestMatchers(HttpMethod.POST, "/receptionist/**")
+                        .hasAuthority(PermissionCode.BOOKING_MANAGE)
 
                         // 5. Mọi request khác đều phải đăng nhập
                         .anyRequest().authenticated()

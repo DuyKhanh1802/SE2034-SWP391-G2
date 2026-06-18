@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 
@@ -79,6 +80,7 @@
 
             <form id="approvalForm"
                   class="approval-form"
+                  sec:authorize="hasAuthority('USER_APPROVE')"
                   th:if="${user.approvalStatus != null and user.approvalStatus.name() == 'PENDING'}"
                   th:action="@{/system-admin/list-user/{id}/review(id=${user.id})}"
                   method="post">
@@ -104,7 +106,8 @@
             </form>
         </div>
 
-        <div class="admin-card settings-card compact-card">
+        <div class="admin-card settings-card compact-card"
+             sec:authorize="hasAuthority('USER_MANAGE')">
             <div class="section-header">
                 <span>TRẠNG THÁI TÀI KHOẢN</span>
                 <h3>Kích hoạt hoặc vô hiệu hóa</h3>
@@ -137,6 +140,7 @@
         </div>
 
         <div class="admin-card settings-card"
+             sec:authorize="hasAuthority('USER_MANAGE')"
              th:if="${user.approvalStatus == null or user.approvalStatus.name() != 'REJECTED'}">
             <div class="section-header">
                 <span>PHÂN QUYỀN</span>
@@ -172,6 +176,7 @@
         </div>
 
         <div class="admin-card settings-card compact-card"
+             sec:authorize="hasAuthority('USER_RESET_PASSWORD')"
              th:if="${user.approvalStatus == null or user.approvalStatus.name() != 'REJECTED'}">
             <div class="section-header">
                 <span>BẢO MẬT</span>
