@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Role;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import org.jspecify.annotations.Nullable;
@@ -60,7 +61,7 @@ public class CustomerUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return Boolean.TRUE.equals(user.getIsActive());
+        return user.getApprovalStatus() == ApprovalStatus.APPROVED;
     }
 
     public User getUser() {
