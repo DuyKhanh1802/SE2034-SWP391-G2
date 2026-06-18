@@ -526,3 +526,34 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================
+   FLATPICKR YEAR DROPDOWN
+========================= */
+
+.flatpickr-current-month {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.flatpickr-current-month .numInputWrapper {
+    display: none !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-year-select {
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #222;
+    font-size: 18px;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+}
+
+.flatpickr-year-select {
+    padding: 0 4px;
+}
