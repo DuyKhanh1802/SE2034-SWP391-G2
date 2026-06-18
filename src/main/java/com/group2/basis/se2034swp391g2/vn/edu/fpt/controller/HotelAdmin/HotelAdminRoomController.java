@@ -84,6 +84,7 @@ public class HotelAdminRoomController {
         addLayoutData(model, authentication, session, request, "Thêm phòng");
 
         model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
+        model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
 
@@ -93,8 +94,9 @@ public class HotelAdminRoomController {
     @PostMapping("/hotel-admin/list-room/add")
     public String addRoom(@RequestParam String roomNumber,
                           @RequestParam Long variantId,
-                          @RequestParam Integer floor,
+                          @RequestParam(required = false) Integer floor,
                           @RequestParam RoomStatus status,
+                          @RequestParam(required = false) String note,
                           @RequestParam(required = false) List<String> imageUrls,
                           @RequestParam(defaultValue = "0") Integer primaryImageIndex,
                           Model model,
@@ -109,11 +111,12 @@ public class HotelAdminRoomController {
                     variantId,
                     floor,
                     status,
+                    note,
                     imageUrls,
                     primaryImageIndex
             );
 
-            redirectAttributes.addFlashAttribute("successMessage", "Add room successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm phòng thành công!");
 
             return "redirect:/hotel-admin/list-room";
 
@@ -123,6 +126,7 @@ public class HotelAdminRoomController {
             model.addAttribute("errorMessage", e.getMessage());
 
             model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
+            model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
             model.addAttribute("viewTypes", ViewType.values());
             model.addAttribute("roomStatuses", RoomStatus.values());
 
@@ -130,6 +134,7 @@ public class HotelAdminRoomController {
             model.addAttribute("selectedVariantId", variantId);
             model.addAttribute("floor", floor);
             model.addAttribute("selectedStatus", status);
+            model.addAttribute("note", note);
 
             return "hotel_admin/AddRoom";
         }
@@ -166,8 +171,9 @@ public class HotelAdminRoomController {
     public String updateRoom(@PathVariable Long id,
                              @RequestParam String roomNumber,
                              @RequestParam Long variantId,
-                             @RequestParam Integer floor,
+                             @RequestParam(required = false) Integer floor,
                              @RequestParam RoomStatus status,
+                             @RequestParam(required = false) String note,
                              Model model,
                              RedirectAttributes redirectAttributes,
                              Authentication authentication,
@@ -180,10 +186,11 @@ public class HotelAdminRoomController {
                     roomNumber,
                     variantId,
                     floor,
-                    status
+                    status,
+                    note
             );
 
-            redirectAttributes.addFlashAttribute("successMessage", "Update room successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phòng thành công!");
 
             return "redirect:/hotel-admin/list-room";
 
@@ -204,8 +211,11 @@ public class HotelAdminRoomController {
     @PostMapping("/hotel-admin/rooms/delete/{id}")
     public String deleteRoom(@PathVariable Long id,
                              RedirectAttributes redirectAttributes) {
+
         roomService.deleteRoom(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Delete room successfully!");
+
+        redirectAttributes.addFlashAttribute("successMessage", "Xóa phòng thành công!");
+
         return "redirect:/hotel-admin/list-room";
     }
 

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${room.variantName} + ' - VHotel'">Chi tiết phòng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/page/RoomTypeVariantDetail.css}">
+</head>
+
+<body>
+
+<main class="room-detail-page"
+      id="roomDetailPage"
+      th:data-image-urls="${room.imageUrls}">
+    <button type="button" class="close-btn" id="closeDetailBtn" aria-label="Đóng">
+        ×
+    </button>
+
+    <section class="room-hero-section">
+
+        <h1 class="room-title" th:text="${room.variantName}">
+            Phòng King Hướng Cảng
+        </h1>
+
+        <p class="room-short-desc" th:text="${room.description}">
+            Tầm nhìn tuyệt đẹp ra bến cảng và không gian sang trọng rộng rãi tạo nên sự khác biệt cho căn phòng.
+        </p>
+
+        <div class="room-image-slider"
+             th:if="${room.primaryImageUrl != null and !#strings.isEmpty(room.primaryImageUrl)}">
+
+            <button type="button" class="slider-arrow slider-prev" id="prevImageBtn">
+                ‹
+            </button>
+
+            <img id="mainRoomImage"
+                 class="room-main-image"
+                 th:src="${room.primaryImageUrl}"
+                 alt="Hình ảnh phòng">
+
+            <button type="button" class="slider-arrow slider-next" id="nextImageBtn">
+                ›
+            </button>
+
+        </div>
+
+        <div class="room-image-slider"
+             th:if="${room.primaryImageUrl == null or #strings.isEmpty(room.primaryImageUrl)}">
+            <img class="room-main-image"
+                 th:src="@{/images/no-image.jpg}"
+                 alt="Chưa có hình ảnh">
+        </div>
+
+        <div class="image-counter"
+             th:if="${room.totalImages != null and room.totalImages > 0}">
+            <span id="currentImageIndex">1</span>
+            <span class="counter-line"></span>
+            <span th:text="${room.totalImages}">3</span>
+        </div>
+
+    </section>
+
+    <section class="room-basic-info">
+
+        <div class="info-item">
+            <span class="info-label">DIỆN TÍCH</span>
+            <span class="info-value">
+                <span th:text="${room.roomSize}">53</span> m²
+            </span>
+        </div>
+
+        <div class="info-item">
+            <span class="info-label bed-label">LOẠI<br>GIƯỜNG</span>
+            <span class="info-value" th:text="${room.bedSummary}">
+                1 Giường đôi lớn (King)
+            </span>
+        </div>
+
+        <div class="info-item">
+            <span class="info-label">SỐ KHÁCH</span>
+            <span class="info-value" th:text="${room.capacity}">
+                3
+            </span>
+        </div>
+
+    </section>
+
+    <section class="room-description-section">
+
+        <ul class="view-list">
+            <li>
+                <strong>TẦM NHÌN:</strong>
+                <span th:text="${room.viewType}">Hướng cảng</span>
+            </li>
+        </ul>
+
+        <p class="room-long-desc" th:text="${room.description}">
+            Mô tả chi tiết phòng sẽ được hiển thị tại đây.
+        </p>
+
+    </section>
+
+    <section class="additional-details">
+
+        <h2 class="section-title">THÔNG TIN CHI TIẾT BỔ SUNG</h2>
+
+        <div class="detail-lines">
+
+            <p>
+                <span>VỊ TRÍ:</span>
+                <span th:if="${room.minFloor != null and room.maxFloor != null}">
+                    Tầng <span th:text="${room.minFloor}">24</span>-<span th:text="${room.maxFloor}">40</span>
+                </span>
+                <span th:if="${room.minFloor == null or room.maxFloor == null}">
+                    Đang cập nhật
+                </span>
+            </p>
+
+            <p>
+                <span>GIƯỜNG PHỤ:</span>
+                <span th:if="${room.allowExtraBed}">
+                    Có thể bố trí
+                </span>
+                <span th:unless="${room.allowExtraBed}">
+                    Không hỗ trợ
+                </span>
+            </p>
+
+            <p th:if="${room.allowExtraBed}">
+                <span>SỐ GIƯỜNG PHỤ TỐI ĐA:</span>
+                <span th:text="${room.maxExtraBeds}">1</span>
+            </p>
+
+            <p th:if="${room.allowExtraBed and room.extraBedPrice != null}">
+                <span>GIÁ GIƯỜNG PHỤ:</span>
+                <span th:text="${#numbers.formatDecimal(room.extraBedPrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    350,000 VND
+                </span>
+            </p>
+
+            <p th:if="${room.extraBedNote != null and !#strings.isEmpty(room.extraBedNote)}">
+                <span>LƯU Ý GIƯỜNG PHỤ:</span>
+                <span th:text="${room.extraBedNote}">Lưu ý về giường phụ</span>
+            </p>
+
+            <p>
+                <span>SỨC CHỨA TỐI ĐA:</span>
+                <span th:text="${room.capacity} + ' khách'">3 khách</span>
+            </p>
+
+            <p th:if="${room.availableRooms != null}">
+                <span>SỐ PHÒNG TRỐNG:</span>
+                <span th:text="${room.availableRooms}">5</span>
+            </p>
+
+        </div>
+
+    </section>
+
+    <section class="services-amenities">
+
+        <h2 class="section-title">DỊCH VỤ & TIỆN NGHI</h2>
+
+        <div class="amenity-block"
+             th:if="${room.amenitySummary != null and !#strings.isEmpty(room.amenitySummary)}">
+
+            <ul class="amenity-list">
+                <li th:each="amenity : ${#strings.arraySplit(room.amenitySummary, '|')}"
+                    th:text="${amenity}">
+                    Wi-Fi miễn phí
+                </li>
+            </ul>
+
+        </div>
+
+        <div class="amenity-block"
+             th:if="${room.serviceSummary != null and !#strings.isEmpty(room.serviceSummary)}">
+
+            <ul class="amenity-list">
+                <li th:each="service : ${#strings.arraySplit(room.serviceSummary, '|')}"
+                    th:text="${service}">
+                    Dịch vụ ăn uống tại phòng 24 giờ
+                </li>
+            </ul>
+
+        </div>
+
+        <p class="empty-text"
+           th:if="${(room.amenitySummary == null or #strings.isEmpty(room.amenitySummary))
+                and (room.serviceSummary == null or #strings.isEmpty(room.serviceSummary))}">
+            Đang cập nhật dịch vụ và tiện nghi.
+        </p>
+
+    </section>
+
+    <script th:src="@{/js/RoomTypeVariantDetail.js}"></script>
+
+</main>
+
+</body>
+</html>
