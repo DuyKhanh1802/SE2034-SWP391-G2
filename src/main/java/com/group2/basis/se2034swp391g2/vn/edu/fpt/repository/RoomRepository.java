@@ -4,6 +4,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,25 +19,25 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("""
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse(
-                r.id,
-                r.roomNumber,
-                v.id,
-                v.variantName,
-                v.pricePerNight,
-                CAST(v.viewType AS string),
-                v.capacity,
-                v.maxAdults,
-                v.maxChildren,
-                v.allowExtraBed,
-                v.maxExtraBeds,
-                v.extraBedPrice,
-                v.extraBedNote
+            r.id,
+            r.roomNumber,
+            v.id,
+            CONCAT(rt.name, ' - ', v.variantName),
+            v.pricePerNight,
+            CAST(v.viewType AS string),
+            v.capacity,
+            v.maxAdults,
+            v.maxChildren,
+            rt.allowExtraBed,
+            rt.maxExtraBeds,
+            rt.extraBedPrice,
+            rt.extraBedNote
         )
         FROM Room r
         JOIN r.variant v
+        JOIN v.roomType rt
         WHERE r.isDeleted = false
         AND r.status = :roomStatus
-        AND v.isDeleted = false
         AND NOT EXISTS (
             SELECT bd.id
             FROM BookingDetail bd
@@ -87,6 +88,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                 AND bd.checkOutDate > :checkInDate
             )
             """)
+
     List<Room> findAvailableRoomsByIds(
             @Param("roomIds") List<Long> roomIds,
             @Param("checkInDate") LocalDate checkInDate,
@@ -94,4 +96,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             @Param("roomStatus") RoomStatus roomStatus,
             @Param("blockingStatuses") List<BookingStatus> blockingStatuses
     );
+
+    @Query("""
+        SELECT r.roomNumber
+        FROM Room r
+        WHERE r.isDeleted = false
+        """)
+    List<String> findExistingRoomNumbers();
+
+
 }

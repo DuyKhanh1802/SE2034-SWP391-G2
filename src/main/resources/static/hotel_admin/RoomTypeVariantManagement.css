@@ -1,0 +1,384 @@
+/* =========================
+   ROOM TYPE VARIANT MANAGEMENT
+========================= */
+
+.variant-management-page {
+    padding: 34px 48px 48px;
+    background: #f7f5f2;
+    min-height: calc(100vh - 80px);
+}
+
+.variant-page-header {
+    margin-bottom: 24px;
+}
+
+.variant-eyebrow {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #8a8178;
+}
+
+.variant-page-header h1 {
+    margin: 0;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 46px;
+    font-weight: 600;
+    line-height: 1.08;
+    color: #1f1f1f;
+}
+
+.variant-page-header p {
+    margin: 10px 0 0;
+    font-size: 15px;
+    color: #777777;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.variant-card {
+    background: #ffffff;
+    border: 1px solid #e3ddd6;
+    border-radius: 18px;
+    padding: 22px 24px 24px;
+    box-shadow: 0 14px 36px rgba(30, 25, 20, 0.06);
+}
+
+/* =========================
+   FILTER
+========================= */
+
+.variant-filter-form {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) 220px auto;
+    gap: 14px;
+    align-items: end;
+    margin-bottom: 22px;
+}
+
+.variant-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #6f665d;
+}
+
+.variant-form-group input,
+.variant-form-group select {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #ddd6cf;
+    border-radius: 10px;
+    padding: 0 13px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #252525;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.variant-form-group input:focus,
+.variant-form-group select:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+}
+
+.variant-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.variant-btn {
+    height: 44px;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.variant-btn-dark {
+    background: #111111;
+    color: #ffffff;
+}
+
+.variant-btn-dark:hover {
+    background: #3b3028;
+    color: #ffffff;
+}
+
+.variant-btn-light {
+    background: #ffffff;
+    color: #111111;
+    border-color: #d8d0c8;
+}
+
+.variant-btn-light:hover {
+    background: #f3eee8;
+    color: #111111;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.variant-table-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+    border: 1px solid #e7e0d8;
+    border-radius: 14px;
+}
+
+.variant-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.variant-table thead {
+    background: #f5f1ec;
+}
+
+.variant-table th {
+    padding: 12px 8px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #62584f;
+    border-bottom: 1px solid #e1d9d0;
+    white-space: normal;
+}
+
+.variant-table td {
+    padding: 13px 8px;
+    font-size: 13px;
+    color: #282828;
+    border-bottom: 1px solid #eee8e2;
+    vertical-align: middle;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.variant-table tbody tr:hover {
+    background: #fbf8f4;
+}
+
+.variant-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Column width */
+.variant-table th:nth-child(1),
+.variant-table td:nth-child(1) {
+    width: 4%;
+    text-align: center;
+}
+
+.variant-table th:nth-child(2),
+.variant-table td:nth-child(2) {
+    width: 22%;
+}
+
+.variant-table th:nth-child(3),
+.variant-table td:nth-child(3) {
+    width: 15%;
+}
+
+.variant-table th:nth-child(4),
+.variant-table td:nth-child(4) {
+    width: 9%;
+    text-align: center;
+}
+
+.variant-table th:nth-child(5),
+.variant-table td:nth-child(5) {
+    width: 13%;
+}
+
+.variant-table th:nth-child(6),
+.variant-table td:nth-child(6),
+.variant-table th:nth-child(7),
+.variant-table td:nth-child(7),
+.variant-table th:nth-child(8),
+.variant-table td:nth-child(8) {
+    width: 7%;
+    text-align: center;
+}
+
+.variant-table th:nth-child(9),
+.variant-table td:nth-child(9) {
+    width: 9%;
+    text-align: center;
+}
+
+.variant-table th:nth-child(10),
+.variant-table td:nth-child(10) {
+    width: 10%;
+    text-align: center;
+}
+
+/* =========================
+   TEXT STYLE
+========================= */
+
+.variant-name {
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #1e1e1e;
+}
+
+.variant-sub {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #8a8178;
+}
+
+.variant-price {
+    font-weight: 700;
+    font-size: 13px;
+    color: #2d2d2d;
+}
+
+.variant-view-text {
+    font-weight: 600;
+    font-size: 13px;
+    color: #5f5a54;
+    text-transform: uppercase;
+}
+
+.variant-extra-text {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.variant-extra-text.yes {
+    color: #2f7d32;
+}
+
+.variant-extra-text.no {
+    color: #777777;
+}
+
+.variant-status-text {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.variant-status-text.active {
+    color: #2f7d32;
+}
+
+.variant-status-text.deleted {
+    color: #a33428;
+}
+
+.variant-empty-row {
+    text-align: center !important;
+    padding: 32px 16px !important;
+    color: #777777;
+    font-size: 14px;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.variant-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 22px;
+}
+
+.variant-pagination a,
+.variant-pagination span {
+    min-width: 42px;
+    height: 38px;
+    padding: 0 13px;
+    border-radius: 9px;
+    border: 1px solid #ddd6cf;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: #222222;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    background: #ffffff;
+}
+
+.variant-pagination a:hover {
+    background: #111111;
+    color: #ffffff;
+    border-color: #111111;
+}
+
+.variant-pagination span {
+    background: #f7f3ef;
+    color: #655d55;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1200px) {
+    .variant-management-page {
+        padding: 28px 28px 42px;
+    }
+
+    .variant-table th,
+    .variant-table td {
+        padding: 11px 6px;
+        font-size: 12px;
+    }
+
+    .variant-name,
+    .variant-price,
+    .variant-view-text,
+    .variant-extra-text,
+    .variant-status-text {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 992px) {
+    .variant-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .variant-filter-actions {
+        justify-content: flex-start;
+    }
+
+    .variant-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .variant-table {
+        min-width: 920px;
+    }
+}

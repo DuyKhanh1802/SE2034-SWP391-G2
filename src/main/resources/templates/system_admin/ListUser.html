@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 
@@ -12,32 +13,60 @@
         <p>Danh sách tài khoản khách hàng và nhân viên. Theo dõi vai trò, trạng thái tài khoản và tình trạng duyệt.</p>
     </section>
 
-    <section class="admin-card d-flex justify-content-between align-items-center">
-        <div>
-            <span style="font-size:11px; letter-spacing:2px; font-weight:600; color:#777;">
-                QUẢN LÝ NGƯỜI DÙNG
-            </span>
-            <h3 style="margin-top:6px; font-size:28px; font-family:'Cormorant Garamond', serif;">
-                Danh sách tài khoản
-            </h3>
-        </div>
+    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}">
+        Không thể thực hiện thao tác.
+    </div>
 
-        <div class="d-flex align-items-center gap-3">
-            <form th:action="@{/system-admin/list-user}"
-                  method="get"
-                  class="d-flex align-items-center bg-white border px-3"
-                  style="height:42px;">
+    <section class="admin-card user-toolbar">
+        <form class="user-filters" method="get" th:action="@{/system-admin/list-user}">
+            <label class="search-control">
                 <i class="fa-solid fa-magnifying-glass text-secondary"></i>
                 <input type="text"
                        name="keyword"
                        th:value="${keyword}"
-                       placeholder="Tìm theo tên, email, số điện thoại..."
-                       class="border-0 ms-2"
-                       style="outline:none; box-shadow:none; font-size:13px; min-width:220px;">
-                <input type="hidden" name="size" th:value="${pageSize}">
-                <button type="submit" class="d-none"></button>
-            </form>
-        </div>
+                       placeholder="Tìm theo họ tên...">
+            </label>
+
+            <select class="filter-control" name="role">
+                <option value="">Tất cả vai trò</option>
+                <option th:each="roleOption : ${roleFilterOptions}"
+                        th:value="${roleOption.key}"
+                        th:text="${roleOption.value}"
+                        th:selected="${roleOption.key == selectedRole}">
+                    Vai trò
+                </option>
+            </select>
+
+            <select class="filter-control" name="activeStatus">
+                <option value="ALL" th:selected="${activeStatus == null or activeStatus == 'ALL'}">
+                    Tất cả kích hoạt
+                </option>
+                <option value="ACTIVE" th:selected="${activeStatus == 'ACTIVE'}">Kích hoạt</option>
+                <option value="INACTIVE" th:selected="${activeStatus == 'INACTIVE'}">Vô hiệu hóa</option>
+            </select>
+
+            <select class="filter-control" name="approvalStatus">
+                <option value="" th:selected="${selectedApprovalStatus == null}">Tất cả phê duyệt</option>
+                <option value="PENDING"
+                        th:selected="${selectedApprovalStatus != null and selectedApprovalStatus.name() == 'PENDING'}">
+                    Chờ duyệt
+                </option>
+                <option value="APPROVED"
+                        th:selected="${selectedApprovalStatus != null and selectedApprovalStatus.name() == 'APPROVED'}">
+                    Đã duyệt
+                </option>
+                <option value="REJECTED"
+                        th:selected="${selectedApprovalStatus != null and selectedApprovalStatus.name() == 'REJECTED'}">
+                    Từ chối
+                </option>
+            </select>
+
+            <input type="hidden" name="size" th:value="${pageSize}">
+            <button class="btn-admin-primary" type="submit">
+                <i class="fa-solid fa-filter"></i>
+                Lọc
+            </button>
+        </form>
     </section>
 
     <section class="admin-card p-0 overflow-hidden">
@@ -46,11 +75,9 @@
             <tr>
                 <th>ID</th>
                 <th>Họ tên</th>
-                <th>Giới tính</th>
                 <th>Vai trò</th>
                 <th>Email</th>
-                <th>Số điện thoại</th>
-                <th>Trạng thái</th>
+                <th>Kích hoạt</th>
                 <th>Duyệt</th>
                 <th>Thao tác</th>
             </tr>
@@ -66,8 +93,6 @@
                     </span>
                 </td>
 
-                <td th:text="${genderLabelsByUserId[user.id]}">Chưa có</td>
-
                 <td>
                     <span class="role-text" th:text="${roleLabelsByUserId[user.id]}">
                         Khách hàng
@@ -75,25 +100,24 @@
                 </td>
 
                 <td th:text="${user.email != null ? user.email : 'Chưa có'}">email@example.com</td>
-                <td th:text="${user.phone != null ? user.phone : 'Chưa có'}">0123456789</td>
 
                 <td>
-                    <span th:if="${user.isActive}" class="status-text text-success">Đang hoạt động</span>
-                    <span th:unless="${user.isActive}" class="status-text text-danger">Đã vô hiệu hóa</span>
+                    <span th:if="${user.isActive}" class="status-text text-success">Kích hoạt</span>
+                    <span th:unless="${user.isActive}" class="status-text text-danger">Vô hiệu hóa</span>
                 </td>
 
                 <td>
                     <span class="status-text"
-                          th:classappend="${user.approvalStatus?.name() == 'APPROVED'}
+                          th:classappend="${user.approvalStatus != null and user.approvalStatus.name() == 'APPROVED'
                               ? ' text-success'
-                              : (${user.approvalStatus?.name() == 'PENDING'}
+                              : (user.approvalStatus != null and user.approvalStatus.name() == 'PENDING'
                                   ? ' text-warning'
-                                  : ' text-danger')"
-                          th:text="${user.approvalStatus?.name() == 'APPROVED'
+                                  : ' text-danger')}"
+                          th:text="${user.approvalStatus != null and user.approvalStatus.name() == 'APPROVED'
                               ? 'Đã duyệt'
-                              : (user.approvalStatus?.name() == 'PENDING'
+                              : (user.approvalStatus != null and user.approvalStatus.name() == 'PENDING'
                                   ? 'Chờ duyệt'
-                                  : (user.approvalStatus?.name() == 'REJECTED'
+                                  : (user.approvalStatus != null and user.approvalStatus.name() == 'REJECTED'
                                       ? 'Từ chối'
                                       : 'Chưa có'))}">
                         Chưa có
@@ -108,17 +132,27 @@
                             <i class="fa-regular fa-eye"></i>
                         </a>
 
-                        <a th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
+                        <a sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE','USER_RESET_PASSWORD')"
+                           th:if="${currentUserId == null or currentUserId != user.id}"
+                           th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
                            class="action-btn"
                            title="Chỉnh sửa">
                             <i class="fa-regular fa-pen-to-square"></i>
                         </a>
+
+                        <span sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE','USER_RESET_PASSWORD')"
+                              th:if="${currentUserId != null and currentUserId == user.id}"
+                              class="action-btn is-disabled"
+                              title="Không thể chỉnh sửa tài khoản đang đăng nhập."
+                              aria-disabled="true">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </span>
                     </div>
                 </td>
             </tr>
 
             <tr th:if="${#lists.isEmpty(users)}">
-                <td colspan="9" class="text-center py-5 text-muted">
+                <td colspan="7" class="text-center py-5 text-muted">
                     Không tìm thấy tài khoản.
                 </td>
             </tr>
@@ -134,7 +168,7 @@
                 <ul class="pagination mb-0">
                     <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
                         <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${hasPrevious ? currentPage - 2 : 0}, size=${pageSize}, keyword=${keyword})}"
+                           th:href="@{/system-admin/list-user(page=${hasPrevious ? currentPage - 2 : 0},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
                            aria-label="Trang trước">
                             <i class="fa-solid fa-chevron-left"></i>
                         </a>
@@ -144,13 +178,13 @@
                         th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
                         th:classappend="${pageNum == currentPage} ? ' active'">
                         <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${pageNum - 1}, size=${pageSize}, keyword=${keyword})}"
+                           th:href="@{/system-admin/list-user(page=${pageNum - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
                            th:text="${pageNum}">1</a>
                     </li>
 
                     <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
                         <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${hasNext ? currentPage : currentPage - 1}, size=${pageSize}, keyword=${keyword})}"
+                           th:href="@{/system-admin/list-user(page=${hasNext ? currentPage : currentPage - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
                            aria-label="Trang sau">
                             <i class="fa-solid fa-chevron-right"></i>
                         </a>

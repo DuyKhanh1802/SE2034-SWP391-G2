@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chọn phòng | V'Hotel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/page/RoomTypeVariant.css}">
+</head>
+
+<body>
+
+<div class="room-page">
+
+    <div class="rate-guarantee">CAM KẾT GIÁ TỐT NHẤT</div>
+
+    <button type="button"
+            class="booking-close-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#exitConfirmModal"
+            aria-label="Đóng trang đặt phòng">
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="currency-switch">₫ · VND</div>
+
+    <section class="room-hero">
+        <div class="brand-center">V'HOTEL</div>
+        <p class="eyebrow">V'HOTEL HÀ NỘI</p>
+        <h1>Chọn phòng và mức giá</h1>
+    </section>
+
+    <form th:action="@{/page/rooms}" method="get" id="roomSearchForm">
+
+        <input type="hidden" name="roomTypeId" th:value="${selectedRoomTypeId}">
+        <input type="hidden" name="viewType" id="viewTypeInput" th:value="${selectedViewType}">
+        <input type="hidden" name="sort" id="sortInput" th:value="${selectedSort}">
+
+        <input type="hidden" name="checkInDate" id="checkInDate" th:value="${checkInDate}">
+        <input type="hidden" name="checkOutDate" id="checkOutDate" th:value="${checkOutDate}">
+
+        <input type="hidden" name="adults" id="adultsInput" th:value="${adults != null ? adults : 1}">
+        <input type="hidden" name="children" id="childrenInput" th:value="${children != null ? children : 0}">
+        <input type="hidden" name="roomCount" id="roomCountInput" th:value="${roomCount != null ? roomCount : 1}">
+        <input type="hidden" name="roomGuests" id="roomGuestsInput" th:value="${roomGuests}">
+
+        <section class="booking-area">
+            <div class="booking-search">
+
+                <button class="search-item" type="button" data-panel-target="datePanel">
+                    <span class="search-label">NGÀY LƯU TRÚ</span>
+                    <div class="search-value-row">
+                        <strong id="dateSummary">
+                            <span th:if="${checkInDate != null and checkOutDate != null}"
+                                  th:text="${#temporals.format(checkInDate, 'dd/MM') + ' - ' + #temporals.format(checkOutDate, 'dd/MM')}">
+                                15/06 - 16/06
+                            </span>
+                            <span th:unless="${checkInDate != null and checkOutDate != null}">
+                                Chọn ngày
+                            </span>
+                        </strong>
+                        <em id="nightSummary"
+                            th:if="${checkInDate != null and checkOutDate != null}"
+                            th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(checkInDate, checkOutDate) + ' đêm'}">
+                            1 đêm
+                        </em>
+                        <em id="nightSummaryEmpty" th:unless="${checkInDate != null and checkOutDate != null}">0
+                            đêm</em>
+                    </div>
+                </button>
+
+                <button class="search-item" type="button" data-panel-target="guestPanel">
+                    <span class="search-label">KHÁCH VÀ PHÒNG</span>
+                    <div class="search-value-row">
+                        <strong id="guestSummary"
+                                th:text="${adults + ' người lớn'
+                                + (children > 0 ? ', ' + children + ' trẻ em' : '')
+                                + ', ' + roomCount + ' phòng'}">
+                            2 người lớn, 1 phòng
+                        </strong>
+                    </div>
+                </button>
+
+                <button class="search-item" type="button" data-panel-target="promoPanel">
+                    <span class="search-label">MÃ ƯU ĐÃI VÀ GIÁ ĐẶC BIỆT</span>
+                    <div class="search-value-row">
+                        <em>Mã ưu đãi</em>
+                        <strong id="promoSummary">DISCOVERMORE</strong>
+                    </div>
+                </button>
+            </div>
+
+            <div class="booking-panel date-panel" id="datePanel">
+                <p class="date-error" id="dateError"></p>
+
+                <div class="calendar-toolbar">
+                    <button type="button" class="calendar-nav" id="prevMonthBtn">‹</button>
+                    <button type="button" class="calendar-nav" id="nextMonthBtn">›</button>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="calendar-month" id="calendarMonthLeft"></div>
+                    <div class="calendar-month" id="calendarMonthRight"></div>
+                </div>
+
+                <div class="panel-actions date-actions">
+                    <button type="button" class="text-btn" id="clearDateBtn">Xóa ngày</button>
+                    <button type="button" class="black-btn" id="applyDateBtn">Áp dụng</button>
+                </div>
+            </div>
+
+            <div class="booking-panel guest-panel" id="guestPanel">
+                <div id="roomGuestContainer">
+
+                    <div class="guest-room-block" data-room-index="1">
+                        <div class="room-block-header">
+                            <h6>ROOM 1</h6>
+                            <button type="button" class="remove-room-btn">Remove</button>
+                        </div>
+                        <div class="guest-row">
+                            <strong>Người lớn <span>(từ 13 tuổi trở lên)</span></strong>
+                            <div class="counter">
+                                <button type="button" class="counter-btn minus-adult">−</button>
+                                <span class="adult-count" th:text="${adults != null ? adults : 1}">2</span>
+                                <button type="button" class="counter-btn plus-adult">+</button>
+                            </div>
+                        </div>
+
+                        <div class="guest-row">
+                            <strong>Trẻ em <span>(0–12 tuổi)</span></strong>
+                            <div class="counter">
+                                <button type="button" class="counter-btn minus-child">−</button>
+                                <span class="child-count" th:text="${children != null ? children : 0}">0</span>
+                                <button type="button" class="counter-btn plus-child">+</button>
+                            </div>
+                        </div>
+
+                        <div class="child-age-box"></div>
+                    </div>
+                </div>
+
+                <button class="add-room-btn" id="addRoomBtn" type="button">Thêm phòng khác</button>
+
+                <div class="guest-note">
+                    Để đặt hơn 9 phòng, vui lòng gọi <u>024 3891 8888</u>
+                </div>
+
+                <div class="panel-actions guest-actions">
+                    <button class="black-btn" id="applyGuestBtn" type="button">Áp dụng</button>
+                </div>
+            </div>
+
+            <div class="booking-panel promo-panel" id="promoPanel">
+                <label>Loại mã</label>
+                <div class="promo-select">Mã ưu đãi</div>
+
+                <label for="promoCode">Mã</label>
+                <div class="promo-input-row">
+                    <input type="text" id="promoCode" value="DISCOVERMORE" placeholder="Nhập mã ưu đãi">
+                    <button type="button" id="clearPromoBtn">×</button>
+                </div>
+
+                <label for="agentCode">Mã đại lý</label>
+                <input type="text" id="agentCode" placeholder="Không bắt buộc">
+
+                <div class="panel-actions promo-actions">
+                    <button class="black-btn" id="applyPromoBtn" type="button">Áp dụng</button>
+                </div>
+            </div>
+        </section>
+    </form>
+
+
+    <section class="select-progress" th:if="${roomCount != null and roomCount > 1}">
+        <button type="button" class="progress-arrow">‹</button>
+
+        <div class="progress-center">
+            <p>
+                CHỌN PHÒNG VÀ MỨC GIÁ |
+                <span id="currentRoomText"
+                      th:text="${'1 TRÊN ' + roomCount}">
+                1 TRÊN 2
+            </span>
+            </p>
+
+            <small id="currentGuestText">
+                <span th:text="${adults + ' người lớn'}">2 người lớn</span>
+                <span th:if="${children != null and children > 0}"
+                      th:text="${', ' + children + ' trẻ em'}">
+        , 1 trẻ em
+    </span>
+            </small>
+        </div>
+
+        <button type="button" class="progress-arrow">›</button>
+    </section>
+    <section class="rose-filter-bar">
+        <div class="rose-tabs">
+            <a th:href="@{/page/rooms(
+                    viewType=${selectedViewType},
+                    sort=${selectedSort},
+                    checkInDate=${checkInDate},
+                    checkOutDate=${checkOutDate},
+                    adults=${adults},
+                    children=${children},
+                    roomCount=${roomCount},
+                    roomGuests=${roomGuests}
+               )}"
+               th:classappend="${selectedRoomTypeId == null} ? 'active' : ''">
+                Tất cả
+            </a>
+
+            <a th:each="type : ${roomTypes}"
+               th:href="@{/page/rooms(
+        roomTypeId=${type.id},
+        viewType=${selectedViewType},
+        sort=${selectedSort},
+        checkInDate=${checkInDate},
+        checkOutDate=${checkOutDate},
+        adults=${adults},
+        children=${children},
+        roomCount=${roomCount},
+        roomGuests=${roomGuests}
+   )}"
+               th:text="${type.name}"
+               th:classappend="${type.id == selectedRoomTypeId} ? 'active' : ''">
+                Phòng tiêu chuẩn
+            </a>
+        </div>
+
+        <div class="rose-actions">
+            <div class="rose-dropdown">
+                <span>
+                    Sắp xếp:
+                    <b th:text="${selectedSort == 'priceAsc' ? 'Giá thấp đến cao' :
+                                 (selectedSort == 'priceDesc' ? 'Giá cao đến thấp' : 'Đề xuất')}">
+                        Đề xuất
+                    </b>
+                </span>
+
+                <div class="rose-dropdown-menu">
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='recommended', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Đề
+                        xuất</a>
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='priceAsc', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Giá
+                        thấp đến cao</a>
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType=${selectedViewType}, sort='priceDesc', checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Giá
+                        cao đến thấp</a>
+                </div>
+            </div>
+
+            <div class="rose-dropdown view-dropdown">
+                <span>
+                    Hướng nhìn:
+                    <b th:text="${selectedViewType == null or selectedViewType == '' ? 'Tất cả' :
+                                 (selectedViewType == 'CITY' ? 'Thành phố' :
+                                 (selectedViewType == 'SEA' ? 'Biển' :
+                                 (selectedViewType == 'POOL' ? 'Hồ bơi' :
+                                 (selectedViewType == 'GARDEN' ? 'Vườn' : selectedViewType))))}">
+                        Tất cả
+                    </b>
+                </span>
+
+                <div class="rose-dropdown-menu">
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Tất
+                        cả hướng nhìn</a>
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='CITY', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Hướng
+                        thành phố</a>
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='SEA', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Hướng
+                        biển</a>
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='POOL', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Hướng
+                        hồ bơi</a>
+                    <a th:href="@{/page/rooms(roomTypeId=${selectedRoomTypeId}, viewType='GARDEN', sort=${selectedSort}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount},  roomGuests=${roomGuests})}">Hướng
+                        vườn</a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <main class="room-content">
+        <section class="room-list">
+
+            <div class="empty-state" th:if="${roomOptions == null or #lists.isEmpty(roomOptions)}">
+                <h3>Không có phòng phù hợp</h3>
+                <p>Không còn phòng phù hợp với lựa chọn của bạn.</p>
+            </div>
+
+            <article class="room-card"
+                     th:each="room : ${roomOptions}"
+                     th:data-view-type="${room.viewType}"
+                     th:data-price="${room.pricePerNight}">
+
+                <div class="room-image-box"
+                     th:with="imageArray=${room.imageUrls != null ? #strings.arraySplit(room.imageUrls, '|') : null}">
+
+                    <div th:if="${imageArray != null and imageArray.length > 0}"
+                         th:id="'roomCarousel-' + ${room.variantId}"
+                         class="carousel slide room-carousel">
+
+                        <div class="carousel-inner">
+                            <div class="carousel-item"
+                                 th:each="imgUrl, iter : ${imageArray}"
+                                 th:classappend="${iter.index == 0} ? ' active' : ''">
+                                <img th:src="${imgUrl}" class="d-block w-100" alt="Ảnh phòng">
+                            </div>
+                        </div>
+
+                        <button class="carousel-control-prev room-carousel-btn"
+                                type="button"
+                                th:data-bs-target="'#roomCarousel-' + ${room.variantId}"
+                                data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+
+                        <button class="carousel-control-next room-carousel-btn"
+                                type="button"
+                                th:data-bs-target="'#roomCarousel-' + ${room.variantId}"
+                                data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                    </div>
+
+                    <div class="image-placeholder" th:if="${imageArray == null or imageArray.length == 0}">
+                        <span>Chưa có ảnh</span>
+                    </div>
+
+                    <div class="image-counter" th:if="${imageArray != null and imageArray.length > 0}">
+                        <b>1</b><span></span><b th:text="${imageArray.length}">3</b>
+                    </div>
+                </div>
+
+                <div class="room-info">
+                    <div class="room-top">
+                        <div class="room-main">
+                            <h2 th:text="${room.variantName}">Phòng Suite - Hướng thành phố</h2>
+
+                            <p class="capacity">
+                                <span th:text="${room.bedSummary != null ? room.bedSummary : '1 giường King'}">1 giường King</span>,
+                                tối đa <span th:text="${room.capacity}">3</span> khách
+                            </p>
+
+                            <p class="room-size" th:if="${room.roomSize != null}">
+                                <span th:text="${room.roomSize}">53</span> m².
+                            </p>
+
+                            <p class="description" th:text="${room.description}">
+                                Không gian phòng sang trọng với tầm nhìn đẹp và tiện nghi cao cấp.
+                            </p>
+                        </div>
+
+                        <div class="room-links">
+                            <a href="javascript:void(0)"
+                               class="room-detail-link"
+                               th:data-url="@{/page/room-variants/{id}(
+        id=${room.variantId},
+        checkInDate=${checkInDate},
+        checkOutDate=${checkOutDate}
+   )}">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="rate-panel">
+                        <div class="rate-left">
+                            <h3>Giá linh hoạt</h3>
+                            <p>Chỉ bao gồm lưu trú</p>
+                            <a href="#">Xem chi tiết</a>
+                        </div>
+
+                        <div class="rate-right">
+                            <h4>
+                                <small>VND</small>
+                                <span th:text="${#numbers.formatDecimal(room.pricePerNight, 0, 'COMMA', 0, 'POINT')}">1,200,000</span>
+                            </h4>
+                            <p>Giá trung bình mỗi đêm, bao gồm phí dịch vụ, chưa bao gồm thuế</p>
+
+                            <button class="reserve-btn"
+                                    type="button"
+                                    th:data-variant-id="${room.variantId}"
+                                    th:data-variant-name="${room.variantName}"
+                                    th:data-check-in="${checkInDate}"
+                                    th:data-check-out="${checkOutDate}"
+                                    th:data-adults="${adults}"
+                                    th:data-children="${children}"
+                                    th:data-room-count="${roomCount}">
+                                ĐẶT NGAY
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+    </main>
+</div>
+
+<div class="room-detail-modal" id="roomDetailModal">
+    <div class="room-detail-backdrop" id="roomDetailBackdrop"></div>
+
+    <div class="room-detail-modal-content">
+        <iframe id="roomDetailFrame"
+                class="room-detail-frame"
+                src=""
+                frameborder="0">
+        </iframe>
+    </div>
+</div>
+<div class="modal fade exit-modal" id="exitConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content exit-modal-content">
+            <div class="modal-body">
+                <h2>Bạn đang rời khỏi quy trình đặt phòng.</h2>
+                <p>Các lựa chọn chưa được đặt sẽ không được lưu. Bạn có chắc muốn thoát không?</p>
+
+                <div class="exit-actions">
+                    <a class="exit-btn" th:href="@{/page/home}">Thoát</a>
+                    <button class="back-btn" type="button" data-bs-dismiss="modal">Quay lại đặt phòng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:src="@{/js/roomTypeVariant.js}"></script>
+
+</body>
+</html>

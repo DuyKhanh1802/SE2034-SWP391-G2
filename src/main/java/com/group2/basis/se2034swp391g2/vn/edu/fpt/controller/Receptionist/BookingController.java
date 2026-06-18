@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Receptionist;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingCreateRequest;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingUpdateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CountryRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
@@ -77,7 +78,7 @@ public class BookingController {
         request.setCheckInDate(checkInDate);
         request.setCheckOutDate(checkOutDate);
         request.setAdults(adults);
-        request.setChildren(children);
+        request.setChildren(children == null ? 0 : children);
 
         model.addAttribute("countries", countryRepository.findAll());
         model.addAttribute("request", request);
@@ -85,8 +86,7 @@ public class BookingController {
         boolean hasApplied =
                 checkInDate != null
                         && checkOutDate != null
-                        && adults != null
-                        && children != null;
+                        && adults != null;
 
         model.addAttribute("hasApplied", hasApplied);
 
@@ -214,6 +214,54 @@ public class BookingController {
         }
 
         return "redirect:/receptionist/bookings/" + bookingId + "/check-in-complete";
+    }
+
+    @GetMapping("/view/{bookingId}")
+    public String viewBookingDetail(@PathVariable Long bookingId, Model model){
+        model.addAttribute("detail",bookingService.getBookingDetail(bookingId));
+        return "receptionist/ViewBookingDetail";
+    }
+
+    @GetMapping("/edit/{bookingId}")
+    public String showEditBookingForm(@PathVariable Long bookingId,
+                                      Model model,
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("pageTitle", "CHỈNH SỬA THÔNG TIN KHÁCH");
+            model.addAttribute("bookingId", bookingId);
+            model.addAttribute("request", bookingService.getBookingUpdateForm(bookingId));
+            model.addAttribute("detail", bookingService.getBookingDetail(bookingId));
+            model.addAttribute("countries", countryRepository.findByIsActiveTrueOrderByCountryNameAsc());
+
+            return "receptionist/EditBooking";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/receptionist/bookings/view/" + bookingId;
+        }
+    }
+
+    @PostMapping("/edit/{bookingId}")
+    public String updateBooking(@PathVariable Long bookingId,
+                                @ModelAttribute("request") BookingUpdateRequest request,
+                                RedirectAttributes redirectAttributes,
+                                Model model) {
+        try {
+            bookingService.updateBookingGuestInfo(bookingId, request);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thông tin khách thành công.");
+            return "redirect:/receptionist/bookings/view/" + bookingId;
+
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("pageTitle", "CHỈNH SỬA THÔNG TIN KHÁCH");
+            model.addAttribute("bookingId", bookingId);
+            model.addAttribute("request", request);
+            model.addAttribute("detail", bookingService.getBookingDetail(bookingId));
+            model.addAttribute("countries", countryRepository.findByIsActiveTrueOrderByCountryNameAsc());
+            model.addAttribute("errorMessage", e.getMessage());
+
+            return "receptionist/EditBooking";
+        }
     }
 
 }

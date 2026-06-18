@@ -34,7 +34,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "approval_status", nullable = false, length = 20,columnDefinition = "NVARCHAR(20)")
-    private ApprovalStatus approvalStatus = ApprovalStatus.APPROVED;
+    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
     @Column(name = "approval_note", length = 300,columnDefinition = "NVARCHAR(300)")
     private String approvalNote;
