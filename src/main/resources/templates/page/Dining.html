@@ -12,9 +12,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet">
-
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/page/HomePage.css}">
     <link rel="stylesheet" th:href="@{/page/Dining.css}">
@@ -99,13 +98,17 @@
                     </p>
 
                     <div class="dining-card-bottom">
-                        <p class="dining-price"
-                           th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                            250,000 VND
-                        </p>
+                        <div class="dining-price-group">
+                            <p class="dining-price-label">Giá dịch vụ</p>
 
-                        <a class="dining-detail-link" href="javascript:void(0)">
-                            Chi tiết
+                            <p class="dining-price"
+                               th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                250,000 VND
+                            </p>
+                        </div>
+
+                        <a class="dining-reserve-btn" href="javascript:void(0)">
+                            Đặt
                         </a>
                     </div>
                 </div>

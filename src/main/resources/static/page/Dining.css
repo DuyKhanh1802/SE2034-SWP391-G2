@@ -2,7 +2,7 @@
    V'HOTEL DINING PAGE
 ========================= */
 
-:root {
+.dining-page {
     --vh-bg: #f7f5ef;
     --vh-bg-light: #fbfaf7;
     --vh-text: #111111;
@@ -11,32 +11,23 @@
     --vh-gold: #b68a45;
     --vh-green: #003f2f;
     --vh-black: #000000;
-}
 
-* {
-    box-sizing: border-box;
-}
+    --vh-font-main: "Be Vietnam Pro", Arial, sans-serif;
+    --vh-font-title: "Noto Serif Display", Georgia, serif;
 
-body {
-    margin: 0;
     background: var(--vh-bg-light);
     color: var(--vh-text);
-    font-family: "Inter", Arial, sans-serif;
-}
-
-.dining-page {
-    background: var(--vh-bg-light);
     min-height: 100vh;
-    padding-top: 0;
+    font-family: var(--vh-font-main);
 }
 
 /* =========================
    INTRO
 ========================= */
 
-.dining-intro {
+.dining-page .dining-intro {
     min-height: 370px;
-    padding: 300px 24px 70px;
+    padding: 300px 24px 76px;
 
     display: flex;
     flex-direction: column;
@@ -48,358 +39,78 @@ body {
     background: linear-gradient(180deg, #ffffff 0%, #fbfaf7 100%);
 }
 
-.dining-eyebrow {
-    margin: 0 0 20px;
+.dining-page .dining-eyebrow {
+    margin: 0 0 18px;
+    font-family: var(--vh-font-main);
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 4px;
     color: var(--vh-gold);
     text-transform: uppercase;
 }
 
-.dining-intro h1 {
+.dining-page .dining-intro h1 {
     margin: 0;
-    font-family: "Libre Baskerville", Georgia, serif;
-    font-size: clamp(42px, 5vw, 76px);
-    line-height: 1.12;
-    font-weight: 400;
+    font-family: var(--vh-font-title);
+    font-size: clamp(40px, 4vw, 64px);
+    line-height: 1.22;
+    font-weight: 500;
     color: var(--vh-text);
 }
 
-.dining-description {
-    max-width: 720px;
-    margin: 24px auto 0;
-    font-size: 17px;
-    line-height: 1.8;
+.dining-page .dining-description {
+    max-width: 760px;
+    margin: 22px auto 0;
+    font-family: var(--vh-font-main);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.85;
     color: var(--vh-muted);
 }
 
 /* =========================
-   VIDEO
+   HERO VIDEO
 ========================= */
 
-.dining-video-section {
-    padding: 0;
-    background: var(--vh-bg-light);
-}
-
-.dining-video-wrapper {
+.dining-page .hero-video-section {
+    position: relative;
     width: 100%;
     height: 72vh;
     min-height: 520px;
     max-height: 760px;
     overflow: hidden;
-    background: #111;
+    background: #111111;
 }
 
-.dining-video {
+.dining-page .hero-video {
     width: 100%;
     height: 100%;
     display: block;
     object-fit: cover;
-    background: #111;
+    background: #111111;
 }
 
-/* =========================
-   LIST SECTION
-========================= */
-
-.dining-list-section {
-    padding: 96px 5.5vw 88px;
-    background: var(--vh-bg);
-}
-
-.dining-section-header {
-    max-width: 760px;
-    margin-bottom: 64px;
-}
-
-.dining-section-header h2 {
-    margin: 0;
-    font-family: "Libre Baskerville", Georgia, serif;
-    font-size: clamp(34px, 4vw, 56px);
-    line-height: 1.2;
-    font-weight: 400;
-    color: var(--vh-text);
-}
-
-.dining-section-header p {
-    margin: 18px 0 0;
-    color: var(--vh-muted);
-    font-size: 16px;
-    line-height: 1.8;
-}
-
-.dining-empty {
-    padding: 42px;
-    border: 1px solid var(--vh-border);
-    background: #ffffff;
-    text-align: center;
-    font-size: 16px;
-    color: var(--vh-muted);
-}
-
-/* =========================
-   DINING GRID
-========================= */
-
-.dining-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 64px 52px;
-}
-
-.dining-card {
-    background: transparent;
-}
-
-.dining-card-image {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    overflow: hidden;
-    background: #e8e1d7;
-}
-
-.dining-card-image img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    transition: transform 0.7s ease;
-}
-
-.dining-card:hover .dining-card-image img {
-    transform: scale(1.045);
-}
-
-.dining-card-content {
-    padding-top: 28px;
-}
-
-.dining-card-content h3 {
-    margin: 0;
-    font-size: 17px;
-    line-height: 1.5;
-    letter-spacing: 4px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: var(--vh-text);
-}
-
-.dining-card-description {
-    margin: 18px 0 0;
-    min-height: 58px;
-    font-family: "Libre Baskerville", Georgia, serif;
-    font-size: 15px;
-    line-height: 1.75;
-    color: #27231f;
-
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* Bottom */
-.dining-card-bottom {
-    margin-top: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.dining-price {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    color: var(--vh-green);
-    text-transform: uppercase;
-}
-
-.dining-detail-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 108px;
-    height: 48px;
-    padding: 0 22px;
-    border: 1px solid var(--vh-border);
-    background: transparent;
-    color: var(--vh-text);
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    transition: all 0.25s ease;
-}
-
-.dining-detail-link:hover {
-    background: var(--vh-black);
-    border-color: var(--vh-black);
-    color: #ffffff;
-}
-
-/* =========================
-   PAGINATION
-========================= */
-
-.dining-pagination {
-    margin-top: 82px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.page-number,
-.page-button {
-    min-width: 46px;
-    height: 46px;
-    padding: 0 16px;
-    border: 1px solid var(--vh-border);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    color: var(--vh-text);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    transition: all 0.25s ease;
-}
-
-.page-number:hover,
-.page-button:hover {
-    background: var(--vh-black);
-    border-color: var(--vh-black);
-    color: #ffffff;
-}
-
-.page-number.active {
-    background: var(--vh-green);
-    border-color: var(--vh-green);
-    color: #ffffff;
-}
-
-.page-button.disabled {
+.dining-page .hero-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
     pointer-events: none;
-    opacity: 0.35;
+    background: rgba(0, 0, 0, 0.18);
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 1200px) {
-    .dining-grid {
-        gap: 52px 36px;
-    }
-}
-
-@media (max-width: 992px) {
-    .dining-video-wrapper {
-        height: 58vh;
-        min-height: 420px;
-    }
-
-    .dining-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .dining-list-section {
-        padding: 76px 32px 72px;
-    }
-}
-
-@media (max-width: 640px) {
-    .dining-intro {
-        padding: 64px 20px 52px;
-    }
-
-    .dining-description {
-        font-size: 15px;
-    }
-
-    .dining-video-wrapper {
-        height: 46vh;
-        min-height: 320px;
-    }
-
-    .dining-list-section {
-        padding: 58px 20px 60px;
-    }
-
-    .dining-section-header {
-        margin-bottom: 42px;
-    }
-
-    .dining-grid {
-        grid-template-columns: 1fr;
-        gap: 46px;
-    }
-
-    .dining-card-bottom {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .dining-detail-link {
-        width: 100%;
-    }
-
-    .dining-pagination {
-        flex-wrap: wrap;
-        margin-top: 56px;
-    }
-}
-
-.sound-toggle {
+.dining-page .hero-video-controls {
     position: absolute;
-    right: 40px;
-    bottom: 40px;
-    z-index: 5;
-
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    background: rgba(0, 0, 0, 0.35);
-    color: #fff;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 22px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.sound-toggle:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-.hero-video-controls {
-    position: absolute;
-    left: 94%;
+    right: 48px;
     bottom: 38px;
-    transform: translateX(-50%);
     z-index: 10;
 
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 56px;
+    gap: 28px;
 }
 
-.hero-video-btn {
+.dining-page .hero-video-btn {
     border: none;
     outline: none;
     background: transparent;
@@ -416,7 +127,311 @@ body {
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.hero-video-btn:hover {
+.dining-page .hero-video-btn:hover {
     opacity: 1;
     transform: scale(1.08);
+}
+
+/* =========================
+   LIST SECTION
+========================= */
+
+.dining-page .dining-list-section {
+    padding: 96px 5.5vw 88px;
+    background: var(--vh-bg);
+}
+
+.dining-page .dining-section-header {
+    max-width: 760px;
+    margin-bottom: 64px;
+}
+
+.dining-page .dining-section-header h2 {
+    margin: 0;
+    font-family: var(--vh-font-title);
+    font-size: clamp(34px, 3.8vw, 54px);
+    line-height: 1.2;
+    font-weight: 500;
+    color: var(--vh-text);
+}
+
+.dining-page .dining-section-header p {
+    margin: 18px 0 0;
+    font-family: var(--vh-font-main);
+    color: var(--vh-muted);
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.dining-page .dining-empty {
+    padding: 42px;
+    border: 1px solid var(--vh-border);
+    background: #ffffff;
+    text-align: center;
+    font-size: 16px;
+    color: var(--vh-muted);
+}
+
+/* =========================
+   DINING GRID
+========================= */
+
+.dining-page .dining-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 64px 52px;
+}
+
+.dining-page .dining-card {
+    background: transparent;
+}
+
+.dining-page .dining-card-image {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: #e8e1d7;
+}
+
+.dining-page .dining-card-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.7s ease;
+}
+
+.dining-page .dining-card:hover .dining-card-image img {
+    transform: scale(1.045);
+}
+
+.dining-page .dining-card-content {
+    padding-top: 28px;
+}
+
+.dining-page .dining-card-content h3 {
+    margin: 0;
+    font-family: var(--vh-font-main);
+    font-size: 18px;
+    line-height: 1.45;
+    letter-spacing: 2px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--vh-text);
+}
+
+.dining-page .dining-card-description {
+    margin: 16px 0 0;
+    min-height: 58px;
+
+    font-family: var(--vh-font-main);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.85;
+    color: #3d3832;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* =========================
+   CARD BOTTOM
+========================= */
+
+.dining-page .dining-card-bottom {
+    margin-top: 24px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.dining-page .dining-price-group {
+    flex: 1;
+}
+
+.dining-page .dining-price-label {
+    margin: 0 0 6px;
+    font-family: var(--vh-font-main);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--vh-muted);
+}
+
+.dining-page .dining-price {
+    margin: 0;
+    font-family: var(--vh-font-main);
+    font-size: 16px;
+    line-height: 1.5;
+    font-weight: 600;
+    color: var(--vh-text);
+}
+
+.dining-page .dining-reserve-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 112px;
+    height: 54px;
+    padding: 0 24px;
+
+    background: var(--vh-black);
+    border: 1px solid var(--vh-black);
+    color: #ffffff;
+    text-decoration: none;
+
+    font-family: var(--vh-font-main);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+.dining-page .dining-reserve-btn:hover {
+    background: var(--vh-green);
+    border-color: var(--vh-green);
+    color: #ffffff;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.dining-page .dining-pagination {
+    margin-top: 82px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.dining-page .page-number,
+.dining-page .page-button {
+    min-width: 46px;
+    height: 46px;
+    padding: 0 16px;
+
+    border: 1px solid var(--vh-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: transparent;
+    color: var(--vh-text);
+    text-decoration: none;
+
+    font-family: var(--vh-font-main);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+
+    transition: all 0.25s ease;
+}
+
+.dining-page .page-number:hover,
+.dining-page .page-button:hover {
+    background: var(--vh-black);
+    border-color: var(--vh-black);
+    color: #ffffff;
+}
+
+.dining-page .page-number.active {
+    background: var(--vh-green);
+    border-color: var(--vh-green);
+    color: #ffffff;
+}
+
+.dining-page .page-button.disabled {
+    pointer-events: none;
+    opacity: 0.35;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1200px) {
+    .dining-page .dining-grid {
+        gap: 52px 36px;
+    }
+}
+
+@media (max-width: 992px) {
+    .dining-page .hero-video-section {
+        height: 58vh;
+        min-height: 420px;
+    }
+
+    .dining-page .dining-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dining-page .dining-list-section {
+        padding: 76px 32px 72px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dining-page .dining-intro {
+        min-height: auto;
+        padding: 64px 20px 52px;
+    }
+
+    .dining-page .dining-intro h1 {
+        font-size: clamp(36px, 11vw, 46px);
+        line-height: 1.25;
+    }
+
+    .dining-page .dining-description {
+        font-size: 15px;
+    }
+
+    .dining-page .hero-video-section {
+        height: 46vh;
+        min-height: 320px;
+    }
+
+    .dining-page .hero-video-controls {
+        right: 24px;
+        bottom: 24px;
+        gap: 22px;
+    }
+
+    .dining-page .dining-list-section {
+        padding: 58px 20px 60px;
+    }
+
+    .dining-page .dining-section-header {
+        margin-bottom: 42px;
+    }
+
+    .dining-page .dining-grid {
+        grid-template-columns: 1fr;
+        gap: 46px;
+    }
+
+    .dining-page .dining-card-bottom {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .dining-page .dining-reserve-btn {
+        width: 100%;
+    }
+
+    .dining-page .dining-pagination {
+        flex-wrap: wrap;
+        margin-top: 56px;
+    }
 }
