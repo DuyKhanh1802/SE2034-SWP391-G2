@@ -22,7 +22,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(
                 b.id,
                 b.bookingReference,
-                CONCAT(b.guestFirstName, ' ', b.guestLastName),
+                CONCAT(b.guestLastName, ' ', b.guestFirstName),
                 CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
                 b.checkInDate,
                 b.checkOutDate,
@@ -44,7 +44,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(
             b.id,
             b.bookingReference,
-            CONCAT(b.guestFirstName, ' ', b.guestLastName),
+            CONCAT(b.guestLastName, ' ', b.guestFirstName),
             CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
             b.checkInDate,
             b.checkOutDate,
@@ -91,7 +91,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(
             b.id,
             b.bookingReference,
-            CONCAT(b.guestFirstName, ' ', b.guestLastName),
+            CONCAT(b.guestLastName, ' ', b.guestFirstName),
             CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
             b.checkInDate,
             b.checkOutDate,
@@ -109,7 +109,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
@@ -133,7 +133,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
@@ -153,7 +153,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse(
             b.id,
             b.bookingReference,
-            CONCAT(b.guestFirstName, ' ', b.guestLastName),
+            CONCAT(b.guestLastName, ' ', b.guestFirstName),
             b.checkInDate,
             b.checkOutDate,
             b.specialRequests,
@@ -170,7 +170,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(
             b.id,
             b.bookingReference,
-            CONCAT(b.guestFirstName, ' ', b.guestLastName),
+            CONCAT(b.guestLastName, ' ', b.guestFirstName),
             CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
             b.checkInDate,
             b.checkOutDate,
@@ -189,7 +189,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
@@ -209,7 +209,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
             OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
