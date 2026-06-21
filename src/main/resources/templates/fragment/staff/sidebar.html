@@ -46,6 +46,13 @@
             </a>
         </li>
 
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/services')} ? 'active' : ''">
+            <a th:href="@{/hotel-admin/services}">
+                <i class="fas fa-concierge-bell"></i>
+                <span>Quản lý dịch vụ</span>
+            </a>
+        </li>
+
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/promotions}">
                 <i class="fas fa-tags"></i>
