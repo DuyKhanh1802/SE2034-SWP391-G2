@@ -56,6 +56,10 @@
           th:href="@{/hotel_admin/RoomManagement.css}">
 
     <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/services')}"
+          th:href="@{/hotel_admin/ServiceManagement.css}">
+
+    <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions')}"
           th:href="@{/hotel_admin/promotions.css}">
 
