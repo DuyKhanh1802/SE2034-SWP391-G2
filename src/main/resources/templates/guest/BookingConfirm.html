@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Confirm Reservation | V'Hotel</title>
+</head>
+
+<body>
+
+<h1>Confirm Reservation</h1>
+
+<h2>Thông tin đặt phòng</h2>
+
+<p>
+    Variant IDs:
+    <strong th:text="${request.variantIds}">1,2</strong>
+</p>
+
+<p>
+    Ngày:
+    <strong th:text="${request.checkInDate}">2026-06-20</strong>
+    →
+    <strong th:text="${request.checkOutDate}">2026-06-22</strong>
+</p>
+
+<p>
+    Khách:
+    <strong th:text="${request.adults}">1</strong> người lớn,
+    <strong th:text="${request.children}">0</strong> trẻ em
+</p>
+
+<p>
+    Promo:
+    <strong th:text="${request.promoCode}">VH-202606-ACD8</strong>
+</p>
+
+<hr>
+
+<h2>Phòng đã chọn</h2>
+
+<div th:each="room, iter : ${selectedRooms}">
+    <h3 th:text="${'Room ' + (iter.index + 1)}">Room 1</h3>
+    <p th:text="${room.variantName}">Deluxe Room</p>
+    <p th:text="${room.pricePerNight}">1000000</p>
+</div>
+
+<hr>
+
+<h2>Dịch vụ đã chọn</h2>
+
+<div th:if="${request.roomServices == null or #lists.isEmpty(request.roomServices)}">
+    Không chọn dịch vụ.
+</div>
+
+<table border="1" cellpadding="8" th:if="${request.roomServices != null and !#lists.isEmpty(request.roomServices)}">
+    <thead>
+    <tr>
+        <th>Room index</th>
+        <th>Service ID</th>
+        <th>Quantity</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="item : ${request.roomServices}">
+        <td th:text="${item.roomIndex}">1</td>
+        <td th:text="${item.serviceId}">5</td>
+        <td th:text="${item.quantity}">2</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
