@@ -9,28 +9,59 @@
             <p>Dòng tiền</p>
             <h1>Lập phiếu thu/chi</h1>
         </div>
-        <a class="btn-secondary-action" th:href="@{/manager/transactions}">Quay lại</a>
     </section>
 
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-    <form class="panel form-panel" th:action="@{/manager/transactions/create}" method="post">
+    <form class="panel form-panel"
+          id="cashTransactionForm"
+          th:action="@{/manager/transactions/create}"
+          th:object="${voucher}"
+          method="post">
+        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <h2>Thông tin phiếu</h2>
 
-        <label for="type">Loại phiếu</label>
-        <select id="type" name="type" required>
-            <option value="INCOME">Phiếu thu</option>
-            <option value="EXPENSE">Phiếu chi</option>
-        </select>
+        <div class="form-grid">
+            <div>
+                <label for="type">Loại phiếu</label>
+                <select id="type" th:field="*{type}" required>
+                    <option th:each="typeOption : ${transactionTypes}"
+                            th:value="${typeOption.name()}"
+                            th:text="${typeOption.displayName}">
+                        Phiếu thu
+                    </option>
+                </select>
+                <p class="form-hint">Phiếu thu làm tăng quỹ, phiếu chi làm giảm quỹ.</p>
+            </div>
 
-        <label for="amount">Số tiền</label>
-        <input id="amount" type="number" min="1" step="1000" name="amount" placeholder="Nhập số tiền" required>
+            <div>
+                <label for="amount">Số tiền</label>
+                <input id="amount"
+                       type="number"
+                       min="1"
+                       step="1"
+                       th:field="*{amount}"
+                       placeholder="Nhập số tiền"
+                       required>
+                <p class="form-hint">Chỉ nhập số dương, hệ thống tự xử lý dấu tiền theo loại phiếu.</p>
+            </div>
+        </div>
 
-        <label for="description">Nội dung</label>
-        <textarea id="description" name="description" rows="4" placeholder="Nhập nội dung phiếu"></textarea>
+        <label for="description">Nội dung phiếu</label>
+        <textarea id="description"
+                  th:field="*{description}"
+                  rows="4"
+                  maxlength="300"
+                  placeholder="Ví dụ: Thu tiền dịch vụ giặt là, chi mua vật tư..."
+                  required></textarea>
+        <p class="form-hint">Nội dung giúp manager kiểm tra lại lý do phát sinh dòng tiền.</p>
 
-        <button type="submit">Tạo phiếu</button>
+        <div class="form-actions">
+            <a class="btn-secondary-action" th:href="@{/manager/transactions}">Hủy</a>
+            <button type="submit">Tạo phiếu</button>
+        </div>
     </form>
+    <script th:src="@{/js/cashTransactionForm.js}"></script>
 </main>
 </body>
 </html>

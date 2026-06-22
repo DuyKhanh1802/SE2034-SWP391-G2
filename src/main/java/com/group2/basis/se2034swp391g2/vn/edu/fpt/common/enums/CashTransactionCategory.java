@@ -7,7 +7,8 @@ public enum CashTransactionCategory {
     CAPITAL_INJECTION("Rót vốn"),
     MANUAL_INCOME("Thu thủ công"),
     MANUAL_EXPENSE("Chi thủ công"),
-    INVENTORY_PURCHASE("Nhập kho");
+    INVENTORY_PURCHASE("Nhập kho"),
+    REVERSAL("Giao dịch đảo chiều");
 
     private final String displayName;
 

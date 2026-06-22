@@ -12,15 +12,25 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface CashTransactionRepository extends JpaRepository<CashTransaction, Long> {
-    boolean existsByCode(String code);
-
     boolean existsByDocumentCode(String documentCode);
 
     boolean existsBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
 
-    java.util.Optional<CashTransaction> findBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
+    Optional<CashTransaction> findBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
+
+    @Query("""
+            SELECT ct
+            FROM CashTransaction ct
+            LEFT JOIN FETCH ct.createdBy
+            LEFT JOIN FETCH ct.cancelledBy
+            LEFT JOIN FETCH ct.originalTransaction
+            LEFT JOIN FETCH ct.reversalTransaction
+            WHERE ct.id = :id
+            """)
+    Optional<CashTransaction> findDetailById(@Param("id") Long id);
 
     List<CashTransaction> findByOrderByCreatedAtDesc(Pageable pageable);
 

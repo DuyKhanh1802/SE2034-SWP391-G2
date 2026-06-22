@@ -47,7 +47,6 @@
         <table class="module-table">
             <thead>
             <tr>
-                <th>Mã</th>
                 <th>Chứng từ</th>
                 <th>Loại</th>
                 <th>Số tiền</th>
@@ -57,7 +56,6 @@
             </thead>
             <tbody>
             <tr th:each="transaction : ${recentTransactions}">
-                <td th:text="${transaction.code}">CT</td>
                 <td th:text="${transaction.documentCode}">PT</td>
                 <td th:text="${transaction.type.displayName}">Thu</td>
                 <td th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>

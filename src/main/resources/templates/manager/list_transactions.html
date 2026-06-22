@@ -14,6 +14,9 @@
 
     <section class="panel">
         <form class="transaction-filter" th:action="@{/manager/transactions}" method="get">
+            <input type="hidden" name="page" value="0">
+            <input type="hidden" name="size" th:value="${pageSize}">
+
             <select name="type">
                 <option value="ALL" th:selected="${searchRequest.type == 'ALL'}">Tất cả loại phiếu</option>
                 <option th:each="typeOption : ${transactionTypes}"
@@ -64,6 +67,7 @@
                 <th>Nhóm giao dịch</th>
                 <th>Số tiền</th>
                 <th>Nguồn</th>
+                <th>Trạng thái</th>
                 <th></th>
             </tr>
             </thead>
@@ -79,19 +83,60 @@
                     </span>
                 </td>
                 <td th:text="${transaction.categoryDisplayName}">Đặt cọc</td>
-                <td th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
-                    0 VND
+                <td>
+                    <span class="money-text"
+                          th:classappend="${transaction.type == 'INCOME'} ? ' income' : ' expense'"
+                          th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </span>
                 </td>
                 <td th:text="${transaction.sourceDisplayName}">Thanh toán booking</td>
                 <td>
-                    <a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a>
+                    <span class="status-pill"
+                          th:classappend="${transaction.statusDisplayName == 'Đã hủy'} ? ' cancelled' : ' completed'"
+                          th:text="${transaction.statusDisplayName}">
+                        Hoàn tất
+                    </span>
+                </td>
+                <td>
+                    <a class="table-action-btn"
+                       th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(transactions)}">
-                <td colspan="7">Chưa có giao dịch phù hợp.</td>
+                <td colspan="8">Chưa có giao dịch phù hợp.</td>
             </tr>
             </tbody>
         </table>
+
+        <div class="table-bottom">
+            <p th:text="'Hiển thị ' + ${#lists.size(transactions)} + ' / ' + ${totalTransactions} + ' giao dịch'">
+                Hiển thị 0 / 0 giao dịch
+            </p>
+
+            <div class="pagination-custom" th:if="${totalPages > 1}">
+                <a th:if="${hasPrevious}"
+                   th:href="@{/manager/transactions(page=${currentPage - 1}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}">
+                    Trước
+                </a>
+
+                <button type="button" disabled th:if="${!hasPrevious}">Trước</button>
+
+                <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
+                   th:href="@{/manager/transactions(page=${pageNumber}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}"
+                   th:text="${pageNumber + 1}"
+                   th:classappend="${pageNumber == currentPage ? 'active' : ''}">
+                    1
+                </a>
+
+                <a th:if="${hasNext}"
+                   th:href="@{/manager/transactions(page=${currentPage + 1}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}">
+                    Sau
+                </a>
+
+                <button type="button" disabled th:if="${!hasNext}">Sau</button>
+            </div>
+        </div>
     </section>
 </main>
 </body>

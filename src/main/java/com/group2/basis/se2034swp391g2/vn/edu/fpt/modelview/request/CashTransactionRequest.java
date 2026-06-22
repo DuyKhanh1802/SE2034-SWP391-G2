@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class TransactionRequest {
+public class CashTransactionRequest {
 
     // Loại phiếu: ALL, INCOME hoặc EXPENSE.
     private String type = "ALL";
@@ -31,4 +31,10 @@ public class TransactionRequest {
 
     // Từ khóa tìm theo mã chứng từ hoặc mô tả.
     private String keyword;
+
+    // Trang hiện tại, bắt đầu từ 0 giống màn promotion.
+    private int page = 0;
+
+    // Số dòng trên một trang.
+    private int size = 10;
 }

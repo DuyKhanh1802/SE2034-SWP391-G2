@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @Getter
 @Builder
-public class TransactionResponse {
+public class CashTransactionResponse {
 
     private Long id;
 
@@ -25,4 +25,6 @@ public class TransactionResponse {
     private BigDecimal amount;
 
     private String sourceDisplayName;
+
+    private String statusDisplayName;
 }
