@@ -78,7 +78,7 @@ public class BookingController {
         request.setCheckInDate(checkInDate);
         request.setCheckOutDate(checkOutDate);
         request.setAdults(adults);
-        request.setChildren(children);
+        request.setChildren(children == null ? 0 : children);
 
         model.addAttribute("countries", countryRepository.findAll());
         model.addAttribute("request", request);
@@ -86,8 +86,7 @@ public class BookingController {
         boolean hasApplied =
                 checkInDate != null
                         && checkOutDate != null
-                        && adults != null
-                        && children != null;
+                        && adults != null;
 
         model.addAttribute("hasApplied", hasApplied);
 

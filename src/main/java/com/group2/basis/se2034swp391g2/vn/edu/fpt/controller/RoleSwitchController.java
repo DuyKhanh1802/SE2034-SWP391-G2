@@ -65,7 +65,7 @@ public class RoleSwitchController {
             case MANAGER -> "/manager/dashboard";
             case STOREKEEPER -> "/storekeeper/inventory";
             case RECEPTIONIST -> "/receptionist/dashboard";
-            case GUEST -> "/home";
+            case GUEST -> "/page/home";
         };
     }
 

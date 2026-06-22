@@ -23,8 +23,12 @@
         <form th:action="@{/receptionist/bookings/add-walk-in}"
               th:object="${request}"
               method="post"
-              class="walkin-form">
-
+              class="walkin-form"
+              novalidate>
+            <div class="form-error-summary" id="formErrorSummary">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.</span>
+            </div>
             <div class="booking-layout">
 
                 <!-- Left Column -->
@@ -35,29 +39,48 @@
 
                         <div class="form-group-line">
                             <label>NGÀY NHẬN PHÒNG</label>
-                            <input type="date" th:field="*{checkInDate}" required>
+                            <input type="text"
+                                   class="date-picker check-in-date required-field"
+                                   th:field="*{checkInDate}"
+                                   data-message="Vui lòng chọn ngày nhận phòng."
+                                   placeholder="dd/mm/yyyy"
+                                   required>
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group-line">
                             <label>NGÀY TRẢ PHÒNG</label>
-                            <input type="date" th:field="*{checkOutDate}" required>
+                            <input type="text"
+                                   class="date-picker check-out-date required-field"
+                                   th:field="*{checkOutDate}"
+                                   data-message="Vui lòng chọn ngày trả phòng."
+                                   placeholder="dd/mm/yyyy"
+                                   required>
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group-line">
                             <label>NGƯỜI LỚN</label>
                             <input type="number"
+                                   class="required-field"
                                    th:field="*{adults}"
                                    min="1"
+                                   data-message="Vui lòng nhập số người lớn, tối thiểu là 1."
                                    placeholder="Nhập số người lớn"
                                    required>
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group-line">
                             <label>TRẺ EM</label>
                             <input type="number"
+                                   class="required-field"
                                    th:field="*{children}"
                                    min="0"
-                                   placeholder="Nhập số trẻ em">
+                                   data-message="Vui lòng nhập số trẻ em, nếu không có hãy nhập 0."
+                                   placeholder="Nhập số trẻ em"
+                                   required>
+                            <small class="field-error"></small>
                         </div>
 
                     </div>
@@ -121,31 +144,31 @@
             <span th:text="${room.maxChildren}">0</span> trẻ em
         </span>
 
-        <span class="room-meta" th:if="${room.allowExtraBed}">
-            Giường phụ:
-            tối đa <span th:text="${room.maxExtraBeds}">1</span>
-            •
-            <span th:text="${#numbers.formatDecimal(room.extraBedPrice, 0, 'COMMA', 0, 'POINT')} + ' VND/đêm'">
-                0 VND/đêm
-            </span>
-        </span>
+        <span class="room-meta" th:if="${room.allowExtraBed == true}">
+    Giường phụ:
+    tối đa <span th:text="${room.maxExtraBeds != null ? room.maxExtraBeds : 0}">0</span>
+    •
+    <span th:text="${#numbers.formatDecimal(room.extraBedPrice != null ? room.extraBedPrice : 0, 0, 'COMMA', 0, 'POINT')} + ' VND/đêm'">
+        0 VND/đêm
+    </span>
+</span>
 
-        <span class="room-meta" th:if="${!room.allowExtraBed}">
+        <span class="room-meta" th:if="${room.allowExtraBed != true}">
             Không hỗ trợ giường phụ
         </span>
 
-        <div class="extra-bed-select-wrap" th:if="${room.allowExtraBed}">
+        <div class="extra-bed-select-wrap" th:if="${room.allowExtraBed == true}">
     <label>Giường phụ</label>
 
     <select class="extra-bed-select"
             th:name="'extraBedCounts[' + ${room.roomId} + ']'"
-            th:attr="data-extra-price=${room.extraBedPrice}">
+            th:attr="data-extra-price=${room.extraBedPrice != null ? room.extraBedPrice : 0}">
         <option value="0">Không thêm</option>
-        <option th:each="i : ${#numbers.sequence(1, room.maxExtraBeds)}"
+        <option th:each="i : ${#numbers.sequence(1, room.maxExtraBeds != null ? room.maxExtraBeds : 0)}"
                 th:value="${i}"
                 th:text="${i + ' giường'}">
-            1 giường
-        </option>
+    1 giường
+</option>
     </select>
 </div>
                                         <div class="room-more"
@@ -195,22 +218,32 @@
                             <div class="form-group-line">
                                 <label>HỌ</label>
                                 <input type="text"
-                                       th:field="*{firstName}"
+                                       class="required-field"
+                                       th:field="*{lastName}"
+                                       data-message="Vui lòng nhập họ của khách."
                                        placeholder="Ví dụ: Nguyễn"
                                        required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>TÊN</label>
                                 <input type="text"
-                                       th:field="*{lastName}"
+                                       class="required-field"
+                                       th:field="*{firstName}"
+                                       data-message="Vui lòng nhập tên của khách."
                                        placeholder="Ví dụ: Văn An"
                                        required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>QUỐC GIA</label>
-                                <select th:field="*{countryId}" id="countryId" required>
+                                <select th:field="*{countryId}"
+                                        id="countryId"
+                                        class="required-field"
+                                        data-message="Vui lòng chọn quốc gia của khách."
+                                        required>
                                     <option value="">Chọn quốc gia</option>
 
                                     <option th:each="country : ${countries}"
@@ -220,62 +253,79 @@
                                         Việt Nam
                                     </option>
                                 </select>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>SỐ ĐIỆN THOẠI</label>
 
                                 <div class="phone-combined">
-                                    <input type="text"
-                                           id="phoneCode"
-                                           class="phone-code-display"
-                                           readonly
-                                           placeholder="+84">
+                                <input type="text"
+                                       id="phoneCode"
+                                       class="phone-code-display"
+                                       readonly
+                                       placeholder="+84">
 
-                                    <input type="tel"
-                                           id="phoneNumberOnly"
-                                           class="phone-number-only"
-                                           placeholder="382271507"
-                                           maxlength="15"
-                                           pattern="[0-9]{6,15}"
-                                           inputmode="numeric"
-                                           required>
+                                <input type="tel"
+                                       id="phoneNumberOnly"
+                                       class="phone-number-only required-field"
+                                       data-message="Vui lòng nhập số điện thoại của khách."
+                                       placeholder="382271507"
+                                       maxlength="15"
+                                       pattern="[0-9]{6,15}"
+                                       inputmode="numeric"
+                                       required>
 
                                     <input type="hidden"
                                            th:field="*{phoneNumber}"
                                            id="phoneNumber">
                                 </div>
+                            <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>EMAIL</label>
                                 <input type="email"
+                                       class="required-field"
                                        th:field="*{email}"
+                                       data-message="Vui lòng nhập email hợp lệ của khách."
                                        placeholder="Ví dụ: khachhang@example.com"
                                        required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>GIỚI TÍNH</label>
-                                <select th:field="*{gender}" required>
+                                <select th:field="*{gender}"
+                                        class="required-field"
+                                        data-message="Vui lòng chọn giới tính của khách."
+                                        required>
                                     <option value="">Chọn giới tính</option>
                                     <option value="MALE">Nam</option>
                                     <option value="FEMALE">Nữ</option>
                                     <option value="OTHER">Khác</option>
                                 </select>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>NGÀY SINH</label>
-                                <input type="date" th:field="*{dateOfBirth}">
+                                <input type="text"
+                                       class="date-picker birth-date"
+                                       th:field="*{dateOfBirth}"
+                                       placeholder="dd/mm/yyyy">
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>SỐ GIẤY TỜ</label>
                                 <input type="text"
+                                       class="required-field"
                                        th:field="*{identityNumber}"
+                                       data-message="Vui lòng nhập CCCD hoặc hộ chiếu của khách."
                                        placeholder="CCCD / Hộ chiếu"
                                        required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line form-group-wide">
@@ -287,7 +337,7 @@
 
                         </div>
                     </div>
-                    
+
                     <!-- Deposit -->
                     <div class="deposit-section">
                         <div class="deposit-header">
@@ -319,12 +369,15 @@
 
                             <div class="form-group-line">
                                 <label>PHƯƠNG THỨC THANH TOÁN</label>
-                                <select id="depositMethod" name="depositMethod">
+                                <select id="depositMethod"
+                                        name="depositMethod"
+                                        data-message="Vui lòng chọn phương thức thanh toán tiền đặt cọc.">
                                     <option value="">Chọn phương thức</option>
                                     <option value="CASH">Tiền mặt</option>
                                     <option value="CARD">Thẻ</option>
                                     <option value="TRANSFER">Chuyển khoản</option>
                                 </select>
+                                <small class="field-error"></small>
                             </div>
                         </div>
                     </div>
@@ -377,10 +430,10 @@
                             CHỈ TẠO ĐẶT PHÒNG
                         </button>
                     </div>
-                </div>
-                </div>
 
-            </div>
+                </div> <!-- end right-column -->
+
+            </div> <!-- end booking-layout -->
 
         </form>
 

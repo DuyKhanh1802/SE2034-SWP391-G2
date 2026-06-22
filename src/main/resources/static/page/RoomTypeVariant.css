@@ -18,6 +18,7 @@ html,
 body {
     margin: 0;
     overflow-x: hidden;
+    overflow-y: auto;
     background: var(--soft-cream);
     color: var(--dark);
     font-family: var(--heading-font);
@@ -126,9 +127,10 @@ body {
 /* ============================= */
 /* BOOKING SEARCH */
 /* ============================= */
+
 .booking-area {
     width: min(1110px, calc(100% - 80px));
-    margin: 0 auto 32px;   /* thêm khoảng cách phía dưới */
+    margin: 0 auto 32px;
     position: relative;
     z-index: 30;
 }
@@ -224,43 +226,11 @@ body {
     display: block;
 }
 
-/* DATE PANEL */
-
 .date-panel {
     left: 0;
     width: 100%;
     min-height: 560px;
     padding: 48px 30px 30px;
-}
-
-.rate-warning {
-    width: min(875px, calc(100% - 120px));
-    min-height: 76px;
-    margin: 32px auto 55px;
-    padding: 18px 24px 16px;
-    background: rgba(245, 242, 236, 0.9);
-    border-left: 4px solid var(--gold);
-}
-
-.rate-warning.in-panel {
-    width: 100%;
-    margin: 0 0 28px;
-    padding: 18px 24px;
-    background: rgba(245, 242, 236, 0.95);
-}
-
-.rate-warning h6 {
-    margin: 0 0 10px;
-    font-family: var(--body-font);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 4px;
-}
-
-.rate-warning p {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.5;
 }
 
 .date-error {
@@ -377,7 +347,9 @@ body {
     gap: 18px;
 }
 
+/* ============================= */
 /* GUEST PANEL */
+/* ============================= */
 
 .guest-panel {
     left: 33.3333%;
@@ -427,12 +399,6 @@ body {
 .guest-row strong span {
     font-size: 18px;
     font-weight: 400;
-}
-
-.guest-row p {
-    margin: 4px 0 0;
-    color: var(--muted);
-    font-size: 13px;
 }
 
 .counter {
@@ -508,7 +474,9 @@ body {
     justify-content: flex-end;
 }
 
+/* ============================= */
 /* PROMO PANEL */
+/* ============================= */
 
 .promo-panel {
     right: 0;
@@ -577,7 +545,9 @@ body {
     justify-content: flex-end;
 }
 
+/* ============================= */
 /* BUTTONS */
+/* ============================= */
 
 .black-btn {
     min-width: 144px;
@@ -616,8 +586,8 @@ body {
     border-bottom: 1px solid var(--border);
     background: var(--soft-cream);
     overflow: visible;
-    box-sizing: border-box;
 }
+
 .rose-tabs {
     min-width: 0;
     width: 100%;
@@ -629,8 +599,8 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
-    box-sizing: border-box;
 }
+
 .rose-tabs::-webkit-scrollbar {
     display: none;
 }
@@ -660,7 +630,6 @@ body {
     transform: translateX(-50%);
 }
 
-
 .rose-actions {
     width: 500px;
     min-width: 500px;
@@ -668,28 +637,26 @@ body {
     display: grid;
     grid-template-columns: 250px 250px;
     border-left: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
     background: var(--soft-cream);
-    box-sizing: border-box;
 }
+
 .rose-dropdown {
     width: 100%;
     height: 68px;
     padding: 0 20px;
     border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: relative;
     overflow: visible;
     cursor: pointer;
-    box-sizing: border-box;
 }
 
 .rose-dropdown:last-child {
     border-right: none;
 }
+
 .rose-dropdown span {
     max-width: 200px;
     color: #000;
@@ -746,43 +713,63 @@ body {
 }
 
 /* ============================= */
-/* ROOM LIST */
+/* ROOM LIST + YOUR TRIP LAYOUT */
+/* Page cuộn bình thường, Your trip sticky */
 /* ============================= */
 
 .room-content {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 62px 0 96px;
+    padding: 44px 0 120px;
     background: var(--soft-cream);
+    overflow: visible;
+}
+
+.booking-layout {
+    width: min(1760px, calc(100% - 72px));
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 400px;
+    gap: 28px;
+    align-items: start;
+    overflow: visible;
 }
 
 .room-list {
-    width: min(1500px, calc(100% - 220px));
-    max-width: 1500px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 54px;
+    align-items: stretch;
+    gap: 32px;
 }
+
+/* ============================= */
+/* ROOM CARD */
+/* ============================= */
 
 .room-card {
     width: 100%;
-    height: 430px;
-    min-height: 430px;
+    max-width: none;
+    height: auto;
+    min-height: 350px;
     display: grid;
-    grid-template-columns: 36% 64%;
+    grid-template-columns: 38% 62%;
+    align-items: stretch;
     border: 1px solid var(--border);
     background: var(--soft-cream);
     overflow: hidden;
 }
 
-/* IMAGE SIDE */
-
 .room-image-box {
     width: 100%;
-    height: 430px;
-    min-height: 430px;
+    height: auto;
+    min-height: 350px;
     position: relative;
     overflow: hidden;
     background: #e8e0d4;
@@ -792,23 +779,23 @@ body {
 .room-carousel .carousel-inner,
 .room-carousel .carousel-item {
     width: 100%;
-    height: 430px;
-    min-height: 430px;
+    height: 100%;
+    min-height: 350px;
 }
 
 .room-carousel img,
 .room-image-box img {
     width: 100%;
-    height: 430px;
-    min-height: 430px;
+    height: 100%;
+    min-height: 350px;
     object-fit: cover;
     display: block;
 }
 
 .image-placeholder {
     width: 100%;
-    height: 430px;
-    min-height: 430px;
+    height: 100%;
+    min-height: 350px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -820,44 +807,21 @@ body {
     display: none;
 }
 
-.image-counter {
-    height: 40px;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 13px;
-    color: #000;
-    font-family: var(--body-font);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    display: none;
-}
-
-.image-counter span {
-    width: 28px;
-    height: 1px;
-    background: #000;
-    display: block;
-}
-
-/* ROOM INFO SIDE */
-
 .room-info {
-    height: 430px;
-    min-height: 430px;
+    height: auto;
+    min-height: 350px;
     min-width: 0;
-    padding: 32px 38px 30px;
+    padding: 24px 28px 22px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    overflow: visible;
 }
 
 .room-top {
     display: grid;
-    grid-template-columns: 1fr 210px;
-    gap: 28px;
+    grid-template-columns: minmax(0, 1fr) 105px;
+    gap: 16px;
 }
 
 .room-main {
@@ -865,12 +829,12 @@ body {
 }
 
 .room-main h2 {
-    margin: 0 0 16px;
+    margin: 0 0 14px;
     color: #000;
     font-family: var(--heading-font);
-    font-size: clamp(27px, 1.9vw, 34px);
+    font-size: clamp(28px, 2vw, 36px);
     font-weight: 400;
-    line-height: 1.18;
+    line-height: 1.12;
 }
 
 .capacity,
@@ -883,11 +847,12 @@ body {
     color: #000;
     font-family: var(--heading-font);
     font-size: 15px;
-    line-height: 1.4;
+    line-height: 1.35;
 }
 
 .description {
     margin-top: 18px;
+    max-width: 600px;
 }
 
 .available {
@@ -899,7 +864,6 @@ body {
     display: flex;
     align-items: flex-start;
     justify-content: flex-end;
-    gap: 26px;
 }
 
 .room-links a,
@@ -914,35 +878,46 @@ body {
     white-space: nowrap;
 }
 
-/* RATE AREA */
-
 .rate-panel {
-    margin-top: 24px;
-    padding-top: 26px;
+    margin-top: 20px;
+    padding-top: 20px;
     border-top: 1px solid var(--border);
     display: grid;
-    grid-template-columns: 1fr 310px;
-    gap: 32px;
+    grid-template-columns: minmax(0, 1fr) 245px;
+    gap: 20px;
+    align-items: end;
+}
+
+.rate-left {
+    min-width: 0;
 }
 
 .rate-left h3 {
-    margin: 0 0 14px;
+    margin: 0 0 12px;
     color: #000;
     font-family: var(--heading-font);
-    font-size: 23px;
+    font-size: 24px;
     font-weight: 400;
     line-height: 1.2;
 }
 
 .rate-left p {
-    margin: 0 0 16px;
+    margin: 0 0 14px;
     color: #000;
     font-family: var(--heading-font);
-    font-size: 15px;
+    font-size: 14px;
+}
+
+.rate-left a {
+    display: inline-block;
 }
 
 .rate-right {
+    min-width: 0;
     text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 .rate-right h4 {
@@ -961,19 +936,20 @@ body {
 }
 
 .rate-right p {
-    max-width: 310px;
-    margin: 0 0 22px auto;
+    max-width: 270px;
+    margin: 0 0 16px auto;
     color: var(--muted);
     font-family: var(--heading-font);
-    font-size: 14px;
+    font-size: 13px;
     font-style: italic;
     line-height: 1.35;
 }
 
-.reserve-btn {
-    min-width: 168px;
-    width: 168px;
-    height: 54px;
+.reserve-btn,
+.reserve-link {
+    min-width: 150px;
+    width: 150px;
+    height: 48px;
     border: 1px solid #000;
     background: #000;
     color: #fff;
@@ -982,15 +958,232 @@ body {
     font-weight: 700;
     letter-spacing: 4px;
     text-transform: uppercase;
+    text-decoration: none;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: 0.2s ease;
 }
 
-.reserve-btn:hover {
+.reserve-btn:hover,
+.reserve-link:hover {
     background: transparent;
     color: #000;
 }
 
+/* ============================= */
+/* YOUR TRIP */
+/* ============================= */
+
+.trip-summary {
+    position: sticky;
+    top: 24px;
+    width: 100%;
+    min-height: 320px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px 22px 32px;
+    border: 1px solid var(--border);
+    background: var(--soft-cream);
+    font-family: var(--body-font);
+    z-index: 20;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.trip-summary::-webkit-scrollbar {
+    display: none;
+}
+
+.trip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.trip-header h3 {
+    margin: 0;
+    color: #000;
+    font-family: var(--body-font);
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.trip-header span {
+    color: var(--gold);
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.trip-hotel h4 {
+    margin: 0 0 10px;
+    color: #000;
+    font-family: var(--body-font);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.trip-hotel p {
+    margin: 0;
+    color: #333;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.trip-divider {
+    width: 100%;
+    height: 1px;
+    margin: 18px 0;
+    background: var(--border);
+}
+
+.trip-room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.trip-room-item {
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(216, 207, 187, 0.65);
+}
+
+.trip-room-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.trip-room-title {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.trip-room-title strong {
+    color: #000;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.trip-room-empty {
+    margin: 0 0 6px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.trip-room-item small {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.trip-room-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.trip-edit-room-btn,
+.trip-remove-room-btn {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-family: var(--body-font);
+    font-size: 14px;
+    color: #1d0050;
+    cursor: pointer;
+}
+
+.trip-remove-room-btn {
+    color: #9b2c2c;
+}
+
+.trip-edit-room-btn:hover,
+.trip-remove-room-btn:hover {
+    text-decoration: underline;
+}
+
+.trip-room-name {
+    margin: 0 0 6px;
+    color: #000;
+    font-family: var(--body-font);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.trip-room-price {
+    margin-top: 8px;
+    color: #000;
+    font-family: var(--body-font);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.trip-room-subtotal {
+    margin-top: 5px;
+    color: var(--gold);
+    font-family: var(--body-font);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.trip-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    color: #000;
+    font-size: 15px;
+}
+
+.trip-total-row strong {
+    text-align: right;
+    color: var(--gold);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.trip-note {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 12px;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+.trip-continue-btn {
+    width: 100%;
+    height: 54px;
+    margin-top: 24px;
+    border: none;
+    border-radius: 999px;
+    background: #d8d1c4;
+    color: #fff;
+    font-family: var(--body-font);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: not-allowed;
+}
+
+.trip-continue-btn.is-active {
+    background: #ee9b26;
+    color: #fff;
+    cursor: pointer;
+}
+
+.trip-continue-btn.is-active:hover {
+    background: #d88918;
+}
+
+/* ============================= */
 /* CAROUSEL ARROWS */
+/* ============================= */
 
 .room-carousel-btn {
     width: 44px;
@@ -1158,6 +1351,10 @@ body {
     display: none !important;
 }
 
+/* ============================= */
+/* ROOM DETAIL MODAL */
+/* ============================= */
+
 .room-detail-modal {
     position: fixed;
     inset: 0;
@@ -1207,7 +1404,6 @@ body.modal-open {
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     background: var(--soft-cream);
-
     display: grid;
     grid-template-columns: 64px 1fr 64px;
     align-items: center;
@@ -1242,11 +1438,9 @@ body.modal-open {
     border-radius: 50%;
     background: transparent;
     color: #000;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     font-family: var(--heading-font);
     font-size: 28px;
     line-height: 1;
@@ -1266,4 +1460,154 @@ body.modal-open {
 
 .progress-arrow:last-child {
     justify-self: end;
+}
+
+/* ============================= */
+/* RESPONSIVE */
+/* ============================= */
+
+@media (max-width: 1200px) {
+    .booking-layout {
+        width: calc(100% - 48px);
+        grid-template-columns: 1fr;
+    }
+
+    .room-list {
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    .room-card {
+        width: 100%;
+    }
+
+    .trip-summary {
+        position: static;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 768px) {
+    .booking-area {
+        width: calc(100% - 32px);
+    }
+
+    .booking-search {
+        height: auto;
+        grid-template-columns: 1fr;
+    }
+
+    .search-item {
+        height: 82px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .search-item:last-child {
+        border-bottom: none;
+    }
+
+    .date-panel,
+    .guest-panel,
+    .promo-panel {
+        left: 0;
+        right: auto;
+        width: 100%;
+        min-height: auto;
+    }
+
+    .calendar-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rose-filter-bar {
+        height: auto;
+        grid-template-columns: 1fr;
+    }
+
+    .rose-actions {
+        width: 100%;
+        min-width: 0;
+        grid-template-columns: 1fr;
+        height: auto;
+        border-left: none;
+    }
+
+    .rose-dropdown {
+        height: 58px;
+    }
+
+    .room-content {
+        padding: 32px 0 60px;
+    }
+
+    .room-card {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .room-image-box,
+    .room-carousel,
+    .room-carousel .carousel-inner,
+    .room-carousel .carousel-item,
+    .room-carousel img,
+    .room-image-box img {
+        min-height: 280px;
+    }
+
+    .room-info {
+        min-height: auto;
+        padding: 24px;
+    }
+
+    .room-top {
+        grid-template-columns: 1fr;
+    }
+
+    .room-links {
+        justify-content: flex-start;
+    }
+
+    .rate-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .rate-right {
+        text-align: left;
+        align-items: flex-start;
+    }
+
+    .rate-right p {
+        margin-left: 0;
+    }
+}
+
+/* ============================= */
+/* FINAL LAYOUT GUARD */
+/* Giữ page cuộn bình thường, tránh Your Trip bị fixed đè lên header */
+/* ============================= */
+
+.room-content,
+.booking-layout,
+.room-list {
+    overflow: visible;
+}
+
+.booking-layout > .trip-summary {
+    align-self: start;
+}
+
+@media (max-width: 1200px) {
+    .booking-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-layout > .trip-summary {
+        position: static;
+        max-height: none;
+        overflow: visible;
+    }
 }

@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Country;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Role;
@@ -50,6 +51,8 @@ public class AuthService {
         user.setPhone(request.getPhone());
         user.setCountry(country);
         user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
+        user.setApprovalStatus(ApprovalStatus.PENDING);
+        user.setIsActive(true);
 
         // Save user trước để có id
         User savedUser = userRepository.save(user);

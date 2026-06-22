@@ -36,7 +36,7 @@
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/system-admin')}"
-          th:href="@{/system_admin/Admin.css}">
+          th:href="@{/system_admin/css/user-management.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/list-room')
@@ -78,6 +78,9 @@
                   or #strings.startsWith(currentUri ?: '', '/storekeeper/inventory')}"
           th:href="@{/manager/manager-modules.css}">
 
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')}"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')}"
           th:href="@{/receptionist/Dashboard.css}">

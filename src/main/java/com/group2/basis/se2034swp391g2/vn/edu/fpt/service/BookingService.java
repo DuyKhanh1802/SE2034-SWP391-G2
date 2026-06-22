@@ -448,7 +448,7 @@ public class BookingService {
         }
 
         if (checkInDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Ngày nhận phòng không được nhỏ hơn ngày hiện tại.");
+            throw new IllegalArgumentException("Ngày nhận phòng không được là ngày trong quá khứ.");
         }
 
         if (!checkOutDate.isAfter(checkInDate)) {
@@ -589,11 +589,11 @@ public class BookingService {
         CheckInProcedureResponse response = bookingRepository.findCheckInProcedureByBookingId(bookingId);
 
         if (response == null) {
-            throw new IllegalArgumentException("Booking not found.");
+            throw new IllegalArgumentException("Không tìm thấy đặt phòng.");
         }
 
         if (!"CONFIRMED".equals(response.getStatus())) {
-            throw new IllegalArgumentException("Only confirmed bookings can be checked in.");
+            throw new IllegalArgumentException("Chỉ có đặt phòng đã xác nhận mới được nhận phòng.");
         }
 
         return response;
@@ -961,7 +961,7 @@ public class BookingService {
 
     private void validateDepositRequest(BookingCreateRequest request){
         if(request.getDepositMethod() == null){
-            throw new IllegalArgumentException("Cần cung cấp phương thức thanh toán tiền đặt cọc.");
+            throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán tiền đặt cọc.");
         }
     }
     private void createDepositPayment(Booking booking,
