@@ -34,6 +34,21 @@ public class CloudinaryService {
     }
 
     /*
+     * Upload ảnh dịch vụ.
+     */
+    public String uploadServiceImage(MultipartFile file) {
+        Map uploadResult = uploadImage(file, "vihotel/services", "Vui lòng chọn ảnh dịch vụ.");
+
+        Object secureUrl = uploadResult.get("secure_url");
+
+        if (secureUrl == null) {
+            throw new IllegalStateException("Cloudinary không trả về URL ảnh dịch vụ.");
+        }
+
+        return secureUrl.toString();
+    }
+
+    /*
      * Upload ảnh đại diện người dùng.
      */
     public String uploadAvatar(MultipartFile file) {

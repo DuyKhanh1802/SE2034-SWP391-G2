@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+
+<body>
+<main layout:fragment="content">
+
+    <section class="service-management-page">
+
+        <div class="service-page-header">
+            <h1>Quản lý dịch vụ</h1>
+            <p>
+                Hiển thị toàn bộ dịch vụ khách sạn, bao gồm tên dịch vụ, loại dịch vụ,
+                giá, ảnh đại diện, trạng thái khả dụng và thao tác quản lý.
+            </p>
+        </div>
+
+        <div th:if="${successMessage}" class="service-alert success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}">Thao tác thành công.</span>
+        </div>
+
+        <div th:if="${errorMessage}" class="service-alert error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+
+        <div class="service-card">
+
+            <div class="service-card-top">
+                <div>
+                    <span>Danh sách dịch vụ</span>
+                    <h3>Tất cả dịch vụ</h3>
+                </div>
+
+                <a th:href="@{/hotel-admin/services/add}" class="service-add-btn">
+                    <i class="fa-solid fa-plus"></i>
+                    Thêm dịch vụ
+                </a>
+            </div>
+
+            <form class="service-filter-form" method="get" th:action="@{/hotel-admin/services}">
+
+                <div class="service-form-group">
+                    <label>Tìm kiếm</label>
+                    <input type="text"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="Nhập tên hoặc mô tả dịch vụ">
+                </div>
+
+                <div class="service-form-group">
+                    <label>Loại dịch vụ</label>
+                    <select name="categoryId">
+                        <option value="">Tất cả loại</option>
+                        <option th:each="category : ${categories}"
+                                th:value="${category.id}"
+                                th:text="${category.name}"
+                                th:selected="${selectedCategoryId != null && selectedCategoryId == category.id}">
+                            Dining
+                        </option>
+                    </select>
+                </div>
+
+                <div class="service-form-group">
+                    <label>Trạng thái</label>
+                    <select name="availability">
+                        <option value="ALL"
+                                th:selected="${selectedAvailability == null || selectedAvailability == 'ALL'}">
+                            Tất cả
+                        </option>
+                        <option value="AVAILABLE"
+                                th:selected="${selectedAvailability == 'AVAILABLE'}">
+                            Đang khả dụng
+                        </option>
+                        <option value="UNAVAILABLE"
+                                th:selected="${selectedAvailability == 'UNAVAILABLE'}">
+                            Tạm tắt
+                        </option>
+                    </select>
+                </div>
+
+                <div class="service-filter-actions">
+                    <button type="submit" class="service-btn primary">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        Lọc
+                    </button>
+
+                    <a th:href="@{/hotel-admin/services}" class="service-btn ghost">
+                        Xóa lọc
+                    </a>
+                </div>
+
+            </form>
+
+            <div class="service-table-wrap">
+                <table class="service-table">
+                    <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Ảnh</th>
+                        <th>Dịch vụ</th>
+                        <th>Loại</th>
+                        <th>Giá</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="service, stat : ${services}">
+                        <td th:text="${currentPage * pageSize + stat.index + 1}">1</td>
+
+                        <td>
+                            <div class="service-image-box">
+                                <img th:if="${service.imageUrl != null}"
+                                     th:src="${service.imageUrl}"
+                                     th:alt="${service.name}">
+
+                                <div th:if="${service.imageUrl == null}" class="service-no-image">
+                                    <i class="fa-regular fa-image"></i>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="service-name" th:text="${service.name}">
+                                Buffet sáng
+                            </div>
+
+                            <div class="service-description"
+                                 th:text="${service.description != null ? service.description : 'Chưa có mô tả'}">
+                                Mô tả dịch vụ
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="service-category"
+                                  th:text="${service.categoryName}">
+                                Dining
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="service-price"
+                                  th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                                200,000 VND
+                            </span>
+                        </td>
+
+                        <td>
+                            <span th:if="${service.isAvailable}" class="service-status available">
+                                Đang khả dụng
+                            </span>
+
+                            <span th:unless="${service.isAvailable}" class="service-status unavailable">
+                                Tạm tắt
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="service-actions">
+                                <a th:href="@{/hotel-admin/services/{id}(id=${service.id})}"
+                                   class="service-action-btn"
+                                   title="Xem chi tiết">
+                                    <i class="fa-regular fa-eye"></i>
+                                </a>
+
+                                <a th:href="@{/hotel-admin/services/edit/{id}(id=${service.id})}"
+                                   class="service-action-btn"
+                                   title="Chỉnh sửa">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </a>
+
+                                <form th:action="@{/hotel-admin/services/{id}/toggle-availability(id=${service.id})}"
+                                      method="post"
+                                      class="d-inline"
+                                      th:onsubmit="${service.isAvailable}
+              ? 'return confirm(''Bạn có chắc chắn muốn tắt dịch vụ này không?'');'
+              : 'return confirm(''Bạn có chắc chắn muốn bật dịch vụ này không?'');'">
+
+                                    <button type="submit"
+                                            th:classappend="${service.isAvailable} ? ' toggle-on' : ' toggle-off'"
+                                            class="service-action-btn toggle"
+                                            th:title="${service.isAvailable} ? 'Tắt dịch vụ' : 'Bật dịch vụ'">
+
+                                        <i th:if="${service.isAvailable}" class="fa-solid fa-toggle-on"></i>
+                                        <i th:unless="${service.isAvailable}" class="fa-solid fa-toggle-off"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(services)}">
+                        <td colspan="7" class="service-empty-row">
+                            Chưa có dịch vụ nào.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="service-table-bottom">
+                <p th:text="'Hiển thị ' + ${#lists.size(services)} + ' / ' + ${totalItems} + ' dịch vụ'">
+                    Hiển thị 0 / 0 dịch vụ
+                </p>
+
+                <div class="service-pagination" th:if="${totalPages > 1}">
+                    <a th:if="${currentPage > 0}"
+                       th:href="@{/hotel-admin/services(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, categoryId=${selectedCategoryId}, availability=${selectedAvailability})}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+
+                    <span th:text="${currentPage + 1} + ' / ' + ${totalPages}">
+                        1 / 1
+                    </span>
+
+                    <a th:if="${currentPage + 1 < totalPages}"
+                       th:href="@{/hotel-admin/services(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, categoryId=${selectedCategoryId}, availability=${selectedAvailability})}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+</body>
+</html>
