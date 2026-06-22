@@ -17,7 +17,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
      @Override
 
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException{
-         User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản email: " + email));
+         User user = userRepository.findByEmailDetail(email).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản email: " + email));
          return new CustomerUserDetails(user);
      }
 }

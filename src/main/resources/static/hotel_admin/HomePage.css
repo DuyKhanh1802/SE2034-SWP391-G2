@@ -299,7 +299,40 @@ body {
     font-weight: 600;
     letter-spacing: 1px;
 }
+.hero-video-controls {
+    position: absolute;
+    left: 50%;
+    bottom: 38px;
+    transform: translateX(-50%);
+    z-index: 10;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 56px;
+}
+
+.hero-video-btn {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+
+    color: #ffffff;
+    font-size: 26px;
+    line-height: 1;
+
+    cursor: pointer;
+    opacity: 0.95;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hero-video-btn:hover {
+    opacity: 1;
+    transform: scale(1.08);
+}
 
 
 

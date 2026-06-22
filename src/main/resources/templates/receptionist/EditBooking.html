@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+
+<head>
+    <title>ViHotel HMS - Chỉnh sửa thông tin khách</title>
+</head>
+
+<body>
+<main layout:fragment="content">
+
+    <section class="booking-detail-page">
+
+        <form th:action="@{/receptionist/bookings/edit/{id}(id=${bookingId})}"
+              th:object="${request}"
+              method="post">
+
+            <!-- HEADER -->
+            <div class="detail-header">
+                <div>
+                    <div class="breadcrumb-line">
+                        <a th:href="@{/receptionist/bookings}">Bookings</a>
+                        <i class="bi bi-chevron-right"></i>
+                        <a th:href="@{/receptionist/bookings/view/{id}(id=${bookingId})}"
+                           th:text="${detail.bookingReference}">
+                            BK-260610001
+                        </a>
+                        <i class="bi bi-chevron-right"></i>
+                        <span>Chỉnh sửa</span>
+                    </div>
+
+                    <h1>Chỉnh sửa thông tin khách</h1>
+
+                    <p>
+                        Chỉ cập nhật thông tin khách hàng và ghi chú.
+                        Không thay đổi phòng, ngày ở, trạng thái hoặc thanh toán.
+                    </p>
+                </div>
+
+                <div class="detail-status-group">
+                    <span class="detail-badge deposit-badge"
+                          th:classappend="${detail.depositStatus.name() == 'PAID'} ? ' badge-paid' :
+                              (${detail.depositStatus.name() == 'UNPAID'} ? ' badge-unpaid' :
+                              (${detail.depositStatus.name() == 'REFUNDED'} ? ' badge-refunded' : ' badge-forfeited'))"
+                          th:text="${detail.depositStatus.label}">
+                        Đã thanh toán cọc
+                    </span>
+
+                    <span class="detail-badge booking-badge"
+                          th:classappend="${detail.bookingStatus.name() == 'CONFIRMED'} ? ' badge-confirmed' :
+                              (${detail.bookingStatus.name() == 'CHECKED_IN'} ? ' badge-checked-in' :
+                              (${detail.bookingStatus.name() == 'CHECKED_OUT'} ? ' badge-checked-out' :
+                              (${detail.bookingStatus.name() == 'PENDING'} ? ' badge-pending' :
+                              (${detail.bookingStatus.name() == 'NO_SHOW'} ? ' badge-no-show' : ' badge-cancelled'))))"
+                          th:text="${detail.bookingStatus.label}">
+                        Đã xác nhận
+                    </span>
+                </div>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+            <!-- RESERVATION + GUEST -->
+            <div class="detail-grid two-columns">
+
+                <!-- Reservation Details: chỉ hiển thị -->
+                <div class="detail-card">
+                    <div class="detail-card-title">
+                        <h2>Thông tin đặt phòng</h2>
+
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span>Ngày nhận phòng</span>
+                            <strong th:text="${#temporals.format(detail.checkInDate, 'dd/MM/yyyy')}">
+                                10/06/2026
+                            </strong>
+                        </div>
+
+                        <div class="info-item">
+                            <span>Ngày trả phòng</span>
+                            <strong th:text="${#temporals.format(detail.checkOutDate, 'dd/MM/yyyy')}">
+                                12/06/2026
+                            </strong>
+                        </div>
+
+                        <div class="info-item">
+                            <span>Số đêm</span>
+                            <strong th:text="${detail.nights} + ' đêm'">
+                                2 đêm
+                            </strong>
+                        </div>
+
+                        <div class="info-item">
+                            <span>Số khách</span>
+                            <strong th:text="${detail.adults} + ' người lớn • ' + ${detail.children} + ' trẻ em'">
+                                2 người lớn • 0 trẻ em
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="special-box editable-special-box">
+                        <span>Yêu cầu đặc biệt / ghi chú</span>
+                        <textarea th:field="*{notes}"
+                                  rows="5"
+                                  maxlength="500"
+                                  placeholder="Nhập yêu cầu đặc biệt hoặc ghi chú của khách..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Guest Profile: cho sửa -->
+                <div class="detail-card">
+                    <div class="detail-card-title">
+                        <h2>Thông tin khách hàng</h2>
+
+                    </div>
+
+                    <div class="edit-form-grid">
+
+                        <div class="edit-form-group">
+                            <label>Họ</label>
+                            <input type="text" th:field="*{lastName}" required>
+                        </div>
+
+                        <div class="edit-form-group">
+                            <label>Tên</label>
+                            <input type="text" th:field="*{firstName}" required>
+                        </div>
+
+                        <div class="edit-form-group">
+                            <label>Email</label>
+                            <input type="email" th:field="*{email}" required>
+                        </div>
+
+                        <div class="edit-form-group">
+                            <label>Số điện thoại</label>
+                            <input type="text" th:field="*{phoneNumber}" required>
+                        </div>
+
+                        <div class="edit-form-group">
+                            <label>Giới tính</label>
+                            <select th:field="*{gender}">
+                                <option value="">-- Chọn giới tính --</option>
+                                <option th:each="g : ${T(com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.Gender).values()}"
+                                        th:value="${g}"
+                                        th:text="${g.label}">
+                                    Nam
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="edit-form-group">
+                            <label>Ngày sinh</label>
+                            <input type="text"
+                                   class="date-picker birth-date"
+                                   th:field="*{dateOfBirth}"
+                                   placeholder="dd/mm/yyyy">
+                        </div>
+
+                        <div class="edit-form-group">
+                            <label>Quốc gia</label>
+                            <select th:field="*{countryId}" required>
+                                <option value="">-- Chọn quốc gia --</option>
+                                <option th:each="country : ${countries}"
+                                        th:value="${country.id}"
+                                        th:text="${country.countryName}">
+                                    Vietnam
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="edit-form-group">
+                            <label>Số giấy tờ</label>
+                            <input type="text" th:field="*{identityNumber}" required>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ASSIGNED ROOMS: chỉ hiển thị -->
+            <div class="detail-card">
+                <div class="detail-card-title">
+                    <h2>Phòng đã đặt</h2>
+
+                </div>
+
+                <div class="room-detail-table">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Phòng</th>
+                            <th>Hạng phòng</th>
+                            <th>Giá/đêm</th>
+                            <th>Số đêm</th>
+                            <th>Giường phụ</th>
+                            <th>Thành tiền</th>
+                            <th>RoomCode</th>
+                            <th>Hết hạn</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="room : ${detail.rooms}">
+                            <td th:text="${room.roomNumber}">101</td>
+
+                            <td>
+                                <strong th:text="${room.variantName != null ? room.variantName : room.roomTypeName}">
+                                    Deluxe Room - City View
+                                </strong>
+                            </td>
+
+                            <td th:text="${#numbers.formatDecimal(room.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                800,000 VND
+                            </td>
+
+                            <td th:text="${room.numNights}">2</td>
+
+                            <td>
+                                <span th:if="${room.extraBedCount != null and room.extraBedCount > 0}"
+                                      th:text="${room.extraBedCount} + ' giường • '
+                                             + ${#numbers.formatDecimal(room.extraBedTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    1 giường • 500,000 VND
+                                </span>
+
+                                <span th:unless="${room.extraBedCount != null and room.extraBedCount > 0}">
+                                    Không có
+                                </span>
+                            </td>
+
+                            <td th:text="${#numbers.formatDecimal(room.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                1,600,000 VND
+                            </td>
+
+                            <td>
+                                <span class="room-code"
+                                      th:text="${room.roomCode != null ? room.roomCode : 'Chưa sinh mã'}">
+                                    Chưa sinh mã
+                                </span>
+                            </td>
+
+                            <td th:text="${room.roomCodeExpiresAt != null
+                                          ? #temporals.format(room.checkOutDate.plusDays(1), 'dd/MM/yyyy') + ' 00:00'
+                                          : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr th:if="${detail.rooms == null or #lists.isEmpty(detail.rooms)}">
+                            <td colspan="8" class="empty-row">
+                                Chưa có phòng trong đặt phòng này.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DEPOSIT + PRICE: chỉ hiển thị -->
+            <div class="detail-grid two-columns">
+
+                <div class="detail-card">
+                    <div class="detail-card-title">
+                        <h2>Cọc & thanh toán</h2>
+
+                    </div>
+
+                    <div class="payment-summary-grid">
+                        <div>
+                            <span>Trạng thái cọc</span>
+                            <strong th:text="${detail.depositStatus.label}">
+                                PAID
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Tiền cọc yêu cầu</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.depositRequired, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                1,456,000 VND
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Tiền cọc đã trả</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                0 VND
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="payment-list" th:if="${detail.payments != null and !#lists.isEmpty(detail.payments)}">
+                        <div class="payment-line" th:each="payment : ${detail.payments}">
+                            <div>
+                                <strong th:text="${payment.paymentType}">DEPOSIT</strong>
+                                <p th:text="${payment.method} + ' • ' + ${payment.status}">
+                                    CASH • SUCCESS
+                                </p>
+                            </div>
+
+                            <span th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                500,000 VND
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="empty-payment" th:if="${detail.payments == null or #lists.isEmpty(detail.payments)}">
+                        Chưa có giao dịch thanh toán.
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-card-title">
+                        <h2>Tổng tiền</h2>
+
+                    </div>
+
+                    <div class="price-summary">
+                        <div class="price-row">
+                            <span>Tiền phòng</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.roomTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                2,600,000 VND
+                            </strong>
+                        </div>
+
+                        <div class="price-row">
+                            <span>VAT / Thuế phí</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.vatTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                312,000 VND
+                            </strong>
+                        </div>
+
+                        <div class="price-row">
+                            <span>Tổng thanh toán</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.grandTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                2,912,000 VND
+                            </strong>
+                        </div>
+
+                        <div class="price-row">
+                            <span>Tiền cọc yêu cầu</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.depositRequired, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                1,456,000 VND
+                            </strong>
+                        </div>
+
+                        <div class="price-row">
+                            <span>Tiền cọc đã trả</span>
+                            <strong th:text="'- ' + ${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                - 0 VND
+                            </strong>
+                        </div>
+
+                        <div class="price-total">
+                            <span>Còn lại dự kiến</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.remainingEstimate, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                2,912,000 VND
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="detail-card action-card">
+                <div class="action-left">
+                    <a th:href="@{/receptionist/bookings/view/{id}(id=${bookingId})}"
+                       class="btn-detail outline">
+                        <i class="bi bi-arrow-left"></i>
+                        HỦY
+                    </a>
+                </div>
+
+                <div class="action-right">
+                    <button type="submit" class="btn-detail primary">
+                        <i class="bi bi-save"></i>
+                        LƯU THAY ĐỔI
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
+</body>
+</html>

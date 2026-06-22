@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 
@@ -131,14 +132,16 @@
                             <i class="fa-regular fa-eye"></i>
                         </a>
 
-                        <a th:if="${currentUserId == null or currentUserId != user.id}"
+                        <a sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE','USER_RESET_PASSWORD')"
+                           th:if="${currentUserId == null or currentUserId != user.id}"
                            th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
                            class="action-btn"
                            title="Chỉnh sửa">
                             <i class="fa-regular fa-pen-to-square"></i>
                         </a>
 
-                        <span th:if="${currentUserId != null and currentUserId == user.id}"
+                        <span sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE','USER_RESET_PASSWORD')"
+                              th:if="${currentUserId != null and currentUserId == user.id}"
                               class="action-btn is-disabled"
                               title="Không thể chỉnh sửa tài khoản đang đăng nhập."
                               aria-disabled="true">

@@ -39,8 +39,13 @@
           th:href="@{/system_admin/css/user-management.css}">
 
     <link rel="stylesheet"
-          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin')}"
-          th:href="@{/hotel_admin/Admin.css}">
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/list-room')
+              or #strings.startsWith(currentUri ?: '', '/hotel-admin/rooms')}"
+          th:href="@{/hotel_admin/RoomManagement.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/hotel-admin/room-type-variants')}"
+          th:href="@{/hotel_admin/RoomTypeVariantManagement.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/hotel-admin/dashboard')}"
@@ -73,12 +78,24 @@
           th:href="@{/storekeeper/css/Inventory.css}">
 
     <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')}"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')}"
           th:href="@{/receptionist/Dashboard.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/receptionist/bookings')}"
           th:href="@{/receptionist/ListBooking.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.equals(currentUri ?: '', '/receptionist/check-in')}"
+          th:href="@{/receptionist/CheckInQueue.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/view')
+              or #strings.startsWith(currentUri ?: '', '/receptionist/bookings/edit')}"
+          th:href="@{/receptionist/ViewBookingDetail.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/add-walk-in')}"
