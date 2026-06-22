@@ -518,3 +518,84 @@ body {
         font-size: 14px;
     }
 }
+/* =========================
+   ADD SERVICE FORM
+   ========================= */
+
+.service-form-card {
+    max-width: 980px;
+}
+
+.service-add-form {
+    width: 100%;
+}
+
+.service-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+}
+
+.service-form-group span {
+    color: #b91c1c;
+}
+
+.service-form-group textarea {
+    width: 100%;
+    min-height: 130px;
+    border: 1px solid #ddd6cf;
+    border-radius: 10px;
+    padding: 12px 13px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #252525;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.service-form-group textarea:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+}
+
+.service-form-full {
+    grid-column: 1 / -1;
+}
+
+.service-form-group small {
+    display: block;
+    margin-top: 7px;
+    font-size: 12px;
+    color: #8a8178;
+    line-height: 1.4;
+}
+
+.service-form-actions {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid #eee8e1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+.service-form-actions .service-btn {
+    min-width: 120px;
+}
+
+@media (max-width: 800px) {
+    .service-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .service-form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .service-form-actions .service-btn {
+        width: 100%;
+    }
+}

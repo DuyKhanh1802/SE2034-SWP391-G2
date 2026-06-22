@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.ServiceRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ServiceManagementService;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,6 +80,52 @@ public class HotelAdminServiceController {
         return "hotel_admin/ListService";
     }
 
+    @GetMapping("/add")
+    public String showAddServiceForm(Model model,
+                                     Authentication authentication,
+                                     HttpSession session,
+                                     HttpServletRequest request) {
+
+        addLayoutData(model, authentication, session, request, "Thêm dịch vụ");
+
+        ServiceRequest serviceRequest = new ServiceRequest();
+        serviceRequest.setIsAvailable(true);
+
+        model.addAttribute("serviceRequest", serviceRequest);
+        model.addAttribute("categories", serviceManagementService.getServiceCategories());
+
+        return "hotel_admin/AddService";
+    }
+
+    @PostMapping("/add")
+    public String createService(@ModelAttribute("serviceRequest") ServiceRequest serviceRequest,
+                                Model model,
+                                Authentication authentication,
+                                HttpSession session,
+                                HttpServletRequest request,
+                                RedirectAttributes redirectAttributes) {
+
+        try {
+            serviceManagementService.createService(serviceRequest);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Thêm dịch vụ mới thành công."
+            );
+
+            return "redirect:/hotel-admin/services";
+
+        } catch (Exception e) {
+            addLayoutData(model, authentication, session, request, "Thêm dịch vụ");
+
+            model.addAttribute("serviceRequest", serviceRequest);
+            model.addAttribute("categories", serviceManagementService.getServiceCategories());
+            model.addAttribute("errorMessage", e.getMessage());
+
+            return "hotel_admin/AddService";
+        }
+    }
+
     @PostMapping("/{id}/toggle-availability")
     public String toggleAvailability(@PathVariable Long id,
                                      @RequestParam(defaultValue = "0") int page,
@@ -88,10 +136,12 @@ public class HotelAdminServiceController {
                                      RedirectAttributes redirectAttributes) {
         try {
             serviceManagementService.toggleAvailability(id);
+
             redirectAttributes.addFlashAttribute(
                     "successMessage",
                     "Cập nhật trạng thái dịch vụ thành công."
             );
+
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
