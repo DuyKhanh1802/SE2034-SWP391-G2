@@ -62,21 +62,6 @@ public class AdminUserViewService {
                 .toList();
     }
 
-    public String getStatusLabel(User user) {
-        return Boolean.TRUE.equals(user.getIsActive()) ? "Active" : "Disabled";
-    }
-
-    public String getApprovalLabel(User user) {
-        if (user.getApprovalStatus() == null) {
-            return "None";
-        }
-        return switch (user.getApprovalStatus()) {
-            case APPROVED -> "Approved";
-            case PENDING -> "Pending";
-            case REJECTED -> "Rejected";
-        };
-    }
-
     public String getGenderLabel(User user) {
         if (user.getGender() == null) {
             return "None";
@@ -94,6 +79,14 @@ public class AdminUserViewService {
                         (left, right) -> left,
                         LinkedHashMap::new
                 ));
+    }
+
+    public Map<RoleName, String> getRoleFilterOptions() {
+        Map<RoleName, String> options = new LinkedHashMap<>();
+        for (RoleName roleName : RoleName.values()) {
+            options.put(roleName, toRoleLabel(roleName));
+        }
+        return options;
     }
 
     public Map<Long, String> getRoleCodesById() {

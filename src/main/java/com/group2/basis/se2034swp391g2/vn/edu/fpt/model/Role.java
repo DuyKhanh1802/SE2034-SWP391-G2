@@ -26,4 +26,8 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(name = "role_name", nullable = false, unique = true, length = 20)
     private RoleName roleName;
+
+    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @Builder.Default
+    private Set<RolePermission> rolePermissions = new HashSet<>();
 }

@@ -39,7 +39,7 @@ public class AuthController {
         try {
             authService.register(request);
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Tài khoản đã được tạo thành công");
+                    "Đăng ký thành công. Tài khoản đang chờ Quản trị hệ thống phê duyệt.");
             return "redirect:/auth/login";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());

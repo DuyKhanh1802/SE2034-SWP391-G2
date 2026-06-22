@@ -26,6 +26,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const selectedCapacity = document.getElementById("selectedCapacity");
     const adultsInput = document.querySelector("input[name='adults']");
     const childrenInput = document.querySelector("input[name='children']");
+    document.querySelectorAll(".required-field").forEach(function (field) {
+        field.addEventListener("input", function () {
+            clearFieldError(field);
+        });
+
+        field.addEventListener("change", function () {
+            clearFieldError(field);
+        });
+    });
+
+    if (depositMethodInput) {
+        depositMethodInput.addEventListener("change", function () {
+            clearFieldError(depositMethodInput);
+        });
+    }
     function formatVnd(amount) {
         return new Intl.NumberFormat("vi-VN").format(amount) + " VND";
     }
@@ -248,11 +263,233 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (walkinForm) {
-        walkinForm.addEventListener("submit", function () {
+        walkinForm.addEventListener("submit", function (event) {
             updateFullPhoneNumber();
+            clearAllErrors();
+
+            const submitter = event.submitter;
+
+            let isValid = true;
+
+            // Nút ÁP DỤNG: chỉ cần validate ngày + số khách
+            if (submitter && submitter.classList.contains("btn-apply-room")) {
+                isValid = validateStayInfo();
+
+                if (!isValid) {
+                    event.preventDefault();
+                    showSummary("Vui lòng nhập đầy đủ ngày lưu trú và số lượng khách trước khi tìm phòng.");
+                }
+
+                return;
+            }
+
+            // Nút tạo booking: validate toàn bộ
+            if (!validateStayInfo()) {
+                isValid = false;
+            }
+
+            if (!validateGuestInfo()) {
+                isValid = false;
+            }
+
+            if (!validateRoomSelection()) {
+                isValid = false;
+            }
+
+            if (!validateDeposit()) {
+                isValid = false;
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+
+                showSummary("Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.");
+
+                const firstError = walkinForm.querySelector(".form-group-line.has-error");
+
+                if (firstError) {
+                    firstError.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+                }
+            }
         });
     }
 
+    const errorSummary = document.getElementById("formErrorSummary");
+
+    function showSummary(message) {
+        if (!errorSummary) {
+            return;
+        }
+
+        const text = errorSummary.querySelector("span");
+        if (text) {
+            text.textContent = message || "Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.";
+        }
+
+        errorSummary.classList.add("show");
+    }
+
+    function hideSummary() {
+        if (errorSummary) {
+            errorSummary.classList.remove("show");
+        }
+    }
+
+    function showFieldError(field, message) {
+        const wrapper = field.closest(".form-group-line");
+
+        if (!wrapper) {
+            return;
+        }
+
+        wrapper.classList.add("has-error");
+
+        const error = wrapper.querySelector(".field-error");
+        if (error) {
+            error.textContent = message || "Vui lòng nhập thông tin này.";
+        }
+    }
+
+    function clearFieldError(field) {
+        const wrapper = field.closest(".form-group-line");
+
+        if (!wrapper) {
+            return;
+        }
+
+        wrapper.classList.remove("has-error");
+
+        const error = wrapper.querySelector(".field-error");
+        if (error) {
+            error.textContent = "";
+        }
+    }
+
+    function clearAllErrors() {
+        document.querySelectorAll(".form-group-line.has-error").forEach(function (wrapper) {
+            wrapper.classList.remove("has-error");
+
+            const error = wrapper.querySelector(".field-error");
+            if (error) {
+                error.textContent = "";
+            }
+        });
+
+        hideSummary();
+    }
+
+    function isBlank(value) {
+        return value == null || value.trim() === "";
+    }
+
+    function validateField(field) {
+        clearFieldError(field);
+
+        if (isBlank(field.value)) {
+            showFieldError(field, field.dataset.message || "Vui lòng nhập thông tin này.");
+            return false;
+        }
+
+        if (field.type === "email" && !field.checkValidity()) {
+            showFieldError(field, "Email không đúng định dạng. Ví dụ: khachhang@example.com");
+            return false;
+        }
+
+        if (field.type === "number") {
+            const value = Number(field.value);
+            const min = field.getAttribute("min");
+
+            if (Number.isNaN(value)) {
+                showFieldError(field, field.dataset.message || "Giá trị nhập không hợp lệ.");
+                return false;
+            }
+
+            if (min !== null && value < Number(min)) {
+                showFieldError(field, field.dataset.message || "Giá trị nhập không hợp lệ.");
+                return false;
+            }
+        }
+
+        if (field.id === "phoneNumberOnly") {
+            const phoneRegex = /^[0-9]{6,15}$/;
+            if (!phoneRegex.test(field.value.trim())) {
+                showFieldError(field, "Số điện thoại chỉ gồm 6 đến 15 chữ số.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function validateStayInfo() {
+        let isValid = true;
+
+        const stayFields = [
+            checkInInput,
+            checkOutInput,
+            adultsInput,
+            childrenInput
+        ];
+
+        stayFields.forEach(function (field) {
+            if (field && !validateField(field)) {
+                isValid = false;
+            }
+        });
+
+        if (checkInInput && checkOutInput && checkInInput.value && checkOutInput.value) {
+            const checkIn = new Date(checkInInput.value);
+            const checkOut = new Date(checkOutInput.value);
+
+            if (checkOut <= checkIn) {
+                showFieldError(checkOutInput, "Ngày trả phòng phải sau ngày nhận phòng.");
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    function validateGuestInfo() {
+        let isValid = true;
+
+        const requiredFields = walkinForm.querySelectorAll(".required-field");
+
+        requiredFields.forEach(function (field) {
+            if (!validateField(field)) {
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    function validateRoomSelection() {
+        const selectedRooms = document.querySelectorAll(".room-checkbox:checked");
+
+        if (selectedRooms.length === 0) {
+            showSummary("Vui lòng chọn ít nhất một phòng trước khi tạo đặt phòng.");
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateDeposit() {
+        if (!depositPaidCheckbox || !depositPaidCheckbox.checked) {
+            return true;
+        }
+
+        if (!depositMethodInput || isBlank(depositMethodInput.value)) {
+            showFieldError(depositMethodInput, "Vui lòng chọn phương thức thanh toán tiền đặt cọc.");
+            return false;
+        }
+
+        return true;
+    }
     updatePhoneCode();
     toggleDepositFields();
     updateSummary();

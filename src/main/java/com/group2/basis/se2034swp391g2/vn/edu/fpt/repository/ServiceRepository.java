@@ -3,14 +3,23 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.repository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ImageEntityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ServiceCategoryType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeService;
+// IMPORT CHÍNH XÁC ENTITY SERVICE CỦA BẠN Ở ĐÂY, VÍ DỤ:
+// import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service;
+
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.BookingServiceProjection;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.ServiceProjection;
+import org.springframework.data.domain.Page;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
+@Repository
 
 public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service, Long> {
 
