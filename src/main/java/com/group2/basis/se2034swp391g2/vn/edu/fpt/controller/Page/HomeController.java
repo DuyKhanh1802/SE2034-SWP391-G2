@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/home")
+@RequestMapping("/page")
 public class HomeController {
 
     private final RoomTypeRepository roomTypeRepository;
     private final ServiceRepository serviceRepository;
 
-    @GetMapping()
+    @GetMapping("/home")
     public String home(Model model){
         List<RoomTypeProjection> roomTypes = roomTypeRepository.findHomeRoomTypes();
 
