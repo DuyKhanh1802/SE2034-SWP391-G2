@@ -9,6 +9,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const nightSummary = document.getElementById("nightSummary") || document.getElementById("nightSummaryEmpty");
     const dateError = document.getElementById("dateError");
 
+    const TRIP_STORAGE_KEY = "vhotel_selected_rooms_trip";
+
+    const SERVICE_CHARGE_RATE = 0.05; // 5%
+    const VAT_RATE = 0.08;            // 8%
+
     const tenThang = [
         "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
         "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
@@ -30,6 +35,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let phongDangChon = 1;
     let danhSachPhongDaChon = [];
+    let appliedPromoCode = "";
+
+    const appliedPromoCodeInput = document.getElementById("appliedPromoCode");
+
+    if (appliedPromoCodeInput && appliedPromoCodeInput.value) {
+        appliedPromoCode = appliedPromoCodeInput.value.trim().toUpperCase();
+    }
+
+    function ganPromoCodeVaoForm() {
+        const promoInput = document.getElementById("promoCode");
+        const promoCodeHidden = document.getElementById("promoCodeHidden");
+
+        const promo = promoInput ? promoInput.value.trim().toUpperCase() : "";
+
+        if (promoInput) {
+            promoInput.value = promo;
+        }
+
+        if (promoCodeHidden) {
+            promoCodeHidden.value = promo;
+        }
+
+        appliedPromoCode = promo;
+    }
 
     function dongTatCaBangChon() {
         document.querySelectorAll(".booking-panel").forEach(panel => {
@@ -108,6 +137,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 nightSummary.textContent = "0 đêm";
             }
         }
+
+        capNhatYourTrip();
     }
 
     function taoNgayIso(nam, thang, ngay) {
@@ -302,6 +333,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 checkOutInput.value = ngayTraPhong;
             }
 
+            ganPromoCodeVaoForm();
+            luuYourTripVaoSession();
+
             if (roomSearchForm) {
                 roomSearchForm.submit();
             }
@@ -405,6 +439,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         capNhatThanhChonPhong();
+        capNhatYourTrip();
     }
 
     const addRoomBtn = document.getElementById("addRoomBtn");
@@ -628,6 +663,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (applyGuestBtn) {
         applyGuestBtn.addEventListener("click", function () {
             capNhatTomTatKhach();
+            ganPromoCodeVaoForm();
+            luuYourTripVaoSession();
 
             if (roomSearchForm) {
                 roomSearchForm.submit();
@@ -641,47 +678,312 @@ document.addEventListener("DOMContentLoaded", function () {
     if (clearPromoBtn) {
         clearPromoBtn.addEventListener("click", function () {
             const promoInput = document.getElementById("promoCode");
+            const promoCodeHidden = document.getElementById("promoCodeHidden");
 
             if (promoInput) {
                 promoInput.value = "";
+            }
+
+            if (promoCodeHidden) {
+                promoCodeHidden.value = "";
+            }
+
+            appliedPromoCode = "";
+            luuYourTripVaoSession();
+
+            if (roomSearchForm) {
+                roomSearchForm.submit();
             }
         });
     }
 
     if (applyPromoBtn) {
         applyPromoBtn.addEventListener("click", function () {
-            const promoInput = document.getElementById("promoCode");
-            const promoSummary = document.getElementById("promoSummary");
+            ganPromoCodeVaoForm();
+            luuYourTripVaoSession();
 
-            const promo = promoInput ? promoInput.value.trim() : "";
-
-            if (promoSummary) {
-                promoSummary.textContent = promo.length > 0 ? promo.toUpperCase() : "Chưa có mã";
+            if (roomSearchForm) {
+                roomSearchForm.submit();
             }
-
-            dongTatCaBangChon();
         });
     }
 
-    document.querySelectorAll(".reserve-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            const variantId = this.dataset.variantId;
+    /* ============================= */
+    /* YOUR TRIP */
 
-            const checkIn = checkInInput ? checkInInput.value : this.dataset.checkIn;
-            const checkOut = checkOutInput ? checkOutInput.value : this.dataset.checkOut;
+    /* ============================= */
 
-            const adultsInput = document.getElementById("adultsInput");
-            const childrenInput = document.getElementById("childrenInput");
-            const roomCountInput = document.getElementById("roomCountInput");
+    function layTongSoPhong() {
+        const roomCountInput = document.getElementById("roomCountInput");
+        return roomCountInput ? parseInt(roomCountInput.value) || 1 : 1;
+    }
 
-            const adults = adultsInput ? adultsInput.value : 1;
-            const children = childrenInput ? childrenInput.value : 0;
-            const totalRooms = roomCountInput ? parseInt(roomCountInput.value) : 1;
+    function laySoDemHienTai() {
+        const checkIn = checkInInput ? checkInInput.value : "";
+        const checkOut = checkOutInput ? checkOutInput.value : "";
 
-            danhSachPhongDaChon[phongDangChon - 1] = variantId;
+        if (!checkIn || !checkOut) {
+            return 0;
+        }
 
-            if (totalRooms > 1 && phongDangChon < totalRooms) {
-                phongDangChon++;
+        const inDate = new Date(checkIn + "T00:00:00");
+        const outDate = new Date(checkOut + "T00:00:00");
+
+        return Math.max(0, Math.round((outDate - inDate) / 86400000));
+    }
+
+    function layTextKhach() {
+        const adultsInput = document.getElementById("adultsInput");
+        const childrenInput = document.getElementById("childrenInput");
+
+        const adults = adultsInput ? parseInt(adultsInput.value) || 1 : 1;
+        const children = childrenInput ? parseInt(childrenInput.value) || 0 : 0;
+
+        let text = adults + " người lớn";
+
+        if (children > 0) {
+            text += ", " + children + " trẻ em";
+        }
+
+        return text;
+    }
+
+    function formatVnd(value) {
+        return new Intl.NumberFormat("vi-VN").format(value) + " VND";
+    }
+
+    function escapeHtml(value) {
+        return String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function luuYourTripVaoSession() {
+        const checkIn = checkInInput ? checkInInput.value : "";
+        const checkOut = checkOutInput ? checkOutInput.value : "";
+
+        const adultsInput = document.getElementById("adultsInput");
+        const childrenInput = document.getElementById("childrenInput");
+        const roomCountInput = document.getElementById("roomCountInput");
+        const roomGuestsInput = document.getElementById("roomGuestsInput");
+
+        const data = {
+            checkInDate: checkIn,
+            checkOutDate: checkOut,
+            adults: adultsInput ? adultsInput.value : "1",
+            children: childrenInput ? childrenInput.value : "0",
+            roomCount: roomCountInput ? roomCountInput.value : "1",
+            roomGuests: roomGuestsInput ? roomGuestsInput.value : "",
+            promoCode: appliedPromoCode,
+            selectedRooms: danhSachPhongDaChon
+        };
+
+        sessionStorage.setItem(TRIP_STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function khoiPhucYourTripTuSession() {
+        const rawData = sessionStorage.getItem(TRIP_STORAGE_KEY);
+
+        if (!rawData) {
+            return;
+        }
+
+        try {
+            const data = JSON.parse(rawData);
+
+            const currentCheckIn = checkInInput ? checkInInput.value : "";
+            const currentCheckOut = checkOutInput ? checkOutInput.value : "";
+
+            if (data.checkInDate !== currentCheckIn || data.checkOutDate !== currentCheckOut) {
+                sessionStorage.removeItem(TRIP_STORAGE_KEY);
+                danhSachPhongDaChon = [];
+                return;
+            }
+
+            if (Array.isArray(data.selectedRooms)) {
+                danhSachPhongDaChon = data.selectedRooms;
+            }
+
+            if (!appliedPromoCode && data.promoCode) {
+                appliedPromoCode = data.promoCode.trim().toUpperCase();
+            }
+
+            const totalRooms = layTongSoPhong();
+
+            if (danhSachPhongDaChon.length > totalRooms) {
+                danhSachPhongDaChon = danhSachPhongDaChon.slice(0, totalRooms);
+            }
+
+        } catch (error) {
+            sessionStorage.removeItem(TRIP_STORAGE_KEY);
+            danhSachPhongDaChon = [];
+        }
+    }
+
+    function capNhatYourTrip() {
+        const tripRoomList = document.getElementById("tripRoomList");
+
+        const tripRoomSubtotalText = document.getElementById("tripRoomSubtotalText");
+        const tripServiceChargeText = document.getElementById("tripServiceChargeText");
+        const tripVatText = document.getElementById("tripVatText");
+        const tripDiscountRow = document.getElementById("tripDiscountRow");
+        const tripDiscountText = document.getElementById("tripDiscountText");
+        const tripRoomTotalText = document.getElementById("tripRoomTotalText");
+
+        const tripContinueBtn = document.getElementById("tripContinueBtn");
+
+        if (!tripRoomList) {
+            return;
+        }
+
+        const totalRooms = layTongSoPhong();
+        const nights = laySoDemHienTai();
+        const safeNights = nights > 0 ? nights : 1;
+        const payableNights = nights > 0 ? nights : 0;
+        const guestText = layTextKhach();
+
+        let html = "";
+
+        for (let i = 1; i <= totalRooms; i++) {
+            const selectedRoom = danhSachPhongDaChon[i - 1];
+
+            if (selectedRoom) {
+                const roomTotal = selectedRoom.price * safeNights;
+
+                html += `
+                    <div class="trip-room-item">
+                        <div class="trip-room-title">
+                            <strong>Room ${i}</strong>
+
+                            <div class="trip-room-actions">
+                                <button type="button"
+                                        class="trip-edit-room-btn"
+                                        data-room-index="${i}">
+                                    Edit
+                                </button>
+
+                                <button type="button"
+                                        class="trip-remove-room-btn"
+                                        data-room-index="${i}">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="trip-room-name">${escapeHtml(selectedRoom.variantName)}</p>
+                        <small>${guestText}</small>
+
+                        <div class="trip-room-price">
+                            ${formatVnd(selectedRoom.price)} ${nights > 0 ? " / đêm" : ""}
+                        </div>
+
+                        <div class="trip-room-subtotal">
+                            ${nights > 0 ? safeNights + " đêm: " + formatVnd(roomTotal) : "Chưa chọn ngày lưu trú"}
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="trip-room-item">
+                        <div class="trip-room-title">
+                            <strong>Room ${i}</strong>
+                            <button type="button"
+                                    class="trip-edit-room-btn"
+                                    data-room-index="${i}">
+                                Edit
+                            </button>
+                        </div>
+
+                        <p class="trip-room-empty">Chưa chọn phòng</p>
+                        <small>${guestText}</small>
+                    </div>
+                `;
+            }
+        }
+
+        tripRoomList.innerHTML = html;
+
+        const selectedCount = danhSachPhongDaChon.filter(Boolean).length;
+
+        const roomSubtotal = danhSachPhongDaChon.reduce(function (sum, room) {
+            if (!room) {
+                return sum;
+            }
+
+            return sum + room.price * payableNights;
+        }, 0);
+
+        const serviceChargeAmount = Math.round(roomSubtotal * SERVICE_CHARGE_RATE);
+        const vatAmount = Math.round((roomSubtotal + serviceChargeAmount) * VAT_RATE);
+
+        const totalBeforeDiscount = roomSubtotal + serviceChargeAmount + vatAmount;
+
+        const promotionDiscountInput = document.getElementById("promotionDiscountAmount");
+
+        let discountAmount = promotionDiscountInput
+            ? Number(promotionDiscountInput.value || 0)
+            : 0;
+
+        if (roomSubtotal <= 0) {
+            discountAmount = 0;
+        }
+
+        if (discountAmount > totalBeforeDiscount) {
+            discountAmount = totalBeforeDiscount;
+        }
+
+        const grandTotal = totalBeforeDiscount - discountAmount;
+
+        if (tripRoomSubtotalText) {
+            tripRoomSubtotalText.textContent = roomSubtotal > 0
+                ? formatVnd(roomSubtotal)
+                : "0 VND";
+        }
+
+        if (tripServiceChargeText) {
+            tripServiceChargeText.textContent = serviceChargeAmount > 0
+                ? formatVnd(serviceChargeAmount)
+                : "0 VND";
+        }
+
+        if (tripVatText) {
+            tripVatText.textContent = vatAmount > 0
+                ? formatVnd(vatAmount)
+                : "0 VND";
+        }
+
+        if (tripDiscountRow && tripDiscountText) {
+            if (discountAmount > 0) {
+                tripDiscountRow.style.display = "flex";
+                tripDiscountText.textContent = "-" + formatVnd(discountAmount);
+            } else {
+                tripDiscountRow.style.display = "none";
+                tripDiscountText.textContent = "-0 VND";
+            }
+        }
+
+        if (tripRoomTotalText) {
+            tripRoomTotalText.textContent = grandTotal > 0
+                ? formatVnd(grandTotal)
+                : "Chọn phòng để tính giá";
+        }
+
+        if (tripContinueBtn) {
+            if (selectedCount === totalRooms) {
+                tripContinueBtn.disabled = false;
+                tripContinueBtn.classList.add("is-active");
+            } else {
+                tripContinueBtn.disabled = true;
+                tripContinueBtn.classList.remove("is-active");
+            }
+        }
+
+        document.querySelectorAll(".trip-edit-room-btn").forEach(function (button) {
+            button.addEventListener("click", function () {
+                phongDangChon = parseInt(this.dataset.roomIndex) || 1;
                 capNhatThanhChonPhong();
 
                 const filterBar = document.querySelector(".rose-filter-bar");
@@ -692,27 +994,147 @@ document.addEventListener("DOMContentLoaded", function () {
                         behavior: "smooth"
                     });
                 }
+            });
+        });
 
+        document.querySelectorAll(".trip-remove-room-btn").forEach(function (button) {
+            button.addEventListener("click", function () {
+                const roomIndex = parseInt(this.dataset.roomIndex) || 1;
+
+                danhSachPhongDaChon[roomIndex - 1] = null;
+
+                phongDangChon = roomIndex;
+
+                capNhatThanhChonPhong();
+                capNhatYourTrip();
+            });
+        });
+
+        luuYourTripVaoSession();
+    }
+
+    document.querySelectorAll(".reserve-btn").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const totalRooms = layTongSoPhong();
+
+            const variantId = this.dataset.variantId;
+            const variantName = this.dataset.variantName;
+            const price = Number(this.dataset.price || 0);
+
+            danhSachPhongDaChon[phongDangChon - 1] = {
+                variantId: variantId,
+                variantName: variantName,
+                price: price
+            };
+
+            capNhatYourTrip();
+
+            if (totalRooms > 1 && phongDangChon < totalRooms) {
+                phongDangChon++;
+                capNhatThanhChonPhong();
+            }
+
+            const filterBar = document.querySelector(".rose-filter-bar");
+
+            if (filterBar) {
+                window.scrollTo({
+                    top: filterBar.offsetTop,
+                    behavior: "smooth"
+                });
+            }
+        });
+    });
+
+    document.querySelectorAll(".rose-filter-bar a").forEach(function (link) {
+        link.addEventListener("click", function () {
+            luuYourTripVaoSession();
+
+            const currentPromoCode = appliedPromoCode
+                ? appliedPromoCode.trim().toUpperCase()
+                : "";
+
+            if (currentPromoCode) {
+                const url = new URL(link.href, window.location.origin);
+                url.searchParams.set("promoCode", currentPromoCode);
+                link.href = url.pathname + url.search;
+            }
+        });
+    });
+
+    const continueToServiceForm = document.getElementById("continueToServiceForm");
+    const selectedVariantIdsInput = document.getElementById("selectedVariantIdsInput");
+
+    if (continueToServiceForm) {
+        continueToServiceForm.addEventListener("submit", function (event) {
+            const totalRooms = layTongSoPhong();
+
+            const selectedRooms = danhSachPhongDaChon
+                .slice(0, totalRooms)
+                .filter(Boolean);
+
+            if (selectedRooms.length < totalRooms) {
+                event.preventDefault();
                 return;
             }
 
-            let url = `/page/booking/create?variantIds=${danhSachPhongDaChon.join(",")}`;
-            url += `&adults=${adults}&children=${children}&roomCount=${totalRooms}`;
+            const variantIds = selectedRooms
+                .map(function (room) {
+                    return room.variantId;
+                })
+                .join(",");
 
-            if (checkIn && checkOut && checkIn !== "null" && checkOut !== "null") {
-                url += `&checkInDate=${checkIn}&checkOutDate=${checkOut}`;
+            if (selectedVariantIdsInput) {
+                selectedVariantIdsInput.value = variantIds;
             }
 
-            window.location.href = url;
+            const adultsInput = document.getElementById("adultsInput");
+            const childrenInput = document.getElementById("childrenInput");
+            const roomCountInput = document.getElementById("roomCountInput");
+            const roomGuestsInput = document.getElementById("roomGuestsInput");
+            const promoCodeHidden = document.getElementById("promoCodeHidden");
+
+            const continueAdultsInput = document.getElementById("continueAdultsInput");
+            const continueChildrenInput = document.getElementById("continueChildrenInput");
+            const continueRoomCountInput = document.getElementById("continueRoomCountInput");
+            const continueRoomGuestsInput = document.getElementById("continueRoomGuestsInput");
+            const continuePromoCodeInput = document.getElementById("continuePromoCodeInput");
+
+            if (continueAdultsInput && adultsInput) {
+                continueAdultsInput.value = adultsInput.value;
+            }
+
+            if (continueChildrenInput && childrenInput) {
+                continueChildrenInput.value = childrenInput.value;
+            }
+
+            if (continueRoomCountInput && roomCountInput) {
+                continueRoomCountInput.value = roomCountInput.value;
+            }
+
+            if (continueRoomGuestsInput && roomGuestsInput) {
+                continueRoomGuestsInput.value = roomGuestsInput.value;
+            }
+
+            if (continuePromoCodeInput && promoCodeHidden) {
+                continuePromoCodeInput.value = promoCodeHidden.value;
+            }
+
+            sessionStorage.removeItem(TRIP_STORAGE_KEY);
+            sessionStorage.removeItem("vhotel_selected_services_by_room");
         });
-    });
+    }
+
+
+    /* ============================= */
+    /* ROOM DETAIL MODAL */
+    /* ============================= */
 
     const roomDetailModal = document.getElementById("roomDetailModal");
     const roomDetailFrame = document.getElementById("roomDetailFrame");
     const roomDetailBackdrop = document.getElementById("roomDetailBackdrop");
 
     function moPopupChiTietPhong(url) {
-        if (!roomDetailModal || !roomDetailFrame || !url) {
+        if (!roomDetailModal || !roomDetailFrame || !url || url === "javascript:void(0)") {
             return;
         }
 
@@ -732,8 +1154,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.querySelectorAll(".room-detail-link").forEach(function (link) {
-        link.addEventListener("click", function () {
-            const url = link.getAttribute("data-url");
+        link.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const url = link.getAttribute("data-url") || link.getAttribute("href");
+
             moPopupChiTietPhong(url);
         });
     });
@@ -760,8 +1185,11 @@ document.addEventListener("DOMContentLoaded", function () {
         hienThiTuoiTreEm(block);
     });
 
+    khoiPhucYourTripTuSession();
+
     hienThiHaiThang();
     capNhatTomTatNgay();
     capNhatTomTatKhach();
+    capNhatYourTrip();
 
 });

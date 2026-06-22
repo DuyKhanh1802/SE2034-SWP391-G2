@@ -16,8 +16,13 @@ public class ServicesService {
 
     private static final int DINING_PAGE_SIZE = 6;
 
-    public Page<ServiceProjection> findListDining(int page){
+    public Page<ServiceProjection> findListDining(int page,String priceFilter,String priceSort){
         Pageable pageable = PageRequest.of(page,DINING_PAGE_SIZE);
-        return serviceRepository.findListDining(pageable);
+        return serviceRepository.findListDining(priceFilter,priceSort,pageable);
+    }
+
+    public Page<ServiceProjection> findListWellness(int page,String priceFilter,String priceSort){
+        Pageable pageable = PageRequest.of(page,DINING_PAGE_SIZE);
+        return serviceRepository.findListWellness(priceFilter,priceSort,pageable);
     }
 }

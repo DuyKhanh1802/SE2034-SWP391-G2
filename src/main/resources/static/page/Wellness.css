@@ -1,8 +1,8 @@
 /* =========================
-   V'HOTEL DINING PAGE
+   V'HOTEL WELLNESS PAGE
 ========================= */
 
-.dining-page {
+.wellness-page {
     --vh-bg: #f7f5ef;
     --vh-bg-light: #fbfaf7;
     --vh-text: #111111;
@@ -25,7 +25,7 @@
    INTRO
 ========================= */
 
-.dining-page .dining-intro {
+.wellness-page .wellness-intro {
     min-height: 370px;
     padding: 300px 24px 76px;
 
@@ -39,7 +39,7 @@
     background: linear-gradient(180deg, #ffffff 0%, #fbfaf7 100%);
 }
 
-.dining-page .dining-eyebrow {
+.wellness-page .wellness-eyebrow {
     margin: 0 0 18px;
     font-family: var(--vh-font-main);
     font-size: 13px;
@@ -49,7 +49,7 @@
     text-transform: uppercase;
 }
 
-.dining-page .dining-intro h1 {
+.wellness-page .wellness-intro h1 {
     margin: 0;
     font-family: var(--vh-font-title);
     font-size: clamp(40px, 4vw, 64px);
@@ -58,7 +58,7 @@
     color: var(--vh-text);
 }
 
-.dining-page .dining-description {
+.wellness-page .wellness-description {
     max-width: 760px;
     margin: 22px auto 0;
     font-family: var(--vh-font-main);
@@ -72,7 +72,7 @@
    HERO VIDEO
 ========================= */
 
-.dining-page .hero-video-section {
+.wellness-page .hero-video-section {
     position: relative;
     width: 100%;
     height: 100vh;
@@ -82,8 +82,7 @@
     background: #111111;
 }
 
-
-.dining-page .hero-video {
+.wellness-page .hero-video {
     width: 100%;
     height: 100%;
     display: block;
@@ -91,7 +90,7 @@
     background: #111111;
 }
 
-.dining-page .hero-overlay {
+.wellness-page .hero-overlay {
     position: absolute;
     inset: 0;
     z-index: 2;
@@ -99,7 +98,7 @@
     background: rgba(0, 0, 0, 0.18);
 }
 
-.dining-page .hero-video-controls {
+.wellness-page .hero-video-controls {
     position: absolute;
     right: 48px;
     bottom: 38px;
@@ -111,7 +110,7 @@
     gap: 28px;
 }
 
-.dining-page .hero-video-btn {
+.wellness-page .hero-video-btn {
     border: none;
     outline: none;
     background: transparent;
@@ -128,7 +127,7 @@
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.dining-page .hero-video-btn:hover {
+.wellness-page .hero-video-btn:hover {
     opacity: 1;
     transform: scale(1.08);
 }
@@ -137,17 +136,17 @@
    LIST SECTION
 ========================= */
 
-.dining-page .dining-list-section {
+.wellness-page .wellness-list-section {
     padding: 96px 5.5vw 88px;
     background: var(--vh-bg);
 }
 
-.dining-page .dining-section-header {
+.wellness-page .wellness-section-header {
     max-width: 760px;
     margin-bottom: 64px;
 }
 
-.dining-page .dining-section-header h2 {
+.wellness-page .wellness-section-header h2 {
     margin: 0;
     font-family: var(--vh-font-title);
     font-size: clamp(34px, 3.8vw, 54px);
@@ -156,7 +155,7 @@
     color: var(--vh-text);
 }
 
-.dining-page .dining-section-header p {
+.wellness-page .wellness-section-header p {
     margin: 18px 0 0;
     font-family: var(--vh-font-main);
     color: var(--vh-muted);
@@ -164,7 +163,7 @@
     line-height: 1.8;
 }
 
-.dining-page .dining-empty {
+.wellness-page .wellness-empty {
     padding: 42px;
     border: 1px solid var(--vh-border);
     background: #ffffff;
@@ -174,27 +173,27 @@
 }
 
 /* =========================
-   DINING GRID
+   WELLNESS GRID
 ========================= */
 
-.dining-page .dining-grid {
+.wellness-page .wellness-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 64px 52px;
 }
 
-.dining-page .dining-card {
+.wellness-page .wellness-card {
     background: transparent;
 }
 
-.dining-page .dining-card-image {
+.wellness-page .wellness-card-image {
     width: 100%;
     aspect-ratio: 4 / 5;
     overflow: hidden;
     background: #e8e1d7;
 }
 
-.dining-page .dining-card-image img {
+.wellness-page .wellness-card-image img {
     width: 100%;
     height: 100%;
     display: block;
@@ -202,15 +201,15 @@
     transition: transform 0.7s ease;
 }
 
-.dining-page .dining-card:hover .dining-card-image img {
+.wellness-page .wellness-card:hover .wellness-card-image img {
     transform: scale(1.045);
 }
 
-.dining-page .dining-card-content {
+.wellness-page .wellness-card-content {
     padding-top: 28px;
 }
 
-.dining-page .dining-card-content h3 {
+.wellness-page .wellness-card-content h3 {
     margin: 0;
     font-family: var(--vh-font-main);
     font-size: 18px;
@@ -221,7 +220,7 @@
     color: var(--vh-text);
 }
 
-.dining-page .dining-card-description {
+.wellness-page .wellness-card-description {
     margin: 16px 0 0;
     min-height: 58px;
 
@@ -241,7 +240,7 @@
    CARD BOTTOM
 ========================= */
 
-.dining-page .dining-card-bottom {
+.wellness-page .wellness-card-bottom {
     margin-top: 24px;
 
     display: flex;
@@ -250,11 +249,11 @@
     gap: 20px;
 }
 
-.dining-page .dining-price-group {
+.wellness-page .wellness-price-group {
     flex: 1;
 }
 
-.dining-page .dining-price-label {
+.wellness-page .wellness-price-label {
     margin: 0 0 6px;
     font-family: var(--vh-font-main);
     font-size: 12px;
@@ -264,7 +263,7 @@
     color: var(--vh-muted);
 }
 
-.dining-page .dining-price {
+.wellness-page .wellness-price {
     margin: 0;
     font-family: var(--vh-font-main);
     font-size: 16px;
@@ -273,7 +272,7 @@
     color: var(--vh-text);
 }
 
-.dining-page .dining-reserve-btn {
+.wellness-page .wellness-reserve-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -297,7 +296,7 @@
     flex-shrink: 0;
 }
 
-.dining-page .dining-reserve-btn:hover {
+.wellness-page .wellness-reserve-btn:hover {
     background: var(--vh-green);
     border-color: var(--vh-green);
     color: #ffffff;
@@ -307,7 +306,7 @@
    PAGINATION
 ========================= */
 
-.dining-page .dining-pagination {
+.wellness-page .wellness-pagination {
     margin-top: 82px;
     display: flex;
     align-items: center;
@@ -315,8 +314,8 @@
     gap: 10px;
 }
 
-.dining-page .page-number,
-.dining-page .page-button {
+.wellness-page .page-number,
+.wellness-page .page-button {
     min-width: 46px;
     height: 46px;
     padding: 0 16px;
@@ -339,113 +338,29 @@
     transition: all 0.25s ease;
 }
 
-.dining-page .page-number:hover,
-.dining-page .page-button:hover {
+.wellness-page .page-number:hover,
+.wellness-page .page-button:hover {
     background: var(--vh-black);
     border-color: var(--vh-black);
     color: #ffffff;
 }
 
-.dining-page .page-number.active {
+.wellness-page .page-number.active {
     background: var(--vh-green);
     border-color: var(--vh-green);
     color: #ffffff;
 }
 
-.dining-page .page-button.disabled {
+.wellness-page .page-button.disabled {
     pointer-events: none;
     opacity: 0.35;
 }
 
 /* =========================
-   RESPONSIVE
+   WELLNESS FILTER BAR
 ========================= */
 
-@media (max-width: 1200px) {
-    .dining-page .dining-grid {
-        gap: 52px 36px;
-    }
-}
-
-@media (max-width: 992px) {
-    .dining-page .hero-video-section {
-        height: 58vh;
-        min-height: 420px;
-    }
-
-    .dining-page .dining-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .dining-page .dining-list-section {
-        padding: 76px 32px 72px;
-    }
-}
-
-@media (max-width: 640px) {
-    .dining-page .dining-intro {
-        min-height: auto;
-        padding: 64px 20px 52px;
-    }
-
-    .dining-page .dining-intro h1 {
-        font-size: clamp(36px, 11vw, 46px);
-        line-height: 1.25;
-    }
-
-    .dining-page .dining-description {
-        font-size: 15px;
-    }
-
-    .dining-page .hero-video-section {
-        height: 46vh;
-        min-height: 320px;
-    }
-
-    .dining-page .hero-video-controls {
-        right: 24px;
-        bottom: 24px;
-        gap: 22px;
-    }
-
-    .dining-page .dining-list-section {
-        padding: 58px 20px 60px;
-    }
-
-    .dining-page .dining-section-header {
-        margin-bottom: 42px;
-    }
-
-    .dining-page .dining-grid {
-        grid-template-columns: 1fr;
-        gap: 46px;
-    }
-
-    .dining-page .dining-card-bottom {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 14px;
-    }
-
-    .dining-page .dining-reserve-btn {
-        width: 100%;
-    }
-
-    .dining-page .dining-pagination {
-        flex-wrap: wrap;
-        margin-top: 56px;
-    }
-}
-
-/* =========================
-   DINING FILTER BAR
-========================= */
-
-/* =========================
-   DINING FILTER BAR
-========================= */
-
-.dining-page .dining-filter-bar {
+.wellness-page .wellness-filter-bar {
     width: calc(100% + 11vw);
     margin-left: -5.5vw;
     margin-right: -5.5vw;
@@ -461,8 +376,9 @@
     border-bottom: 1px solid var(--vh-border);
     background: var(--vh-bg);
 }
+
 /* Left tabs */
-.dining-page .dining-filter-tabs {
+.wellness-page .wellness-filter-tabs {
     flex: 1;
 
     display: flex;
@@ -474,7 +390,7 @@
     white-space: nowrap;
 }
 
-.dining-page .dining-filter-tabs a {
+.wellness-page .wellness-filter-tabs a {
     position: relative;
 
     display: inline-flex;
@@ -492,11 +408,11 @@
     transition: color 0.25s ease;
 }
 
-.dining-page .dining-filter-tabs a:hover {
+.wellness-page .wellness-filter-tabs a:hover {
     color: var(--vh-gold);
 }
 
-.dining-page .dining-filter-tabs a.active::after {
+.wellness-page .wellness-filter-tabs a.active::after {
     content: "";
     position: absolute;
     left: 50%;
@@ -511,90 +427,17 @@
 }
 
 /* Right controls */
-.dining-page .dining-filter-controls {
+.wellness-page .wellness-filter-controls {
     display: flex;
     align-items: stretch;
     flex-shrink: 0;
-}
-
-
-
-.dining-page .dining-filter-select-box select:focus {
-    outline: none;
-    box-shadow: none;
-}
-
-/* Hide default ugly focus in some browsers */
-
-/* Responsive */
-@media (max-width: 1200px) {
-    .dining-page .dining-filter-bar {
-        flex-direction: column;
-    }
-
-    .dining-page .dining-filter-tabs {
-        min-height: 76px;
-        padding: 0 32px;
-        border-bottom: 1px solid var(--vh-border);
-    }
-
-    .dining-page .dining-filter-controls {
-        width: 100%;
-    }
-
-    .dining-page .dining-filter-select-box {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .dining-page .dining-filter-select-box:first-child {
-        border-left: none;
-    }
-}
-
-@media (max-width: 640px) {
-    .dining-page .dining-filter-bar {
-        margin-bottom: 48px;
-    }
-
-    .dining-page .dining-filter-tabs {
-        gap: 24px;
-        padding: 0 20px;
-    }
-
-    .dining-page .dining-filter-tabs a {
-        height: 66px;
-        font-size: 16px;
-    }
-
-    .dining-page .dining-filter-controls {
-        flex-direction: column;
-    }
-
-    .dining-page .dining-filter-select-box {
-        width: 100%;
-        height: 64px;
-        border-left: none;
-        border-bottom: 1px solid var(--vh-border);
-    }
-
-    .dining-page .dining-filter-select-box label,
-    .dining-page .dining-filter-select-box select {
-        font-size: 16px;
-    }
 }
 
 /* =========================
    CUSTOM FILTER DROPDOWN
 ========================= */
 
-.dining-page .dining-filter-controls {
-    display: flex;
-    align-items: stretch;
-    flex-shrink: 0;
-}
-
-.dining-page .dining-dropdown {
+.wellness-page .wellness-dropdown {
     position: relative;
     min-width: 280px;
     height: 76px;
@@ -603,7 +446,7 @@
     background: var(--vh-bg);
 }
 
-.dining-page .dining-dropdown summary {
+.wellness-page .wellness-dropdown summary {
     height: 76px;
     padding: 0 24px;
 
@@ -621,21 +464,21 @@
     color: var(--vh-text);
 }
 
-.dining-page .dining-dropdown summary::-webkit-details-marker {
+.wellness-page .wellness-dropdown summary::-webkit-details-marker {
     display: none;
 }
 
-.dining-page .dining-dropdown summary i {
+.wellness-page .wellness-dropdown summary i {
     font-size: 12px;
     color: var(--vh-black);
     transition: transform 0.2s ease;
 }
 
-.dining-page .dining-dropdown[open] summary i {
+.wellness-page .wellness-dropdown[open] summary i {
     transform: rotate(180deg);
 }
 
-.dining-page .dining-dropdown-menu {
+.wellness-page .wellness-dropdown-menu {
     position: absolute;
     top: 76px;
     left: -1px;
@@ -649,7 +492,7 @@
     box-shadow: 0 20px 38px rgba(0, 0, 0, 0.08);
 }
 
-.dining-page .dining-dropdown-menu a {
+.wellness-page .wellness-dropdown-menu a {
     display: block;
     padding: 14px 22px;
 
@@ -665,11 +508,12 @@
     transition: all 0.2s ease;
 }
 
-.dining-page .dining-dropdown-menu a:hover {
+.wellness-page .wellness-dropdown-menu a:hover {
     background: rgba(182, 138, 69, 0.08);
     color: var(--vh-gold);
 }
 
-.dining-page .dining-dropdown-menu a.active {
+.wellness-page .wellness-dropdown-menu a.active {
     color: var(--vh-gold);
 }
+
