@@ -45,6 +45,9 @@ public class SpringSecurity {
                         ).permitAll()
 
                         .requestMatchers("/api/user/switch-role").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/profile/*.css").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/profile/edit").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/profile/update").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/**").hasAuthority(PermissionCode.PROFILE_VIEW)
                         .requestMatchers(HttpMethod.POST, "/profile/**").hasAuthority(PermissionCode.PROFILE_EDIT)
 

@@ -3,6 +3,9 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
+<head>
+    <link rel="stylesheet" th:href="@{/profile/EditProfile.css}">
+</head>
 <body>
 
 <main layout:fragment="content">
@@ -222,7 +225,13 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end mt-5">
+                <div class="profile-form-actions">
+                    <a th:if="${guestSession != null}"
+                       th:href="@{/home}"
+                       class="profile-btn-outline">
+                        Quay về Home
+                    </a>
+
                     <button class="profile-btn-primary" type="submit">
                         Lưu thay đổi
                     </button>
