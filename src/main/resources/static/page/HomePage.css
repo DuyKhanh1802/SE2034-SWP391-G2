@@ -805,7 +805,7 @@ img {
 .public-header.is-compact .main-nav a::after {
     bottom: 30px;
 }
-
+/*video */
 .sound-toggle {
     position: absolute;
     right: 40px;

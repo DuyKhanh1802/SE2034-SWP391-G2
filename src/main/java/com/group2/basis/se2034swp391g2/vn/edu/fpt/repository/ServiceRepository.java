@@ -6,6 +6,9 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeService;
 // IMPORT CHÍNH XÁC ENTITY SERVICE CỦA BẠN Ở ĐÂY, VÍ DỤ:
 // import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.BookingServiceProjection;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.ServiceProjection;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -44,7 +47,7 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
     @Query("SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeService(" +
             " s.id, " +
             " s.name, " +
-            " s.description, "  +
+            " s.description, " +
             " s.price, " +
             " c.type, " +
             " c.name, " +
@@ -64,4 +67,162 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
     List<HomeService> findServiceByCategoryType(@Param("categoryType") ServiceCategoryType serviceCategoryType,
                                                 @Param("entityType") ImageEntityType imageEntityType,
                                                 Pageable pageable);
+
+    @Query(
+            value = """
+                SELECT
+                    s.service_id AS id,
+                    s.name AS name,
+                    s.price AS price,
+                    s.description AS description,
+                    img.image_url AS imageUrl
+                FROM services s
+                LEFT JOIN images img
+                    ON img.entity_type = 'SERVICE'
+                    AND img.entity_id = s.service_id
+                    AND img.is_primary = 1
+                WHERE s.is_deleted = 0
+                    AND s.is_available = 1
+                    AND s.category_id = 1
+                    AND (
+                        :priceFilter = 'ALL'
+                        OR (:priceFilter = 'UNDER_200' AND s.price < 200000)
+                        OR (:priceFilter = 'FROM_200_TO_500' AND s.price >= 200000 AND s.price <= 500000)
+                        OR (:priceFilter = 'OVER_500' AND s.price > 500000)
+                    )
+                ORDER BY
+                    CASE WHEN :priceSort = 'ASC' THEN s.price END ASC,
+                    CASE WHEN :priceSort = 'DESC' THEN s.price END DESC,
+                    s.service_id ASC
+                """,
+            countQuery = """
+                SELECT COUNT(*)
+                FROM services s
+                WHERE s.is_deleted = 0
+                    AND s.is_available = 1
+                    AND s.category_id = 1
+                    AND (
+                        :priceFilter = 'ALL'
+                        OR (:priceFilter = 'UNDER_200' AND s.price < 200000)
+                        OR (:priceFilter = 'FROM_200_TO_500' AND s.price >= 200000 AND s.price <= 500000)
+                        OR (:priceFilter = 'OVER_500' AND s.price > 500000)
+                    )
+                """,
+            nativeQuery = true
+    )
+    Page<ServiceProjection> findListDining(
+            @Param("priceFilter") String priceFilter,
+            @Param("priceSort") String priceSort,
+            Pageable pageable);
+
+
+
+    @Query(
+            value = """
+                SELECT
+                    s.service_id AS id,
+                    s.name AS name,
+                    s.price AS price,
+                    s.description AS description,
+                    img.image_url AS imageUrl
+                FROM services s
+                LEFT JOIN images img
+                    ON img.entity_type = 'SERVICE'
+                    AND img.entity_id = s.service_id
+                    AND img.is_primary = 1
+                WHERE s.is_deleted = 0
+                    AND s.is_available = 1
+                    AND s.category_id = 2
+                    AND (
+                        :priceFilter = 'ALL'
+                        OR (:priceFilter = 'UNDER_200' AND s.price < 200000)
+                        OR (:priceFilter = 'FROM_200_TO_500' AND s.price >= 200000 AND s.price <= 500000)
+                        OR (:priceFilter = 'OVER_500' AND s.price > 500000)
+                    )
+                ORDER BY
+                    CASE WHEN :priceSort = 'ASC' THEN s.price END ASC,
+                    CASE WHEN :priceSort = 'DESC' THEN s.price END DESC,
+                    s.service_id ASC
+                """,
+            countQuery = """
+                SELECT COUNT(*)
+                FROM services s
+                WHERE s.is_deleted = 0
+                    AND s.is_available = 1
+                    AND s.category_id = 2
+                    AND (
+                        :priceFilter = 'ALL'
+                        OR (:priceFilter = 'UNDER_200' AND s.price < 200000)
+                        OR (:priceFilter = 'FROM_200_TO_500' AND s.price >= 200000 AND s.price <= 500000)
+                        OR (:priceFilter = 'OVER_500' AND s.price > 500000)
+                    )
+                """,
+            nativeQuery = true
+    )
+    Page<ServiceProjection> findListWellness(
+            @Param("priceFilter") String priceFilter,
+            @Param("priceSort") String priceSort,
+            Pageable pageable);
+
+
+    @Query(
+            value = """
+            SELECT
+                s.service_id AS serviceId,
+                s.name AS name,
+                s.description AS description,
+                s.price AS price,
+                s.category_id AS categoryId,
+                sc.name AS categoryName,
+                img.image_url AS imageUrl
+            FROM services s
+            LEFT JOIN service_categories sc
+                ON sc.service_category_id = s.category_id
+            LEFT JOIN images img
+                ON img.entity_type = 'SERVICE'
+                AND img.entity_id = s.service_id
+                AND img.is_primary = 1
+            WHERE s.is_deleted = 0
+              AND s.is_available = 1
+              AND (
+                    :category = 'ALL'
+                    OR (:category = 'DINING' AND s.category_id = 1)
+                    OR (:category = 'WELLNESS' AND s.category_id = 2)
+                  )
+              AND (
+                    :priceFilter = 'ALL'
+                    OR (:priceFilter = 'UNDER_200' AND s.price < 200000)
+                    OR (:priceFilter = 'FROM_200_TO_500' AND s.price >= 200000 AND s.price <= 500000)
+                    OR (:priceFilter = 'OVER_500' AND s.price > 500000)
+                  )
+            ORDER BY
+                CASE WHEN :sort = 'priceAsc' THEN s.price END ASC,
+                CASE WHEN :sort = 'priceDesc' THEN s.price END DESC,
+                s.service_id ASC
+            """,
+            countQuery = """
+            SELECT COUNT(*)
+            FROM services s
+            WHERE s.is_deleted = 0
+              AND s.is_available = 1
+              AND (
+                    :category = 'ALL'
+                    OR (:category = 'DINING' AND s.category_id = 1)
+                    OR (:category = 'WELLNESS' AND s.category_id = 2)
+                  )
+              AND (
+                    :priceFilter = 'ALL'
+                    OR (:priceFilter = 'UNDER_200' AND s.price < 200000)
+                    OR (:priceFilter = 'FROM_200_TO_500' AND s.price >= 200000 AND s.price <= 500000)
+                    OR (:priceFilter = 'OVER_500' AND s.price > 500000)
+                  )
+            """,
+            nativeQuery = true
+    )
+    Page<BookingServiceProjection> findBookingServices(
+            @Param("category") String category,
+            @Param("sort") String sort,
+            @Param("priceFilter") String priceFilter,
+            Pageable pageable
+    );
 }
