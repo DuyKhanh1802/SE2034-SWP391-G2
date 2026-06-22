@@ -1,10 +1,12 @@
     package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Page;
 
     import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomType;
+    import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
     import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeRepository;
     import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeVariantRepository;
     import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
     import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.RoomVariantDetailProjection;
+    import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
     import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomTypeVariantService;
     import org.springframework.format.annotation.DateTimeFormat;
     import org.springframework.stereotype.Controller;
@@ -15,6 +17,7 @@
     import org.springframework.web.bind.annotation.RequestParam;
     import lombok.*;
 
+    import java.math.BigDecimal;
     import java.time.LocalDate;
     import java.util.List;
 
@@ -24,6 +27,7 @@
     public class RoomTypeVariantController {
 
         private final RoomTypeVariantService roomTypeVariantService;
+        private final PromotionService promotionService;
 
         @GetMapping("/rooms")
         public String listRoomTypeVariant(
@@ -49,6 +53,8 @@
 
                 @RequestParam(name = "roomGuests", required = false) String roomGuests,
 
+                @RequestParam(name = "promoCode", required = false) String promoCode,
+
                 Model model
         ) {
             List<RoomType> roomTypes = roomTypeVariantService.getRoomTypes();
@@ -64,6 +70,11 @@
                             children,
                             roomCount
                     );
+            PromotionApplyResponse promotionResult = promotionService.checkPromotionCode(promoCode);
+
+            BigDecimal promotionDiscountAmount = promotionResult.isValid()
+                                                ? promotionResult.getDiscountAmount()
+                                                : BigDecimal.ZERO;
 
             model.addAttribute("roomTypes", roomTypes);
             model.addAttribute("roomOptions", roomTypeVariants);
@@ -79,8 +90,16 @@
             model.addAttribute("roomCount", roomCount);
             model.addAttribute("roomGuests", roomGuests);
 
+            model.addAttribute("promoCode", promoCode);
+            model.addAttribute("promotionResult",promotionResult);
+            model.addAttribute("promotionDiscountAmount",promotionDiscountAmount);
+            model.addAttribute("promotionMessage", promotionResult.getMessage());
+            model.addAttribute("promotionValid", promotionResult.isValid());
+
             return "page/RoomTypeVariant";
         }
+
+
         @GetMapping("room-variants/{variantId}")
       public String viewRoomTypeVariantDetail(
               @PathVariable Long variantId,

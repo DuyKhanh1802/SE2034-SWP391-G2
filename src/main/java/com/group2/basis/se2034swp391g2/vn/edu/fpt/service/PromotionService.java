@@ -3,26 +3,22 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Promotion;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.PromotionRequest;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionListResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PromotionRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.PromotionProjection;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class PromotionService {
@@ -536,7 +532,6 @@ public class PromotionService {
                 .count();
     }
 
-    // Cắt danh sách theo trang hiện tại để trả về đúng dữ liệu cần hiển thị.
     private List<PromotionResponse> getPagedPromotions(List<PromotionResponse> promotions, int page, int size) {
         int totalFiltered = promotions.size();
 
@@ -549,4 +544,155 @@ public class PromotionService {
 
         return promotions.subList(fromIndex, toIndex);
     }
+
+    public List<PromotionProjection> getListPromotion() {
+        return promotionRepository.findActivePromotionList();
+    }
+
+    public PromotionApplyResponse checkPromotionCode(String code) {
+
+        if (code == null || code.trim().isEmpty()) {
+            return new PromotionApplyResponse(
+                    false,
+                    "",
+                    null,
+                    null,
+                    null,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO
+            );
+        }
+
+        String normalizedCode = code.trim().toUpperCase();
+
+        if (normalizedCode.length() < 3 || normalizedCode.length() > 50) {
+            return new PromotionApplyResponse(
+                    false,
+                    "Mã ưu đãi phải có độ dài từ 3 đến 50 ký tự.",
+                    null,
+                    normalizedCode,
+                    null,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO
+            );
+        }
+
+        if (!normalizedCode.matches("^[A-Z0-9-]+$")) {
+            return new PromotionApplyResponse(
+                    false,
+                    "Mã ưu đãi chỉ được chứa chữ cái, số và dấu gạch ngang.",
+                    null,
+                    normalizedCode,
+                    null,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO
+            );
+        }
+
+        Optional<PromotionProjection> promotionOptional =
+                promotionRepository.findValidPromotionByCode(
+                        normalizedCode
+                );
+
+        if (promotionOptional.isEmpty()) {
+            return new PromotionApplyResponse(
+                    false,
+                    "Mã ưu đãi không tồn tại, đã hết hạn hoặc đã hết lượt sử dụng.",
+                    null,
+                    normalizedCode,
+                    null,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO
+            );
+        }
+
+        PromotionProjection promotion = promotionOptional.get();
+
+        BigDecimal discountAmount = promotion.getDiscountAmount() != null
+                ? promotion.getDiscountAmount()
+                : BigDecimal.ZERO;
+
+        if (discountAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return new PromotionApplyResponse(
+                    false,
+                    "Mã ưu đãi không có giá trị giảm hợp lệ.",
+                    promotion.getPromotionId(),
+                    promotion.getCode(),
+                    promotion.getName(),
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO
+            );
+        }
+
+        return new PromotionApplyResponse(
+                true,
+                "Áp dụng mã ưu đãi thành công.",
+                promotion.getPromotionId(),
+                promotion.getCode(),
+                promotion.getName(),
+                discountAmount,
+                BigDecimal.ZERO
+        );
+    }
+
+    public PromotionApplyResponse applyPromotionCode(String code, BigDecimal originalAmount) {
+
+        if (code == null || code.trim().isEmpty()) {
+            return new PromotionApplyResponse(
+                    false,
+                    "",
+                    null,
+                    null,
+                    null,
+                    BigDecimal.ZERO,
+                    originalAmount
+            );
+        }
+
+        if (originalAmount == null || originalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return new PromotionApplyResponse(
+                    false,
+                    "Tổng tiền không hợp lệ.",
+                    null,
+                    code,
+                    null,
+                    BigDecimal.ZERO,
+                    originalAmount
+            );
+        }
+
+        PromotionApplyResponse checkResult = checkPromotionCode(code);
+
+        if (!checkResult.isValid()) {
+            return new PromotionApplyResponse(
+                    false,
+                    checkResult.getMessage(),
+                    checkResult.getPromotionId(),
+                    checkResult.getCode(),
+                    checkResult.getName(),
+                    BigDecimal.ZERO,
+                    originalAmount
+            );
+        }
+
+        BigDecimal discountAmount = checkResult.getDiscountAmount();
+
+        if (discountAmount.compareTo(originalAmount) > 0) {
+            discountAmount = originalAmount;
+        }
+
+        BigDecimal finalAmount = originalAmount.subtract(discountAmount);
+
+        return new PromotionApplyResponse(
+                true,
+                "Áp dụng mã ưu đãi thành công.",
+                checkResult.getPromotionId(),
+                checkResult.getCode(),
+                checkResult.getName(),
+                discountAmount,
+                finalAmount
+        );
+    }
 }
+
+
