@@ -42,7 +42,8 @@
 }
 
 .metric-grid,
-.detail-grid {
+.detail-grid,
+.transaction-summary {
     display: grid;
     gap: 16px;
     margin-bottom: 20px;
@@ -54,6 +55,10 @@
 
 .detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.transaction-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .metric-card {
@@ -72,15 +77,34 @@
     font-size: 22px;
 }
 
+.metric-card strong.text-income {
+    color: #166534;
+}
+
+.metric-card strong.text-expense {
+    color: #991b1b;
+}
+
 .filter-row,
+.transaction-filter,
 .form-panel {
     display: grid;
-    gap: 12px;
+    gap: 18px;
 }
 
 .filter-row {
     grid-template-columns: 160px 1fr auto;
     margin-bottom: 18px;
+}
+
+.transaction-filter {
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    margin-bottom: 18px;
+}
+
+.transaction-filter button,
+.transaction-filter .btn-secondary-action {
+    text-align: center;
 }
 
 input,
@@ -94,10 +118,28 @@ textarea {
 }
 
 .form-hint {
-    margin: -6px 0 0;
+    margin: 8px 0 0;
     color: #64748b;
     font-size: 13px;
     line-height: 1.45;
+}
+
+.form-panel label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
 }
 
 .secondary-link {
@@ -113,7 +155,8 @@ textarea {
 
 button,
 .btn-primary-action,
-.btn-secondary-action {
+.btn-secondary-action,
+.btn-danger-action {
     border: 0;
     border-radius: 6px;
     padding: 10px 14px;
@@ -130,6 +173,28 @@ button,
 .btn-secondary-action {
     background: #eef2f7;
     color: #18202f;
+}
+
+.btn-danger-action {
+    background: #b91c1c;
+    color: #fff;
+}
+
+.alert {
+    border-radius: 6px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    font-weight: 700;
+}
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
 .module-table {
@@ -151,6 +216,48 @@ button,
     text-transform: uppercase;
 }
 
+.table-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.table-bottom p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.pagination-custom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-custom a,
+.pagination-custom button {
+    min-width: 38px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #18202f;
+    padding: 8px 10px;
+    text-align: center;
+}
+
+.pagination-custom a.active,
+.pagination-custom a:hover {
+    border-color: #0f766e;
+    background: #0f766e;
+    color: #fff;
+}
+
+.pagination-custom button:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
 .status-pill {
     display: inline-flex;
     border-radius: 999px;
@@ -169,6 +276,47 @@ button,
     color: #991b1b;
 }
 
+.status-pill.completed {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.status-pill.cancelled {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.money-text {
+    font-weight: 700;
+}
+
+.money-text.income {
+    color: #166534;
+}
+
+.money-text.expense {
+    color: #991b1b;
+}
+
+.table-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #0f766e;
+    font-weight: 700;
+    text-decoration: none;
+    background: #fff;
+}
+
+.table-action-btn:hover {
+    border-color: #0f766e;
+    background: #ecfdf5;
+    color: #0f766e;
+}
+
 .detail-list {
     display: grid;
     grid-template-columns: 140px 1fr;
@@ -185,19 +333,36 @@ button,
     font-weight: 600;
 }
 
+.cancel-panel {
+    border-color: #fecaca;
+}
+
+.cancel-panel h2 {
+    color: #991b1b;
+}
+
 @media (max-width: 900px) {
     .module-header,
     .detail-grid,
-    .filter-row {
+    .filter-row,
+    .form-grid,
+    .transaction-filter,
+    .table-bottom {
         grid-template-columns: 1fr;
     }
 
-    .module-header {
+    .module-header,
+    .form-actions,
+    .table-bottom {
         display: grid;
     }
 
     .metric-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .transaction-summary {
+        grid-template-columns: 1fr;
     }
 }
 
