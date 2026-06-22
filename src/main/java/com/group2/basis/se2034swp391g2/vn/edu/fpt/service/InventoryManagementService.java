@@ -6,10 +6,13 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.InventoryTransact
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.NumberToTextConverter;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,15 +28,30 @@ import java.time.LocalDate;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class InventoryManagementService {
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private static final DateTimeFormatter CODE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
+    private static final long MAX_IMPORT_FILE_SIZE = 5L * 1024 * 1024;
+    private static final int MAX_IMPORT_ROWS = 1000;
+    private static final int IMPORT_COLUMN_COUNT = 6;
+    private static final List<String> IMPORT_HEADERS = List.of(
+            "ten_hang",
+            "loai",
+            "don_vi",
+            "ton_dau_ky",
+            "nguong_canh_bao",
+            "gia_von_truoc_vat");
 
     private final InventoryItemRepository inventoryItemRepository;
+    private final InventoryCategoryRepository inventoryCategoryRepository;
     private final InventoryReceiptRepository inventoryReceiptRepository;
     private final InventoryTransactionRepository inventoryTransactionRepository;
     private final ServiceInventoryMappingRepository serviceInventoryMappingRepository;
@@ -50,23 +68,26 @@ public class InventoryManagementService {
 
     @Transactional(readOnly = true)
     public Page<InventoryItem> getItems(String keyword,
-                                        String category,
+                                        Long categoryId,
                                         String stockStatus,
                                         int page,
                                         int size) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 5), 100);
-        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by("name").ascending());
-        return inventoryItemRepository.searchItems(
-                normalizeText(keyword),
-                normalizeText(category),
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by("id").ascending());
+        String normalizedKeyword = normalizeText(keyword);
+        Page<InventoryItem> result = inventoryItemRepository.searchItems(
+                normalizedKeyword,
+                categoryId,
                 normalizeStockStatus(stockStatus),
                 pageable);
+        result.getContent().forEach(this::attachLatestBatchExpiry);
+        return result;
     }
 
     @Transactional(readOnly = true)
-    public List<String> getCategories() {
-        return inventoryItemRepository.findDistinctCategories();
+    public List<InventoryCategory> getCategories() {
+        return inventoryCategoryRepository.findByIsActiveTrueOrderByNameAsc();
     }
 
     @Transactional(readOnly = true)
@@ -76,23 +97,26 @@ public class InventoryManagementService {
 
     @Transactional(readOnly = true)
     public InventoryItem getItem(Long id) {
-        return inventoryItemRepository.findByIdAndIsDeletedFalse(id)
+        InventoryItem item = inventoryItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hàng hóa."));
+        attachLatestBatchExpiry(item);
+        return item;
     }
 
     @Transactional
     public InventoryItem createItem(String name,
-                                    String category,
+                                    Long categoryId,
                                     String unit,
                                     BigDecimal openingQuantity,
                                     BigDecimal minimumQuantity) {
-        return createItem(name, category, unit, openingQuantity, minimumQuantity, BigDecimal.ZERO);
+        return createItem(name, getCategory(categoryId), unit,
+                openingQuantity, minimumQuantity, BigDecimal.ZERO);
     }
 
     @Transactional
     public InventoryItem updateItem(Long id,
                                     String name,
-                                    String category,
+                                    Long categoryId,
                                     String unit,
                                     BigDecimal minimumQuantity) {
         InventoryItem item = getItem(id);
@@ -102,9 +126,7 @@ public class InventoryManagementService {
         if (unit == null || unit.isBlank()) {
             throw new IllegalArgumentException("Đơn vị tính là bắt buộc.");
         }
-        if (category == null || category.isBlank()) {
-            throw new IllegalArgumentException("Loại hàng là bắt buộc.");
-        }
+        InventoryCategory category = getCategory(categoryId);
 
         String normalizedName = name.trim();
         if (inventoryItemRepository.existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(normalizedName, id)) {
@@ -112,7 +134,8 @@ public class InventoryManagementService {
         }
 
         item.setName(normalizedName);
-        item.setCategory(normalizeText(category));
+        item.setCategory(category);
+        item.setLegacyCategory(category.getName());
         item.setUnit(unit.trim());
         item.setMinimumQuantity(normalizeNonNegative(minimumQuantity));
         return inventoryItemRepository.save(item);
@@ -147,24 +170,81 @@ public class InventoryManagementService {
         }
 
         String filename = file.getOriginalFilename();
-        if (filename == null || !filename.toLowerCase().endsWith(".xlsx")) {
+        if (filename == null || !filename.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
             throw new IllegalArgumentException("Chỉ hỗ trợ file Excel định dạng .xlsx.");
         }
+        if (file.getSize() > MAX_IMPORT_FILE_SIZE) {
+            throw new IllegalArgumentException("File Excel không được vượt quá 5 MB.");
+        }
 
-        int importedCount = 0;
-        int skippedCount = 0;
-        DataFormatter formatter = new DataFormatter();
+        Workbook workbook;
+        try {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } catch (IOException | RuntimeException e) {
+            throw new IllegalArgumentException("File không phải workbook .xlsx hợp lệ hoặc đã bị hỏng.");
+        }
 
-        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+        try (workbook) {
+            if (workbook.getNumberOfSheets() == 0) {
+                throw new IllegalArgumentException("File Excel không có sheet dữ liệu.");
+            }
+
+            DataFormatter formatter = new DataFormatter(Locale.US);
             Sheet sheet = workbook.getSheetAt(0);
+            validateImportHeader(sheet, formatter);
+
+            if (sheet.getLastRowNum() > MAX_IMPORT_ROWS) {
+                throw new IllegalArgumentException("File Excel chỉ được chứa tối đa 1.000 dòng dữ liệu.");
+            }
+
+            List<InventoryImportRow> validRows = new ArrayList<>();
+            List<String> errors = new ArrayList<>();
+            Set<String> namesInFile = new HashSet<>();
+            int skippedCount = 0;
+
             for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
                 Row row = sheet.getRow(rowIndex);
-                if (row == null) {
+                if (isEmptyRow(formatter, row)) {
                     continue;
                 }
 
-                String name = readCell(formatter, row, 0);
-                if (name == null || name.isBlank()) {
+                int excelRowNumber = rowIndex + 1;
+                List<String> rowErrors = new ArrayList<>();
+                validateNoExtraColumns(formatter, row, excelRowNumber, rowErrors);
+
+                String name = readTextCell(formatter, row, 0, "Tên hàng", excelRowNumber, rowErrors);
+                String categoryName = readTextCell(formatter, row, 1, "Loại hàng", excelRowNumber, rowErrors);
+                String unit = readTextCell(formatter, row, 2, "Đơn vị tính", excelRowNumber, rowErrors);
+
+                validateRequiredAndLength(name, "Tên hàng", 150, excelRowNumber, rowErrors);
+                validateRequiredAndLength(categoryName, "Loại hàng", 100, excelRowNumber, rowErrors);
+                validateRequiredAndLength(unit, "Đơn vị tính", 30, excelRowNumber, rowErrors);
+
+                InventoryCategory category = null;
+                if (categoryName != null && !categoryName.isBlank()) {
+                    category = inventoryCategoryRepository
+                            .findByNameIgnoreCaseAndIsActiveTrue(categoryName)
+                            .orElse(null);
+                    if (category == null) {
+                        rowErrors.add("Dòng " + excelRowNumber + ": loại hàng '" + categoryName
+                                + "' không tồn tại hoặc đã ngừng sử dụng.");
+                    }
+                }
+
+                BigDecimal openingQuantity = readDecimalCell(
+                        row, 3, "Tồn đầu kỳ", excelRowNumber, 2, 10, rowErrors);
+                BigDecimal minimumQuantity = readDecimalCell(
+                        row, 4, "Ngưỡng cảnh báo", excelRowNumber, 2, 10, rowErrors);
+                BigDecimal unitCost = readDecimalCell(
+                        row, 5, "Giá vốn trước VAT", excelRowNumber, 0, 15, rowErrors);
+
+                String normalizedName = name == null ? null : name.trim().toLowerCase(Locale.ROOT);
+                if (normalizedName != null && !normalizedName.isBlank() && !namesInFile.add(normalizedName)) {
+                    rowErrors.add("Dòng " + excelRowNumber + ": tên hàng bị trùng trong chính file Excel.");
+                }
+
+                if (!rowErrors.isEmpty()) {
+                    errors.addAll(rowErrors);
                     continue;
                 }
 
@@ -173,31 +253,30 @@ public class InventoryManagementService {
                     continue;
                 }
 
-                String category = readCell(formatter, row, 1);
-                String unit = readCell(formatter, row, 2);
-                if (category == null || category.isBlank()) {
-                    throw new IllegalArgumentException("Loại hàng ở dòng " + (rowIndex + 1) + " là bắt buộc.");
-                }
-                BigDecimal openingQuantity = parseNonNegativeDecimal(readCell(formatter, row, 3), "Tồn đầu kỳ không hợp lệ.");
-                BigDecimal minimumQuantity = parseNonNegativeDecimal(readCell(formatter, row, 4), "Ngưỡng cảnh báo không hợp lệ.");
-                BigDecimal unitCost = parseNonNegativeDecimal(readCell(formatter, row, 5), "Giá vốn không hợp lệ.");
-
-                createItem(name, category, unit, openingQuantity, minimumQuantity, unitCost);
-                importedCount++;
+                validRows.add(new InventoryImportRow(
+                        name.trim(), category, unit.trim(),
+                        openingQuantity, minimumQuantity, unitCost));
             }
+
+            if (!errors.isEmpty()) {
+                throw new IllegalArgumentException(buildImportErrorMessage(errors));
+            }
+            if (validRows.isEmpty() && skippedCount == 0) {
+                throw new IllegalArgumentException("File Excel không có dòng hàng hóa nào.");
+            }
+
+            for (InventoryImportRow row : validRows) {
+                createItem(row.name(), row.category(), row.unit(),
+                        row.openingQuantity(), row.minimumQuantity(), row.unitCost());
+            }
+            return new InventoryImportResult(validRows.size(), skippedCount);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Không đọc được file Excel.");
+            throw new IllegalArgumentException("Không thể đóng hoặc hoàn tất việc đọc file Excel.");
         }
-
-        if (importedCount == 0 && skippedCount == 0) {
-            throw new IllegalArgumentException("File Excel không có dòng hàng hóa hợp lệ.");
-        }
-
-        return new InventoryImportResult(importedCount, skippedCount);
     }
 
     private InventoryItem createItem(String name,
-                                     String category,
+                                     InventoryCategory category,
                                      String unit,
                                      BigDecimal openingQuantity,
                                      BigDecimal minimumQuantity,
@@ -208,7 +287,7 @@ public class InventoryManagementService {
         if (unit == null || unit.isBlank()) {
             throw new IllegalArgumentException("Đơn vị tính là bắt buộc.");
         }
-        if (category == null || category.isBlank()) {
+        if (category == null) {
             throw new IllegalArgumentException("Loại hàng là bắt buộc.");
         }
         if (inventoryItemRepository.existsByNameIgnoreCaseAndIsDeletedFalse(name.trim())) {
@@ -217,9 +296,9 @@ public class InventoryManagementService {
 
         BigDecimal opening = normalizeNonNegative(openingQuantity);
         InventoryItem item = InventoryItem.builder()
-                .code(generateItemCode())
                 .name(name.trim())
-                .category(normalizeText(category))
+                .category(category)
+                .legacyCategory(category.getName())
                 .unit(unit.trim())
                 .openingQuantity(opening)
                 .currentQuantity(opening)
@@ -239,6 +318,14 @@ public class InventoryManagementService {
     public record InventoryImportResult(int importedCount, int skippedCount) {
     }
 
+    private record InventoryImportRow(String name,
+                                      InventoryCategory category,
+                                      String unit,
+                                      BigDecimal openingQuantity,
+                                      BigDecimal minimumQuantity,
+                                      BigDecimal unitCost) {
+    }
+
     @Transactional
     public InventoryReceipt createReceipt(Long itemId,
                                           BigDecimal quantity,
@@ -246,6 +333,8 @@ public class InventoryManagementService {
                                           String supplier,
                                           String note,
                                           LocalDate receiptDate,
+                                          String batchCode,
+                                          LocalDate expiryDate,
                                           User createdBy) {
         InventoryItem item = getItem(itemId);
         validatePositive(quantity, "Số lượng nhập phải lớn hơn 0.");
@@ -253,6 +342,16 @@ public class InventoryManagementService {
         LocalDate effectiveReceiptDate = receiptDate == null ? LocalDate.now(APP_ZONE) : receiptDate;
         if (effectiveReceiptDate.isAfter(LocalDate.now(APP_ZONE))) {
             throw new IllegalArgumentException("Ngày nhập kho không được ở tương lai.");
+        }
+        String normalizedBatchCode = normalizeText(batchCode);
+        if (normalizedBatchCode != null && normalizedBatchCode.length() > 50) {
+            throw new IllegalArgumentException("Mã lô không được vượt quá 50 ký tự.");
+        }
+        if (expiryDate != null && normalizedBatchCode == null) {
+            throw new IllegalArgumentException("Mã lô là bắt buộc khi khai báo hạn sử dụng.");
+        }
+        if (expiryDate != null && !expiryDate.isAfter(effectiveReceiptDate)) {
+            throw new IllegalArgumentException("Hạn sử dụng phải sau ngày nhập kho.");
         }
 
         FinancialChargeSetting chargeSetting = financialChargeService.getCurrentSetting();
@@ -272,6 +371,8 @@ public class InventoryManagementService {
                 .supplier(normalizeText(supplier))
                 .note(normalizeText(note))
                 .receiptDate(effectiveReceiptDate)
+                .batchCode(normalizedBatchCode)
+                .expiryDate(expiryDate)
                 .createdBy(createdBy)
                 .build();
 
@@ -421,6 +522,12 @@ public class InventoryManagementService {
     }
 
     @Transactional(readOnly = true)
+    public List<InventoryReceipt> getReceiptsForItem(Long itemId) {
+        getItem(itemId);
+        return inventoryReceiptRepository.findTop20ByItem_IdOrderByReceiptDateDescCreatedAtDesc(itemId);
+    }
+
+    @Transactional(readOnly = true)
     public List<ServiceInventoryMapping> getMappingsForItem(Long itemId) {
         return serviceInventoryMappingRepository.findByItem_Id(itemId);
     }
@@ -433,6 +540,12 @@ public class InventoryManagementService {
     @Transactional(readOnly = true)
     public List<InventoryTransaction> getTransactionsForItem(Long itemId) {
         return inventoryTransactionRepository.findByItem_IdOrderByCreatedAtDesc(itemId);
+    }
+
+    private void attachLatestBatchExpiry(InventoryItem item) {
+        inventoryReceiptRepository
+                .findFirstByItem_IdAndExpiryDateIsNotNullOrderByReceiptDateDescCreatedAtDesc(item.getId())
+                .ifPresent(receipt -> item.setLatestBatchExpiryDate(receipt.getExpiryDate()));
     }
 
     @Transactional(readOnly = true)
@@ -517,20 +630,151 @@ public class InventoryManagementService {
         return value;
     }
 
-    private BigDecimal parseNonNegativeDecimal(String value, String message) {
-        if (value == null || value.isBlank()) {
-            return BigDecimal.ZERO;
-        }
-        try {
-            return normalizeNonNegative(new BigDecimal(value.trim().replace(",", "")));
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(message);
-        }
-    }
-
     private String readCell(DataFormatter formatter, Row row, int cellIndex) {
         String value = formatter.formatCellValue(row.getCell(cellIndex));
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private void validateImportHeader(Sheet sheet, DataFormatter formatter) {
+        Row header = sheet.getRow(0);
+        if (header == null) {
+            throw new IllegalArgumentException("Thiếu dòng tiêu đề của file Excel.");
+        }
+        List<String> actualHeaders = new ArrayList<>();
+        for (int columnIndex = 0; columnIndex < IMPORT_COLUMN_COUNT; columnIndex++) {
+            String value = readCell(formatter, header, columnIndex);
+            actualHeaders.add(value == null ? "" : value.toLowerCase(Locale.ROOT));
+        }
+        if (!actualHeaders.equals(IMPORT_HEADERS)) {
+            throw new IllegalArgumentException(
+                    "Tiêu đề không đúng mẫu. Thứ tự bắt buộc: " + String.join(", ", IMPORT_HEADERS) + ".");
+        }
+        List<String> errors = new ArrayList<>();
+        validateNoExtraColumns(formatter, header, 1, errors);
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException(errors.getFirst());
+        }
+    }
+
+    private boolean isEmptyRow(DataFormatter formatter, Row row) {
+        if (row == null) {
+            return true;
+        }
+        int lastCell = Math.max(row.getLastCellNum(), IMPORT_COLUMN_COUNT);
+        for (int columnIndex = 0; columnIndex < lastCell; columnIndex++) {
+            if (readCell(formatter, row, columnIndex) != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void validateNoExtraColumns(DataFormatter formatter,
+                                        Row row,
+                                        int excelRowNumber,
+                                        List<String> errors) {
+        if (row == null || row.getLastCellNum() <= IMPORT_COLUMN_COUNT) {
+            return;
+        }
+        for (int columnIndex = IMPORT_COLUMN_COUNT; columnIndex < row.getLastCellNum(); columnIndex++) {
+            if (readCell(formatter, row, columnIndex) != null) {
+                errors.add("Dòng " + excelRowNumber + ": file chỉ được có đúng 6 cột.");
+                return;
+            }
+        }
+    }
+
+    private String readTextCell(DataFormatter formatter,
+                                Row row,
+                                int cellIndex,
+                                String fieldName,
+                                int excelRowNumber,
+                                List<String> errors) {
+        Cell cell = row.getCell(cellIndex);
+        if (cell != null && cell.getCellType() == CellType.FORMULA) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " không được dùng công thức.");
+            return null;
+        }
+        if (cell != null && cell.getCellType() != CellType.BLANK
+                && cell.getCellType() != CellType.STRING) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " phải là văn bản.");
+            return null;
+        }
+        return readCell(formatter, row, cellIndex);
+    }
+
+    private void validateRequiredAndLength(String value,
+                                           String fieldName,
+                                           int maxLength,
+                                           int excelRowNumber,
+                                           List<String> errors) {
+        if (value == null || value.isBlank()) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " là bắt buộc.");
+        } else if (value.length() > maxLength) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName
+                    + " không được vượt quá " + maxLength + " ký tự.");
+        }
+    }
+
+    private BigDecimal readDecimalCell(Row row,
+                                       int cellIndex,
+                                       String fieldName,
+                                       int excelRowNumber,
+                                       int maxScale,
+                                       int maxIntegerDigits,
+                                       List<String> errors) {
+        Cell cell = row.getCell(cellIndex);
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return BigDecimal.ZERO;
+        }
+        if (cell.getCellType() == CellType.FORMULA) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " không được dùng công thức.");
+            return BigDecimal.ZERO;
+        }
+
+        String rawValue;
+        if (cell.getCellType() == CellType.NUMERIC) {
+            rawValue = NumberToTextConverter.toText(cell.getNumericCellValue());
+        } else if (cell.getCellType() == CellType.STRING) {
+            rawValue = cell.getStringCellValue().trim().replace(',', '.');
+        } else {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " phải là số.");
+            return BigDecimal.ZERO;
+        }
+
+        if (!rawValue.matches(maxScale == 0 ? "\\d+" : "\\d+(?:\\.\\d{1," + maxScale + "})?")) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName
+                    + (maxScale == 0
+                    ? " phải là số nguyên không âm, không dùng dấu phân cách hàng nghìn."
+                    : " phải là số không âm, tối đa " + maxScale
+                    + " chữ số thập phân và không dùng dấu phân cách hàng nghìn."));
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal value = new BigDecimal(rawValue);
+        int integerDigits = Math.max(value.precision() - value.scale(), 1);
+        if (integerDigits > maxIntegerDigits) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " vượt quá giới hạn lưu trữ.");
+            return BigDecimal.ZERO;
+        }
+        return value;
+    }
+
+    private String buildImportErrorMessage(List<String> errors) {
+        int displayCount = Math.min(errors.size(), 10);
+        StringBuilder message = new StringBuilder("File Excel có ")
+                .append(errors.size())
+                .append(" lỗi: ");
+        for (int index = 0; index < displayCount; index++) {
+            if (index > 0) {
+                message.append(" | ");
+            }
+            message.append(errors.get(index));
+        }
+        if (errors.size() > displayCount) {
+            message.append(" | ... và ").append(errors.size() - displayCount).append(" lỗi khác.");
+        }
+        return message.toString();
     }
 
     private void validatePositive(BigDecimal value, String message) {
@@ -556,10 +800,21 @@ public class InventoryManagementService {
             return null;
         }
         String normalized = value.trim().toUpperCase();
-        if (!"LOW".equals(normalized) && !"NORMAL".equals(normalized)) {
+        if (!"OUT_OF_STOCK".equals(normalized)
+                && !"LOW".equals(normalized)
+                && !"NORMAL".equals(normalized)) {
             return null;
         }
         return normalized;
+    }
+
+    private InventoryCategory getCategory(Long categoryId) {
+        if (categoryId == null) {
+            throw new IllegalArgumentException("Loại hàng là bắt buộc.");
+        }
+        return inventoryCategoryRepository.findByIdAndIsActiveTrue(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Loại hàng không tồn tại hoặc đã ngừng sử dụng."));
     }
 
     private BigDecimal calculateWeightedUnitCost(BigDecimal currentCost,
@@ -579,15 +834,6 @@ public class InventoryManagementService {
 
         return currentValue.add(receiptValue)
                 .divide(totalQuantity, 0, java.math.RoundingMode.HALF_UP);
-    }
-
-    private String generateItemCode() {
-        String code;
-        do {
-            int randomNumber = (int) (Math.random() * 9000) + 1000;
-            code = "IT-" + LocalDate.now(APP_ZONE).format(CODE_DATE_FORMATTER) + "-" + randomNumber;
-        } while (inventoryItemRepository.existsByCode(code));
-        return code;
     }
 
     private String generateReceiptCode() {

@@ -35,18 +35,18 @@ public class InventoryController {
                             Authentication authentication,
                             HttpSession session,
                             @RequestParam(required = false) String keyword,
-                            @RequestParam(required = false) String category,
+                            @RequestParam(required = false) Long categoryId,
                             @RequestParam(defaultValue = "ALL") String stockStatus,
                             @RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size) {
         addHeaderAttributes(model, authentication, session, "Quản lý kho hàng");
         Page<InventoryItem> itemPage = inventoryManagementService.getItems(
-                keyword, category, stockStatus, page, size);
+                keyword, categoryId, stockStatus, page, size);
         model.addAttribute("items", itemPage.getContent());
         model.addAttribute("allItems", inventoryManagementService.getItems());
         model.addAttribute("categories", inventoryManagementService.getCategories());
         model.addAttribute("keyword", keyword);
-        model.addAttribute("selectedCategory", category);
+        model.addAttribute("selectedCategoryId", categoryId);
         model.addAttribute("stockStatus", stockStatus);
         model.addAttribute("currentPage", itemPage.getNumber());
         model.addAttribute("totalPages", itemPage.getTotalPages());
@@ -64,18 +64,18 @@ public class InventoryController {
             model.addAttribute("configurationError", e.getMessage());
         }
         model.addAttribute("today", LocalDate.now());
-        return "storekeeper/Inventory";
+        return "InventoryList";
     }
 
     @PostMapping("/storekeeper/inventory/items")
     public String createInventoryItem(@RequestParam String name,
-                                      @RequestParam(required = false) String category,
+                                      @RequestParam Long categoryId,
                                       @RequestParam String unit,
                                       @RequestParam(required = false) BigDecimal openingQuantity,
                                       @RequestParam(required = false) BigDecimal minimumQuantity,
                                       RedirectAttributes redirectAttributes) {
         try {
-            inventoryManagementService.createItem(name, category, unit, openingQuantity, minimumQuantity);
+            inventoryManagementService.createItem(name, categoryId, unit, openingQuantity, minimumQuantity);
             redirectAttributes.addFlashAttribute("successMessage", "Da them hang hoa.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -96,8 +96,9 @@ public class InventoryController {
             model.addAttribute("refreshMappings", inventoryManagementService.getRefreshMappingsForItem(id));
             model.addAttribute("services", inventoryManagementService.getAvailableServices());
             model.addAttribute("roomTypes", inventoryManagementService.getRoomTypes());
+            model.addAttribute("categories", inventoryManagementService.getCategories());
             model.addAttribute("canDelete", inventoryManagementService.canDeleteItem(id));
-            return "storekeeper/InventoryEdit";
+            return "EditInventory";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/storekeeper/inventory";
@@ -120,12 +121,12 @@ public class InventoryController {
     @PostMapping("/storekeeper/inventory/{id}/edit")
     public String updateInventoryItem(@PathVariable Long id,
                                       @RequestParam String name,
-                                      @RequestParam(required = false) String category,
+                                      @RequestParam Long categoryId,
                                       @RequestParam String unit,
                                       @RequestParam BigDecimal minimumQuantity,
                                       RedirectAttributes redirectAttributes) {
         try {
-            inventoryManagementService.updateItem(id, name, category, unit, minimumQuantity);
+            inventoryManagementService.updateItem(id, name, categoryId, unit, minimumQuantity);
             redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật hàng hóa.");
             return "redirect:/storekeeper/inventory/" + id;
         } catch (IllegalArgumentException e) {
@@ -156,12 +157,15 @@ public class InventoryController {
                                          @RequestParam(required = false) String supplier,
                                          @RequestParam(required = false) String note,
                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate receiptDate,
+                                         @RequestParam(required = false) String batchCode,
+                                         @RequestParam(required = false)
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiryDate,
                                          Authentication authentication,
                                          HttpSession session,
                                          RedirectAttributes redirectAttributes) {
         try {
             inventoryManagementService.createReceipt(
-                    itemId, quantity, unitCost, supplier, note, receiptDate,
+                    itemId, quantity, unitCost, supplier, note, receiptDate, batchCode, expiryDate,
                     resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage", "Da lap phieu nhap hang va ghi nhan chi quy.");
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -238,6 +242,7 @@ public class InventoryController {
             model.addAttribute("mappings", inventoryManagementService.getMappingsForItem(id));
             model.addAttribute("refreshMappings", inventoryManagementService.getRefreshMappingsForItem(id));
             model.addAttribute("transactions", inventoryManagementService.getTransactionsForItem(id));
+            model.addAttribute("receipts", inventoryManagementService.getReceiptsForItem(id));
             model.addAttribute("services", inventoryManagementService.getAvailableServices());
             model.addAttribute("roomTypes", inventoryManagementService.getRoomTypes());
             return "storekeeper/InventoryDetail";

@@ -72,6 +72,8 @@ a { text-decoration: none; }
 }
 .btn-admin-primary { background: #111; color: #fff; }
 .btn-admin-primary:hover { background: #333; color: #fff; }
+.btn-admin-primary.danger { border-color: #b42318; background: #b42318; }
+.btn-admin-primary.danger:hover { border-color: #8f1d14; background: #8f1d14; }
 .btn-admin-outline { background: #fff; color: #111; }
 .btn-admin-outline:hover { background: #f1f1f1; color: #111; }
 .btn-admin-outline.danger { border-color: #b42318; color: #b42318; }
@@ -129,6 +131,25 @@ a { text-decoration: none; }
 .filter-control,
 .form-control-admin { padding: 9px 12px; }
 
+.form-control-admin:disabled,
+.form-control-admin[readonly] {
+    border-color: #e1e1e1;
+    background: #f3f3f3;
+    color: #777;
+    cursor: default;
+    opacity: 1;
+}
+
+.form-control-admin:disabled:hover,
+.form-control-admin[readonly]:hover,
+.form-control-admin:disabled:focus,
+.form-control-admin[readonly]:focus {
+    border-color: #e1e1e1;
+    background: #f3f3f3;
+    box-shadow: none;
+    outline: none;
+}
+
 .admin-table { margin: 0; }
 .admin-table thead th {
     padding: 12px 14px;
@@ -148,9 +169,34 @@ a { text-decoration: none; }
     vertical-align: middle;
 }
 .admin-table tbody tr:hover { background: #f8f8f8; }
+.inventory-items-table thead th { text-align: center; }
+.inventory-cell-center { text-align: center; }
 .item-code { font-family: monospace; font-weight: 600; color: #555; }
 .quantity { font-weight: 700; }
 .quantity.low { color: #c0392b; }
+.quantity.out { color: #991b1b; }
+
+.stock-status-text {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    white-space: nowrap;
+}
+.stock-status-normal { color: #2f7d32; }
+.stock-status-low { color: #c0392b; }
+.stock-status-out { color: #991b1b; }
+
+.expiry-status,
+.expiry-status-none {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.expiry-status-none { color: #888; font-weight: 400; }
+.expiry-valid { color: #2f7d32; }
+.expiry-soon { color: #a56a00; }
+.expiry-expired { color: #c0392b; }
 
 .admin-badge {
     display: inline-block;
@@ -162,6 +208,18 @@ a { text-decoration: none; }
 .badge-success { background: #e7f5e7; color: #2f7d32; }
 .badge-danger { background: #ffe5e5; color: #c0392b; }
 .badge-info { background: #e8f2ff; color: #1e70b7; }
+
+.movement-type {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .1px;
+    white-space: nowrap;
+}
+
+.movement-in { color: #2f7d32; }
+.movement-out { color: #1e70b7; }
+.movement-adjustment { color: #a56a00; }
 
 .action-btn {
     display: inline-flex;
@@ -206,8 +264,21 @@ a { text-decoration: none; }
     text-transform: uppercase;
 }
 .summary-card strong {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 27px;
+    color: #25211d;
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: .2px;
+    font-variant-numeric: lining-nums tabular-nums;
+    text-rendering: optimizeLegibility;
+}
+
+.delete-dialog-message {
+    margin: 0;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.7;
 }
 
 .detail-header {

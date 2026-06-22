@@ -25,23 +25,66 @@
     </section>
 
     <section class="summary-grid">
-        <div class="summary-card"><span>Tồn đầu kỳ</span><strong th:text="${item.openingQuantity + ' ' + item.unit}">0</strong></div>
-        <div class="summary-card"><span>Tổng nhập</span><strong th:text="${totalIn + ' ' + item.unit}">0</strong></div>
-        <div class="summary-card"><span>Tổng xuất</span><strong th:text="${totalOut + ' ' + item.unit}">0</strong></div>
-        <div class="summary-card"><span>Tồn hiện tại</span><strong th:classappend="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' text-danger'" th:text="${item.currentQuantity + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tồn đầu kỳ</span><strong th:text="${@inventoryQuantityFormatter.format(item.openingQuantity) + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tổng nhập</span><strong th:text="${@inventoryQuantityFormatter.format(totalIn) + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tổng xuất</span><strong th:text="${@inventoryQuantityFormatter.format(totalOut) + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tồn hiện tại</span><strong th:classappend="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' text-danger'" th:text="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}">0</strong></div>
     </section>
 
     <section class="admin-card">
         <div class="detail-grid">
             <div class="detail-item"><span>Mã hàng</span><strong th:text="${item.code}"></strong></div>
-            <div class="detail-item"><span>Loại hàng</span><strong th:text="${item.category ?: 'Chưa phân loại'}"></strong></div>
+            <div class="detail-item"><span>Loại hàng</span><strong th:text="${item.categoryName ?: 'Chưa phân loại'}"></strong></div>
             <div class="detail-item"><span>Đơn vị tính</span><strong th:text="${item.unit}"></strong></div>
-            <div class="detail-item"><span>Mức tồn tối thiểu</span><strong th:text="${item.minimumQuantity + ' ' + item.unit}"></strong></div>
+            <div class="detail-item"><span>Mức tồn tối thiểu</span><strong th:text="${@inventoryQuantityFormatter.format(item.minimumQuantity) + ' ' + item.unit}"></strong></div>
             <div class="detail-item"><span>Giá vốn bình quân</span><strong th:text="${#numbers.formatDecimal(item.unitCost, 0, 'POINT', 0, 'COMMA') + ' VND'}"></strong></div>
             <div class="detail-item"><span>Trạng thái</span>
-                <strong th:if="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0}" class="text-danger">Sắp hết hàng</strong>
-                <strong th:unless="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0}" class="text-success">Tồn kho ổn định</strong>
+                <strong th:if="${item.currentQuantity.signum() == 0}" class="text-danger">Hết hàng</strong>
+                <strong th:if="${item.currentQuantity.signum() > 0 and item.currentQuantity.compareTo(item.minimumQuantity) <= 0}"
+                        class="text-warning">Sắp hết hàng</strong>
+                <strong th:if="${item.currentQuantity.compareTo(item.minimumQuantity) > 0}" class="text-success">Tồn kho ổn định</strong>
             </div>
+        </div>
+    </section>
+
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="px-4 pt-4">
+            <span class="eyebrow">RECEIPT BATCHES</span>
+            <h2 class="modal-title">Lô nhập gần đây</h2>
+            <p class="form-hint">Hạn sử dụng được theo dõi theo phiếu nhập; tồn kho hiện vẫn được quản lý tổng theo hàng hóa.</p>
+        </div>
+        <div class="table-responsive mt-3">
+            <table class="table admin-table">
+                <thead>
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Mã lô</th>
+                    <th>Ngày nhập</th>
+                    <th>Số lượng nhập</th>
+                    <th>Hạn sử dụng</th>
+                    <th>Trạng thái hạn</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="receipt : ${receipts}">
+                    <td th:text="${receipt.code}"></td>
+                    <td th:text="${receipt.batchCode ?: '—'}"></td>
+                    <td th:text="${#temporals.format(receipt.receiptDate, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${@inventoryQuantityFormatter.format(receipt.quantity) + ' ' + item.unit}"></td>
+                    <td th:text="${receipt.expiryDate != null ? #temporals.format(receipt.expiryDate, 'dd/MM/yyyy') : 'Không khai báo'}"></td>
+                    <td>
+                        <span th:if="${receipt.expiryDate == null}" class="expiry-status-none">Không theo dõi</span>
+                        <span th:if="${receipt.expired}" class="expiry-status expiry-expired">Đã hết hạn</span>
+                        <span th:if="${!receipt.expired and receipt.expiringSoon}" class="expiry-status expiry-soon">Sắp hết hạn</span>
+                        <span th:if="${receipt.expiryDate != null and !receipt.expired and !receipt.expiringSoon}"
+                              class="expiry-status expiry-valid">Còn hạn</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(receipts)}">
+                    <td colspan="6" class="text-center py-5 text-muted">Chưa có phiếu nhập cho hàng hóa này.</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </section>
 
@@ -52,9 +95,11 @@
                 <thead><tr><th>Loại</th><th>Số lượng</th><th>Tồn sau biến động</th><th>Nguồn</th><th>Nội dung</th><th>Thời gian</th></tr></thead>
                 <tbody>
                 <tr th:each="transaction : ${transactions}">
-                    <td><span class="admin-badge" th:classappend="${transaction.type.name() == 'IN'} ? ' badge-success' : ' badge-info'" th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : 'Xuất kho'}"></span></td>
-                    <td th:text="${transaction.quantity + ' ' + item.unit}"></td>
-                    <td th:text="${transaction.remainingQuantity != null ? transaction.remainingQuantity + ' ' + item.unit : '—'}"></td>
+                    <td><span class="movement-type"
+                              th:classappend="${transaction.type.name() == 'IN'} ? ' movement-in' : (${transaction.type.name() == 'OUT'} ? ' movement-out' : ' movement-adjustment')"
+                              th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : 'Điều chỉnh')}"></span></td>
+                    <td th:text="${@inventoryQuantityFormatter.format(transaction.quantity) + ' ' + item.unit}"></td>
+                    <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + item.unit : '—'}"></td>
                     <td th:text="${transaction.sourceId != null ? transaction.sourceType + ' #' + transaction.sourceId : (transaction.sourceType ?: '—')}"></td>
                     <td th:text="${transaction.description ?: '-'}"></td>
                     <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
@@ -73,12 +118,12 @@
                 <tbody>
                 <tr th:each="mapping : ${mappings}">
                     <td th:text="${mapping.service.name}"></td><td>Dịch vụ</td>
-                    <td th:text="${mapping.quantityPerUse + ' ' + item.unit}"></td>
+                    <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerUse) + ' ' + item.unit}"></td>
                     <td th:text="${#numbers.formatDecimal(mapping.quantityPerUse.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}"></td>
                 </tr>
                 <tr th:each="mapping : ${refreshMappings}">
                     <td th:text="${mapping.roomType.name}"></td><td>Refresh phòng</td>
-                    <td th:text="${mapping.quantityPerRefresh + ' ' + item.unit}"></td>
+                    <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerRefresh) + ' ' + item.unit}"></td>
                     <td th:text="${#numbers.formatDecimal(mapping.quantityPerRefresh.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}"></td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(mappings) and #lists.isEmpty(refreshMappings)}"><td colspan="4" class="text-center py-5 text-muted">Chưa có liên kết tiêu hao.</td></tr>

@@ -15,30 +15,34 @@
     <section class="admin-card detail-header">
         <div><span class="eyebrow" th:text="${item.code}"></span><h2 th:text="${item.name}"></h2></div>
         <div class="detail-actions">
-            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/{id}(id=${item.id})}">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory}">
+                <i class="fa-solid fa-arrow-left"></i> Danh sách hàng hóa
             </a>
-            <form th:action="@{/storekeeper/inventory/{id}/delete(id=${item.id})}" method="post"
-                  onsubmit="return confirm('Bạn chắc chắn muốn xóa hàng hóa này?');">
-                <button class="btn-admin-outline danger" type="submit" th:disabled="${!canDelete}">
-                    <i class="fa-regular fa-trash-can"></i> Xóa hàng hóa
-                </button>
-            </form>
+            <button class="btn-admin-outline danger" type="button"
+                    data-bs-toggle="modal" data-bs-target="#deleteItemModal">
+                <i class="fa-regular fa-trash-can"></i> Xóa hàng hóa
+            </button>
         </div>
     </section>
-
-    <div th:unless="${canDelete}" class="admin-alert warning">
-        Chỉ có thể xóa khi tồn kho bằng 0 và không còn quy tắc tiêu hao.
-    </div>
 
     <section class="admin-card">
         <form class="admin-form" method="post" th:action="@{/storekeeper/inventory/{id}/edit(id=${item.id})}">
             <div class="form-grid">
                 <div><label>Tên hàng hóa</label><input class="form-control-admin" name="name" th:value="${item.name}" maxlength="150" required></div>
-                <div><label>Loại hàng</label><input class="form-control-admin" name="category" th:value="${item.category}" maxlength="100" required></div>
+                <div>
+                    <label>Loại hàng</label>
+                    <select class="form-control-admin" name="categoryId" required>
+                        <option value="" disabled>Chọn loại hàng</option>
+                        <option th:each="categoryOption : ${categories}"
+                                th:value="${categoryOption.id}"
+                                th:text="${categoryOption.name}"
+                                th:selected="${item.category != null and categoryOption.id == item.category.id}">
+                        </option>
+                    </select>
+                </div>
                 <div><label>Đơn vị tính</label><input class="form-control-admin" name="unit" th:value="${item.unit}" maxlength="30" required></div>
-                <div><label>Mức tồn tối thiểu</label><input class="form-control-admin" type="number" name="minimumQuantity" th:value="${item.minimumQuantity}" step="0.01" min="0" required></div>
-                <div><label>Tồn hiện tại</label><input class="form-control-admin" th:value="${item.currentQuantity + ' ' + item.unit}" disabled></div>
+                <div><label>Mức tồn tối thiểu</label><input class="form-control-admin" type="number" name="minimumQuantity" th:value="${@inventoryQuantityFormatter.format(item.minimumQuantity)}" step="0.01" min="0" required></div>
+                <div><label>Tồn hiện tại</label><input class="form-control-admin" th:value="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}" disabled></div>
                 <div><label>Giá vốn bình quân</label><input class="form-control-admin" th:value="${#numbers.formatDecimal(item.unitCost, 0, 'POINT', 0, 'COMMA') + ' VND'}" disabled></div>
             </div>
             <div class="detail-actions mt-2">
@@ -87,7 +91,7 @@
                 <tr th:each="mapping : ${mappings}">
                     <td th:text="${mapping.service.name}"></td>
                     <td>Dịch vụ</td>
-                    <td th:text="${mapping.quantityPerUse + ' ' + item.unit}"></td>
+                    <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerUse) + ' ' + item.unit}"></td>
                     <td>
                         <form th:action="@{/storekeeper/inventory/{itemId}/service-mappings/{mappingId}/delete(itemId=${item.id},mappingId=${mapping.id})}" method="post">
                             <button class="action-btn action-btn-delete" type="submit" title="Xóa quy tắc"><i class="fa-regular fa-trash-can"></i></button>
@@ -97,7 +101,7 @@
                 <tr th:each="mapping : ${refreshMappings}">
                     <td th:text="${mapping.roomType.name}"></td>
                     <td>Refresh phòng</td>
-                    <td th:text="${mapping.quantityPerRefresh + ' ' + item.unit}"></td>
+                    <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerRefresh) + ' ' + item.unit}"></td>
                     <td>
                         <form th:action="@{/storekeeper/inventory/{itemId}/room-refresh-mappings/{mappingId}/delete(itemId=${item.id},mappingId=${mapping.id})}" method="post">
                             <button class="action-btn action-btn-delete" type="submit" title="Xóa quy tắc"><i class="fa-regular fa-trash-can"></i></button>
@@ -111,6 +115,35 @@
             </table>
         </div>
     </section>
+
+    <div class="modal fade" id="deleteItemModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <span class="eyebrow">DELETE INVENTORY ITEM</span>
+                        <h2 class="modal-title" th:text="${canDelete ? 'Xác nhận xóa hàng hóa' : 'Chưa thể xóa hàng hóa'}"></h2>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="delete-dialog-message"
+                       th:text="${canDelete
+                           ? 'Hàng hóa sẽ được ẩn khỏi danh sách quản lý. Bạn có chắc chắn muốn tiếp tục?'
+                           : 'Chỉ có thể xóa khi tồn kho bằng 0 và không còn quy tắc tiêu hao.'}">
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-admin-outline" data-bs-dismiss="modal"
+                            th:text="${canDelete ? 'Hủy' : 'Đã hiểu'}"></button>
+                    <form th:if="${canDelete}"
+                          th:action="@{/storekeeper/inventory/{id}/delete(id=${item.id})}" method="post">
+                        <button class="btn-admin-primary danger" type="submit">Xác nhận xóa</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 </body>
 </html>

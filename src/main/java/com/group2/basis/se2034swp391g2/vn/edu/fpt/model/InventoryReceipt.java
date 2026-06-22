@@ -54,6 +54,12 @@ public class InventoryReceipt {
     @Column(name = "receipt_date")
     private LocalDate receiptDate;
 
+    @Column(name = "batch_code", length = 50)
+    private String batchCode;
+
+    @Column(name = "expiry_date")
+    private LocalDate expiryDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
@@ -81,5 +87,17 @@ public class InventoryReceipt {
         if (this.receiptDate == null) {
             this.receiptDate = LocalDate.now();
         }
+    }
+
+    @Transient
+    public boolean isExpired() {
+        return expiryDate != null && expiryDate.isBefore(LocalDate.now());
+    }
+
+    @Transient
+    public boolean isExpiringSoon() {
+        return expiryDate != null
+                && !expiryDate.isBefore(LocalDate.now())
+                && !expiryDate.isAfter(LocalDate.now().plusDays(30));
     }
 }

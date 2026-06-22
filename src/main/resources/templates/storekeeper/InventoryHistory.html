@@ -68,12 +68,12 @@
                         <div class="mt-1" th:text="${transaction.item.name}"></div>
                     </td>
                     <td>
-                        <span class="admin-badge"
-                              th:classappend="${transaction.type.name() == 'IN'} ? ' badge-success' : (${transaction.type.name() == 'OUT'} ? ' badge-info' : ' badge-warning')"
+                        <span class="movement-type"
+                              th:classappend="${transaction.type.name() == 'IN'} ? ' movement-in' : (${transaction.type.name() == 'OUT'} ? ' movement-out' : ' movement-adjustment')"
                               th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : 'Điều chỉnh')}"></span>
                     </td>
-                    <td><strong th:text="${transaction.quantity + ' ' + transaction.item.unit}"></strong></td>
-                    <td th:text="${transaction.remainingQuantity != null ? transaction.remainingQuantity + ' ' + transaction.item.unit : '—'}"></td>
+                    <td><strong th:text="${@inventoryQuantityFormatter.format(transaction.quantity) + ' ' + transaction.item.unit}"></strong></td>
+                    <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + transaction.item.unit : '—'}"></td>
                     <td th:text="${transaction.sourceType ?: 'MANUAL'}"></td>
                     <td th:text="${transaction.sourceId != null ? transaction.sourceType + ' #' + transaction.sourceId : '—'}"></td>
                     <td th:text="${transaction.description ?: '-'}"></td>

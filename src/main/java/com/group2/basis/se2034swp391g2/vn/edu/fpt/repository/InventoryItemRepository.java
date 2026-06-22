@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
-    boolean existsByCode(String code);
-
     Optional<InventoryItem> findByIdAndIsDeletedFalse(Long id);
 
     boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
@@ -29,31 +27,20 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
             WHERE i.isDeleted = false
             AND (
                 :keyword IS NULL
-                OR LOWER(i.code) LIKE LOWER(CONCAT('%', :keyword, '%'))
                 OR LOWER(i.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(COALESCE(i.category, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
             )
-            AND (:category IS NULL OR i.category = :category)
+            AND (:categoryId IS NULL OR i.category.id = :categoryId)
             AND (
                 :stockStatus IS NULL
-                OR (:stockStatus = 'LOW' AND i.currentQuantity <= i.minimumQuantity)
+                OR (:stockStatus = 'OUT_OF_STOCK' AND i.currentQuantity = 0)
+                OR (:stockStatus = 'LOW' AND i.currentQuantity > 0 AND i.currentQuantity <= i.minimumQuantity)
                 OR (:stockStatus = 'NORMAL' AND i.currentQuantity > i.minimumQuantity)
             )
             """)
     Page<InventoryItem> searchItems(@Param("keyword") String keyword,
-                                    @Param("category") String category,
+                                    @Param("categoryId") Long categoryId,
                                     @Param("stockStatus") String stockStatus,
                                     Pageable pageable);
-
-    @Query("""
-            SELECT DISTINCT i.category
-            FROM InventoryItem i
-            WHERE i.isDeleted = false
-            AND i.category IS NOT NULL
-            AND i.category <> ''
-            ORDER BY i.category
-            """)
-    List<String> findDistinctCategories();
 
     @Query("""
             SELECT COUNT(i)
