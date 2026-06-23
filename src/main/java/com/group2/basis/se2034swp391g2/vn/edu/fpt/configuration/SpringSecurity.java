@@ -28,8 +28,13 @@ public class SpringSecurity {
                         // 1. Nhóm các đường dẫn Public (Ai cũng vào được)
                         .requestMatchers(
                                 "/",
-                                "/page/**",
+                                "/home",
+                                "/room-types",
+                                "/overview",
+                                "/offers",
+                                "/accommodation",
                                 "/services",
+                                "/services/**",
                                 "/error",
                                 "/common/**",
                                 "/auth/**",
@@ -45,6 +50,9 @@ public class SpringSecurity {
                         ).permitAll()
 
                         .requestMatchers("/api/user/switch-role").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/profile/*.css").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/profile/edit").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/profile/update").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/**").hasAuthority(PermissionCode.PROFILE_VIEW)
                         .requestMatchers(HttpMethod.POST, "/profile/**").hasAuthority(PermissionCode.PROFILE_EDIT)
 
