@@ -15,32 +15,39 @@
     <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
+    <!-- Ba thông tin chính để manager nhìn nhanh phiếu thu/chi. -->
     <section class="transaction-summary">
-        <div class="metric-card">
+        <div class="metric-card detail-metric"
+             th:classappend="${transaction.type.name() == 'INCOME'} ? ' metric-income' : ' metric-expense'">
             <span>Loại phiếu</span>
             <strong th:text="${transaction.type.displayName}">Phiếu thu</strong>
         </div>
-        <div class="metric-card">
+        <div class="metric-card detail-metric"
+             th:classappend="${transaction.type.name() == 'INCOME'} ? ' metric-income' : ' metric-expense'">
             <span>Số tiền</span>
             <strong th:classappend="${transaction.type.name() == 'INCOME'} ? ' text-income' : ' text-expense'"
-                    th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                    th:text="${(transaction.amount.compareTo(T(java.math.BigDecimal).ZERO) > 0 ? '+' : '') + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
                 0 VND
             </strong>
         </div>
-        <div class="metric-card">
+        <div class="metric-card detail-metric"
+             th:classappend="${transaction.status != null and transaction.status.name() == 'CANCELLED'} ? ' metric-cancelled' : ' metric-completed'">
             <span>Trạng thái</span>
             <strong th:text="${transaction.status != null ? transaction.status.displayName : 'Hoàn tất'}">Hoàn tất</strong>
         </div>
     </section>
 
-    <section class="detail-grid">
+    <!-- Thông tin chứng từ và các liên kết phát sinh nếu có. -->
+    <section class="detail-grid transaction-detail-grid">
         <div class="panel">
             <h2>Thông tin chứng từ</h2>
             <dl class="detail-list">
                 <dt>Chứng từ</dt>
                 <dd th:text="${transaction.documentCode}">PT</dd>
                 <dt>Nhóm</dt>
-                <dd th:text="${transaction.category.displayName}">Nhóm giao dịch</dd>
+                <dd class="detail-accent-text" th:text="${transaction.category.displayName}">Nhóm giao dịch</dd>
+                <dt>Loại nguồn</dt>
+                <dd class="detail-source-text" th:text="${transaction.sourceType.displayName}">Thanh toán</dd>
                 <dt>Thời gian</dt>
                 <dd th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</dd>
                 <dt>Người tạo</dt>
@@ -49,21 +56,62 @@
                 <dd th:text="${transaction.description ?: 'Không có'}">Nội dung</dd>
             </dl>
         </div>
-        <div class="panel">
-            <h2>Nguồn phát sinh</h2>
+        <div class="panel"
+             th:if="${(transaction.sourceType.name() == 'PAYMENT' and transaction.sourceId != null)
+                     or (transaction.sourceType.name() == 'INVENTORY_RECEIPT' and transaction.sourceId != null)
+                     or transaction.originalTransaction != null
+                     or (transaction.reversalTransaction != null and (transaction.status == null or transaction.status.name() != 'CANCELLED'))}">
+            <h2 th:text="${transaction.originalTransaction != null ? 'Thông tin hủy phiếu' : 'Thông tin liên quan'}">
+                Thông tin liên quan
+            </h2>
             <dl class="detail-list">
-                <dt>Loại nguồn</dt>
-                <dd th:text="${transaction.sourceType.displayName}">Thanh toán</dd>
-                <dt th:if="${transaction.sourceId != null}">Mã tham chiếu</dt>
-                <dd th:text="${transaction.sourceId ?: 'Không có'}">1</dd>
+                <dt th:if="${transaction.sourceType.name() == 'PAYMENT' and transaction.sourceId != null}">
+                    Mã thanh toán
+                </dt>
+                <dd th:if="${transaction.sourceType.name() == 'PAYMENT' and transaction.sourceId != null}"
+                    th:text="${transaction.sourceId}">
+                    PAY
+                </dd>
+
+                <dt th:if="${transaction.sourceType.name() == 'PAYMENT'}">
+                    Mã booking
+                </dt>
+                <dd th:if="${transaction.sourceType.name() == 'PAYMENT'}">
+                    Chưa liên kết
+                </dd>
+
+                <dt th:if="${transaction.sourceType.name() == 'INVENTORY_RECEIPT' and transaction.sourceId != null}">
+                    Mã phiếu nhập
+                </dt>
+                <dd th:if="${transaction.sourceType.name() == 'INVENTORY_RECEIPT' and transaction.sourceId != null}"
+                    th:text="${transaction.sourceId}">
+                    IR
+                </dd>
+
                 <dt th:if="${transaction.originalTransaction != null}">Giao dịch gốc</dt>
-                <dd th:text="${transaction.originalTransaction != null ? transaction.originalTransaction.documentCode : 'Không có'}">Không có</dd>
-                <dt th:if="${transaction.reversalTransaction != null}">Đảo chiều</dt>
-                <dd th:text="${transaction.reversalTransaction != null ? transaction.reversalTransaction.documentCode : 'Không có'}">Không có</dd>
+                <dd th:if="${transaction.originalTransaction != null}" th:text="${transaction.originalTransaction.documentCode}">Không có</dd>
+                <dt th:if="${transaction.originalTransaction != null}">Người hủy</dt>
+                <dd th:if="${transaction.originalTransaction != null}"
+                    th:text="${transaction.originalTransaction.cancelledBy != null ? transaction.originalTransaction.cancelledBy.email : 'Không có'}">
+                    Không có
+                </dd>
+                <dt th:if="${transaction.originalTransaction != null}">Thời gian hủy</dt>
+                <dd th:if="${transaction.originalTransaction != null}"
+                    th:text="${transaction.originalTransaction.cancelledAt != null ? #temporals.format(transaction.originalTransaction.cancelledAt, 'dd/MM/yyyy HH:mm') : 'Không có'}">
+                    Không có
+                </dd>
+                <dt th:if="${transaction.originalTransaction != null}">Lý do hủy</dt>
+                <dd th:if="${transaction.originalTransaction != null}"
+                    th:text="${transaction.originalTransaction.cancellationReason ?: 'Không có'}">
+                    Không có
+                </dd>
+                <dt th:if="${transaction.reversalTransaction != null and (transaction.status == null or transaction.status.name() != 'CANCELLED')}">Đảo chiều</dt>
+                <dd th:if="${transaction.reversalTransaction != null and (transaction.status == null or transaction.status.name() != 'CANCELLED')}" th:text="${transaction.reversalTransaction.documentCode}">Không có</dd>
             </dl>
         </div>
     </section>
 
+    <!-- Thông tin hủy chỉ hiện với phiếu gốc đã bị hủy. -->
     <section class="panel" th:if="${transaction.status != null and transaction.status.name() == 'CANCELLED'}">
         <h2>Thông tin hủy phiếu</h2>
         <dl class="detail-list">
@@ -73,9 +121,12 @@
                 <dd th:text="${transaction.cancelledAt != null ? #temporals.format(transaction.cancelledAt, 'dd/MM/yyyy HH:mm') : 'Không có'}">Không có</dd>
                 <dt>Lý do hủy</dt>
                 <dd th:text="${transaction.cancellationReason ?: 'Không có'}">Không có</dd>
+                <dt th:if="${transaction.reversalTransaction != null}">Phiếu đảo chiều</dt>
+                <dd th:if="${transaction.reversalTransaction != null}" th:text="${transaction.reversalTransaction.documentCode}">Không có</dd>
         </dl>
     </section>
 
+    <!-- Form hủy chỉ hiện khi service xác nhận phiếu đủ điều kiện hủy. -->
     <section class="panel cancel-panel" th:if="${canCancel}">
         <h2>Hủy phiếu thu/chi thủ công</h2>
         <form class="form-panel"

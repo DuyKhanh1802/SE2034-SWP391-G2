@@ -21,12 +21,14 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
 
     Optional<CashTransaction> findBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
 
+    // Lấy chi tiết kèm người tạo, người hủy và giao dịch liên quan để Thymeleaf hiển thị.
     @Query("""
             SELECT ct
             FROM CashTransaction ct
             LEFT JOIN FETCH ct.createdBy
             LEFT JOIN FETCH ct.cancelledBy
-            LEFT JOIN FETCH ct.originalTransaction
+            LEFT JOIN FETCH ct.originalTransaction originalTransaction
+            LEFT JOIN FETCH originalTransaction.cancelledBy
             LEFT JOIN FETCH ct.reversalTransaction
             WHERE ct.id = :id
             """)
@@ -34,6 +36,7 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
 
     List<CashTransaction> findByOrderByCreatedAtDesc(Pageable pageable);
 
+    // Tìm giao dịch theo bộ lọc trên màn list.
     @Query("""
             SELECT ct
             FROM CashTransaction ct

@@ -28,6 +28,7 @@ public class CashTransactionController {
     private final CashTransactionService cashTransactionService;
     private final ProfileService profileService;
 
+    // Hiển thị danh sách dòng tiền, bộ lọc và phân trang.
     @GetMapping("/manager/transactions")
     public String listTransactions(@ModelAttribute CashTransactionRequest searchRequest,
                                    Model model,
@@ -53,6 +54,7 @@ public class CashTransactionController {
         return "manager/list_transactions";
     }
 
+    // Mở form lập phiếu thu/chi thủ công.
     @GetMapping("/manager/transactions/create")
     public String showCreateTransactionForm(Model model,
                                             Authentication authentication,
@@ -62,6 +64,7 @@ public class CashTransactionController {
         return "manager/create_manual_voucher";
     }
 
+    // Nhận dữ liệu form và nhờ service tạo phiếu thu/chi.
     @PostMapping("/manager/transactions/create")
     public String createManualTransaction(@ModelAttribute("voucher") CashTransactionCreateRequest request,
                                           Model model,
@@ -81,6 +84,7 @@ public class CashTransactionController {
         }
     }
 
+    // Xem chi tiết một dòng tiền.
     @GetMapping("/manager/transactions/{id}")
     public String transactionDetail(@PathVariable Long id,
                                     Model model,
@@ -100,6 +104,7 @@ public class CashTransactionController {
         }
     }
 
+    // Hủy phiếu thủ công và quay lại màn chi tiết.
     @PostMapping("/manager/transactions/{id}/cancel")
     public String cancelManualVoucher(@PathVariable Long id,
                                       @RequestParam String cancellationReason,

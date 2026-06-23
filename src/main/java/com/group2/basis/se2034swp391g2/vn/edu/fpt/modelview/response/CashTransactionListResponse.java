@@ -13,10 +13,13 @@ import java.util.List;
 @AllArgsConstructor
 public class CashTransactionListResponse {
 
+    // Danh sách giao dịch của trang hiện tại.
     private List<CashTransactionResponse> transactions;
 
+    // Tổng số giao dịch sau khi lọc.
     private long totalTransactions;
 
+    // Thông tin phân trang để template vẽ nút Trước/Sau.
     private int currentPage;
 
     private int totalPages;

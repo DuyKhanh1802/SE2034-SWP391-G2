@@ -183,11 +183,16 @@ public class CashTransactionService {
         originalTransaction.setCancellationReason(reason.trim());
 
         // Tạo giao dịch đảo chiều để tổng tác động tài chính của hai dòng bằng 0.
+        BigDecimal reversalAmount = originalTransaction.getAmount().negate();
+        CashTransactionType reversalType = reversalAmount.compareTo(BigDecimal.ZERO) >= 0
+                ? CashTransactionType.INCOME
+                : CashTransactionType.EXPENSE;
+
         CashTransaction reversalTransaction = CashTransaction.builder()
-                .documentCode(generateDocumentCode(originalTransaction.getType()))
-                .type(originalTransaction.getType())
+                .documentCode(generateDocumentCode(reversalType))
+                .type(reversalType)
                 .category(CashTransactionCategory.REVERSAL)
-                .amount(originalTransaction.getAmount().negate())
+                .amount(reversalAmount)
                 .description("Đảo chiều hủy chứng từ " + originalTransaction.getDocumentCode())
                 .sourceType(CashTransactionSourceType.MANUAL)
                 .sourceId(originalTransaction.getId())
@@ -408,8 +413,10 @@ public class CashTransactionService {
                 .createdAt(transaction.getCreatedAt())
                 .type(transaction.getType().name())
                 .typeDisplayName(transaction.getType().getDisplayName())
+                .category(transaction.getCategory().name())
                 .categoryDisplayName(transaction.getCategory().getDisplayName())
                 .amount(transaction.getAmount())
+                .sourceType(transaction.getSourceType().name())
                 .sourceDisplayName(transaction.getSourceType().getDisplayName())
                 .statusDisplayName(resolveStatus(transaction).getDisplayName())
                 .build();

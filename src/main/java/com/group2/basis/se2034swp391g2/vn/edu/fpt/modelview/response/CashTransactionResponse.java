@@ -10,6 +10,7 @@ import java.time.Instant;
 @Builder
 public class CashTransactionResponse {
 
+    // Dữ liệu một dòng giao dịch dùng để hiển thị trong bảng list.
     private Long id;
 
     private String documentCode;
@@ -22,9 +23,13 @@ public class CashTransactionResponse {
 
     private String categoryDisplayName;
 
+    private String category;
+
     private BigDecimal amount;
 
     private String sourceDisplayName;
+
+    private String sourceType;
 
     private String statusDisplayName;
 }
