@@ -54,4 +54,8 @@ public class BookingCreateRequest {
     private PaymentMethod depositMethod;
 
     private Map<Long, Integer> extraBedCounts;
+
+    private List<Long> serviceIds;
+    private Map<Long, Integer> serviceQuantities;
+    private List<Integer> childAges;
 }

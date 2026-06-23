@@ -19,7 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Page.GuestSessionAdvice;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.GuestRoomSession;
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
@@ -44,6 +45,14 @@ public class ProfileService {
         if (loginUserId != null) {
             return userRepository.findUserWithRoleById(loginUserId).orElse(null);
         }
+
+        GuestRoomSession guestSession =
+                (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+
+        if (guestSession != null && guestSession.getGuestId() != null) {
+            return userRepository.findUserWithRoleById(guestSession.getGuestId()).orElse(null);
+        }
+
 
         return null;
     }

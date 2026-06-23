@@ -36,9 +36,19 @@
                 <label>KHOẢNG THỜI GIAN</label>
 
                 <div class="date-inputs">
-                    <input type="date" name="checkIn" th:value="${checkIn}">
+                    <input type="text"
+                           name="checkIn"
+                           class="list-date-picker"
+                           placeholder="dd/mm/yyyy"
+                           th:value="${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : ''}">
+
                     <span>/</span>
-                    <input type="date" name="checkOut" th:value="${checkOut}">
+
+                    <input type="text"
+                           name="checkOut"
+                           class="list-date-picker"
+                           placeholder="dd/mm/yyyy"
+                           th:value="${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : ''}">
                 </div>
             </div>
 
@@ -93,9 +103,13 @@
 
                     <td th:text="${booking.roomName}"></td>
 
-                    <td th:text="${booking.checkInDate}"></td>
+                    <td th:text="${booking.checkInDate != null ? #temporals.format(booking.checkInDate, 'dd/MM/yyyy') : ''}">
+                        20/06/2026
+                    </td>
 
-                    <td th:text="${booking.checkOutDate}"></td>
+                    <td th:text="${booking.checkOutDate != null ? #temporals.format(booking.checkOutDate, 'dd/MM/yyyy') : ''}">
+                        21/06/2026
+                    </td>
 
                     <td>
                             <span class="status-badge"
@@ -150,12 +164,12 @@
 
                 <!-- Previous -->
                 <a th:href="@{/receptionist/bookings(
-                page=${currentPage - 1},
-                keyword=${keyword},
-                checkIn=${checkIn},
-                checkOut=${checkOut},
-                status=${status}
-            )}"
+        page=${currentPage - 1},
+        keyword=${keyword},
+        checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},
+        checkOut=${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : null},
+        status=${status}
+    )}"
                    th:classappend="${currentPage == 0} ? ' disabled'">
                     <i class="bi bi-chevron-left"></i>
                 </a>
@@ -163,27 +177,27 @@
                 <!-- Page numbers -->
                 <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
                    th:href="@{/receptionist/bookings(
-                page=${pageNumber},
-                keyword=${keyword},
-                checkIn=${checkIn},
-                checkOut=${checkOut},
-                status=${status}
-           )}"
+        page=${pageNumber},
+        keyword=${keyword},
+        checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},
+        checkOut=${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : null},
+        status=${status}
+   )}"
                    th:text="${pageNumber + 1}"
                    th:classappend="${pageNumber == currentPage} ? ' active'">
                 </a>
 
                 <!-- Next -->
-                <a th:href="@{/receptionist/bookings(
-                page=${currentPage + 1},
-                keyword=${keyword},
-                checkIn=${checkIn},
-                checkOut=${checkOut},
-                status=${status}
-            )}"
-                   th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'">
-                    <i class="bi bi-chevron-right"></i>
-                </a>
+                <<a th:href="@{/receptionist/bookings(
+        page=${currentPage + 1},
+        keyword=${keyword},
+        checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},
+        checkOut=${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : null},
+        status=${status}
+    )}"
+                    th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'">
+                <i class="bi bi-chevron-right"></i>
+            </a>
 
             </div>
         </div>
