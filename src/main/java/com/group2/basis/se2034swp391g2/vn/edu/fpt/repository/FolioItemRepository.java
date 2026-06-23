@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
+    List<FolioItem> findByBookingIdAndIsVoidedFalseOrderByPostedAtAsc(Long bookingId);
+
     @Query("""
             SELECT f.description, COALESCE(SUM(f.quantity), 0), COALESCE(SUM(f.amount), 0)
             FROM FolioItem f

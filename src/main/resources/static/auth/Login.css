@@ -1,0 +1,10 @@
+.room-code-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.room-code-link:hover {
+    text-decoration: none;
+}

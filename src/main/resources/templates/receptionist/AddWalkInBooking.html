@@ -29,6 +29,12 @@
                 <i class="fa-solid fa-circle-exclamation"></i>
                 <span>Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.</span>
             </div>
+
+            <input type="hidden" id="vatRate" th:value="${vatRate}">
+            <input type="hidden" id="serviceChargeRate" th:value="${serviceChargeRate}">
+            <input type="hidden" id="taxOnServiceCharge" th:value="${taxOnServiceCharge}">
+            <input type="hidden" id="priceDisplayMode" th:value="${priceDisplayMode}">
+
             <div class="booking-layout">
 
                 <!-- Left Column -->
@@ -80,6 +86,21 @@
                                    data-message="Vui lòng nhập số trẻ em, nếu không có hãy nhập 0."
                                    placeholder="Nhập số trẻ em"
                                    required>
+                            <small class="field-error"></small>
+                        </div>
+                        <div class="form-group-line form-group-wide" id="childAgesWrapper" style="display:none;">
+                            <label>ĐỘ TUỔI TRẺ EM</label>
+
+                            <div id="childAgesContainer" class="child-ages-container">
+
+                            </div>
+                            <div id="initialChildAges" style="display:none;">
+                                <input type="hidden"
+                                       class="initial-child-age"
+                                       th:each="age : *{childAges}"
+                                       th:value="${age}">
+                            </div>
+
                             <small class="field-error"></small>
                         </div>
 
@@ -382,19 +403,153 @@
                         </div>
                     </div>
 
+                    <!-- Additional Services -->
+                    <div class="walkin-card">
+                        <div class="section-title">
+                            <h3>Dịch vụ thêm</h3>
+                            <p>Chọn thêm dịch vụ ăn uống hoặc chăm sóc sức khỏe nếu khách có nhu cầu.</p>
+                        </div>
+
+                        <!-- DINING -->
+                        <div class="service-group-card">
+                            <label class="service-group-toggle">
+                                <input type="checkbox" id="enableDiningService">
+                                <span>+ Thêm dịch vụ ăn uống</span>
+                            </label>
+
+                            <div id="diningServicePanel" class="service-panel" style="display:none;">
+                                <div id="diningServiceRows"></div>
+
+                                <button type="button"
+                                        class="btn-add-service-row"
+                                        data-target="dining">
+                                    + Thêm dịch vụ ăn uống
+                                </button>
+
+                                <!-- Dining template -->
+                                <div id="diningServiceTemplate"
+                                     class="service-row service-template"
+                                     style="display:none;">
+
+                                    <div class="service-field">
+                                        <label>Dịch vụ</label>
+                                        <select class="service-select dining-select">
+                                            <option value="">Chọn dịch vụ ăn uống</option>
+                                            <option th:each="service : ${diningServices}"
+                                                    th:value="${service.id}"
+                                                    th:data-price="${service.price}"
+                                                    th:text="${service.name + ' - ' + #numbers.formatDecimal(service.price,0,'COMMA',0,'POINT') + ' VND'}">
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="service-row-bottom">
+                                        <div class="service-field">
+                                            <label>Số lượng</label>
+                                            <input type="number"
+                                                   class="service-quantity"
+                                                   min="1"
+                                                   value="1">
+                                        </div>
+
+                                        <div class="service-field">
+                                            <label>Thành tiền</label>
+                                            <div class="service-price-preview">0 VND</div>
+                                        </div>
+
+                                        <div class="service-field">
+                                            <label>&nbsp;</label>
+                                            <button type="button" class="btn-remove-service-row">Xóa</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WELLNESS -->
+                        <div class="service-group-card">
+                            <label class="service-group-toggle">
+                                <input type="checkbox" id="enableWellnessService">
+                                <span>+ Thêm dịch vụ chăm sóc sức khỏe</span>
+                            </label>
+
+                            <div id="wellnessServicePanel" class="service-panel" style="display:none;">
+                                <div id="wellnessServiceRows"></div>
+
+                                <button type="button"
+                                        class="btn-add-service-row"
+                                        data-target="wellness">
+                                    + Thêm dịch vụ chăm sóc sức khỏe
+                                </button>
+
+                                <!-- Wellness template -->
+                                <div id="wellnessServiceTemplate"
+                                     class="service-row service-template"
+                                     style="display:none;">
+
+                                    <div class="service-field">
+                                        <label>Dịch vụ</label>
+                                        <select class="service-select wellness-select">
+                                            <option value="">Chọn dịch vụ chăm sóc sức khỏe</option>
+                                            <option th:each="service : ${wellnessServices}"
+                                                    th:value="${service.id}"
+                                                    th:data-price="${service.price}"
+                                                    th:text="${service.name + ' - ' + #numbers.formatDecimal(service.price,0,'COMMA',0,'POINT') + ' VND'}">
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="service-row-bottom">
+                                        <div class="service-field">
+                                            <label>Số lượng</label>
+                                            <input type="number"
+                                                   class="service-quantity"
+                                                   min="1"
+                                                   value="1">
+                                        </div>
+
+                                        <div class="service-field">
+                                            <label>Thành tiền</label>
+                                            <div class="service-price-preview">0 VND</div>
+                                        </div>
+
+                                        <div class="service-field">
+                                            <label>&nbsp;</label>
+                                            <button type="button" class="btn-remove-service-row">Xóa</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- hidden area để submit -->
+                        <div id="serviceHiddenInputs"></div>
+                    </div>
+
                     <!-- Price Summary -->
                     <div class="price-summary">
                         <div class="summary-row">
                             <span>Sức chứa đã chọn</span>
                             <span id="selectedCapacity">0 khách</span>
                         </div>
+
                         <div class="summary-row">
                             <span id="nightLabel">Tiền phòng</span>
                             <span id="roomCharge">0 VND</span>
                         </div>
 
                         <div class="summary-row">
-                            <span>Thuế và phí (12%)</span>
+                            <span>Dịch vụ thêm</span>
+                            <span id="additionalServiceCharge">0 VND</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Phí dịch vụ</span>
+                            <span id="serviceChargeAmount">0 VND</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Thuế</span>
                             <span id="taxAmount">0 VND</span>
                         </div>
 

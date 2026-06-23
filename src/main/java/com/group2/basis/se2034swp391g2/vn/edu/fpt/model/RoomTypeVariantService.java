@@ -30,7 +30,7 @@ public class RoomTypeVariantService {
     @Column(name = "included_type", nullable = false, length = 30)
     private String includedType = "INCLUDED";
 
-    @Column(name = "note", length = 255)
+    @Column(name = "note", length = 300, columnDefinition = "NVARCHAR(300)")
     private String note;
 
     @Column(name = "is_deleted", nullable = false)
