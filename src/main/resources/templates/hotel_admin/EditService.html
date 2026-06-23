@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+
+<body>
+<main layout:fragment="content">
+
+    <section class="service-management-page">
+
+        <div class="service-page-header">
+            <h1>Chỉnh sửa dịch vụ</h1>
+            <p>
+                Cập nhật thông tin dịch vụ, trạng thái khả dụng và ảnh đại diện.
+                Nếu không chọn ảnh mới, hệ thống sẽ giữ ảnh hiện tại.
+            </p>
+        </div>
+
+        <div th:if="${errorMessage}" class="service-alert error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+
+        <div class="service-card service-form-card">
+
+            <div class="service-card-top">
+                <div>
+                    <span>FORM</span>
+                    <h3>Thông tin dịch vụ</h3>
+                </div>
+
+                <a th:href="@{/hotel-admin/services}" class="service-btn ghost">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Quay lại
+                </a>
+            </div>
+
+            <form th:action="@{/hotel-admin/services/edit/{id}(id=${serviceRequest.id})}"
+                  th:object="${serviceRequest}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="service-add-form">
+
+                <input type="hidden" th:field="*{id}">
+
+                <div class="service-form-grid">
+
+                    <div class="service-form-group">
+                        <label for="name">Tên dịch vụ <span>*</span></label>
+                        <input type="text"
+                               id="name"
+                               th:field="*{name}"
+                               maxlength="200"
+                               required>
+                    </div>
+
+                    <div class="service-form-group">
+                        <label for="categoryId">Loại dịch vụ <span>*</span></label>
+                        <select id="categoryId"
+                                th:field="*{categoryId}"
+                                required>
+                            <option value="">-- Chọn loại dịch vụ --</option>
+                            <option th:each="category : ${categories}"
+                                    th:value="${category.id}"
+                                    th:text="${category.name}">
+                                Spa
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="service-form-group">
+                        <label for="price">Giá dịch vụ <span>*</span></label>
+                        <input type="number"
+                               id="price"
+                               th:field="*{price}"
+                               min="0"
+                               step="1000"
+                               required>
+                    </div>
+
+                    <div class="service-form-group">
+                        <label for="isAvailable">Trạng thái</label>
+                        <select id="isAvailable"
+                                th:field="*{isAvailable}">
+                            <option th:value="true">Đang khả dụng</option>
+                            <option th:value="false">Tạm tắt</option>
+                        </select>
+                    </div>
+
+                    <div class="service-form-group service-form-full">
+                        <label>Ảnh hiện tại</label>
+
+                        <div th:if="${serviceRequest.currentImageUrl != null}"
+                             class="service-current-image">
+                            <img th:src="${serviceRequest.currentImageUrl}"
+                                 alt="Ảnh dịch vụ hiện tại">
+                        </div>
+
+                        <div th:if="${serviceRequest.currentImageUrl == null}"
+                             class="service-no-current-image">
+                            Chưa có ảnh đại diện.
+                        </div>
+                    </div>
+
+                    <div class="service-form-group service-form-full">
+                        <label for="imageFile">Đổi ảnh đại diện</label>
+                        <input type="file"
+                               id="imageFile"
+                               th:field="*{imageFile}"
+                               accept="image/*">
+                        <small>
+                            Chọn ảnh nếu muốn thay ảnh hiện tại.
+                        </small>
+                    </div>
+
+                    <div class="service-form-group service-form-full">
+                        <label for="description">Mô tả dịch vụ</label>
+                        <textarea id="description"
+                                  th:field="*{description}"
+                                  rows="5"
+                                  placeholder="Nhập mô tả ngắn về dịch vụ..."></textarea>
+                    </div>
+
+                </div>
+
+                <div class="service-form-actions">
+                    <a th:href="@{/hotel-admin/services}" class="service-btn ghost">
+                        Hủy
+                    </a>
+
+                    <button type="submit" class="service-btn primary">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Lưu thay đổi
+                    </button>
+                </div>
+
+            </form>
+
+            <form th:action="@{/hotel-admin/services/edit/{id}/delete(id=${serviceRequest.id})}"
+                  method="post"
+                  class="service-small-delete-form"
+                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa dịch vụ này không?');">
+
+                <button type="submit" class="service-delete-small-btn">
+                    <i class="fa-regular fa-trash-can"></i>
+                    Xóa dịch vụ
+                </button>
+            </form>
+
+        </div>
+
+    </section>
+
+</main>
+</body>
+</html>
