@@ -46,10 +46,10 @@ public class OnlineBookingService {
     private final ServiceRepository serviceRepository;
     private final PromotionRepository promotionRepository;
 
-    @Transactional(readOnly = true)
-    public BookingConfirmView prepareConfirmView(BookingConfirmRequest request){
-
-    }
+//    @Transactional(readOnly = true)
+//    public BookingConfirmView prepareConfirmView(BookingConfirmRequest request){
+//
+//    }
 
     private void validateBasicBookingRequest(BookingConfirmRequest request){
         if(request == null){
