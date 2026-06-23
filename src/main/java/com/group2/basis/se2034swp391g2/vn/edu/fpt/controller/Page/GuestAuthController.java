@@ -75,12 +75,12 @@ public class GuestAuthController {
 
         session.setAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION, guestSession);
 
-        return "redirect:/home";
+        return "redirect:/page/home";
     }
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.removeAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
-        return "redirect:/home";
+        return "redirect:/page/home";
     }
 }

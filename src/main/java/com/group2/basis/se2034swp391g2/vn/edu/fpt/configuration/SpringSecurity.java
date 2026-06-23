@@ -28,8 +28,13 @@ public class SpringSecurity {
                         // 1. Nhóm các đường dẫn Public (Ai cũng vào được)
                         .requestMatchers(
                                 "/",
-                                "/page/**",
+                                "/home",
+                                "/room-types",
+                                "/overview",
+                                "/offers",
+                                "/accommodation",
                                 "/services",
+                                "/services/**",
                                 "/error",
                                 "/common/**",
                                 "/auth/**",

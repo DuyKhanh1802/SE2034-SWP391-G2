@@ -44,13 +44,29 @@
                 </button>
 
                 <div class="guest-profile-menu" id="guestProfileMenu">
-                    <a th:href="@{/guest/profile}" class="guest-profile-item">View Profile</a>
-                    <a th:href="@{/guest/booking}" class="guest-profile-item">View Booking</a>
-                    <a th:href="@{/guest/folio}" class="guest-profile-item">View Folio</a>
+
+                    <a th:href="@{/guest/profile}" class="guest-profile-item">
+                        <i class="bi bi-person"></i>
+                        <span>View profile</span>
+                    </a>
+
+                    <a th:href="@{/guest/booking}" class="guest-profile-item">
+                        <i class="bi bi-calendar3"></i>
+                        <span>View booking</span>
+                    </a>
+
+                    <a th:href="@{/guest/folio}" class="guest-profile-item">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>View folio</span>
+                    </a>
 
                     <div class="guest-profile-divider"></div>
 
-                    <a th:href="@{/guest/logout}" class="guest-profile-item logout-item">Đăng xuất</a>
+                    <a th:href="@{/guest/logout}" class="guest-profile-item logout-item">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Đăng xuất</span>
+                    </a>
+
                 </div>
             </div>
 
