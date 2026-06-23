@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Confirm Booking | V'Hotel Hanoi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/page/BookingConfirm.css}">
+</head>
+
+<body>
+
+<div class="confirm-page">
+
+    <div class="rate-guarantee">CAM KẾT GIÁ TỐT NHẤT</div>
+
+    <a class="booking-close-btn" th:href="@{/page/booking/services(
+            variantIds=${request.variantIds},
+            checkInDate=${request.checkInDate},
+            checkOutDate=${request.checkOutDate},
+            adults=${request.adults},
+            children=${request.children},
+            roomCount=${request.roomCount},
+            roomGuests=${request.roomGuests},
+            promoCode=${request.promoCode}
+    )}">
+        <span></span>
+        <span></span>
+    </a>
+
+    <div class="currency-switch">₫ · VND</div>
+
+    <section class="confirm-hero">
+        <div class="brand-center">V'HOTEL</div>
+        <p>V'HOTEL HÀ NỘI</p>
+        <h1>Confirm your booking</h1>
+    </section>
+
+    <main class="confirm-content">
+
+        <form th:action="@{/page/booking/complete}" method="post" class="confirm-layout">
+
+            <section class="confirm-main">
+
+                <div class="confirm-card" th:if="${errorMessage != null}">
+                    <div class="alert-error" th:text="${errorMessage}">
+                        Có lỗi xảy ra.
+                    </div>
+                </div>
+
+                <div class="confirm-card">
+                    <div class="section-heading">
+                        <span>01</span>
+                        <div>
+                            <h2>Primary guest details</h2>
+                            <p>Thông tin khách chính để khách sạn liên hệ và gửi xác nhận đặt phòng.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>First name <b>*</b></label>
+                            <input type="text"
+                                   name="guestFirstName"
+                                   th:value="${request.guestFirstName}"
+                                   maxlength="50"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Last name <b>*</b></label>
+                            <input type="text"
+                                   name="guestLastName"
+                                   th:value="${request.guestLastName}"
+                                   maxlength="50"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phone <b>*</b></label>
+                            <input type="tel"
+                                   name="guestPhone"
+                                   th:value="${request.guestPhone}"
+                                   maxlength="20"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email <b>*</b></label>
+                            <input type="email"
+                                   name="guestEmail"
+                                   th:value="${request.guestEmail}"
+                                   maxlength="150"
+                                   required>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Special requests</label>
+                            <textarea name="specialRequests"
+                                      maxlength="500"
+                                      rows="4"
+                                      th:text="${request.specialRequests}"
+                                      placeholder="Ví dụ: phòng tầng cao, gần thang máy, dị ứng thực phẩm..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirm-card">
+                    <div class="section-heading">
+                        <span>02</span>
+                        <div>
+                            <h2>Bank transfer payment</h2>
+                            <p>Quét QR hoặc chuyển khoản theo thông tin dưới đây. Nội dung chuyển khoản cần đúng mã booking.</p>
+                        </div>
+                    </div>
+
+                    <div class="payment-box">
+                        <div class="qr-box">
+                            <img th:src="@{/images/payment/vhotel-bank-qr.png}" alt="VHotel bank QR">
+                            <p>QR chuyển khoản</p>
+                        </div>
+
+                        <div class="bank-info">
+                            <div class="bank-row">
+                                <span>Ngân hàng</span>
+                                <strong th:text="${confirmView.bankTransferInfo.bankName}">Vietcombank</strong>
+                            </div>
+
+                            <div class="bank-row">
+                                <span>Số tài khoản</span>
+                                <strong th:text="${confirmView.bankTransferInfo.accountNumber}">0123456789</strong>
+                            </div>
+
+                            <div class="bank-row">
+                                <span>Chủ tài khoản</span>
+                                <strong th:text="${confirmView.bankTransferInfo.accountName}">VHOTEL HANOI</strong>
+                            </div>
+
+                            <div class="bank-row highlight">
+                                <span>Số tiền</span>
+                                <strong th:text="${#numbers.formatDecimal(confirmView.bankTransferInfo.amount, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                                    0 VND
+                                </strong>
+                            </div>
+
+                            <div class="bank-row highlight">
+                                <span>Nội dung CK</span>
+                                <strong th:text="${confirmView.bankTransferInfo.transferContent}">BK-000000</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="confirm-checkbox">
+                        <input type="checkbox" name="paymentAcknowledged" value="true" required>
+                        <span>
+                            Tôi đã thực hiện chuyển khoản hoặc sẽ chuyển khoản theo đúng thông tin trên.
+                            Tôi hiểu rằng booking sẽ ở trạng thái chờ xác nhận thanh toán.
+                        </span>
+                    </label>
+                </div>
+
+            </section>
+
+            <aside class="summary-panel">
+
+                <div class="summary-card">
+
+                    <div class="summary-header">
+                        <h3>Payment summary</h3>
+                        <span th:text="${confirmView.nights + ' đêm'}">2 đêm</span>
+                    </div>
+
+                    <div class="hotel-box">
+                        <h4>V'Hotel Hanoi</h4>
+                        <p>
+                            <span th:text="${#temporals.format(confirmView.checkInDate, 'dd/MM/yyyy')}">20/06/2026</span>
+                            <span> → </span>
+                            <span th:text="${#temporals.format(confirmView.checkOutDate, 'dd/MM/yyyy')}">22/06/2026</span>
+                        </p>
+                        <small th:text="${confirmView.adults + ' người lớn'
+                                + (confirmView.children != null and confirmView.children > 0 ? ', ' + confirmView.children + ' trẻ em' : '')}">
+                            1 người lớn
+                        </small>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="room-summary"
+                         th:each="room : ${confirmView.rooms}">
+
+                        <div class="room-title">
+                            <strong th:text="${'Room ' + room.roomIndex}">Room 1</strong>
+                            <span th:text="${#numbers.formatDecimal(room.roomSubtotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                                0 VND
+                            </span>
+                        </div>
+
+                        <p class="room-name" th:text="${room.variantName}">Deluxe Garden View</p>
+
+                        <small th:text="${room.adults + ' người lớn'
+                                + (room.children != null and room.children > 0 ? ', ' + room.children + ' trẻ em' : '')}">
+                            1 người lớn
+                        </small>
+
+                        <div class="included-box"
+                             th:if="${room.includedServiceSummary != null and room.includedServiceSummary != ''}">
+                            <b>Included services</b>
+                            <p th:text="${room.includedServiceSummary}">Breakfast x2</p>
+                        </div>
+
+                        <div class="addon-box">
+                            <b>Add-on services</b>
+
+                            <div th:if="${room.addOnServices == null or #lists.isEmpty(room.addOnServices)}">
+                                <em>Không chọn thêm dịch vụ</em>
+                            </div>
+
+                            <div class="addon-line"
+                                 th:each="service : ${room.addOnServices}">
+                                <span th:text="${service.serviceName + ' x' + service.quantity}">
+                                    Buffet x2
+                                </span>
+                                <strong th:text="${#numbers.formatDecimal(service.lineTotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                                    0 VND
+                                </strong>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="total-row">
+                        <span>Tiền phòng</span>
+                        <strong th:text="${#numbers.formatDecimal(confirmView.priceSummary.roomSubtotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div class="total-row">
+                        <span>Tiền dịch vụ gọi thêm</span>
+                        <strong th:text="${#numbers.formatDecimal(confirmView.priceSummary.serviceSubtotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div class="total-row">
+                        <span>Phí dịch vụ</span>
+                        <strong th:text="${#numbers.formatDecimal(confirmView.priceSummary.serviceChargeTotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div class="total-row">
+                        <span>VAT</span>
+                        <strong th:text="${#numbers.formatDecimal(confirmView.priceSummary.vatTotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div class="total-row discount"
+                         th:if="${confirmView.priceSummary.discountAmount != null and confirmView.priceSummary.discountAmount > 0}">
+                        <span>Giảm giá</span>
+                        <strong th:text="${'-' + #numbers.formatDecimal(confirmView.priceSummary.discountAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                            -0 VND
+                        </strong>
+                    </div>
+
+                    <div class="total-row grand">
+                        <span>Tổng thanh toán</span>
+                        <strong th:text="${#numbers.formatDecimal(confirmView.priceSummary.grandTotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <input type="hidden" name="bookingReference" th:value="${confirmView.bookingReference}">
+                    <input type="hidden" name="variantIds" th:value="${request.variantIds}">
+                    <input type="hidden" name="checkInDate" th:value="${request.checkInDate}">
+                    <input type="hidden" name="checkOutDate" th:value="${request.checkOutDate}">
+                    <input type="hidden" name="adults" th:value="${request.adults}">
+                    <input type="hidden" name="children" th:value="${request.children}">
+                    <input type="hidden" name="roomCount" th:value="${request.roomCount}">
+                    <input type="hidden" name="roomGuests" th:value="${request.roomGuests}">
+                    <input type="hidden" name="promoCode" th:value="${request.promoCode}">
+
+                    <div th:each="roomService, iter : ${request.roomServices}">
+                        <input type="hidden"
+                               th:name="${'roomServices[' + iter.index + '].roomIndex'}"
+                               th:value="${roomService.roomIndex}">
+                        <input type="hidden"
+                               th:name="${'roomServices[' + iter.index + '].serviceId'}"
+                               th:value="${roomService.serviceId}">
+                        <input type="hidden"
+                               th:name="${'roomServices[' + iter.index + '].quantity'}"
+                               th:value="${roomService.quantity}">
+                    </div>
+
+                    <button type="submit" class="confirm-btn">
+                        Confirm Booking
+                    </button>
+
+                    <p class="small-note">
+                        Booking sẽ được lưu với trạng thái chờ xác nhận thanh toán.
+                    </p>
+
+                </div>
+
+            </aside>
+
+        </form>
+
+    </main>
+
+</div>
+
+</body>
+</html>
