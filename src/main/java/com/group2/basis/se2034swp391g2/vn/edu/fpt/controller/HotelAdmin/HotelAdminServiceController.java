@@ -126,6 +126,89 @@ public class HotelAdminServiceController {
         }
     }
 
+    @GetMapping("/edit/{id}")
+    public String showEditServiceForm(@PathVariable Long id,
+                                      Model model,
+                                      Authentication authentication,
+                                      HttpSession session,
+                                      HttpServletRequest request,
+                                      RedirectAttributes redirectAttributes) {
+
+        try {
+            addLayoutData(model, authentication, session, request, "Chỉnh sửa dịch vụ");
+
+            ServiceRequest serviceRequest = serviceManagementService.getServiceForEdit(id);
+
+            model.addAttribute("serviceRequest", serviceRequest);
+            model.addAttribute("categories", serviceManagementService.getServiceCategories());
+
+            return "hotel_admin/EditService";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/hotel-admin/services";
+        }
+    }
+
+    @PostMapping("/edit/{id}")
+    public String updateService(@PathVariable Long id,
+                                @ModelAttribute("serviceRequest") ServiceRequest serviceRequest,
+                                Model model,
+                                Authentication authentication,
+                                HttpSession session,
+                                HttpServletRequest request,
+                                RedirectAttributes redirectAttributes) {
+
+        try {
+            serviceManagementService.updateService(id, serviceRequest);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Cập nhật dịch vụ thành công."
+            );
+
+            return "redirect:/hotel-admin/services";
+
+        } catch (Exception e) {
+            addLayoutData(model, authentication, session, request, "Chỉnh sửa dịch vụ");
+
+            serviceRequest.setId(id);
+
+            try {
+                ServiceRequest oldData = serviceManagementService.getServiceForEdit(id);
+                serviceRequest.setCurrentImageUrl(oldData.getCurrentImageUrl());
+            } catch (Exception ignored) {
+                serviceRequest.setCurrentImageUrl(null);
+            }
+
+            model.addAttribute("serviceRequest", serviceRequest);
+            model.addAttribute("categories", serviceManagementService.getServiceCategories());
+            model.addAttribute("errorMessage", e.getMessage());
+
+            return "hotel_admin/EditService";
+        }
+    }
+    @PostMapping("/edit/{id}/delete")
+    public String deleteService(@PathVariable Long id,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            serviceManagementService.deleteService(id);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Xóa dịch vụ thành công."
+            );
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/hotel-admin/services";
+    }
+
     @PostMapping("/{id}/toggle-availability")
     public String toggleAvailability(@PathVariable Long id,
                                      @RequestParam(defaultValue = "0") int page,
@@ -134,6 +217,7 @@ public class HotelAdminServiceController {
                                      @RequestParam(required = false) Long categoryId,
                                      @RequestParam(defaultValue = "ALL") String availability,
                                      RedirectAttributes redirectAttributes) {
+
         try {
             serviceManagementService.toggleAvailability(id);
 
