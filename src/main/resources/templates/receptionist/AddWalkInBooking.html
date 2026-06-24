@@ -23,7 +23,17 @@
         <form th:action="@{/receptionist/bookings/add-walk-in}"
               th:object="${request}"
               method="post"
-              class="walkin-form">
+              class="walkin-form"
+              novalidate>
+            <div class="form-error-summary" id="formErrorSummary">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.</span>
+            </div>
+
+            <input type="hidden" id="vatRate" th:value="${vatRate}">
+            <input type="hidden" id="serviceChargeRate" th:value="${serviceChargeRate}">
+            <input type="hidden" id="taxOnServiceCharge" th:value="${taxOnServiceCharge}">
+            <input type="hidden" id="priceDisplayMode" th:value="${priceDisplayMode}">
 
             <div class="booking-layout">
 
@@ -35,29 +45,63 @@
 
                         <div class="form-group-line">
                             <label>NGÀY NHẬN PHÒNG</label>
-                            <input type="date" th:field="*{checkInDate}" required>
+                            <input type="text"
+                                   class="date-picker check-in-date required-field"
+                                   th:field="*{checkInDate}"
+                                   data-message="Vui lòng chọn ngày nhận phòng."
+                                   placeholder="dd/mm/yyyy"
+                                   required>
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group-line">
                             <label>NGÀY TRẢ PHÒNG</label>
-                            <input type="date" th:field="*{checkOutDate}" required>
+                            <input type="text"
+                                   class="date-picker check-out-date required-field"
+                                   th:field="*{checkOutDate}"
+                                   data-message="Vui lòng chọn ngày trả phòng."
+                                   placeholder="dd/mm/yyyy"
+                                   required>
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group-line">
                             <label>NGƯỜI LỚN</label>
                             <input type="number"
+                                   class="required-field"
                                    th:field="*{adults}"
                                    min="1"
+                                   data-message="Vui lòng nhập số người lớn, tối thiểu là 1."
                                    placeholder="Nhập số người lớn"
                                    required>
+                            <small class="field-error"></small>
                         </div>
 
                         <div class="form-group-line">
                             <label>TRẺ EM</label>
                             <input type="number"
+                                   class="required-field"
                                    th:field="*{children}"
                                    min="0"
-                                   placeholder="Nhập số trẻ em">
+                                   data-message="Vui lòng nhập số trẻ em, nếu không có hãy nhập 0."
+                                   placeholder="Nhập số trẻ em"
+                                   required>
+                            <small class="field-error"></small>
+                        </div>
+                        <div class="form-group-line form-group-wide" id="childAgesWrapper" style="display:none;">
+                            <label>ĐỘ TUỔI TRẺ EM</label>
+
+                            <div id="childAgesContainer" class="child-ages-container">
+
+                            </div>
+                            <div id="initialChildAges" style="display:none;">
+                                <input type="hidden"
+                                       class="initial-child-age"
+                                       th:each="age : *{childAges}"
+                                       th:value="${age}">
+                            </div>
+
+                            <small class="field-error"></small>
                         </div>
 
                     </div>
@@ -121,31 +165,31 @@
             <span th:text="${room.maxChildren}">0</span> trẻ em
         </span>
 
-        <span class="room-meta" th:if="${room.allowExtraBed}">
-            Giường phụ:
-            tối đa <span th:text="${room.maxExtraBeds}">1</span>
-            •
-            <span th:text="${#numbers.formatDecimal(room.extraBedPrice, 0, 'COMMA', 0, 'POINT')} + ' VND/đêm'">
-                0 VND/đêm
-            </span>
-        </span>
+        <span class="room-meta" th:if="${room.allowExtraBed == true}">
+    Giường phụ:
+    tối đa <span th:text="${room.maxExtraBeds != null ? room.maxExtraBeds : 0}">0</span>
+    •
+    <span th:text="${#numbers.formatDecimal(room.extraBedPrice != null ? room.extraBedPrice : 0, 0, 'COMMA', 0, 'POINT')} + ' VND/đêm'">
+        0 VND/đêm
+    </span>
+</span>
 
-        <span class="room-meta" th:if="${!room.allowExtraBed}">
+        <span class="room-meta" th:if="${room.allowExtraBed != true}">
             Không hỗ trợ giường phụ
         </span>
 
-        <div class="extra-bed-select-wrap" th:if="${room.allowExtraBed}">
+        <div class="extra-bed-select-wrap" th:if="${room.allowExtraBed == true}">
     <label>Giường phụ</label>
 
     <select class="extra-bed-select"
             th:name="'extraBedCounts[' + ${room.roomId} + ']'"
-            th:attr="data-extra-price=${room.extraBedPrice}">
+            th:attr="data-extra-price=${room.extraBedPrice != null ? room.extraBedPrice : 0}">
         <option value="0">Không thêm</option>
-        <option th:each="i : ${#numbers.sequence(1, room.maxExtraBeds)}"
+        <option th:each="i : ${#numbers.sequence(1, room.maxExtraBeds != null ? room.maxExtraBeds : 0)}"
                 th:value="${i}"
                 th:text="${i + ' giường'}">
-            1 giường
-        </option>
+    1 giường
+</option>
     </select>
 </div>
                                         <div class="room-more"
@@ -195,22 +239,32 @@
                             <div class="form-group-line">
                                 <label>HỌ</label>
                                 <input type="text"
-                                       th:field="*{firstName}"
+                                       class="required-field"
+                                       th:field="*{lastName}"
+                                       data-message="Vui lòng nhập họ của khách."
                                        placeholder="Ví dụ: Nguyễn"
                                        required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>TÊN</label>
                                 <input type="text"
-                                       th:field="*{lastName}"
+                                       class="required-field"
+                                       th:field="*{firstName}"
+                                       data-message="Vui lòng nhập tên của khách."
                                        placeholder="Ví dụ: Văn An"
                                        required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>QUỐC GIA</label>
-                                <select th:field="*{countryId}" id="countryId" required>
+                                <select th:field="*{countryId}"
+                                        id="countryId"
+                                        class="required-field"
+                                        data-message="Vui lòng chọn quốc gia của khách."
+                                        required>
                                     <option value="">Chọn quốc gia</option>
 
                                     <option th:each="country : ${countries}"
@@ -220,62 +274,79 @@
                                         Việt Nam
                                     </option>
                                 </select>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>SỐ ĐIỆN THOẠI</label>
 
                                 <div class="phone-combined">
-                                    <input type="text"
-                                           id="phoneCode"
-                                           class="phone-code-display"
-                                           readonly
-                                           placeholder="+84">
+                                <input type="text"
+                                       id="phoneCode"
+                                       class="phone-code-display"
+                                       readonly
+                                       placeholder="+84">
 
-                                    <input type="tel"
-                                           id="phoneNumberOnly"
-                                           class="phone-number-only"
-                                           placeholder="382271507"
-                                           maxlength="15"
-                                           pattern="[0-9]{6,15}"
-                                           inputmode="numeric"
-                                           required>
+                                <input type="tel"
+                                       id="phoneNumberOnly"
+                                       class="phone-number-only required-field"
+                                       data-message="Vui lòng nhập số điện thoại của khách."
+                                       placeholder="382271507"
+                                       maxlength="15"
+                                       pattern="[0-9]{6,15}"
+                                       inputmode="numeric"
+                                       required>
 
                                     <input type="hidden"
                                            th:field="*{phoneNumber}"
                                            id="phoneNumber">
                                 </div>
+                            <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>EMAIL</label>
                                 <input type="email"
+                                       class="required-field"
                                        th:field="*{email}"
+                                       data-message="Vui lòng nhập email hợp lệ của khách."
                                        placeholder="Ví dụ: khachhang@example.com"
                                        required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>GIỚI TÍNH</label>
-                                <select th:field="*{gender}" required>
+                                <select th:field="*{gender}"
+                                        class="required-field"
+                                        data-message="Vui lòng chọn giới tính của khách."
+                                        required>
                                     <option value="">Chọn giới tính</option>
                                     <option value="MALE">Nam</option>
                                     <option value="FEMALE">Nữ</option>
                                     <option value="OTHER">Khác</option>
                                 </select>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>NGÀY SINH</label>
-                                <input type="date" th:field="*{dateOfBirth}">
+                                <input type="text"
+                                       class="date-picker birth-date"
+                                       th:field="*{dateOfBirth}"
+                                       placeholder="dd/mm/yyyy">
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">
                                 <label>SỐ GIẤY TỜ</label>
                                 <input type="text"
+                                       class="required-field"
                                        th:field="*{identityNumber}"
+                                       data-message="Vui lòng nhập CCCD hoặc hộ chiếu của khách."
                                        placeholder="CCCD / Hộ chiếu"
                                        required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line form-group-wide">
@@ -287,7 +358,7 @@
 
                         </div>
                     </div>
-                    
+
                     <!-- Deposit -->
                     <div class="deposit-section">
                         <div class="deposit-header">
@@ -319,14 +390,140 @@
 
                             <div class="form-group-line">
                                 <label>PHƯƠNG THỨC THANH TOÁN</label>
-                                <select id="depositMethod" name="depositMethod">
+                                <select id="depositMethod"
+                                        name="depositMethod"
+                                        data-message="Vui lòng chọn phương thức thanh toán tiền đặt cọc.">
                                     <option value="">Chọn phương thức</option>
                                     <option value="CASH">Tiền mặt</option>
                                     <option value="CARD">Thẻ</option>
                                     <option value="TRANSFER">Chuyển khoản</option>
                                 </select>
+                                <small class="field-error"></small>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Additional Services -->
+                    <div class="walkin-card">
+                        <div class="section-title">
+                            <h3>Dịch vụ thêm</h3>
+                            <p>Chọn thêm dịch vụ ăn uống hoặc chăm sóc sức khỏe nếu khách có nhu cầu.</p>
+                        </div>
+
+                        <!-- DINING -->
+                        <div class="service-group-card">
+                            <label class="service-group-toggle">
+                                <input type="checkbox" id="enableDiningService">
+                                <span>+ Thêm dịch vụ ăn uống</span>
+                            </label>
+
+                            <div id="diningServicePanel" class="service-panel" style="display:none;">
+                                <div id="diningServiceRows"></div>
+
+                                <button type="button"
+                                        class="btn-add-service-row"
+                                        data-target="dining">
+                                    + Thêm dịch vụ ăn uống
+                                </button>
+
+                                <!-- Dining template -->
+                                <div id="diningServiceTemplate"
+                                     class="service-row service-template"
+                                     style="display:none;">
+
+                                    <div class="service-field">
+                                        <label>Dịch vụ</label>
+                                        <select class="service-select dining-select">
+                                            <option value="">Chọn dịch vụ ăn uống</option>
+                                            <option th:each="service : ${diningServices}"
+                                                    th:value="${service.id}"
+                                                    th:data-price="${service.price}"
+                                                    th:text="${service.name + ' - ' + #numbers.formatDecimal(service.price,0,'COMMA',0,'POINT') + ' VND'}">
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="service-row-bottom">
+                                        <div class="service-field">
+                                            <label>Số lượng</label>
+                                            <input type="number"
+                                                   class="service-quantity"
+                                                   min="1"
+                                                   value="1">
+                                        </div>
+
+                                        <div class="service-field">
+                                            <label>Thành tiền</label>
+                                            <div class="service-price-preview">0 VND</div>
+                                        </div>
+
+                                        <div class="service-field">
+                                            <label>&nbsp;</label>
+                                            <button type="button" class="btn-remove-service-row">Xóa</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WELLNESS -->
+                        <div class="service-group-card">
+                            <label class="service-group-toggle">
+                                <input type="checkbox" id="enableWellnessService">
+                                <span>+ Thêm dịch vụ chăm sóc sức khỏe</span>
+                            </label>
+
+                            <div id="wellnessServicePanel" class="service-panel" style="display:none;">
+                                <div id="wellnessServiceRows"></div>
+
+                                <button type="button"
+                                        class="btn-add-service-row"
+                                        data-target="wellness">
+                                    + Thêm dịch vụ chăm sóc sức khỏe
+                                </button>
+
+                                <!-- Wellness template -->
+                                <div id="wellnessServiceTemplate"
+                                     class="service-row service-template"
+                                     style="display:none;">
+
+                                    <div class="service-field">
+                                        <label>Dịch vụ</label>
+                                        <select class="service-select wellness-select">
+                                            <option value="">Chọn dịch vụ chăm sóc sức khỏe</option>
+                                            <option th:each="service : ${wellnessServices}"
+                                                    th:value="${service.id}"
+                                                    th:data-price="${service.price}"
+                                                    th:text="${service.name + ' - ' + #numbers.formatDecimal(service.price,0,'COMMA',0,'POINT') + ' VND'}">
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="service-row-bottom">
+                                        <div class="service-field">
+                                            <label>Số lượng</label>
+                                            <input type="number"
+                                                   class="service-quantity"
+                                                   min="1"
+                                                   value="1">
+                                        </div>
+
+                                        <div class="service-field">
+                                            <label>Thành tiền</label>
+                                            <div class="service-price-preview">0 VND</div>
+                                        </div>
+
+                                        <div class="service-field">
+                                            <label>&nbsp;</label>
+                                            <button type="button" class="btn-remove-service-row">Xóa</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- hidden area để submit -->
+                        <div id="serviceHiddenInputs"></div>
                     </div>
 
                     <!-- Price Summary -->
@@ -335,13 +532,24 @@
                             <span>Sức chứa đã chọn</span>
                             <span id="selectedCapacity">0 khách</span>
                         </div>
+
                         <div class="summary-row">
                             <span id="nightLabel">Tiền phòng</span>
                             <span id="roomCharge">0 VND</span>
                         </div>
 
                         <div class="summary-row">
-                            <span>Thuế và phí (12%)</span>
+                            <span>Dịch vụ thêm</span>
+                            <span id="additionalServiceCharge">0 VND</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Phí dịch vụ</span>
+                            <span id="serviceChargeAmount">0 VND</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Thuế</span>
                             <span id="taxAmount">0 VND</span>
                         </div>
 
@@ -377,10 +585,10 @@
                             CHỈ TẠO ĐẶT PHÒNG
                         </button>
                     </div>
-                </div>
-                </div>
 
-            </div>
+                </div> <!-- end right-column -->
+
+            </div> <!-- end booking-layout -->
 
         </form>
 

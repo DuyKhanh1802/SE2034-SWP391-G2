@@ -155,7 +155,10 @@
 
                         <div class="edit-form-group">
                             <label>Ngày sinh</label>
-                            <input type="date" th:field="*{dateOfBirth}">
+                            <input type="text"
+                                   class="date-picker birth-date"
+                                   th:field="*{dateOfBirth}"
+                                   placeholder="dd/mm/yyyy">
                         </div>
 
                         <div class="edit-form-group">

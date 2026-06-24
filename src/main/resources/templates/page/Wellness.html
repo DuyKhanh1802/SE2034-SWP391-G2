@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wellness | V'Hotel Hanoi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/page/HomePage.css}">
+    <link rel="stylesheet" th:href="@{/page/Wellness.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragment/public/header :: publicHeader}"></div>
+
+<main class="wellness-page">
+
+    <section class="wellness-intro">
+        <p class="wellness-eyebrow">V'HOTEL HÀ NỘI</p>
+        <h1>Wellness & Thư giãn</h1>
+        <p class="wellness-description">
+            Tận hưởng những dịch vụ chăm sóc sức khỏe, spa và thư giãn tại V'Hotel,
+            nơi cơ thể và tinh thần được phục hồi trong không gian yên tĩnh, sang trọng.
+        </p>
+    </section>
+
+    <section class="hero-video-section">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source th:src="${heroVideoUrl}" type="video/mp4">
+        </video>
+
+        <div class="hero-video-controls">
+            <button id="videoToggle" class="hero-video-btn" type="button">
+                <i class="bi bi-pause-fill"></i>
+            </button>
+
+            <button id="soundToggle" class="hero-video-btn" type="button">
+                <i class="bi bi-volume-mute-fill"></i>
+            </button>
+        </div>
+
+        <div class="hero-overlay"></div>
+    </section>
+
+    <section class="wellness-list-section">
+
+        <div class="wellness-filter-bar">
+
+            <div class="wellness-filter-tabs">
+                <a th:href="@{/page/services/wellness(page=0, priceFilter='ALL', priceSort=${priceSort})}"
+                   th:classappend="${priceFilter == 'ALL'} ? ' active'">
+                    Tất cả
+                </a>
+            </div>
+
+            <div class="wellness-filter-controls">
+
+                <details class="wellness-dropdown">
+                    <summary>
+                        <span>
+                            Sắp xếp:
+                            <span th:text="${priceSort == 'ASC' ? 'Giá thấp đến cao' :
+                                           (priceSort == 'DESC' ? 'Giá cao đến thấp' : 'Đề xuất')}">
+                                Đề xuất
+                            </span>
+                        </span>
+                        <i class="bi bi-chevron-down"></i>
+                    </summary>
+
+                    <div class="wellness-dropdown-menu">
+                        <a th:href="@{/page/services/wellness(page=0, priceFilter=${priceFilter}, priceSort='DEFAULT')}"
+                           th:classappend="${priceSort == 'DEFAULT'} ? ' active'">
+                            Đề xuất
+                        </a>
+
+                        <a th:href="@{/page/services/wellness(page=0, priceFilter=${priceFilter}, priceSort='ASC')}"
+                           th:classappend="${priceSort == 'ASC'} ? ' active'">
+                            Giá thấp đến cao
+                        </a>
+
+                        <a th:href="@{/page/services/wellness(page=0, priceFilter=${priceFilter}, priceSort='DESC')}"
+                           th:classappend="${priceSort == 'DESC'} ? ' active'">
+                            Giá cao đến thấp
+                        </a>
+                    </div>
+                </details>
+
+                <details class="wellness-dropdown">
+                    <summary>
+                        <span>
+                            Mức giá:
+                            <span th:if="${priceFilter == 'ALL'}">Tất cả</span>
+                            <span th:if="${priceFilter == 'UNDER_200'}">Dưới 200K</span>
+                            <span th:if="${priceFilter == 'FROM_200_TO_500'}">200K - 500K</span>
+                            <span th:if="${priceFilter == 'OVER_500'}">Trên 500K</span>
+                        </span>
+                        <i class="bi bi-chevron-down"></i>
+                    </summary>
+
+                    <div class="wellness-dropdown-menu">
+                        <a th:href="@{/page/services/wellness(page=0, priceFilter='ALL', priceSort=${priceSort})}"
+                           th:classappend="${priceFilter == 'ALL'} ? ' active'">
+                            Tất cả
+                        </a>
+
+                        <a th:href="@{/page/services/wellness(page=0, priceFilter='UNDER_200', priceSort=${priceSort})}"
+                           th:classappend="${priceFilter == 'UNDER_200'} ? ' active'">
+                            Dưới 200K
+                        </a>
+
+                        <a th:href="@{/page/services/wellness(page=0, priceFilter='FROM_200_TO_500', priceSort=${priceSort})}"
+                           th:classappend="${priceFilter == 'FROM_200_TO_500'} ? ' active'">
+                            200K - 500K
+                        </a>
+
+                        <a th:href="@{/page/services/wellness(page=0, priceFilter='OVER_500', priceSort=${priceSort})}"
+                           th:classappend="${priceFilter == 'OVER_500'} ? ' active'">
+                            Trên 500K
+                        </a>
+                    </div>
+                </details>
+
+            </div>
+
+        </div>
+
+        <div class="wellness-empty"
+             th:if="${wellnessList == null || wellnessList.isEmpty()}">
+            Hiện chưa có dịch vụ Wellness nào được hiển thị.
+        </div>
+
+        <div class="wellness-grid"
+             th:if="${wellnessList != null && !wellnessList.isEmpty()}">
+
+            <article class="wellness-card" th:each="item : ${wellnessList}">
+
+                <div class="wellness-card-image">
+                    <img th:if="${item.imageUrl != null}"
+                         th:src="${item.imageUrl}"
+                         th:alt="${item.name}">
+
+                    <img th:if="${item.imageUrl == null}"
+                         src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop"
+                         th:alt="${item.name}">
+                </div>
+
+                <div class="wellness-card-content">
+                    <h3 th:text="${item.name}">Signature Wellness</h3>
+
+                    <p class="wellness-card-description"
+                       th:text="${item.description}">
+                        Mô tả dịch vụ wellness.
+                    </p>
+
+                    <div class="wellness-card-bottom">
+                        <div class="wellness-price-group">
+                            <p class="wellness-price-label">Giá dịch vụ</p>
+
+                            <p class="wellness-price"
+                               th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                250,000 VND
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </article>
+
+        </div>
+
+        <nav class="wellness-pagination"
+             th:if="${totalPages > 1}">
+
+            <a class="page-button"
+               th:classappend="${currentPage == 0} ? ' disabled'"
+               th:href="${currentPage == 0}
+                    ? 'javascript:void(0)'
+                    : @{/page/services/wellness(page=${currentPage - 1}, priceFilter=${priceFilter}, priceSort=${priceSort})}">
+                Trước
+            </a>
+
+            <a class="page-number"
+               th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? ' active'"
+               th:href="@{/page/services/wellness(page=${i}, priceFilter=${priceFilter}, priceSort=${priceSort})}">
+                1
+            </a>
+
+            <a class="page-button"
+               th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
+               th:href="${currentPage + 1 >= totalPages}
+                    ? 'javascript:void(0)'
+                    : @{/page/services/wellness(page=${currentPage + 1}, priceFilter=${priceFilter}, priceSort=${priceSort})}">
+                Sau
+            </a>
+
+        </nav>
+
+    </section>
+
+</main>
+
+<div th:replace="~{fragment/public/footer :: publicFooter}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/home.js}"></script>
+<script th:src="@{/js/guest-header.js}"></script>
+</body>
+</html>

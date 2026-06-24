@@ -773,3 +773,379 @@ body {
     font-weight: 700;
     line-height: 1.2;
 }
+
+/* =========================
+   FLATPICKR CUSTOM
+========================= */
+
+.flatpickr-calendar {
+    font-family: var(--font-body);
+    border-radius: 10px;
+    border: 1px solid #ddd3c8;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+}
+
+.flatpickr-current-month {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    width: auto !important;
+    height: 34px;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    font-weight: 500;
+    color: #222;
+    outline: none;
+}
+
+.flatpickr-current-month .numInputWrapper {
+    display: inline-block !important;
+    width: 72px !important;
+}
+
+.flatpickr-current-month input.cur-year {
+    display: inline-block !important;
+    width: 72px !important;
+    height: 34px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    font-weight: 500;
+    color: #222;
+}
+
+.flatpickr-current-month input.cur-year:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.flatpickr-year-select {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    font-weight: 500;
+    color: #222;
+    outline: none;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: #064b35;
+    border-color: #064b35;
+    color: #fff;
+}
+
+.flatpickr-day.today {
+    border-color: #8a8178;
+}
+
+.flatpickr-day.disabled,
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    color: #d6d1ca;
+}
+
+/* =========================
+   FLATPICKR YEAR DROPDOWN
+========================= */
+
+.flatpickr-current-month {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.flatpickr-current-month .numInputWrapper {
+    display: none !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-year-select {
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #222;
+    font-size: 18px;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+}
+
+.flatpickr-year-select {
+    padding: 0 4px;
+}
+
+/* =========================
+   AVAILABLE ROOM SCROLL
+========================= */
+
+.room-section {
+    max-height: 780px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.room-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.room-section::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.room-section::-webkit-scrollbar-thumb {
+    background: #c8b8a5;
+    border-radius: 999px;
+}
+
+.room-section::-webkit-scrollbar-thumb:hover {
+    background: #9b7a45;
+}
+
+.field-error {
+    display: none;
+    margin-top: 4px;
+    color: #ba1a1a;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.form-group-line.has-error input,
+.form-group-line.has-error select,
+.form-group-line.has-error textarea {
+    border-bottom-color: #ba1a1a !important;
+}
+
+.form-group-line.has-error .phone-combined {
+    border-bottom-color: #ba1a1a !important;
+}
+
+.form-group-line.has-error .field-error {
+    display: block;
+}
+
+.form-group-line.has-error label {
+    color: #93000a;
+}
+
+.form-error-summary {
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 24px;
+    padding: 14px 16px;
+    border-left: 4px solid #ba1a1a;
+    background: #ffdad6;
+    color: #93000a;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.form-error-summary.show {
+    display: flex;
+}
+
+/* =========================
+   ADDITIONAL SERVICES - COMPACT
+========================= */
+
+.walkin-card {
+    margin-top: 20px;
+    padding: 22px 26px;
+    border: 1px solid #d0d0d0;
+    background: rgba(232, 228, 225, 0.28);
+}
+
+.walkin-card .section-title {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #d6d6d6;
+}
+
+.walkin-card .section-title h3 {
+    margin: 0 0 6px;
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--black);
+}
+
+.walkin-card .section-title p {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+    line-height: 1.45;
+}
+
+.service-group-card {
+    border: 1px solid #d8d1ca;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 12px;
+}
+
+.service-group-toggle {
+    min-height: 48px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin: 0;
+    color: #222;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.service-group-toggle input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: #064b35;
+    flex-shrink: 0;
+}
+
+.service-panel {
+    display: none;
+    padding: 14px;
+    border-top: 1px solid #d8d1ca;
+    background: rgba(255, 255, 255, 0.36);
+}
+
+.service-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #d8d1ca;
+    background: #fff;
+}
+
+.service-row-bottom {
+    display: grid;
+    grid-template-columns: 74px 1fr 34px;
+    gap: 10px;
+    align-items: end;
+}
+
+.service-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.service-field label {
+    color: var(--black);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.service-select,
+.service-quantity {
+    width: 100%;
+    height: 34px;
+    border: none;
+    border-bottom: 1px solid #c8c8c8;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    color: #222;
+    font-size: 12.5px;
+    outline: none;
+}
+
+.service-select:focus,
+.service-quantity:focus {
+    border-bottom-color: #9b7a45;
+}
+
+.service-price-preview {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #c8c8c8;
+    color: #222;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.btn-remove-service-row {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #d6c7ba;
+    background: transparent;
+    color: #8a3d3d;
+    font-size: 0;
+    cursor: pointer;
+}
+
+.btn-remove-service-row::before {
+    content: "×";
+    font-size: 18px;
+    line-height: 1;
+}
+
+.btn-remove-service-row:hover {
+    background: #fff1ef;
+    border-color: #ba1a1a;
+    color: #ba1a1a;
+}
+
+.btn-add-service-row {
+    width: 100%;
+    height: 36px;
+    border: 1px dashed #bda98d;
+    background: transparent;
+    color: #7a5a2f;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+}
+
+.btn-add-service-row:hover {
+    background: rgba(232, 228, 225, 0.4);
+}
+.child-ages-container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.child-age-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.child-age-item span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #555;
+    text-transform: uppercase;
+}
+
+.child-age-item input {
+    width: 100%;
+}
+
+@media (max-width: 720px) {
+    .child-ages-container {
+        grid-template-columns: 1fr;
+    }
+}

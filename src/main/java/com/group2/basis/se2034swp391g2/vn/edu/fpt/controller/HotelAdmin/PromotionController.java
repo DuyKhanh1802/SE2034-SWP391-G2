@@ -3,6 +3,8 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.PromotionRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionListResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.PromotionProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
 import jakarta.servlet.http.HttpSession;
@@ -13,15 +15,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -276,4 +275,13 @@ public class PromotionController {
 
         return "Dữ liệu không hợp lệ.";
     }
+
+    @GetMapping("/page/promotions")
+    public String listPromotion(Model model){
+        List<PromotionProjection> promotion = promotionService.getListPromotion();
+        model.addAttribute("promotions",promotion);
+
+        return "page/Promotion";
+    }
+
 }

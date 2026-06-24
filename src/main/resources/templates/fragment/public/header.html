@@ -13,8 +13,65 @@
             <a th:href="@{/home}">V'HOTEL</a>
         </div>
 
-        <div class="header-top-right">
-            <a href="#">ENGLISH</a>
+        <div class="header-top-right guest-header-menu">
+
+            <a th:if="${guestSession == null}"
+               class="guest-login-link"
+               th:href="@{/guest/login}">
+                ĐĂNG NHẬP
+            </a>
+
+            <div th:if="${guestSession != null}" class="guest-profile" id="guestProfileDropdown">
+
+                <button type="button" class="guest-profile-btn" id="guestProfileBtn">
+                    <div class="guest-avatar">
+                        <img th:if="${guestSession.avatarUrl != null and !guestSession.avatarUrl.isEmpty()}"
+                             th:src="${guestSession.avatarUrl}"
+                             alt="Guest Avatar">
+
+                        <span th:if="${guestSession.avatarUrl == null or guestSession.avatarUrl.isEmpty()}"
+                              th:text="${guestSession.guestName != null and !guestSession.guestName.isEmpty() ? guestSession.guestName.substring(0,1) : 'G'}">
+        G
+    </span>
+                    </div>
+
+                    <span class="guest-profile-name"
+                          th:text="${guestSession.guestName}">
+                Nguyễn Văn An
+            </span>
+
+                    <i class="bi bi-chevron-down guest-profile-arrow"></i>
+                </button>
+
+                <div class="guest-profile-menu" id="guestProfileMenu">
+
+                    <a th:href="@{/guest/profile}" class="guest-profile-item">
+                        <i class="bi bi-person"></i>
+                        <span>View profile</span>
+                    </a>
+
+                    <a th:href="@{/guest/booking}" class="guest-profile-item">
+                        <i class="bi bi-calendar3"></i>
+                        <span>View booking</span>
+                    </a>
+
+                    <a th:href="@{/guest/folio}" class="guest-profile-item">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>View folio</span>
+                    </a>
+
+                    <div class="guest-profile-divider"></div>
+
+                    <a th:href="@{/guest/logout}" class="guest-profile-item logout-item">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Đăng xuất</span>
+                    </a>
+
+                </div>
+            </div>
+
+
+
         </div>
     </div>
 
@@ -24,13 +81,13 @@
         </div>
 
         <nav class="main-nav">
-            <a th:href="@{/home}">Home</a>
-            <a th:href="@{/overview}">Overview</a>
-            <a th:href="@{/offers}">Offers</a>
-            <a th:href="@{/room-types}">Room Type</a>
-            <a th:href="@{/services/dining}">Dining</a>
-            <a th:href="@{/services/wellness}">Wellness</a>
-            <a th:href="@{/accommodation}">Accommodation</a>
+            <a th:href="@{/page/home}">Home</a>
+            <a th:href="@{/page/overview}">Overview</a>
+            <a th:href="@{/page/promotions}">Offers</a>
+            <a th:href="@{/page/room-types}">Room Type</a>
+            <a th:href="@{/page/services/dining}">Dining</a>
+            <a th:href="@{/page/services/wellness}">Wellness</a>
+            <a th:href="@{/page/accommodation}">Accommodation</a>
         </nav>
 
         <div class="header-action">

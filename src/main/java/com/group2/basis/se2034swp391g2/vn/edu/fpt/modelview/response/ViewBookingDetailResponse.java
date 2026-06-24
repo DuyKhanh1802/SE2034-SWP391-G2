@@ -2,10 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.DepositStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -47,11 +44,17 @@ public class ViewBookingDetailResponse {
     private BigDecimal vatTotal;
     private BigDecimal grandTotal;
     private BigDecimal depositRequired;
-    private Instant createdAt;
 
+    private BigDecimal serviceSubtotal;
+    private BigDecimal serviceChargeTotal;
+
+    private Instant createdAt;
 
     @Builder.Default
     private List<RoomLine> rooms = new ArrayList<>();
+
+    @Builder.Default
+    private List<ServiceLine> services = new ArrayList<>();
 
     @Builder.Default
     private List<PaymentLine> payments = new ArrayList<>();
@@ -91,6 +94,20 @@ public class ViewBookingDetailResponse {
         private BigDecimal amount;
         private String status;
         private Instant paidAt;
+        private String transactionRef;
+    }
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ServiceLine {
+        private String serviceName;
+        private String itemType;
+        private Integer quantity;
+        private BigDecimal unitPrice;
+        private BigDecimal amount;
+        private Instant postedAt;
+        private String postedBy;
     }
 }
