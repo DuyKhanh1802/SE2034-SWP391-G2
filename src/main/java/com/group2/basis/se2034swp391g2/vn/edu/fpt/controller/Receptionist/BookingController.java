@@ -8,6 +8,13 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CountryRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FinancialChargeSettingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
+
+import java.math.BigDecimal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,17 +31,20 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final PaymentService paymentService;
     private final CountryRepository countryRepository;
     private final ServiceRepository serviceRepository;
     private final FinancialChargeSettingRepository financialChargeSettingRepository;
     public BookingController(BookingService bookingService,
                              CountryRepository countryRepository,
                              ServiceRepository serviceRepository,
-                             FinancialChargeSettingRepository financialChargeSettingRepository) {
+                             FinancialChargeSettingRepository financialChargeSettingRepository,
+                             PaymentService paymentService) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
         this.serviceRepository = serviceRepository;
         this.financialChargeSettingRepository = financialChargeSettingRepository;
+        this.paymentService = paymentService;
     }
 
     @GetMapping
@@ -297,4 +307,37 @@ public class BookingController {
         }
     }
 
+    @PostMapping("/{bookingId}/payments")
+    public String createAdvancePayment(@PathVariable Long bookingId,
+                                       @RequestParam PaymentType paymentType,
+                                       @RequestParam PaymentMethod method,
+                                       @RequestParam BigDecimal amount,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            if (paymentType != PaymentType.DEPOSIT && paymentType != PaymentType.FULL) {
+                throw new IllegalArgumentException("Màn chi tiết đặt phòng chỉ cho phép thu cọc hoặc thu full trước.");
+            }
+
+            Booking booking = bookingService.getBookingEntityById(bookingId);
+            User currentStaff = bookingService.getCurrentStaffUser();
+
+            paymentService.createPayment(
+                    booking,
+                    paymentType,
+                    method,
+                    amount,
+                    currentStaff
+            );
+
+            if (paymentType == PaymentType.DEPOSIT) {
+                bookingService.markDepositPaid(bookingId);
+            }
+
+            redirectAttributes.addFlashAttribute("successMessage", "Lưu thanh toán thành công.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
 }
