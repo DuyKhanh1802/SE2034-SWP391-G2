@@ -68,6 +68,10 @@
           href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/manager/transactions')}"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/manager/dashboard')}"
           th:href="@{/manager/Dashboard.css}">
 

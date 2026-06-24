@@ -235,6 +235,44 @@
             </div>
         </div>
 
+        <!-- ADDITIONAL SERVICES -->
+        <div class="detail-card" th:if="${detail.services != null and !#lists.isEmpty(detail.services)}">
+            <div class="detail-card-title">
+                <h2>Dịch vụ đã thêm</h2>
+            </div>
+
+            <div class="room-detail-table service-detail-table">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Dịch vụ</th>
+                        <th>Loại</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="service : ${detail.services}">
+                        <td th:text="${service.serviceName}">Bữa sáng Việt Nam</td>
+
+                        <td th:text="${service.itemType}">FOOD</td>
+
+                        <td th:text="${service.quantity}">1</td>
+
+                        <td th:text="${#numbers.formatDecimal(service.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
+                        </td>
+
+                        <td th:text="${#numbers.formatDecimal(service.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
         <!-- DEPOSIT + PRICE -->
         <div class="detail-grid two-columns">
 
@@ -296,6 +334,19 @@
                         <span>Tiền phòng</span>
                         <strong th:text="${#numbers.formatDecimal(detail.roomTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                             2,600,000 VND
+                        </strong>
+                    </div>
+                    <div class="price-row">
+                        <span>Tiền dịch vụ thêm</span>
+                        <strong th:text="${#numbers.formatDecimal(detail.serviceSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div class="price-row">
+                        <span>Phí dịch vụ</span>
+                        <strong th:text="${#numbers.formatDecimal(detail.serviceChargeTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
                         </strong>
                     </div>
 

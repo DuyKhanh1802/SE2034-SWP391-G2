@@ -1,9 +1,12 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Receptionist;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FinancialChargeSetting;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingCreateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingUpdateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CountryRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FinancialChargeSettingRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -15,27 +18,32 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
-
+import java.util.List;
 @Controller
 @RequestMapping("/receptionist/bookings")
 public class BookingController {
 
     private final BookingService bookingService;
     private final CountryRepository countryRepository;
-
+    private final ServiceRepository serviceRepository;
+    private final FinancialChargeSettingRepository financialChargeSettingRepository;
     public BookingController(BookingService bookingService,
-                             CountryRepository countryRepository) {
+                             CountryRepository countryRepository,
+                             ServiceRepository serviceRepository,
+                             FinancialChargeSettingRepository financialChargeSettingRepository) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
+        this.serviceRepository = serviceRepository;
+        this.financialChargeSettingRepository = financialChargeSettingRepository;
     }
 
     @GetMapping
     public String listBookings(@RequestParam(required = false) String keyword,
                                @RequestParam(required = false) String status,
                                @RequestParam(required = false)
-                               @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
+                               @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate checkIn,
                                @RequestParam(required = false)
-                               @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut,
+                               @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate checkOut,
                                @RequestParam(defaultValue = "0") int page,
                                Model model) {
 
@@ -71,6 +79,7 @@ public class BookingController {
                                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOutDate,
                                            @RequestParam(required = false) Integer adults,
                                            @RequestParam(required = false) Integer children,
+                                           @RequestParam(required = false) List<Integer> childAges,
                                            Model model) {
 
         BookingCreateRequest request = new BookingCreateRequest();
@@ -79,9 +88,21 @@ public class BookingController {
         request.setCheckOutDate(checkOutDate);
         request.setAdults(adults);
         request.setChildren(children == null ? 0 : children);
+        request.setChildAges(childAges);
 
         model.addAttribute("countries", countryRepository.findAll());
         model.addAttribute("request", request);
+        model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
+        model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
+
+        FinancialChargeSetting setting = financialChargeSettingRepository
+                .findCurrentSetting(LocalDate.now())
+                .orElseThrow(() -> new IllegalArgumentException("Chưa cấu hình thuế và phí dịch vụ."));
+
+        model.addAttribute("vatRate", setting.getVatRate());
+        model.addAttribute("serviceChargeRate", setting.getServiceChargeRate());
+        model.addAttribute("taxOnServiceCharge", setting.getTaxOnServiceCharge());
+        model.addAttribute("priceDisplayMode", setting.getPriceDisplayMode());
 
         boolean hasApplied =
                 checkInDate != null
@@ -129,6 +150,18 @@ public class BookingController {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("countries", countryRepository.findAll());
             model.addAttribute("request", request);
+
+            model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
+            model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
+
+            FinancialChargeSetting setting = financialChargeSettingRepository
+                    .findCurrentSetting(LocalDate.now())
+                    .orElseThrow(() -> new IllegalArgumentException("Chưa cấu hình thuế và phí dịch vụ."));
+
+            model.addAttribute("vatRate", setting.getVatRate());
+            model.addAttribute("serviceChargeRate", setting.getServiceChargeRate());
+            model.addAttribute("taxOnServiceCharge", setting.getTaxOnServiceCharge());
+            model.addAttribute("priceDisplayMode", setting.getPriceDisplayMode());
 
             try {
                 model.addAttribute(
