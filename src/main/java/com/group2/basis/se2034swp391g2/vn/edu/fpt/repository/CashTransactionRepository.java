@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.repository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionSourceType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.CashTransaction;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +17,15 @@ import java.util.Optional;
 
 public interface CashTransactionRepository extends JpaRepository<CashTransaction, Long> {
     boolean existsByDocumentCode(String documentCode);
+
+    // Lấy các mã chứng từ dạng PT/PC để service sinh số tiếp theo.
+    @Query("""
+            SELECT ct.documentCode
+            FROM CashTransaction ct
+            WHERE ct.documentCode LIKE 'PT-%'
+            OR ct.documentCode LIKE 'PC-%'
+            """)
+    List<String> findSimpleDocumentCodes();
 
     boolean existsBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
 
@@ -43,6 +53,15 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
             WHERE (:type IS NULL OR ct.type = :type)
             AND (:category IS NULL OR ct.category = :category)
             AND (:sourceType IS NULL OR ct.sourceType = :sourceType)
+            AND (:paymentMethod IS NULL OR (
+                ct.sourceType = :paymentSourceType
+                AND EXISTS (
+                    SELECT payment.id
+                    FROM Payment payment
+                    WHERE payment.id = ct.sourceId
+                    AND payment.method = :paymentMethod
+                )
+            ))
             AND (:fromDate IS NULL OR ct.createdAt >= :fromDate)
             AND (:toDate IS NULL OR ct.createdAt < :toDate)
             AND (:keyword = '' OR LOWER(ct.documentCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
@@ -52,6 +71,8 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
     List<CashTransaction> search(@Param("type") CashTransactionType type,
                                  @Param("category") CashTransactionCategory category,
                                  @Param("sourceType") CashTransactionSourceType sourceType,
+                                 @Param("paymentMethod") PaymentMethod paymentMethod,
+                                 @Param("paymentSourceType") CashTransactionSourceType paymentSourceType,
                                  @Param("fromDate") Instant fromDate,
                                  @Param("toDate") Instant toDate,
                                  @Param("keyword") String keyword);

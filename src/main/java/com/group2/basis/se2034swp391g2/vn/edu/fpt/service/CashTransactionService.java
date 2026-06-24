@@ -2,6 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.CashTransaction;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryReceipt;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CashTransactionCreateRequest;
@@ -9,6 +10,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CashTransact
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CashTransactionListResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CashTransactionResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CashTransactionRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.InventoryReceiptRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -19,16 +21,15 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CashTransactionService {
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
-    private static final DateTimeFormatter CODE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 
     private final CashTransactionRepository cashTransactionRepository;
+    private final InventoryReceiptRepository inventoryReceiptRepository;
 
     @Transactional(readOnly = true)
     public List<CashTransaction> getRecentTransactions(int limit) {
@@ -39,6 +40,17 @@ public class CashTransactionService {
     public CashTransaction getTransaction(Long id) {
         return cashTransactionRepository.findDetailById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng tiền."));
+    }
+
+    @Transactional(readOnly = true)
+    public InventoryReceipt getInventoryReceiptForTransaction(CashTransaction transaction) {
+        if (transaction == null
+                || transaction.getSourceType() != CashTransactionSourceType.INVENTORY_RECEIPT
+                || transaction.getSourceId() == null) {
+            return null;
+        }
+
+        return inventoryReceiptRepository.findDetailById(transaction.getSourceId()).orElse(null);
     }
 
     @Transactional(readOnly = true)
@@ -63,6 +75,7 @@ public class CashTransactionService {
                 request.getType(),
                 request.getCategory(),
                 request.getSourceType(),
+                request.getPaymentMethod(),
                 request.getFromDate(),
                 request.getToDate(),
                 request.getKeyword()
@@ -99,6 +112,8 @@ public class CashTransactionService {
                 null,
                 null,
                 null,
+                CashTransactionSourceType.PAYMENT,
+                null,
                 null,
                 keyword == null ? "" : keyword.trim()
         );
@@ -108,6 +123,7 @@ public class CashTransactionService {
     public List<CashTransaction> searchTransactions(String type,
                                                     String category,
                                                     String sourceType,
+                                                    String paymentMethod,
                                                     LocalDate fromDate,
                                                     LocalDate toDate,
                                                     String keyword) {
@@ -115,6 +131,7 @@ public class CashTransactionService {
         CashTransactionType selectedType = parseType(type);
         CashTransactionCategory selectedCategory = parseCategory(category);
         CashTransactionSourceType selectedSourceType = parseSourceType(sourceType);
+        PaymentMethod selectedPaymentMethod = parsePaymentMethod(paymentMethod);
         Instant fromDateTime = fromDate == null ? null : fromDate.atStartOfDay(APP_ZONE).toInstant();
         Instant toDateTime = toDate == null ? null : toDate.plusDays(1).atStartOfDay(APP_ZONE).toInstant();
 
@@ -122,6 +139,8 @@ public class CashTransactionService {
                 selectedType,
                 selectedCategory,
                 selectedSourceType,
+                selectedPaymentMethod,
+                CashTransactionSourceType.PAYMENT,
                 fromDateTime,
                 toDateTime,
                 keyword == null ? "" : keyword.trim()
@@ -351,6 +370,13 @@ public class CashTransactionService {
         return CashTransactionSourceType.valueOf(sourceType.trim().toUpperCase());
     }
 
+    private PaymentMethod parsePaymentMethod(String paymentMethod) {
+        if (paymentMethod == null || paymentMethod.isBlank() || "ALL".equalsIgnoreCase(paymentMethod)) {
+            return null;
+        }
+        return PaymentMethod.valueOf(paymentMethod.trim().toUpperCase());
+    }
+
     private void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Số tiền phải lớn hơn 0.");
@@ -424,14 +450,29 @@ public class CashTransactionService {
 
     private String generateDocumentCode(CashTransactionType type) {
         String prefix = type == CashTransactionType.INCOME ? "PT" : "PC";
-        String datePart = LocalDate.now(APP_ZONE).format(CODE_DATE_FORMATTER);
-        String documentCode;
 
-        do {
-            int randomNumber = (int) (Math.random() * 9000) + 1000;
-            documentCode = prefix + "-" + datePart + "-" + randomNumber;
-        } while (cashTransactionRepository.existsByDocumentCode(documentCode));
+        // Mã chứng từ chạy chung một dãy số cho cả phiếu thu và phiếu chi.
+        int nextNumber = cashTransactionRepository.findSimpleDocumentCodes()
+                .stream()
+                .filter(this::isSimpleDocumentCode)
+                .mapToInt(this::getDocumentNumber)
+                .max()
+                .orElse(0) + 1;
 
-        return documentCode;
+        return prefix + "-" + String.format("%04d", nextNumber);
+    }
+
+    private boolean isSimpleDocumentCode(String documentCode) {
+        if (documentCode == null
+                || (!documentCode.startsWith("PT-") && !documentCode.startsWith("PC-"))) {
+            return false;
+        }
+
+        String numberPart = documentCode.substring(3);
+        return numberPart.length() == 4 && numberPart.chars().allMatch(Character::isDigit);
+    }
+
+    private int getDocumentNumber(String documentCode) {
+        return Integer.parseInt(documentCode.substring(3));
     }
 }
