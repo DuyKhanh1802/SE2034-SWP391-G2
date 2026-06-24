@@ -55,14 +55,9 @@ public class ServiceManagementService {
 
     @Transactional
     public void createService(ServiceRequest request) {
-        validateCreateRequest(request);
+        validateServiceRequest(request);
 
-        ServiceCategory category = serviceCategoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Loại dịch vụ không tồn tại"));
-
-        if (Boolean.TRUE.equals(category.getIsDeleted())) {
-            throw new IllegalArgumentException("Loại dịch vụ đã bị xóa");
-        }
+        ServiceCategory category = getValidCategory(request.getCategoryId());
 
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
                 new com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service();
@@ -77,22 +72,109 @@ public class ServiceManagementService {
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service savedService =
                 serviceRepository.save(service);
 
-        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
-            String imageUrl = cloudinaryService.uploadServiceImage(request.getImageFile());
+        saveServiceImageIfPresent(savedService.getId(), request);
+    }
 
-            Image image = new Image();
-            image.setEntityType(ImageEntityType.SERVICE);
-            image.setEntityId(savedService.getId());
-            image.setImageUrl(imageUrl);
-            image.setIsPrimary(true);
-            image.setSortOrder(1);
+    @Transactional(readOnly = true)
+    public ServiceRequest getServiceForEdit(Long serviceId) {
+        com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
+                getValidService(serviceId);
 
-            imageRepository.save(image);
+        ServiceRequest request = new ServiceRequest();
+        request.setId(service.getId());
+        request.setName(service.getName());
+        request.setDescription(service.getDescription());
+        request.setPrice(service.getPrice());
+        request.setIsAvailable(service.getIsAvailable());
+
+        if (service.getCategory() != null) {
+            request.setCategoryId(service.getCategory().getId());
         }
+
+        imageRepository
+                .findFirstByEntityTypeAndEntityIdAndIsPrimaryTrueOrderBySortOrderAsc(
+                        ImageEntityType.SERVICE,
+                        service.getId()
+                )
+                .ifPresent(image -> request.setCurrentImageUrl(image.getImageUrl()));
+
+        return request;
+    }
+    @Transactional(readOnly = true)
+    public ServiceResponse getServiceDetail(Long serviceId) {
+        com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
+                getValidService(serviceId);
+
+        Long categoryId = null;
+        String categoryName = "Chưa có loại";
+
+        if (service.getCategory() != null) {
+            categoryId = service.getCategory().getId();
+            categoryName = service.getCategory().getName();
+        }
+
+        String imageUrl = imageRepository
+                .findFirstByEntityTypeAndEntityIdAndIsPrimaryTrueOrderBySortOrderAsc(
+                        ImageEntityType.SERVICE,
+                        service.getId()
+                )
+                .map(Image::getImageUrl)
+                .orElse(null);
+
+        return new ServiceResponse(
+                service.getId(),
+                service.getName(),
+                service.getDescription(),
+                service.getPrice(),
+                service.getIsAvailable(),
+                categoryId,
+                categoryName,
+                imageUrl
+        );
+    }
+
+    @Transactional
+    public void updateService(Long serviceId, ServiceRequest request) {
+        validateServiceRequest(request);
+
+        com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
+                getValidService(serviceId);
+
+        ServiceCategory category = getValidCategory(request.getCategoryId());
+
+        service.setName(request.getName().trim());
+        service.setDescription(normalizeText(request.getDescription()));
+        service.setPrice(request.getPrice());
+        service.setCategory(category);
+        service.setIsAvailable(Boolean.TRUE.equals(request.getIsAvailable()));
+
+        serviceRepository.save(service);
+
+        updateServiceImageIfPresent(service.getId(), request);
     }
 
     @Transactional
     public void toggleAvailability(Long serviceId) {
+        com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
+                getValidService(serviceId);
+
+        boolean currentStatus = Boolean.TRUE.equals(service.getIsAvailable());
+        service.setIsAvailable(!currentStatus);
+
+        serviceRepository.save(service);
+    }
+    @Transactional
+    public void deleteService(Long serviceId) {
+        com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
+                getValidService(serviceId);
+
+        service.setIsDeleted(true);
+        service.setIsAvailable(false);
+
+        serviceRepository.save(service);
+    }
+
+    private com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service getValidService(Long serviceId) {
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
                 serviceRepository.findById(serviceId)
                         .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ"));
@@ -101,13 +183,61 @@ public class ServiceManagementService {
             throw new IllegalArgumentException("Dịch vụ đã bị xóa");
         }
 
-        boolean currentStatus = Boolean.TRUE.equals(service.getIsAvailable());
-        service.setIsAvailable(!currentStatus);
-
-        serviceRepository.save(service);
+        return service;
     }
 
-    private void validateCreateRequest(ServiceRequest request) {
+    private ServiceCategory getValidCategory(Long categoryId) {
+        ServiceCategory category = serviceCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Loại dịch vụ không tồn tại"));
+
+        if (Boolean.TRUE.equals(category.getIsDeleted())) {
+            throw new IllegalArgumentException("Loại dịch vụ đã bị xóa");
+        }
+
+        return category;
+    }
+
+    private void saveServiceImageIfPresent(Long serviceId, ServiceRequest request) {
+        if (request.getImageFile() == null || request.getImageFile().isEmpty()) {
+            return;
+        }
+
+        String imageUrl = cloudinaryService.uploadServiceImage(request.getImageFile());
+
+        Image image = new Image();
+        image.setEntityType(ImageEntityType.SERVICE);
+        image.setEntityId(serviceId);
+        image.setImageUrl(imageUrl);
+        image.setIsPrimary(true);
+        image.setSortOrder(1);
+
+        imageRepository.save(image);
+    }
+
+    private void updateServiceImageIfPresent(Long serviceId, ServiceRequest request) {
+        if (request.getImageFile() == null || request.getImageFile().isEmpty()) {
+            return;
+        }
+
+        String imageUrl = cloudinaryService.uploadServiceImage(request.getImageFile());
+
+        Image image = imageRepository
+                .findFirstByEntityTypeAndEntityIdAndIsPrimaryTrueOrderBySortOrderAsc(
+                        ImageEntityType.SERVICE,
+                        serviceId
+                )
+                .orElseGet(Image::new);
+
+        image.setEntityType(ImageEntityType.SERVICE);
+        image.setEntityId(serviceId);
+        image.setImageUrl(imageUrl);
+        image.setIsPrimary(true);
+        image.setSortOrder(1);
+
+        imageRepository.save(image);
+    }
+
+    private void validateServiceRequest(ServiceRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Dữ liệu dịch vụ không hợp lệ");
         }

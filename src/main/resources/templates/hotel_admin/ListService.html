@@ -41,7 +41,9 @@
                 </a>
             </div>
 
-            <form class="service-filter-form" method="get" th:action="@{/hotel-admin/services}">
+            <form class="service-filter-form"
+                  method="get"
+                  th:action="@{/hotel-admin/services}">
 
                 <div class="service-form-group">
                     <label>Tìm kiếm</label>
@@ -55,6 +57,7 @@
                     <label>Loại dịch vụ</label>
                     <select name="categoryId">
                         <option value="">Tất cả loại</option>
+
                         <option th:each="category : ${categories}"
                                 th:value="${category.id}"
                                 th:text="${category.name}"
@@ -71,10 +74,12 @@
                                 th:selected="${selectedAvailability == null || selectedAvailability == 'ALL'}">
                             Tất cả
                         </option>
+
                         <option value="AVAILABLE"
                                 th:selected="${selectedAvailability == 'AVAILABLE'}">
                             Đang khả dụng
                         </option>
+
                         <option value="UNAVAILABLE"
                                 th:selected="${selectedAvailability == 'UNAVAILABLE'}">
                             Tạm tắt
@@ -110,8 +115,11 @@
                     </thead>
 
                     <tbody>
+
                     <tr th:each="service, stat : ${services}">
-                        <td th:text="${currentPage * pageSize + stat.index + 1}">1</td>
+                        <td th:text="${currentPage * pageSize + stat.index + 1}">
+                            1
+                        </td>
 
                         <td>
                             <div class="service-image-box">
@@ -119,14 +127,16 @@
                                      th:src="${service.imageUrl}"
                                      th:alt="${service.name}">
 
-                                <div th:if="${service.imageUrl == null}" class="service-no-image">
+                                <div th:if="${service.imageUrl == null}"
+                                     class="service-no-image">
                                     <i class="fa-regular fa-image"></i>
                                 </div>
                             </div>
                         </td>
 
                         <td>
-                            <div class="service-name" th:text="${service.name}">
+                            <div class="service-name"
+                                 th:text="${service.name}">
                                 Buffet sáng
                             </div>
 
@@ -151,18 +161,21 @@
                         </td>
 
                         <td>
-                            <span th:if="${service.isAvailable}" class="service-status available">
+                            <span th:if="${service.isAvailable}"
+                                  class="service-status available">
                                 Đang khả dụng
                             </span>
 
-                            <span th:unless="${service.isAvailable}" class="service-status unavailable">
+                            <span th:unless="${service.isAvailable}"
+                                  class="service-status unavailable">
                                 Tạm tắt
                             </span>
                         </td>
 
                         <td>
                             <div class="service-actions">
-                                <a th:href="@{/hotel-admin/services/{id}(id=${service.id})}"
+
+                                <a th:href="@{/hotel-admin/services/view/{id}(id=${service.id})}"
                                    class="service-action-btn"
                                    title="Xem chi tiết">
                                     <i class="fa-regular fa-eye"></i>
@@ -178,18 +191,28 @@
                                       method="post"
                                       class="d-inline"
                                       th:onsubmit="${service.isAvailable}
-              ? 'return confirm(''Bạn có chắc chắn muốn tắt dịch vụ này không?'');'
-              : 'return confirm(''Bạn có chắc chắn muốn bật dịch vụ này không?'');'">
+                                          ? 'return confirm(''Bạn có chắc chắn muốn tắt dịch vụ này không?'');'
+                                          : 'return confirm(''Bạn có chắc chắn muốn bật dịch vụ này không?'');'">
+
+                                    <input type="hidden" name="page" th:value="${currentPage}">
+                                    <input type="hidden" name="size" th:value="${pageSize}">
+                                    <input type="hidden" name="keyword" th:value="${keyword}">
+                                    <input type="hidden" name="categoryId" th:value="${selectedCategoryId}">
+                                    <input type="hidden" name="availability" th:value="${selectedAvailability}">
 
                                     <button type="submit"
-                                            th:classappend="${service.isAvailable} ? ' toggle-on' : ' toggle-off'"
                                             class="service-action-btn toggle"
+                                            th:classappend="${service.isAvailable} ? ' toggle-on' : ' toggle-off'"
                                             th:title="${service.isAvailable} ? 'Tắt dịch vụ' : 'Bật dịch vụ'">
 
-                                        <i th:if="${service.isAvailable}" class="fa-solid fa-toggle-on"></i>
-                                        <i th:unless="${service.isAvailable}" class="fa-solid fa-toggle-off"></i>
+                                        <i th:if="${service.isAvailable}"
+                                           class="fa-solid fa-toggle-on"></i>
+
+                                        <i th:unless="${service.isAvailable}"
+                                           class="fa-solid fa-toggle-off"></i>
                                     </button>
                                 </form>
+
                             </div>
                         </td>
                     </tr>
@@ -199,6 +222,7 @@
                             Chưa có dịch vụ nào.
                         </td>
                     </tr>
+
                     </tbody>
                 </table>
             </div>
@@ -209,8 +233,15 @@
                 </p>
 
                 <div class="service-pagination" th:if="${totalPages > 1}">
+
                     <a th:if="${currentPage > 0}"
-                       th:href="@{/hotel-admin/services(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, categoryId=${selectedCategoryId}, availability=${selectedAvailability})}">
+                       th:href="@{/hotel-admin/services(
+                            page=${currentPage - 1},
+                            size=${pageSize},
+                            keyword=${keyword},
+                            categoryId=${selectedCategoryId},
+                            availability=${selectedAvailability}
+                       )}">
                         <i class="fa-solid fa-chevron-left"></i>
                     </a>
 
@@ -219,9 +250,16 @@
                     </span>
 
                     <a th:if="${currentPage + 1 < totalPages}"
-                       th:href="@{/hotel-admin/services(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, categoryId=${selectedCategoryId}, availability=${selectedAvailability})}">
+                       th:href="@{/hotel-admin/services(
+                            page=${currentPage + 1},
+                            size=${pageSize},
+                            keyword=${keyword},
+                            categoryId=${selectedCategoryId},
+                            availability=${selectedAvailability}
+                       )}">
                         <i class="fa-solid fa-chevron-right"></i>
                     </a>
+
                 </div>
             </div>
 

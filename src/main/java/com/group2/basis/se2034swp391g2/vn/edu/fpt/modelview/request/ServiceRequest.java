@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class ServiceRequest {
 
+    private Long id;
+
     private String name;
 
     private String description;
@@ -25,4 +27,6 @@ public class ServiceRequest {
     private Boolean isAvailable = true;
 
     private MultipartFile imageFile;
+
+    private String currentImageUrl;
 }
