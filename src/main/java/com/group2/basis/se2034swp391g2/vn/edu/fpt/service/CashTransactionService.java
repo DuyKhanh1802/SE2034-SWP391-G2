@@ -288,7 +288,6 @@ public class CashTransactionService {
 
         CashTransaction transaction = CashTransaction.builder()
                 .documentCode(generateDocumentCode(type))
-                .paymentCode(payment.getTransactionRef())
                 .type(type)
                 .category(category)
                 .amount(normalizeMoneyByType(payment.getAmount(), type))
