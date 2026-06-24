@@ -14,25 +14,25 @@
     <div th:if="${configurationError}" class="admin-alert warning"
          th:text="${configurationError + ' Chức năng lập phiếu nhập tạm thời bị khóa.'}"></div>
 
-    <section class="admin-card inventory-toolbar">
-        <div>
-            <h2>Danh sách hàng hóa</h2>
-        </div>
-        <div class="toolbar-actions">
-            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history}">
-                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử kho
-            </a>
-            <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
-                <i class="fa-solid fa-file-import"></i> Import hàng hóa
-            </button>
-            <button class="btn-admin-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal"
-                    th:disabled="${#lists.isEmpty(allItems) or !financialChargeConfigured}">
-                <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
-            </button>
-        </div>
-    </section>
-
     <section class="admin-card">
+        <div class="inventory-toolbar mb-4">
+            <div>
+                <h2>Danh sách hàng hóa</h2>
+            </div>
+            <div class="toolbar-actions">
+                <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history}">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử kho
+                </a>
+                <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="fa-solid fa-file-import"></i> Import hàng hóa
+                </button>
+                <button class="btn-admin-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal"
+                        th:disabled="${#lists.isEmpty(allItems) or !financialChargeConfigured}">
+                    <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
+                </button>
+            </div>
+        </div>
+
         <form class="inventory-filters" method="get" th:action="@{/storekeeper/inventory}">
             <label class="search-control">
                 <i class="fa-solid fa-magnifying-glass text-secondary"></i>
@@ -54,6 +54,11 @@
             <input type="hidden" name="size" th:value="${pageSize}">
             <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
         </form>
+
+        <div th:if="${!#lists.isEmpty(expiringSoonItemCodes)}" class="admin-alert warning mt-3 mb-0">
+            Có hàng hoá sắp hết hạn, cần nhập lô hàng mới:
+            <strong th:text="${expiringSoonItemCodesText}"></strong>.
+        </div>
     </section>
 
     <section class="admin-card p-0 overflow-hidden">
@@ -66,7 +71,6 @@
                     <th>Loại</th>
                     <th class="inventory-cell-center">Đơn vị</th>
                     <th class="inventory-cell-center">Tồn hiện tại</th>
-                    <th class="inventory-cell-center">Mức tối thiểu</th>
                     <th class="inventory-cell-center">Trạng thái</th>
                     <th class="inventory-cell-center">HSD lô gần nhất</th>
                     <th>Thao tác</th>
@@ -83,8 +87,6 @@
                               th:classappend="${item.currentQuantity.signum() == 0} ? ' out' : (${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' low')"
                               th:text="${@inventoryQuantityFormatter.format(item.currentQuantity)}">0</span>
                     </td>
-                    <td class="inventory-cell-center"
-                        th:text="${@inventoryQuantityFormatter.format(item.minimumQuantity)}">0</td>
                     <td class="inventory-cell-center">
                         <span th:if="${item.currentQuantity.signum() == 0}"
                               class="stock-status-text stock-status-out">Hết hàng</span>
@@ -120,7 +122,7 @@
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(items)}">
-                    <td colspan="9" class="text-center py-5 text-muted">Không tìm thấy hàng hóa phù hợp.</td>
+                    <td colspan="8" class="text-center py-5 text-muted">Không tìm thấy hàng hóa phù hợp.</td>
                 </tr>
                 </tbody>
             </table>
@@ -129,7 +131,6 @@
         <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
             <div class="text-muted small">
                 <span th:text="${totalElements}">0</span> hàng hóa
-                <span th:if="${lowStockCount > 0}"> · <strong class="text-danger" th:text="${lowStockCount + ' sắp hết'}"></strong></span>
             </div>
             <nav th:if="${totalPages > 1}" aria-label="Phân trang kho hàng">
                 <ul class="pagination mb-0">
@@ -201,23 +202,28 @@
                         </div>
                         <div class="form-grid">
                             <div><label>Số lượng</label><input id="receiptQuantity" class="form-control-admin" type="number" step="0.01" min="0.01" name="quantity" required></div>
-                            <div><label>Đơn giá trước VAT</label><input id="receiptUnitCost" class="form-control-admin" type="number" step="1000" min="1" name="unitCost" required></div>
+                            <div><label>Đơn giá trước VAT</label><input id="receiptUnitCost" class="form-control-admin" type="number" step="1" min="1" name="unitCost" required></div>
                         </div>
                         <div class="form-grid">
-                            <div><label>Ngày nhập kho</label><input class="form-control-admin" type="date" name="receiptDate" th:value="${today}" required></div>
+                            <div><label>Ngày nhập kho</label><input id="receiptDate" class="form-control-admin" type="date" name="receiptDate" th:value="${today}" th:max="${today}" required></div>
                             <div><label>Thuế VAT</label><input class="form-control-admin" th:value="${inventoryVatRate + '%'}" disabled></div>
                         </div>
-                        <div class="form-grid">
+                        <label class="expiry-toggle">
+                            <input id="trackExpiry" type="checkbox">
+                            <span>Hạn sử dụng</span>
+                        </label>
+                        <div id="expiryFields" class="form-grid" style="display: none;">
                             <div>
                                 <label>Mã lô</label>
-                                <input class="form-control-admin" name="batchCode" maxlength="50"
-                                       placeholder="Bắt buộc nếu có hạn sử dụng">
+                                <input id="receiptBatchCode" class="form-control-admin" name="batchCode" maxlength="50"
+                                       readonly placeholder="Tự sinh theo ngày nhập kho">
                             </div>
                             <div>
                                 <label>Hạn sử dụng</label>
-                                <input class="form-control-admin" type="date" name="expiryDate">
+                                <input id="receiptExpiryDate" class="form-control-admin" type="date" name="expiryDate">
                             </div>
                         </div>
+                        <div id="receiptValidationMessage" class="admin-alert warning mb-0" style="display: none;"></div>
                         <div class="form-grid">
                             <div><label>Tiền VAT dự kiến</label><input id="receiptVatAmount" class="form-control-admin" value="0 VND" disabled></div>
                             <div><label>Tổng thanh toán dự kiến</label><input id="receiptTotalCost" class="form-control-admin" value="0 VND" disabled></div>
@@ -239,6 +245,12 @@
             const form = document.getElementById("receiptForm");
             const quantity = document.getElementById("receiptQuantity");
             const unitCost = document.getElementById("receiptUnitCost");
+            const receiptDate = document.getElementById("receiptDate");
+            const trackExpiry = document.getElementById("trackExpiry");
+            const expiryFields = document.getElementById("expiryFields");
+            const batchCode = document.getElementById("receiptBatchCode");
+            const expiryDate = document.getElementById("receiptExpiryDate");
+            const validationMessage = document.getElementById("receiptValidationMessage");
             const vatAmount = document.getElementById("receiptVatAmount");
             const totalCost = document.getElementById("receiptTotalCost");
             if (!form || !quantity || !unitCost) return;
@@ -254,8 +266,91 @@
                 totalCost.value = formatter.format(Math.round(subtotal + vat)) + " VND";
             }
 
+            function showReceiptValidation(message) {
+                if (validationMessage) {
+                    validationMessage.textContent = message || "";
+                    validationMessage.style.display = message ? "block" : "none";
+                }
+            }
+
+            async function updateBatchCodePreview() {
+                if (!trackExpiry || !trackExpiry.checked || !batchCode) return;
+                const selectedReceiptDate = receiptDate && receiptDate.value ? receiptDate.value : "";
+                try {
+                    const response = await fetch("/storekeeper/inventory/receipts/next-batch-code?receiptDate="
+                        + encodeURIComponent(selectedReceiptDate));
+                    batchCode.value = response.ok ? await response.text() : "";
+                } catch (error) {
+                    batchCode.value = "";
+                }
+            }
+
+            function updateExpiryFields() {
+                const enabled = trackExpiry && trackExpiry.checked;
+                if (expiryFields) {
+                    expiryFields.style.display = enabled ? "grid" : "none";
+                }
+                if (expiryDate) {
+                    expiryDate.required = enabled;
+                    if (!enabled) {
+                        expiryDate.value = "";
+                    }
+                }
+                if (batchCode) {
+                    if (!enabled) {
+                        batchCode.value = "";
+                    }
+                }
+                updateBatchCodePreview();
+                validateReceiptDates();
+            }
+
+            function validateReceiptDates() {
+                const today = receiptDate && receiptDate.max ? receiptDate.max : new Date().toISOString().slice(0, 10);
+                let message = "";
+                const expiryEnabled = trackExpiry && trackExpiry.checked;
+
+                if (receiptDate && receiptDate.value && receiptDate.value > today) {
+                    message = "Ngày nhập kho không được ở tương lai.";
+                } else if (expiryEnabled && expiryDate && !expiryDate.value) {
+                    message = "Vui lòng chọn hạn sử dụng.";
+                } else if (expiryEnabled && expiryDate && expiryDate.value && receiptDate && receiptDate.value
+                    && expiryDate.value <= receiptDate.value) {
+                    message = "Hạn sử dụng phải sau ngày nhập kho.";
+                }
+
+                [receiptDate, expiryDate, batchCode].forEach(function (input) {
+                    if (input) input.setCustomValidity("");
+                });
+                if (message) {
+                    if (expiryDate && expiryDate.value) {
+                        expiryDate.setCustomValidity(message);
+                    } else if (receiptDate) {
+                        receiptDate.setCustomValidity(message);
+                    }
+                }
+                showReceiptValidation(message);
+                return !message;
+            }
+
             quantity.addEventListener("input", updateReceiptPreview);
             unitCost.addEventListener("input", updateReceiptPreview);
+            [receiptDate, expiryDate, batchCode].forEach(function (input) {
+                if (input) input.addEventListener("input", validateReceiptDates);
+            });
+            if (receiptDate) {
+                receiptDate.addEventListener("change", updateBatchCodePreview);
+            }
+            if (trackExpiry) {
+                trackExpiry.addEventListener("change", updateExpiryFields);
+            }
+            form.addEventListener("submit", function (event) {
+                if (!validateReceiptDates()) {
+                    event.preventDefault();
+                    form.reportValidity();
+                }
+            });
+            updateExpiryFields();
         });
     </script>
 </main>

@@ -2,6 +2,8 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryCategory;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryReceipt;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FinancialChargeSetting;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.InventoryCategoryRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.InventoryItemRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.InventoryReceiptRepository;
@@ -131,7 +133,7 @@ class InventoryManagementServiceImportTest {
     }
 
     @Test
-    void rejectsExpiryDateWithoutBatchCode() {
+    void autoGeneratesBatchCodeWhenExpiryDateProvided() {
         InventoryItem item = InventoryItem.builder()
                 .id(1L)
                 .name("Trứng")
@@ -139,14 +141,31 @@ class InventoryManagementServiceImportTest {
                 .unitCost(BigDecimal.ONE)
                 .isDeleted(false)
                 .build();
+        LocalDate receiptDate = LocalDate.of(2026, 6, 25);
         when(inventoryItemRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(item));
+        when(inventoryReceiptRepository.findTopByBatchCodeStartingWithOrderByBatchCodeDesc("LOT-260625-"))
+                .thenReturn(Optional.empty());
+        when(inventoryReceiptRepository.existsByBatchCode("LOT-260625-001")).thenReturn(false);
+        when(inventoryReceiptRepository.existsByCode(any())).thenReturn(false);
+        when(inventoryReceiptRepository.save(any(InventoryReceipt.class))).thenAnswer(invocation -> {
+            InventoryReceipt receipt = invocation.getArgument(0);
+            receipt.setId(9L);
+            return receipt;
+        });
+        when(financialChargeService.getCurrentSetting()).thenReturn(
+                FinancialChargeSetting.builder()
+                        .inventoryVatRate(BigDecimal.ZERO)
+                        .build());
+        when(financialChargeService.calculateRateAmount(any(), any())).thenReturn(BigDecimal.ZERO);
 
-        assertThatThrownBy(() -> service.createReceipt(
+        service.createReceipt(
                 1L, BigDecimal.ONE, BigDecimal.TEN,
-                null, null, LocalDate.now(), null,
-                LocalDate.now().plusDays(10), null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Mã lô là bắt buộc");
+                null, null, receiptDate, null,
+                receiptDate.plusDays(10), null);
+
+        ArgumentCaptor<InventoryReceipt> receiptCaptor = ArgumentCaptor.forClass(InventoryReceipt.class);
+        verify(inventoryReceiptRepository).save(receiptCaptor.capture());
+        assertThat(receiptCaptor.getValue().getBatchCode()).isEqualTo("LOT-260625-001");
     }
 
     @Test

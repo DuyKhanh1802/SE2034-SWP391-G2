@@ -34,7 +34,7 @@
                     <option th:each="typeOption : ${transactionTypes}"
                             th:value="${typeOption}"
                             th:selected="${typeOption == selectedType}"
-                            th:text="${typeOption.name() == 'IN' ? 'Nhập kho' : (typeOption.name() == 'OUT' ? 'Xuất kho' : 'Điều chỉnh')}"></option>
+                            th:text="${typeOption.name() == 'IN' ? 'Nhập kho' : (typeOption.name() == 'OUT' ? 'Xuất kho' : (typeOption.name() == 'DISPOSAL' ? 'Xuất hủy' : 'Điều chỉnh'))}"></option>
                 </select>
             </div>
             <div><label>Từ ngày</label><input class="filter-control" type="date" name="dateFrom" th:value="${dateFrom}"></div>
@@ -55,7 +55,6 @@
                     <th>Số lượng</th>
                     <th>Tồn sau biến động</th>
                     <th>Nguồn</th>
-                    <th>Chứng từ liên quan</th>
                     <th>Nội dung</th>
                     <th>Người thực hiện</th>
                 </tr>
@@ -69,19 +68,18 @@
                     </td>
                     <td>
                         <span class="movement-type"
-                              th:classappend="${transaction.type.name() == 'IN'} ? ' movement-in' : (${transaction.type.name() == 'OUT'} ? ' movement-out' : ' movement-adjustment')"
-                              th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : 'Điều chỉnh')}"></span>
+                              th:classappend="${transaction.type.name() == 'IN' ? ' movement-in' : (transaction.type.name() == 'OUT' ? ' movement-out' : (transaction.type.name() == 'DISPOSAL' ? ' movement-disposal' : ' movement-adjustment'))}"
+                              th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : (transaction.type.name() == 'DISPOSAL' ? 'Xuất hủy' : 'Điều chỉnh'))}"></span>
                     </td>
                     <td><strong th:text="${@inventoryQuantityFormatter.format(transaction.quantity) + ' ' + transaction.item.unit}"></strong></td>
                     <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + transaction.item.unit : '—'}"></td>
-                    <td th:text="${transaction.sourceType ?: 'MANUAL'}"></td>
-                    <td th:text="${transaction.sourceId != null ? transaction.sourceType + ' #' + transaction.sourceId : '—'}"></td>
-                    <td th:text="${transaction.description ?: '-'}"></td>
+                    <td th:text="${transaction.sourceLabel}"></td>
+                    <td th:text="${transaction.descriptionLabel}"></td>
                     <td th:text="${transaction.createdBy != null
                         ? ((transaction.createdBy.lastName ?: '') + ' ' + (transaction.createdBy.firstName ?: '')).trim()
                         : 'Hệ thống'}"></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="9" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td></tr>
+                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="8" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td></tr>
                 </tbody>
             </table>
         </div>

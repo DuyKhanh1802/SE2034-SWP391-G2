@@ -63,7 +63,9 @@ public class InventoryManagementService {
 
     @Transactional(readOnly = true)
     public List<InventoryItem> getItems() {
-        return inventoryItemRepository.findByIsDeletedFalseOrderByNameAsc();
+        List<InventoryItem> items = inventoryItemRepository.findAllByIsDeletedFalse(Sort.by("id").ascending());
+        items.forEach(this::attachLatestBatchExpiry);
+        return items;
     }
 
     @Transactional(readOnly = true)
@@ -96,21 +98,17 @@ public class InventoryManagementService {
     }
 
     @Transactional(readOnly = true)
+    public String previewBatchCode(LocalDate receiptDate) {
+        LocalDate effectiveReceiptDate = receiptDate == null ? LocalDate.now(APP_ZONE) : receiptDate;
+        return generateBatchCode(effectiveReceiptDate);
+    }
+
+    @Transactional(readOnly = true)
     public InventoryItem getItem(Long id) {
         InventoryItem item = inventoryItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hàng hóa."));
         attachLatestBatchExpiry(item);
         return item;
-    }
-
-    @Transactional
-    public InventoryItem createItem(String name,
-                                    Long categoryId,
-                                    String unit,
-                                    BigDecimal openingQuantity,
-                                    BigDecimal minimumQuantity) {
-        return createItem(name, getCategory(categoryId), unit,
-                openingQuantity, minimumQuantity, BigDecimal.ZERO);
     }
 
     @Transactional
@@ -137,7 +135,7 @@ public class InventoryManagementService {
         item.setCategory(category);
         item.setLegacyCategory(category.getName());
         item.setUnit(unit.trim());
-        item.setMinimumQuantity(normalizeNonNegative(minimumQuantity));
+        item.setMinimumQuantity(normalizeQuantity(minimumQuantity, "Mức tồn tối thiểu", false));
         return inventoryItemRepository.save(item);
     }
 
@@ -294,7 +292,10 @@ public class InventoryManagementService {
             throw new IllegalArgumentException("Hàng hóa đã tồn tại.");
         }
 
-        BigDecimal opening = normalizeNonNegative(openingQuantity);
+        BigDecimal opening = normalizeQuantity(openingQuantity, "Tồn đầu kỳ", false);
+        BigDecimal normalizedMinimumQuantity = normalizeQuantity(minimumQuantity, "Mức tồn tối thiểu", false);
+        BigDecimal normalizedUnitCost = normalizeNonNegative(unitCost);
+        validateWholeNumber(normalizedUnitCost, "Giá vốn trước VAT");
         InventoryItem item = InventoryItem.builder()
                 .name(name.trim())
                 .category(category)
@@ -302,8 +303,8 @@ public class InventoryManagementService {
                 .unit(unit.trim())
                 .openingQuantity(opening)
                 .currentQuantity(opening)
-                .minimumQuantity(normalizeNonNegative(minimumQuantity))
-                .unitCost(normalizeNonNegative(unitCost))
+                .minimumQuantity(normalizedMinimumQuantity)
+                .unitCost(normalizedUnitCost)
                 .isDeleted(false)
                 .build();
 
@@ -338,21 +339,17 @@ public class InventoryManagementService {
                                           User createdBy) {
         InventoryItem item = getItem(itemId);
         validatePositive(quantity, "Số lượng nhập phải lớn hơn 0.");
+        validateMaxScale(quantity, 2, "Số lượng nhập");
         validatePositive(unitCost, "Đơn giá nhập phải lớn hơn 0.");
+        validateNaturalNumber(unitCost, "Đơn giá nhập");
         LocalDate effectiveReceiptDate = receiptDate == null ? LocalDate.now(APP_ZONE) : receiptDate;
         if (effectiveReceiptDate.isAfter(LocalDate.now(APP_ZONE))) {
             throw new IllegalArgumentException("Ngày nhập kho không được ở tương lai.");
         }
-        String normalizedBatchCode = normalizeText(batchCode);
-        if (normalizedBatchCode != null && normalizedBatchCode.length() > 50) {
-            throw new IllegalArgumentException("Mã lô không được vượt quá 50 ký tự.");
-        }
-        if (expiryDate != null && normalizedBatchCode == null) {
-            throw new IllegalArgumentException("Mã lô là bắt buộc khi khai báo hạn sử dụng.");
-        }
         if (expiryDate != null && !expiryDate.isAfter(effectiveReceiptDate)) {
             throw new IllegalArgumentException("Hạn sử dụng phải sau ngày nhập kho.");
         }
+        String generatedBatchCode = expiryDate == null ? null : generateBatchCode(effectiveReceiptDate);
 
         FinancialChargeSetting chargeSetting = financialChargeService.getCurrentSetting();
         BigDecimal subtotal = quantity.multiply(unitCost).setScale(0, java.math.RoundingMode.HALF_UP);
@@ -371,7 +368,7 @@ public class InventoryManagementService {
                 .supplier(normalizeText(supplier))
                 .note(normalizeText(note))
                 .receiptDate(effectiveReceiptDate)
-                .batchCode(normalizedBatchCode)
+                .batchCode(generatedBatchCode)
                 .expiryDate(expiryDate)
                 .createdBy(createdBy)
                 .build();
@@ -383,7 +380,7 @@ public class InventoryManagementService {
         inventoryItemRepository.save(item);
 
         recordInventoryTransaction(item, InventoryTransactionType.IN, quantity,
-                "Nhập hàng " + savedReceipt.getCode(), "INVENTORY_RECEIPT", savedReceipt.getId(), createdBy);
+                "Nhập kho từ phiếu nhập", "INVENTORY_RECEIPT", savedReceipt.getId(), createdBy);
 
         cashTransactionService.createInventoryPurchase(totalCost,
                 "Chi nhập kho " + savedReceipt.getCode() + " - " + item.getName(),
@@ -391,6 +388,31 @@ public class InventoryManagementService {
                 createdBy);
 
         return savedReceipt;
+    }
+
+    @Transactional
+    public void disposeStock(Long itemId,
+                             BigDecimal quantity,
+                             String reason,
+                             User createdBy) {
+        InventoryItem item = getItem(itemId);
+        validatePositive(quantity, "Số lượng hủy phải lớn hơn 0.");
+        validateMaxScale(quantity, 2, "Số lượng hủy");
+        ensureSufficientStock(item, quantity);
+
+        String normalizedReason = normalizeText(reason);
+        if (normalizedReason == null) {
+            normalizedReason = "Hủy hàng hóa";
+        }
+        if (normalizedReason.length() > 250) {
+            throw new IllegalArgumentException("Lý do hủy không được vượt quá 250 ký tự.");
+        }
+
+        item.setCurrentQuantity(item.getCurrentQuantity().subtract(quantity));
+        inventoryItemRepository.save(item);
+
+        recordInventoryTransaction(item, InventoryTransactionType.DISPOSAL, quantity,
+                normalizedReason, "INVENTORY_DISPOSAL", item.getId(), createdBy);
     }
 
     @Transactional
@@ -402,6 +424,7 @@ public class InventoryManagementService {
                         .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ."));
         InventoryItem item = getItem(itemId);
         validatePositive(quantityPerUse, "Số lượng tiêu hao phải lớn hơn 0.");
+        validateMaxScale(quantityPerUse, 2, "Số lượng tiêu hao");
 
         ServiceInventoryMapping mapping = serviceInventoryMappingRepository
                 .findByService_IdAndItem_Id(serviceId, itemId)
@@ -421,7 +444,8 @@ public class InventoryManagementService {
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng."));
         InventoryItem item = getItem(itemId);
-        validatePositive(quantityPerRefresh, "Số lượng refresh phải lớn hơn 0.");
+        validatePositive(quantityPerRefresh, "Số lượng lấp đồ phải lớn hơn 0.");
+        validateMaxScale(quantityPerRefresh, 2, "Số lượng lấp đồ");
 
         RoomRefreshInventoryMapping mapping = roomRefreshInventoryMappingRepository
                 .findByRoomType_IdAndItem_Id(roomTypeId, itemId)
@@ -446,7 +470,7 @@ public class InventoryManagementService {
     public void deleteRoomRefreshMapping(Long itemId, Long mappingId) {
         getItem(itemId);
         RoomRefreshInventoryMapping mapping = roomRefreshInventoryMappingRepository.findByIdAndItem_Id(mappingId, itemId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quy tắc refresh phòng."));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quy tắc lấp đồ phòng."));
         roomRefreshInventoryMappingRepository.delete(mapping);
     }
 
@@ -488,7 +512,7 @@ public class InventoryManagementService {
             item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
             inventoryItemRepository.save(item);
             recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
-                    "Refresh phòng sau checkout - " + roomType.getName(), "ROOM_REFRESH", sourceId, createdBy);
+                    "Lấp đồ phòng sau checkout - " + roomType.getName(), "ROOM_REFRESH", sourceId, createdBy);
         }
     }
 
@@ -586,7 +610,8 @@ public class InventoryManagementService {
 
     @Transactional(readOnly = true)
     public BigDecimal getItemTotalOut(Long itemId) {
-        return inventoryTransactionRepository.sumQuantityByItemAndType(itemId, InventoryTransactionType.OUT);
+        return inventoryTransactionRepository.sumQuantityByItemAndType(itemId, InventoryTransactionType.OUT)
+                .add(inventoryTransactionRepository.sumQuantityByItemAndType(itemId, InventoryTransactionType.DISPOSAL));
     }
 
     @Transactional(readOnly = true)
@@ -597,6 +622,14 @@ public class InventoryManagementService {
     @Transactional(readOnly = true)
     public List<InventoryItem> getLowStockItems() {
         return inventoryItemRepository.findLowStockItems();
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getExpiringSoonItemCodes() {
+        return getItems().stream()
+                .filter(item -> "EXPIRING_SOON".equals(item.getExpiryStatus()))
+                .map(InventoryItem::getCode)
+                .toList();
     }
 
     private void recordInventoryTransaction(InventoryItem item,
@@ -627,6 +660,16 @@ public class InventoryManagementService {
         if (value.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Giá trị không được âm.");
         }
+        return value;
+    }
+
+    private BigDecimal normalizeQuantity(BigDecimal value, String fieldName, boolean positive) {
+        if (positive) {
+            validatePositive(value, fieldName + " phải lớn hơn 0.");
+        } else {
+            value = normalizeNonNegative(value);
+        }
+        validateMaxScale(value, 2, fieldName);
         return value;
     }
 
@@ -783,6 +826,32 @@ public class InventoryManagementService {
         }
     }
 
+    private void validateMaxScale(BigDecimal value, int maxScale, String fieldName) {
+        if (value == null) {
+            return;
+        }
+        if (value.stripTrailingZeros().scale() > maxScale) {
+            throw new IllegalArgumentException(fieldName + " chỉ được nhập tối đa "
+                    + maxScale + " chữ số thập phân.");
+        }
+    }
+
+    private void validateNaturalNumber(BigDecimal value, String fieldName) {
+        if (value == null || value.compareTo(BigDecimal.ONE) < 0) {
+            throw new IllegalArgumentException(fieldName + " phải là số tự nhiên.");
+        }
+        validateWholeNumber(value, fieldName);
+    }
+
+    private void validateWholeNumber(BigDecimal value, String fieldName) {
+        if (value == null) {
+            return;
+        }
+        if (value.stripTrailingZeros().scale() > 0) {
+            throw new IllegalArgumentException(fieldName + " phải là số nguyên VND, không nhập số thập phân.");
+        }
+    }
+
     private void ensureSufficientStock(InventoryItem item, BigDecimal consumedQuantity) {
         if (item.getCurrentQuantity().compareTo(consumedQuantity) < 0) {
             throw new IllegalArgumentException(
@@ -843,5 +912,27 @@ public class InventoryManagementService {
             code = "IR-" + LocalDate.now(APP_ZONE).format(CODE_DATE_FORMATTER) + "-" + randomNumber;
         } while (inventoryReceiptRepository.existsByCode(code));
         return code;
+    }
+
+    private String generateBatchCode(LocalDate receiptDate) {
+        LocalDate effectiveReceiptDate = receiptDate == null ? LocalDate.now(APP_ZONE) : receiptDate;
+        String prefix = "LOT-" + effectiveReceiptDate.format(CODE_DATE_FORMATTER) + "-";
+        int nextNumber = inventoryReceiptRepository
+                .findTopByBatchCodeStartingWithOrderByBatchCodeDesc(prefix)
+                .map(InventoryReceipt::getBatchCode)
+                .map(code -> code.substring(prefix.length()))
+                .filter(suffix -> suffix.matches("\\d{3}"))
+                .map(Integer::parseInt)
+                .orElse(0) + 1;
+
+        if (nextNumber > 999) {
+            throw new IllegalArgumentException("Đã vượt quá số lượng mã lô trong ngày nhập kho này.");
+        }
+
+        String batchCode;
+        do {
+            batchCode = prefix + "%03d".formatted(nextNumber++);
+        } while (inventoryReceiptRepository.existsByBatchCode(batchCode));
+        return batchCode;
     }
 }

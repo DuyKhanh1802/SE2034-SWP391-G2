@@ -9,6 +9,10 @@ import java.util.Optional;
 public interface InventoryReceiptRepository extends JpaRepository<InventoryReceipt, Long> {
     boolean existsByCode(String code);
 
+    boolean existsByBatchCode(String batchCode);
+
+    Optional<InventoryReceipt> findTopByBatchCodeStartingWithOrderByBatchCodeDesc(String prefix);
+
     List<InventoryReceipt> findTop20ByOrderByCreatedAtDesc();
 
     List<InventoryReceipt> findTop20ByItem_IdOrderByReceiptDateDescCreatedAtDesc(Long itemId);

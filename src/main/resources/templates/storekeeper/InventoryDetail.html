@@ -89,28 +89,6 @@
     </section>
 
     <section class="admin-card p-0 overflow-hidden">
-        <div class="px-4 pt-4"><span class="eyebrow">STOCK MOVEMENTS</span><h2 class="modal-title">Biến động gần đây</h2></div>
-        <div class="table-responsive mt-3">
-            <table class="table admin-table">
-                <thead><tr><th>Loại</th><th>Số lượng</th><th>Tồn sau biến động</th><th>Nguồn</th><th>Nội dung</th><th>Thời gian</th></tr></thead>
-                <tbody>
-                <tr th:each="transaction : ${transactions}">
-                    <td><span class="movement-type"
-                              th:classappend="${transaction.type.name() == 'IN'} ? ' movement-in' : (${transaction.type.name() == 'OUT'} ? ' movement-out' : ' movement-adjustment')"
-                              th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : 'Điều chỉnh')}"></span></td>
-                    <td th:text="${@inventoryQuantityFormatter.format(transaction.quantity) + ' ' + item.unit}"></td>
-                    <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + item.unit : '—'}"></td>
-                    <td th:text="${transaction.sourceId != null ? transaction.sourceType + ' #' + transaction.sourceId : (transaction.sourceType ?: '—')}"></td>
-                    <td th:text="${transaction.description ?: '-'}"></td>
-                    <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="6" class="text-center py-5 text-muted">Chưa có biến động kho.</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section class="admin-card p-0 overflow-hidden">
         <div class="px-4 pt-4"><span class="eyebrow">CONSUMPTION MAPPINGS</span><h2 class="modal-title">Liên kết tiêu hao</h2></div>
         <div class="table-responsive mt-3">
             <table class="table admin-table">
@@ -122,7 +100,7 @@
                     <td th:text="${#numbers.formatDecimal(mapping.quantityPerUse.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}"></td>
                 </tr>
                 <tr th:each="mapping : ${refreshMappings}">
-                    <td th:text="${mapping.roomType.name}"></td><td>Refresh phòng</td>
+                    <td th:text="${mapping.roomType.name}"></td><td>Lấp đồ phòng</td>
                     <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerRefresh) + ' ' + item.unit}"></td>
                     <td th:text="${#numbers.formatDecimal(mapping.quantityPerRefresh.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}"></td>
                 </tr>

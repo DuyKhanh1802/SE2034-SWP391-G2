@@ -131,6 +131,32 @@ a { text-decoration: none; }
 .filter-control,
 .form-control-admin { padding: 9px 12px; }
 
+.expiry-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #555;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.expiry-toggle input {
+    width: 16px;
+    height: 16px;
+    accent-color: #111;
+}
+
+.form-control-admin[type="number"]::-webkit-outer-spin-button,
+.form-control-admin[type="number"]::-webkit-inner-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+.form-control-admin[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 .form-control-admin:disabled,
 .form-control-admin[readonly] {
     border-color: #e1e1e1;
@@ -219,6 +245,7 @@ a { text-decoration: none; }
 
 .movement-in { color: #2f7d32; }
 .movement-out { color: #1e70b7; }
+.movement-disposal { color: #b42318; }
 .movement-adjustment { color: #a56a00; }
 
 .action-btn {
