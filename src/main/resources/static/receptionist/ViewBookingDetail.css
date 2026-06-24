@@ -557,3 +557,81 @@
 .flatpickr-year-select {
     padding: 0 4px;
 }
+.payment-history-section {
+    margin-top: 28px;
+}
+
+.payment-history-header {
+    margin-bottom: 14px;
+}
+
+.payment-history-header h4 {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #111827;
+    margin: 0;
+}
+
+.payment-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 20px;
+    border: 1px solid #e4ddd7;
+    border-radius: 16px;
+    background: #fbf8f5;
+}
+
+.payment-history-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.payment-code {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: #8b6532;
+}
+
+.payment-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+}
+
+.payment-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8a8a8a;
+    font-size: 14px;
+}
+
+.payment-history-amount {
+    white-space: nowrap;
+    font-size: 18px;
+    font-weight: 800;
+    color: #111;
+}
+
+.refund-amount {
+    color: #d94343;
+}
+.payment-action-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+    margin-bottom: 24px;
+}
