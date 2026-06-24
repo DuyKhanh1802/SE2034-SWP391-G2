@@ -141,10 +141,11 @@ public class BookingPageController {
             Model model
     ) {
         BookingConfirmView confirmView = onlineBookingService.prepareConfirmView(request);
-        model.addAttribute("request", request);
-        model.addAttribute("confirm",confirmView);
 
-        return "page/BookingConfirm";
+        model.addAttribute("request", request);
+        model.addAttribute("confirmView", confirmView);
+
+        return "guest/BookingConfirm";
     }
 
     @GetMapping("/confirm")
@@ -189,14 +190,14 @@ public class BookingPageController {
         try {
             BookingCompleteResult result = onlineBookingService.completeOnlineBooking(request);
             redirectAttributes.addAttribute("bookingReference", result.getBookingReference());
-            return "redirect:/page/booking/sucess";
+            return "redirect:/page/booking/success";
         }catch (IllegalArgumentException e){
             BookingConfirmView confirmView = onlineBookingService.prepareConfirmView(request);
             model.addAttribute("request", request);
             model.addAttribute("confirmView", confirmView);
             model.addAttribute("errorMessage", e.getMessage());
 
-            return "page/BookingConfirm";
+            return "guest/BookingConfirm";
         }
     }
 
@@ -206,7 +207,7 @@ public class BookingPageController {
             Model model
     ){
         model.addAttribute("bookingReference",bookingRefernece);
-        return "page/BookingSuccess";
+        return "guest/BookingSuccess";
     }
 
 }
