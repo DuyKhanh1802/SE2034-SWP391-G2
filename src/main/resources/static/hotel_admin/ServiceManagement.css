@@ -21,11 +21,11 @@ body {
 
 .service-page-header h1 {
     margin: 0;
-    font-family: "Libre Baskerville", Georgia, serif;
-    font-size: 42px;
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -1px;
+    font-family: 'Inter', 'Manrope', Arial, sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.6px;
     color: #1f1f1f;
 }
 
@@ -228,12 +228,12 @@ body {
 
 .service-table th:nth-child(3),
 .service-table td:nth-child(3) {
-    width: 36%;
+    width: 34%;
 }
 
 .service-table th:nth-child(4),
 .service-table td:nth-child(4) {
-    width: 10%;
+    width: 9%;
 }
 
 .service-table th:nth-child(5),
@@ -248,7 +248,7 @@ body {
 
 .service-table th:nth-child(7),
 .service-table td:nth-child(7) {
-    width: 13%;
+    width: 16%;
 }
 
 .service-image-box {
@@ -375,19 +375,27 @@ body {
     color: #ffffff;
 }
 
-/* Nút đang bật: không có viền, icon lớn hơn */
-.service-action-btn.toggle-on {
+.service-action-btn.toggle-on,
+.service-action-btn.toggle-off {
     width: 32px;
     height: 32px;
     padding: 0;
     border-radius: 9px;
-    color: #166534;
     border: none;
     background: transparent;
     box-shadow: none;
 }
 
-.service-action-btn.toggle-on i {
+.service-action-btn.toggle-on {
+    color: #166534;
+}
+
+.service-action-btn.toggle-off {
+    color: #991b1b;
+}
+
+.service-action-btn.toggle-on i,
+.service-action-btn.toggle-off i {
     font-size: 21px;
 }
 
@@ -396,32 +404,6 @@ body {
     border: none;
     background: transparent;
     transform: scale(1.08);
-}
-
-.service-action-btn.toggle-on i {
-    font-size: 22px;
-}
-
-.service-action-btn.toggle-on:hover {
-    color: #166534;
-    border: none;
-    background: transparent;
-    transform: scale(1.12);
-}
-
-.service-action-btn.toggle-off {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border-radius: 9px;
-    color: #991b1b;
-    border: none;
-    background: transparent;
-    box-shadow: none;
-}
-
-.service-action-btn.toggle-off i {
-    font-size: 21px;
 }
 
 .service-action-btn.toggle-off:hover {
@@ -607,6 +589,113 @@ body {
 }
 
 /* =========================
+   VIEW SERVICE DETAIL
+   ========================= */
+
+.service-detail-card {
+    max-width: 980px;
+}
+
+.service-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.service-detail-main {
+    display: grid;
+    grid-template-columns: 330px 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.service-detail-image {
+    height: 240px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e5ded7;
+    background: #f1eee9;
+}
+
+.service-detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.service-detail-no-image {
+    height: 100%;
+    color: #9b9288;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.service-detail-no-image i {
+    font-size: 34px;
+}
+
+.service-detail-info {
+    border: 1px solid #eee8e1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.service-detail-item {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0ece8;
+    align-items: center;
+}
+
+.service-detail-item:last-child {
+    border-bottom: none;
+}
+
+.service-detail-item span,
+.service-detail-description > span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #7b7168;
+}
+
+.service-detail-item strong {
+    font-size: 14px;
+    font-weight: 800;
+    color: #202020;
+}
+
+.service-detail-description {
+    margin-top: 22px;
+    padding: 18px;
+    border: 1px solid #eee8e1;
+    border-radius: 16px;
+    background: #faf8f5;
+}
+
+.service-detail-description p {
+    margin: 10px 0 0;
+    color: #5f574f;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+.service-detail-empty {
+    color: #9b9288 !important;
+    font-style: italic;
+}
+
+/* =========================
    RESPONSIVE
    ========================= */
 
@@ -641,14 +730,14 @@ body {
 
     .service-action-btn.toggle-on,
     .service-action-btn.toggle-off {
-        width: 38px;
-        height: 38px;
+        width: 32px;
+        height: 32px;
         padding: 0;
     }
 
     .service-action-btn.toggle-on i,
     .service-action-btn.toggle-off i {
-        font-size: 22px;
+        font-size: 21px;
     }
 }
 
@@ -687,6 +776,29 @@ body {
     .service-small-delete-form {
         justify-content: center;
     }
+
+    .service-detail-main {
+        grid-template-columns: 1fr;
+    }
+
+    .service-detail-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .service-detail-actions .service-btn {
+        width: 100%;
+    }
+
+    .service-detail-image {
+        height: 220px;
+    }
+
+    .service-detail-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
 }
 
 @media (max-width: 700px) {
@@ -705,7 +817,7 @@ body {
     }
 
     .service-page-header h1 {
-        font-size: 34px;
+        font-size: 32px;
     }
 
     .service-page-header p {

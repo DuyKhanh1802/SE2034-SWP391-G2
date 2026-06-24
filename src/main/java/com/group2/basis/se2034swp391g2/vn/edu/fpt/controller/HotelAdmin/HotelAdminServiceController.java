@@ -126,6 +126,28 @@ public class HotelAdminServiceController {
         }
     }
 
+    @GetMapping("/view/{id}")
+    public String viewService(@PathVariable Long id,
+                              Model model,
+                              Authentication authentication,
+                              HttpSession session,
+                              HttpServletRequest request,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            addLayoutData(model, authentication, session, request, "Chi tiết dịch vụ");
+
+            ServiceResponse serviceDetail = serviceManagementService.getServiceDetail(id);
+
+            model.addAttribute("serviceDetail", serviceDetail);
+
+            return "hotel_admin/ViewServiceDetails";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/hotel-admin/services";
+        }
+    }
+
     @GetMapping("/edit/{id}")
     public String showEditServiceForm(@PathVariable Long id,
                                       Model model,
@@ -188,6 +210,7 @@ public class HotelAdminServiceController {
             return "hotel_admin/EditService";
         }
     }
+
     @PostMapping("/edit/{id}/delete")
     public String deleteService(@PathVariable Long id,
                                 RedirectAttributes redirectAttributes) {

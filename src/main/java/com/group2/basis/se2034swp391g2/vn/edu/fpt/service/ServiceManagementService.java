@@ -100,6 +100,38 @@ public class ServiceManagementService {
 
         return request;
     }
+    @Transactional(readOnly = true)
+    public ServiceResponse getServiceDetail(Long serviceId) {
+        com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
+                getValidService(serviceId);
+
+        Long categoryId = null;
+        String categoryName = "Chưa có loại";
+
+        if (service.getCategory() != null) {
+            categoryId = service.getCategory().getId();
+            categoryName = service.getCategory().getName();
+        }
+
+        String imageUrl = imageRepository
+                .findFirstByEntityTypeAndEntityIdAndIsPrimaryTrueOrderBySortOrderAsc(
+                        ImageEntityType.SERVICE,
+                        service.getId()
+                )
+                .map(Image::getImageUrl)
+                .orElse(null);
+
+        return new ServiceResponse(
+                service.getId(),
+                service.getName(),
+                service.getDescription(),
+                service.getPrice(),
+                service.getIsAvailable(),
+                categoryId,
+                categoryName,
+                imageUrl
+        );
+    }
 
     @Transactional
     public void updateService(Long serviceId, ServiceRequest request) {

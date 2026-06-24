@@ -52,14 +52,19 @@
                                id="name"
                                th:field="*{name}"
                                maxlength="200"
-                               required>
+                               pattern=".*\S.*"
+                               required
+                               oninvalid="this.setCustomValidity('Vui lòng nhập tên dịch vụ.')"
+                               oninput="this.setCustomValidity('')">
                     </div>
 
                     <div class="service-form-group">
                         <label for="categoryId">Loại dịch vụ <span>*</span></label>
                         <select id="categoryId"
                                 th:field="*{categoryId}"
-                                required>
+                                required
+                                oninvalid="this.setCustomValidity('Vui lòng chọn loại dịch vụ.')"
+                                onchange="this.setCustomValidity('')">
                             <option value="">-- Chọn loại dịch vụ --</option>
                             <option th:each="category : ${categories}"
                                     th:value="${category.id}"
@@ -76,7 +81,9 @@
                                th:field="*{price}"
                                min="0"
                                step="1000"
-                               required>
+                               required
+                               oninvalid="this.setCustomValidity('Vui lòng nhập giá dịch vụ hợp lệ và không nhỏ hơn 0.')"
+                               oninput="this.setCustomValidity('')">
                     </div>
 
                     <div class="service-form-group">
