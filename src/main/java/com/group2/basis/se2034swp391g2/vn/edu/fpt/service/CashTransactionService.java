@@ -269,6 +269,7 @@ public class CashTransactionService {
         if (payment == null || payment.getStatus() != PaymentStatus.SUCCESS) {
             throw new IllegalArgumentException("Payment must be successful to create cash transaction.");
         }
+
         if (payment.getId() != null && cashTransactionRepository.existsBySourceTypeAndSourceId(
                 CashTransactionSourceType.PAYMENT, payment.getId())) {
             return cashTransactionRepository.findBySourceTypeAndSourceId(
@@ -282,15 +283,16 @@ public class CashTransactionService {
         CashTransactionCategory category = switch (payment.getPaymentType()) {
             case DEPOSIT -> CashTransactionCategory.DEPOSIT;
             case REFUND -> CashTransactionCategory.REFUND;
-            case CHECKOUT -> CashTransactionCategory.BOOKING_PAYMENT;
+            case BALANCE, FULL -> CashTransactionCategory.BOOKING_PAYMENT;
         };
 
         CashTransaction transaction = CashTransaction.builder()
                 .documentCode(generateDocumentCode(type))
+                .paymentCode(payment.getTransactionRef())
                 .type(type)
                 .category(category)
                 .amount(normalizeMoneyByType(payment.getAmount(), type))
-                .description("Payment " + payment.getPaymentType() + " - " + payment.getTransactionRef())
+                .description(buildPaymentDescription(payment))
                 .sourceType(CashTransactionSourceType.PAYMENT)
                 .sourceId(payment.getId())
                 .createdBy(payment.getProcessedBy())
@@ -299,6 +301,20 @@ public class CashTransactionService {
                 .build();
 
         return cashTransactionRepository.save(transaction);
+    }
+    private String buildPaymentDescription(Payment payment) {
+        String bookingCode = "";
+
+        if (payment.getBooking() != null && payment.getBooking().getBookingReference() != null) {
+            bookingCode = payment.getBooking().getBookingReference();
+        }
+
+        return switch (payment.getPaymentType()) {
+            case DEPOSIT -> "Thu tiền đặt cọc cho booking " + bookingCode;
+            case BALANCE -> "Thu phần tiền còn lại cho booking " + bookingCode;
+            case FULL -> "Thu toàn bộ tiền booking " + bookingCode;
+            case REFUND -> "Hoàn tiền cho booking " + bookingCode;
+        };
     }
 
     @Transactional(readOnly = true)
