@@ -22,8 +22,7 @@ public class CashTransaction {
     @Column(name = "cash_transaction_id")
     private Long id;
 
-    @Column(name = "transaction_code", nullable = false, unique = true, length = 30)
-    private String code;
+
 
     @Column(name = "document_code", nullable = false, unique = true, length = 30)
     private String documentCode;

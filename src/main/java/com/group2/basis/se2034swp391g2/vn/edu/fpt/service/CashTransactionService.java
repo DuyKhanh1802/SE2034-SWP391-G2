@@ -50,7 +50,7 @@ public class CashTransactionService {
         validateAmount(amount);
 
         CashTransaction transaction = CashTransaction.builder()
-                .code(generateCode())
+                +.code(generateCode())
                 .documentCode(generateDocumentCode(type))
                 .type(type)
                 .category(category)
