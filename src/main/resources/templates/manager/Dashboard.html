@@ -69,7 +69,7 @@
             </h3>
             <div class="incident-item" th:each="transaction : ${recentTransactions}">
                 <div>
-                    <h5 th:text="${transaction.code}">CT-0000</h5>
+                    <h5 th:text="${transaction.documentCode}">PT-0000</h5>
                     <p th:text="${transaction.category + ' - ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
                         Giao dịch
                     </p>

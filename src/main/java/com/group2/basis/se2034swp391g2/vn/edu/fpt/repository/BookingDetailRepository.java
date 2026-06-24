@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface BookingDetailRepository extends JpaRepository<BookingDetail, Long> {
 
@@ -18,7 +20,7 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
             bd.id,
             b.id,
             b.bookingReference,
-            CONCAT(b.guestFirstName, ' ', b.guestLastName),
+            CONCAT(b.guestLastName, ' ', b.guestFirstName),
             r.roomNumber,
             v.variantName,
             bd.roomCode,
@@ -62,4 +64,21 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
         WHERE b.id = :bookingId
         """)
     List<BookingDetail> findDetailsWithRoomsByBookingId(@Param("bookingId") Long bookingId);
+
+    @Query("""
+    SELECT bd
+    FROM BookingDetail bd
+    JOIN FETCH bd.booking b
+    JOIN FETCH bd.room r
+    JOIN FETCH bd.variant v
+    JOIN FETCH v.roomType rt
+    WHERE LOWER(b.guestEmail) = LOWER(:email)
+      AND UPPER(bd.roomCode) = UPPER(:roomCode)
+      AND bd.roomCodeExpiresAt > :now
+      AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CHECKED_IN
+      AND b.isDeleted = false
+""")
+    Optional<BookingDetail> findValidGuestRoomAccess(@Param("email") String email,
+                                                     @Param("roomCode") String roomCode,
+                                                     @Param("now") Instant now);
 }

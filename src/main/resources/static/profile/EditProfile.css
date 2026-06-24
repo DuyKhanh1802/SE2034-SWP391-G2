@@ -231,4 +231,31 @@
     background: var(--profile-charcoal);
     color: #fffaf3;
 }
+.profile-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 22px;
+    margin-top: 52px;
+}
 
+.profile-form-actions .profile-btn-outline,
+.profile-form-actions .profile-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .profile-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-form-actions .profile-btn-outline,
+    .profile-form-actions .profile-btn-primary {
+        width: 100%;
+    }
+}

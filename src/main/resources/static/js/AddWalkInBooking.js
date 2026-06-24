@@ -26,6 +26,28 @@ document.addEventListener("DOMContentLoaded", function () {
     const selectedCapacity = document.getElementById("selectedCapacity");
     const adultsInput = document.querySelector("input[name='adults']");
     const childrenInput = document.querySelector("input[name='children']");
+    const childAgesWrapper = document.getElementById("childAgesWrapper");
+    const childAgesContainer = document.getElementById("childAgesContainer");
+    const vatRateInput = document.getElementById("vatRate");
+    const serviceChargeRateInput = document.getElementById("serviceChargeRate");
+    const taxOnServiceChargeInput = document.getElementById("taxOnServiceCharge");
+
+    const additionalServiceCharge = document.getElementById("additionalServiceCharge");
+    const serviceChargeAmount = document.getElementById("serviceChargeAmount");
+    const enableDiningService = document.getElementById("enableDiningService");
+    const enableWellnessService = document.getElementById("enableWellnessService");
+
+    const diningServicePanel = document.getElementById("diningServicePanel");
+    const wellnessServicePanel = document.getElementById("wellnessServicePanel");
+
+    const diningServiceRows = document.getElementById("diningServiceRows");
+    const wellnessServiceRows = document.getElementById("wellnessServiceRows");
+
+    const diningServiceTemplate = document.getElementById("diningServiceTemplate");
+    const wellnessServiceTemplate = document.getElementById("wellnessServiceTemplate");
+
+    const serviceHiddenInputs = document.getElementById("serviceHiddenInputs");
+
     document.querySelectorAll(".required-field").forEach(function (field) {
         field.addEventListener("input", function () {
             clearFieldError(field);
@@ -120,6 +142,33 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
+        const roomTotal = getRoomTotalWithWeekendSurcharge(selectedRoomTotalPerNight);
+
+        function getRoomTotalWithWeekendSurcharge(pricePerNight) {
+            if (!checkInInput || !checkOutInput || !checkInInput.value || !checkOutInput.value) {
+                return 0;
+            }
+
+            let total = 0;
+            let currentDate = new Date(checkInInput.value);
+            const checkOutDate = new Date(checkOutInput.value);
+
+            while (currentDate < checkOutDate) {
+                const day = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
+                let nightlyPrice = pricePerNight;
+
+                if (day === 0 || day === 6) {
+                    nightlyPrice = nightlyPrice * 1.10;
+                }
+
+                total += nightlyPrice;
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            return Math.round(total);
+        }
+
+
         let extraBedTotal = 0;
 
         extraBedSelects.forEach(function (select) {
@@ -129,11 +178,22 @@ document.addEventListener("DOMContentLoaded", function () {
             extraBedTotal += count * extraPrice * nights;
         });
 
-        const roomTotal = selectedRoomTotalPerNight * nights;
-        const beforeTaxTotal = roomTotal + extraBedTotal;
-        const tax = Math.round(beforeTaxTotal * 0.12);
-        const total = beforeTaxTotal + tax;
+        const serviceSubtotal = getAdditionalServiceTotal();
 
+        const vatRate = getRate(vatRateInput);
+        const serviceChargeRate = getRate(serviceChargeRateInput);
+
+        const baseAmount = roomTotal + extraBedTotal + serviceSubtotal;
+
+        const serviceCharge = Math.round(serviceSubtotal * serviceChargeRate);
+
+        const vatBase = isTaxOnServiceCharge()
+            ? baseAmount + serviceCharge
+            : baseAmount;
+
+        const tax = Math.round(vatBase * vatRate);
+
+        const total = baseAmount + serviceCharge + tax;
         const suggestedDeposit = Math.round(total * 0.5);
 
         let deposit = 0;
@@ -157,6 +217,14 @@ document.addEventListener("DOMContentLoaded", function () {
             roomCharge.textContent = formatVnd(roomTotal + extraBedTotal);
         }
 
+        if (additionalServiceCharge) {
+            additionalServiceCharge.textContent = formatVnd(serviceSubtotal);
+        }
+
+        if (serviceChargeAmount) {
+            serviceChargeAmount.textContent = formatVnd(serviceCharge);
+        }
+
         if (taxAmount) {
             taxAmount.textContent = formatVnd(tax);
         }
@@ -172,6 +240,106 @@ document.addEventListener("DOMContentLoaded", function () {
         if (remainingAmount) {
             remainingAmount.textContent = formatVnd(remaining);
         }
+    }
+    function getCurrentChildAgeValues() {
+        const currentInputs = document.querySelectorAll(".child-age-input");
+
+        if (currentInputs.length > 0) {
+            return Array.from(currentInputs).map(function (input) {
+                return input.value;
+            });
+        }
+
+        const initialInputs = document.querySelectorAll(".initial-child-age");
+
+        return Array.from(initialInputs).map(function (input) {
+            return input.value;
+        });
+    }
+
+    function renderChildAgeInputs() {
+        if (!childrenInput || !childAgesWrapper || !childAgesContainer) {
+            return;
+        }
+
+        const childCount = Number(childrenInput.value || 0);
+        const oldValues = getCurrentChildAgeValues();
+
+        childAgesContainer.innerHTML = "";
+
+        if (childCount <= 0) {
+            childAgesWrapper.style.display = "none";
+            return;
+        }
+
+        childAgesWrapper.style.display = "flex";
+
+        for (let i = 0; i < childCount; i++) {
+            const item = document.createElement("div");
+            item.className = "child-age-item";
+
+            const label = document.createElement("span");
+            label.textContent = "Trẻ em " + (i + 1);
+
+            const input = document.createElement("input");
+            input.type = "number";
+            input.name = "childAges";
+            input.min = "0";
+            input.max = "12";
+            input.placeholder = "Tuổi";
+            input.className = "child-age-input";
+            input.dataset.message = "Vui lòng nhập tuổi trẻ em từ 0 đến 12.";
+
+            if (oldValues[i] !== undefined) {
+                input.value = oldValues[i];
+            }
+
+            item.appendChild(label);
+            item.appendChild(input);
+
+            childAgesContainer.appendChild(item);
+        }
+    }
+    function validateChildAges() {
+        if (!childrenInput) {
+            return true;
+        }
+
+        const childCount = Number(childrenInput.value || 0);
+
+        if (childCount <= 0) {
+            return true;
+        }
+
+        let isValid = true;
+        const ageInputs = document.querySelectorAll(".child-age-input");
+
+        if (ageInputs.length !== childCount) {
+            showSummary("Vui lòng nhập đủ độ tuổi cho từng trẻ em.");
+            return false;
+        }
+
+        ageInputs.forEach(function (input) {
+            const age = Number(input.value);
+
+            if (input.value === "" || Number.isNaN(age) || age < 0 || age > 12) {
+                showSummary("Tuổi trẻ em phải nằm trong khoảng từ 0 đến 12.");
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+    if (childrenInput) {
+        childrenInput.addEventListener("input", function () {
+            renderChildAgeInputs();
+            updateSummary();
+        });
+
+        childrenInput.addEventListener("change", function () {
+            renderChildAgeInputs();
+            updateSummary();
+        });
     }
 
     function toggleDepositFields() {
@@ -287,6 +455,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!validateStayInfo()) {
                 isValid = false;
             }
+            if (!validateChildAges()) {
+                isValid = false;
+            }
 
             if (!validateGuestInfo()) {
                 isValid = false;
@@ -298,6 +469,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!validateDeposit()) {
                 isValid = false;
+            }
+
+            if (!validateAdditionalServices()) {
+                isValid = false;
+            }
+
+            if (isValid) {
+                buildServiceHiddenInputs();
             }
 
             if (!isValid) {
@@ -490,9 +669,209 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return true;
     }
+
+    function getRate(input) {
+        if (!input || !input.value) {
+            return 0;
+        }
+
+        return Number(input.value) / 100;
+    }
+
+    function isTaxOnServiceCharge() {
+        if (!taxOnServiceChargeInput) {
+            return false;
+        }
+
+        return taxOnServiceChargeInput.value === "true"
+            || taxOnServiceChargeInput.value === "1";
+    }
+
+    function getAdditionalServiceTotal() {
+        let total = 0;
+
+        document.querySelectorAll(".service-row:not(.service-template)").forEach(function (row) {
+            const select = row.querySelector(".service-select");
+            const qtyInput = row.querySelector(".service-quantity");
+
+            if (!select || !qtyInput || !select.value) {
+                return;
+            }
+
+            const selectedOption = select.options[select.selectedIndex];
+            const unitPrice = Number(selectedOption ? selectedOption.getAttribute("data-price") || 0 : 0);
+            const quantity = Number(qtyInput.value || 0);
+
+            if (quantity > 0) {
+                total += unitPrice * quantity;
+            }
+        });
+
+        return total;
+    }
+
+    function validateAdditionalServices() {
+        let isValid = true;
+
+        document.querySelectorAll(".service-row:not(.service-template)").forEach(function (row) {
+            const select = row.querySelector(".service-select");
+            const qtyInput = row.querySelector(".service-quantity");
+
+            if (!select || !qtyInput) {
+                return;
+            }
+
+            const quantity = Number(qtyInput.value || 0);
+
+            if (select.value && (quantity < 1 || Number.isNaN(quantity))) {
+                showSummary("Số lượng dịch vụ phải ít nhất là 1.");
+                isValid = false;
+            }
+
+            if (!select.value && quantity > 0) {
+                showSummary("Vui lòng chọn dịch vụ hoặc xóa dòng dịch vụ trống.");
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    function buildServiceHiddenInputs() {
+        if (!serviceHiddenInputs) {
+            return;
+        }
+
+        serviceHiddenInputs.innerHTML = "";
+
+        document.querySelectorAll(".service-row:not(.service-template)").forEach(function (row) {
+            const select = row.querySelector(".service-select");
+            const qtyInput = row.querySelector(".service-quantity");
+
+            if (!select || !qtyInput || !select.value) {
+                return;
+            }
+
+            const quantity = Number(qtyInput.value || 0);
+
+            if (quantity < 1) {
+                return;
+            }
+
+            const serviceIdInput = document.createElement("input");
+            serviceIdInput.type = "hidden";
+            serviceIdInput.name = "serviceIds";
+            serviceIdInput.value = select.value;
+
+            const quantityHiddenInput = document.createElement("input");
+            quantityHiddenInput.type = "hidden";
+            quantityHiddenInput.name = "serviceQuantities[" + select.value + "]";
+            quantityHiddenInput.value = quantity;
+
+            serviceHiddenInputs.appendChild(serviceIdInput);
+            serviceHiddenInputs.appendChild(quantityHiddenInput);
+        });
+    }
+    function createServiceRow(template) {
+        if (!template) {
+            return null;
+        }
+
+        const row = template.cloneNode(true);
+        row.removeAttribute("id");
+        row.classList.remove("service-template");
+        row.style.display = "grid";
+
+        const select = row.querySelector(".service-select");
+        const qtyInput = row.querySelector(".service-quantity");
+        const pricePreview = row.querySelector(".service-price-preview");
+        const removeBtn = row.querySelector(".btn-remove-service-row");
+
+        function updateRowPrice() {
+            const selectedOption = select.options[select.selectedIndex];
+            const unitPrice = Number(selectedOption ? selectedOption.getAttribute("data-price") || 0 : 0);
+            const quantity = Number(qtyInput.value || 0);
+
+            if (pricePreview) {
+                pricePreview.textContent = formatVnd(unitPrice * quantity);
+            }
+
+            updateSummary();
+        }
+
+        if (select) {
+            select.addEventListener("change", updateRowPrice);
+        }
+
+        if (qtyInput) {
+            qtyInput.addEventListener("input", updateRowPrice);
+            qtyInput.addEventListener("change", updateRowPrice);
+        }
+
+        if (removeBtn) {
+            removeBtn.addEventListener("click", function () {
+                row.remove();
+                updateSummary();
+            });
+        }
+
+        updateRowPrice();
+
+        return row;
+    }
+
+    function addServiceRow(type) {
+        if (type === "dining") {
+            const row = createServiceRow(diningServiceTemplate);
+            if (row && diningServiceRows) {
+                diningServiceRows.appendChild(row);
+            }
+        }
+
+        if (type === "wellness") {
+            const row = createServiceRow(wellnessServiceTemplate);
+            if (row && wellnessServiceRows) {
+                wellnessServiceRows.appendChild(row);
+            }
+        }
+
+        updateSummary();
+    }
+
+    function toggleServicePanel(checkbox, panel, rowsContainer, type) {
+        if (!checkbox || !panel || !rowsContainer) {
+            return;
+        }
+
+        checkbox.addEventListener("change", function () {
+            if (checkbox.checked) {
+                panel.style.display = "block";
+
+                if (rowsContainer.children.length === 0) {
+                    addServiceRow(type);
+                }
+            } else {
+                panel.style.display = "none";
+                rowsContainer.innerHTML = "";
+            }
+
+            updateSummary();
+        });
+    }
+
+    toggleServicePanel(enableDiningService, diningServicePanel, diningServiceRows, "dining");
+    toggleServicePanel(enableWellnessService, wellnessServicePanel, wellnessServiceRows, "wellness");
+
+    document.querySelectorAll(".btn-add-service-row").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const target = button.getAttribute("data-target");
+            addServiceRow(target);
+        });
+    });
     updatePhoneCode();
     toggleDepositFields();
     updateSummary();
+    renderChildAgeInputs();
 
     const moreButtons = document.querySelectorAll(".room-more-btn");
 

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="module-header">
+        <div>
+            <p>Dòng tiền</p>
+            <h1>Lịch sử giao dịch</h1>
+        </div>
+        <a class="btn-primary-action" th:href="@{/manager/transactions/create}">Lập phiếu thu/chi</a>
+    </section>
+
+    <section class="panel">
+        <!-- Bộ lọc lịch sử giao dịch. -->
+        <form class="transaction-filter" th:action="@{/manager/transactions}" method="get">
+            <input type="hidden" name="page" value="0">
+            <input type="hidden" name="size" th:value="${pageSize}">
+
+            <select name="type">
+                <option value="ALL" th:selected="${searchRequest.type == 'ALL'}">Tất cả loại phiếu</option>
+                <option th:each="typeOption : ${transactionTypes}"
+                        th:value="${typeOption.name()}"
+                        th:text="${typeOption.displayName}"
+                        th:selected="${searchRequest.type == typeOption.name()}">
+                    Phiếu thu
+                </option>
+            </select>
+
+            <select name="category">
+                <option value="ALL" th:selected="${searchRequest.category == 'ALL'}">Tất cả nhóm giao dịch</option>
+                <option th:each="categoryOption : ${transactionCategories}"
+                        th:value="${categoryOption.name()}"
+                        th:text="${categoryOption.displayName}"
+                        th:selected="${searchRequest.category == categoryOption.name()}">
+                    Đặt cọc
+                </option>
+            </select>
+
+            <select name="sourceType">
+                <option value="ALL" th:selected="${searchRequest.sourceType == 'ALL'}">Tất cả nguồn</option>
+                <option th:each="sourceOption : ${sourceTypes}"
+                        th:value="${sourceOption.name()}"
+                        th:text="${sourceOption.displayName}"
+                        th:selected="${searchRequest.sourceType == sourceOption.name()}">
+                    Thanh toán booking
+                </option>
+            </select>
+
+            <input type="text"
+                   class="transaction-date-filter"
+                   name="fromDate"
+                   th:value="${searchRequest.fromDate}"
+                   placeholder="dd/mm/yyyy"
+                   aria-label="Từ ngày">
+            <input type="text"
+                   class="transaction-date-filter"
+                   name="toDate"
+                   th:value="${searchRequest.toDate}"
+                   placeholder="dd/mm/yyyy"
+                   aria-label="Đến ngày">
+            <input type="text" name="keyword" th:value="${searchRequest.keyword}" placeholder="Tìm mã chứng từ hoặc mô tả">
+
+            <button type="submit">Lọc</button>
+            <a class="btn-secondary-action" th:href="@{/manager/transactions}">Xóa lọc</a>
+        </form>
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <!-- Bảng hiển thị các dòng tiền đã được service lọc và phân trang. -->
+        <table class="module-table">
+            <thead>
+            <tr>
+                <th>Mã chứng từ</th>
+                <th>Ngày lập</th>
+                <th>Loại phiếu</th>
+                <th>Nhóm giao dịch</th>
+                <th>Số tiền</th>
+                <th>Nguồn</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="transaction : ${transactions}">
+                <td th:text="${transaction.documentCode}">PT-260617-1234</td>
+                <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">17/06/2026 10:00</td>
+                <td>
+                    <span class="status-pill"
+                          th:classappend="${transaction.type == 'INCOME'} ? ' income' : ' expense'"
+                          th:text="${transaction.typeDisplayName}">
+                        Phiếu thu
+                    </span>
+                </td>
+                <td>
+                    <span class="category-chip"
+                          th:classappend="${
+                              transaction.category == 'DEPOSIT' ? ' deposit' :
+                              (transaction.category == 'BOOKING_PAYMENT' ? ' booking-payment' :
+                              (transaction.category == 'REFUND' ? ' refund' :
+                              (transaction.category == 'INVENTORY_PURCHASE' ? ' inventory' :
+                              (transaction.category == 'REVERSAL' ? ' reversal' :
+                              (transaction.category == 'CAPITAL_INJECTION' ? ' capital' :
+                              (transaction.category == 'MANUAL_INCOME' ? ' manual-income' : ' manual-expense'))))))}"
+                          th:text="${transaction.categoryDisplayName}">
+                        Đặt cọc
+                    </span>
+                </td>
+                <td>
+                    <span class="money-text"
+                          th:classappend="${transaction.type == 'INCOME'} ? ' income' : ' expense'"
+                          th:text="${(transaction.amount.compareTo(T(java.math.BigDecimal).ZERO) > 0 ? '+' : '') + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </span>
+                </td>
+                <td>
+                    <span class="source-chip"
+                          th:classappend="${transaction.sourceType == 'PAYMENT'} ? ' payment' : (${transaction.sourceType == 'INVENTORY_RECEIPT'} ? ' inventory' : ' manual')"
+                          th:text="${transaction.sourceDisplayName}">
+                        Thanh toán booking
+                    </span>
+                </td>
+                <td>
+                    <span class="status-pill"
+                          th:classappend="${transaction.statusDisplayName == 'Đã hủy'} ? ' cancelled' : ' completed'"
+                          th:text="${transaction.statusDisplayName}">
+                        Hoàn tất
+                    </span>
+                </td>
+                <td>
+                    <a class="table-action-btn"
+                       th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(transactions)}">
+                <td colspan="8">Chưa có giao dịch phù hợp.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Khu vực phân trang của màn list. -->
+        <div class="table-bottom">
+            <p th:text="'Hiển thị ' + ${#lists.size(transactions)} + ' / ' + ${totalTransactions} + ' giao dịch'">
+                Hiển thị 0 / 0 giao dịch
+            </p>
+
+            <div class="pagination-custom" th:if="${totalPages > 1}">
+                <a th:if="${hasPrevious}"
+                   th:href="@{/manager/transactions(page=${currentPage - 1}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}">
+                    Trước
+                </a>
+
+                <button type="button" disabled th:if="${!hasPrevious}">Trước</button>
+
+                <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
+                   th:href="@{/manager/transactions(page=${pageNumber}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}"
+                   th:text="${pageNumber + 1}"
+                   th:classappend="${pageNumber == currentPage ? 'active' : ''}">
+                    1
+                </a>
+
+                <a th:if="${hasNext}"
+                   th:href="@{/manager/transactions(page=${currentPage + 1}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}">
+                    Sau
+                </a>
+
+                <button type="button" disabled th:if="${!hasNext}">Sau</button>
+            </div>
+        </div>
+    </section>
+    <script th:src="@{/js/cashTransactionList.js}"></script>
+</main>
+</body>
+</html>
