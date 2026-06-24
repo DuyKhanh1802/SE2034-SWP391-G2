@@ -60,13 +60,10 @@ public class SpringSecurity {
                         .hasAuthority(PermissionCode.ROLE_PERMISSION_MANAGE)
                         .requestMatchers(HttpMethod.POST, "/system-admin/list-user/*/review")
                         .hasAuthority(PermissionCode.USER_APPROVE)
-                        .requestMatchers(HttpMethod.POST, "/system-admin/list-user/*/reset-password")
-                        .hasAuthority(PermissionCode.USER_RESET_PASSWORD)
                         .requestMatchers(HttpMethod.GET, "/system-admin/list-user/*/edit")
                         .hasAnyAuthority(
                                 PermissionCode.USER_MANAGE,
-                                PermissionCode.USER_APPROVE,
-                                PermissionCode.USER_RESET_PASSWORD
+                                PermissionCode.USER_APPROVE
                         )
                         .requestMatchers(HttpMethod.POST, "/system-admin/list-user/**")
                         .hasAuthority(PermissionCode.USER_MANAGE)
