@@ -175,24 +175,6 @@
             </form>
         </div>
 
-        <div class="admin-card settings-card compact-card"
-             sec:authorize="hasAuthority('USER_RESET_PASSWORD')"
-             th:if="${user.approvalStatus == null or user.approvalStatus.name() != 'REJECTED'}">
-            <div class="section-header">
-                <span>BẢO MẬT</span>
-                <h3>Đặt lại mật khẩu</h3>
-            </div>
-            <p class="settings-note">
-                Tạo mật khẩu tạm thời mới cho tài khoản này. Mật khẩu chỉ hiển thị một lần sau khi đặt lại.
-            </p>
-
-            <form th:action="@{/system-admin/list-user/{id}/reset-password(id=${user.id})}" method="post">
-                <button type="submit" class="btn-admin-primary">
-                    <i class="fa-solid fa-key"></i>
-                    Đặt lại mật khẩu
-                </button>
-            </form>
-        </div>
     </section>
 
     <script th:src="@{/system_admin/js/edit-user.js}"></script>
