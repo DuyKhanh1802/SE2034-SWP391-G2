@@ -26,9 +26,6 @@ public class CashTransaction {
     @Column(name = "document_code", nullable = false, unique = true, length = 30)
     private String documentCode;
 
-    @Column(name = "payment_code", length = 50, columnDefinition = "NVARCHAR(50)")
-    private String paymentCode;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type", nullable = false, length = 10)
     private CashTransactionType type;
