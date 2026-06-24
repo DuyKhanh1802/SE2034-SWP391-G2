@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+
+<body>
+<main layout:fragment="content">
+
+    <section class="service-management-page">
+
+        <div class="service-page-header">
+            <h1>Chi tiết dịch vụ</h1>
+            <p>Xem thông tin chi tiết, giá, trạng thái và ảnh đại diện của dịch vụ.</p>
+        </div>
+
+        <div class="service-card service-detail-card">
+
+            <div class="service-card-top">
+                <div>
+                    <span>Mô Tả</span>
+                    <h3 th:text="${serviceDetail.name}">Tên dịch vụ</h3>
+                </div>
+
+                <div class="service-detail-actions">
+                    <a th:href="@{/hotel-admin/services}" class="service-btn ghost">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Quay lại
+                    </a>
+
+                    <a th:href="@{/hotel-admin/services/edit/{id}(id=${serviceDetail.id})}"
+                       class="service-btn primary">
+                        <i class="fa-regular fa-pen-to-square"></i>
+                        Chỉnh sửa
+                    </a>
+                </div>
+            </div>
+
+            <div class="service-detail-main">
+
+                <div class="service-detail-image">
+                    <img th:if="${serviceDetail.imageUrl != null}"
+                         th:src="${serviceDetail.imageUrl}"
+                         alt="Ảnh dịch vụ">
+
+                    <div th:if="${serviceDetail.imageUrl == null}"
+                         class="service-detail-no-image">
+                        <i class="fa-regular fa-image"></i>
+                        <span>Chưa có ảnh</span>
+                    </div>
+                </div>
+
+                <div class="service-detail-info">
+
+                    <div class="service-detail-item">
+                        <span>Mã dịch vụ</span>
+                        <strong th:text="${serviceDetail.id}">1</strong>
+                    </div>
+
+                    <div class="service-detail-item">
+                        <span>Tên dịch vụ</span>
+                        <strong th:text="${serviceDetail.name}">Spa thư giãn</strong>
+                    </div>
+
+                    <div class="service-detail-item">
+                        <span>Loại dịch vụ</span>
+                        <strong th:text="${serviceDetail.categoryName}">Wellness</strong>
+                    </div>
+
+                    <div class="service-detail-item">
+                        <span>Giá dịch vụ</span>
+                        <strong>
+                            <span th:text="${#numbers.formatDecimal(serviceDetail.price, 0, 'COMMA', 0, 'POINT')}">
+                                500,000
+                            </span>
+                            <span> VND</span>
+                        </strong>
+                    </div>
+
+                    <div class="service-detail-item">
+                        <span>Trạng thái</span>
+
+                        <strong th:if="${serviceDetail.isAvailable}"
+                                class="service-status available">
+                            Đang khả dụng
+                        </strong>
+
+                        <strong th:unless="${serviceDetail.isAvailable}"
+                                class="service-status unavailable">
+                            Tạm tắt
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="service-detail-description">
+                <span>Mô tả dịch vụ</span>
+
+                <p th:if="${serviceDetail.description != null and !#strings.isEmpty(serviceDetail.description)}"
+                   th:text="${serviceDetail.description}">
+                    Mô tả dịch vụ.
+                </p>
+
+                <p th:if="${serviceDetail.description == null or #strings.isEmpty(serviceDetail.description)}"
+                   class="service-detail-empty">
+                    Chưa có mô tả cho dịch vụ này.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+</body>
+</html>

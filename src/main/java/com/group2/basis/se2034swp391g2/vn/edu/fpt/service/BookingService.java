@@ -76,6 +76,7 @@ public class BookingService {
     private final CountryRepository countryRepository;
     private final MailService mailService;
     private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
     private final RoomTypeVariantServiceRepository roomTypeVariantServiceRepository;
     private final ServiceRepository serviceRepository;
     private final FolioItemRepository folioItemRepository;
@@ -90,7 +91,8 @@ public class BookingService {
                           RoomTypeVariantServiceRepository roomTypeVariantServiceRepository,
                           ServiceRepository serviceRepository,
                           FolioItemRepository folioItemRepository,
-                          FinancialChargeSettingRepository financialChargeSettingRepository) {
+                          FinancialChargeSettingRepository financialChargeSettingRepository,
+                          PaymentService paymentService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingDetailRepository = bookingDetailRepository;
@@ -102,6 +104,7 @@ public class BookingService {
         this.serviceRepository = serviceRepository;
         this.folioItemRepository = folioItemRepository;
         this.financialChargeSettingRepository=financialChargeSettingRepository;
+        this.paymentService = paymentService;
     }
 
     public List<BookingResponse> searchBookings(String keyword,
@@ -417,7 +420,7 @@ public class BookingService {
         return savedBooking.getId();
     }
 
-    private User getCurrentStaffUser() {
+    public User getCurrentStaffUser() {
         String email = org.springframework.security.core.context.SecurityContextHolder
                 .getContext()
                 .getAuthentication()
@@ -425,6 +428,22 @@ public class BookingService {
 
         return userRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin nhân viên đang đăng nhập."));
+    }
+    @Transactional
+    public Booking getBookingEntityById(Long bookingId){
+        if (bookingId == null){
+            throw new IllegalArgumentException("Thiếu mã đặt phòng");
+        }
+        return bookingRepository.findById(bookingId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng"));
+    }
+
+    @Transactional
+    public void markDepositPaid(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        booking.setDepositStatus(DepositStatus.PAID);
+        bookingRepository.save(booking);
     }
 
     private void validateCreateBookingRequest(BookingCreateRequest request) {
@@ -1054,6 +1073,7 @@ public class BookingService {
 
         List<ViewBookingDetailResponse.PaymentLine> paymentLines = payments.stream()
                 .map(payment -> ViewBookingDetailResponse.PaymentLine.builder()
+                        .transactionRef(payment.getTransactionRef())
                         .paymentType(payment.getPaymentType() != null
                                 ? payment.getPaymentType().getLabel()
                                 : "N/A")
@@ -1119,17 +1139,13 @@ public class BookingService {
                                       BookingCreateRequest request,
                                       User processBy){
 
-        Payment payment = Payment.builder()
-                .booking(booking)
-                .paymentType(PaymentType.DEPOSIT)
-                .method(request.getDepositMethod())
-                .amount(depositAmount)
-                .status(PaymentStatus.SUCCESS)
-                .processedBy(processBy)
-                .paidAt(Instant.now())
-                .build();
-
-        paymentRepository.save(payment);
+        paymentService.createPayment(
+                booking,
+                PaymentType.DEPOSIT,
+                request.getDepositMethod(),
+                depositAmount,
+                processBy
+        );
     }
 
     private BigDecimal createAdditionalServiceFolioItems(Booking booking,
