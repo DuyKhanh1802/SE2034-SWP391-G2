@@ -11,11 +11,14 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     boolean existsByBookingReference(String bookingReference);
 
     boolean existsByPromotion_IdAndIsDeletedFalse(Long promotionId);
+
+    Optional<Booking> findByBookingReference(String bookingReference);
 
 
     @Query("""

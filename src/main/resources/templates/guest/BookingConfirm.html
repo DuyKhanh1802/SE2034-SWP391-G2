@@ -3,11 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Confirm Reservation | V'Hotel</title>
+    <title>Xác nhận đặt phòng | V'Hotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet">
 
     <!-- CSS -->
@@ -17,7 +16,7 @@
 <body>
 
 <div class="booking-top-bar">
-    BEST RATE GUARANTEED
+    CAM KẾT GIÁ TỐT NHẤT
 </div>
 
 <main class="confirm-page">
@@ -29,8 +28,8 @@
 
     <section class="confirm-header">
         <div class="brand-name">V'HOTEL</div>
-        <p>V'HOTEL HANOI</p>
-        <h1>Confirm your reservation</h1>
+        <p>V'HOTEL HÀ NỘI</p>
+        <h1>Xác nhận đặt phòng</h1>
     </section>
 
     <section class="confirm-container">
@@ -71,12 +70,12 @@
                 </div>
 
                 <section class="form-section">
-                    <h2>Primary Guest Details</h2>
+                    <h2>Thông tin khách chính</h2>
 
                     <div class="form-grid">
 
                         <div class="form-group">
-                            <label>First Name <b>*</b></label>
+                            <label>Tên <b>*</b></label>
                             <input type="text"
                                    name="guestFirstName"
                                    th:value="${request.guestFirstName}"
@@ -84,7 +83,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Last Name <b>*</b></label>
+                            <label>Họ và tên đệm <b>*</b></label>
                             <input type="text"
                                    name="guestLastName"
                                    th:value="${request.guestLastName}"
@@ -92,7 +91,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Phone <b>*</b></label>
+                            <label>Số điện thoại <b>*</b></label>
                             <input type="text"
                                    name="guestPhone"
                                    th:value="${request.guestPhone}"
@@ -108,7 +107,7 @@
                         </div>
 
                         <div class="form-group full">
-                            <label>Special Request</label>
+                            <label>Yêu cầu đặc biệt</label>
                             <textarea name="specialRequests"
                                       rows="4"
                                       th:text="${request.specialRequests}"></textarea>
@@ -118,44 +117,25 @@
                 </section>
 
                 <section class="form-section payment-section">
-                    <h2>Bank Transfer Information</h2>
+                    <h2>Payment After Confirmation</h2>
 
-                    <div class="bank-row">
-                        <span>Bank</span>
-                        <strong th:text="${confirmView.bankTransferInfo.bankName}">
-                            Vietcombank
-                        </strong>
-                    </div>
+                    <div class="payment-after-confirm-box">
+                        <strong>Thanh toán sau khi xác nhận đặt phòng</strong>
 
-                    <div class="bank-row">
-                        <span>Account Number</span>
-                        <strong th:text="${confirmView.bankTransferInfo.accountNumber}">
-                            0123456789
-                        </strong>
-                    </div>
+                        <p>
+                            Vui lòng kiểm tra lại thông tin đặt phòng, thông tin khách và tổng thanh toán.
+                            Sau khi bấm <b>Confirm Booking</b>, hệ thống sẽ lưu booking và hiển thị mã QR chuyển khoản.
+                        </p>
 
-                    <div class="bank-row">
-                        <span>Account Name</span>
-                        <strong th:text="${confirmView.bankTransferInfo.accountName}">
-                            VHOTEL HANOI
-                        </strong>
-                    </div>
-
-                    <div class="bank-row">
-                        <span>Transfer Content</span>
-                        <strong th:text="${confirmView.bankTransferInfo.transferContent}">
-                            BK-2606241234
-                        </strong>
-                    </div>
-
-                    <div class="bank-row total-bank">
-                        <span>Amount</span>
-                        <strong>
-                            <span th:text="${#numbers.formatDecimal(confirmView.bankTransferInfo.amount, 0, 'COMMA', 0, 'POINT')}">
-                                0
-                            </span>
-                            VND
-                        </strong>
+                        <div class="payment-preview-row">
+                            <span>Tổng thanh toán</span>
+                            <strong>
+                <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.grandTotal, 0, 'COMMA', 0, 'POINT')}">
+                    0
+                </span>
+                                VND
+                            </strong>
+                        </div>
                     </div>
 
                     <label class="confirm-checkbox">
@@ -164,13 +144,13 @@
                                value="true"
                                required>
                         <span>
-                            I confirm that I have completed the bank transfer with the information above.
-                        </span>
+            Tôi xác nhận thông tin đặt phòng là chính xác và muốn gửi yêu cầu đặt phòng.
+        </span>
                     </label>
                 </section>
 
                 <button type="submit" class="confirm-btn">
-                    Confirm Booking
+                    Xác nhận đặt phòng
                 </button>
 
             </form>
@@ -181,9 +161,9 @@
 
             <div class="summary-card">
 
-                <h2>Payment Summary</h2>
+                <h2>Tóm tắt thanh toán</h2>
 
-                <div class="hotel-name">V'HOTEL HANOI</div>
+                <div class="hotel-name">V'HOTEL HÀ NỘI</div>
 
                 <p class="date-line">
                     <span th:text="${confirmView.checkInDate}">2026-06-24</span>
@@ -192,14 +172,15 @@
                 </p>
 
                 <p class="booking-code">
-                    Booking Reference:
+                    Mã đặt phòng:
                     <strong th:text="${confirmView.bookingReference}">
                         BK-2606241234
                     </strong>
                 </p>
 
-                <p class="booking-code" th:if="${confirmView.promoCode != null}">
-                    Promo:
+                <p class="booking-code"
+                   th:if="${confirmView.promoCode != null and !#strings.isEmpty(confirmView.promoCode)}">
+                    Mã giảm giá:
                     <strong th:text="${confirmView.promoCode}">
                         VH-202606-ACD8
                     </strong>
@@ -214,16 +195,22 @@
                 <div class="room-summary" th:each="room : ${confirmView.rooms}">
 
                     <div class="room-image-box">
-                        <span>STAY</span>
+                        <img th:if="${room.imageUrl != null and !#strings.isEmpty(room.imageUrl)}"
+                             th:src="${room.imageUrl}"
+                             alt="Ảnh phòng">
+
+                        <span th:if="${room.imageUrl == null or #strings.isEmpty(room.imageUrl)}">
+                            LƯU TRÚ
+                        </span>
                     </div>
 
                     <div class="room-info">
 
-                        <span class="stay-label">STAY</span>
+                        <span class="stay-label">LƯU TRÚ</span>
 
                         <h3>
-                            <span th:text="${room.roomTypeName}">Deluxe</span>
-                            -
+
+
                             <span th:text="${room.variantName}">City View</span>
                         </h3>
 
@@ -234,22 +221,22 @@
                         </p>
 
                         <p>
-                            <span th:text="${room.adults}">1</span> Adults,
-                            <span th:text="${room.children}">0</span> Children
+                            <span th:text="${room.adults}">1</span> người lớn,
+                            <span th:text="${room.children}">0</span> trẻ em
                         </p>
 
                         <p>
-                            View:
+                            Hướng nhìn:
                             <span th:text="${room.viewType}">CITY</span>
                         </p>
 
                         <p>
                             <span th:text="${confirmView.nights}">3</span>
-                            night(s)
+                            đêm
                         </p>
 
                         <div class="price-line">
-                            <span>Price per night</span>
+                            <span>Giá mỗi đêm</span>
                             <strong>
                                 <span th:text="${#numbers.formatDecimal(room.pricePerNight, 0, 'COMMA', 0, 'POINT')}">
                                     0
@@ -259,7 +246,7 @@
                         </div>
 
                         <div class="price-line">
-                            <span>Room subtotal</span>
+                            <span>Tạm tính phòng</span>
                             <strong>
                                 <span th:text="${#numbers.formatDecimal(room.roomSubtotal, 0, 'COMMA', 0, 'POINT')}">
                                     0
@@ -270,21 +257,21 @@
 
                         <div class="addon-box"
                              th:if="${room.includedServiceSummary != null}">
-                            <b>Included Services</b>
+                            <b>Dịch vụ bao gồm</b>
                             <p th:text="${room.includedServiceSummary}"></p>
                         </div>
 
                         <div class="addon-box"
                              th:if="${!#lists.isEmpty(room.addOnServices)}">
 
-                            <b>Add-on Services</b>
+                            <b>Dịch vụ đặt thêm</b>
 
                             <div class="addon-line"
                                  th:each="service : ${room.addOnServices}">
 
                                 <span>
                                     <span th:text="${service.serviceName}">
-                                        Breakfast
+                                        Bữa sáng
                                     </span>
                                     x
                                     <span th:text="${service.quantity}">1</span>
@@ -307,7 +294,7 @@
                 <div class="summary-divider"></div>
 
                 <div class="total-row">
-                    <span>Room subtotal</span>
+                    <span>Tạm tính phòng</span>
                     <strong>
                         <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.roomSubtotal, 0, 'COMMA', 0, 'POINT')}">
                             0
@@ -317,7 +304,7 @@
                 </div>
 
                 <div class="total-row">
-                    <span>Service subtotal</span>
+                    <span>Tạm tính dịch vụ</span>
                     <strong>
                         <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.serviceSubtotal, 0, 'COMMA', 0, 'POINT')}">
                             0
@@ -327,7 +314,7 @@
                 </div>
 
                 <div class="total-row">
-                    <span>Service charge</span>
+                    <span>Phí dịch vụ</span>
                     <strong>
                         <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.serviceChargeTotal, 0, 'COMMA', 0, 'POINT')}">
                             0
@@ -337,7 +324,7 @@
                 </div>
 
                 <div class="total-row">
-                    <span>VAT</span>
+                    <span>Thuế VAT</span>
                     <strong>
                         <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.vatTotal, 0, 'COMMA', 0, 'POINT')}">
                             0
@@ -347,7 +334,7 @@
                 </div>
 
                 <div class="total-row discount">
-                    <span>Discount</span>
+                    <span>Giảm giá</span>
                     <strong>
                         -
                         <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.discountAmount, 0, 'COMMA', 0, 'POINT')}">
@@ -358,7 +345,7 @@
                 </div>
 
                 <div class="total-row grand">
-                    <span>Total</span>
+                    <span>Tổng cộng</span>
                     <strong>
                         <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.grandTotal, 0, 'COMMA', 0, 'POINT')}">
                             0

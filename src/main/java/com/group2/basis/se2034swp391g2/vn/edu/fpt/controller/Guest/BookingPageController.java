@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Guest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingConfirmRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingCompleteResult;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingConfirmView;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingSuccessView;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.BookingServiceProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
@@ -186,13 +187,16 @@ public class BookingPageController {
             @ModelAttribute BookingConfirmRequest request,
             Model model,
             RedirectAttributes redirectAttributes
-    ){
+    ) {
         try {
             BookingCompleteResult result = onlineBookingService.completeOnlineBooking(request);
+
             redirectAttributes.addAttribute("bookingReference", result.getBookingReference());
+
             return "redirect:/page/booking/success";
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             BookingConfirmView confirmView = onlineBookingService.prepareConfirmView(request);
+
             model.addAttribute("request", request);
             model.addAttribute("confirmView", confirmView);
             model.addAttribute("errorMessage", e.getMessage());
@@ -202,12 +206,14 @@ public class BookingPageController {
     }
 
     @GetMapping("/success")
-    public String bookingSucess(
-            @RequestParam String bookingRefernece,
+    public String bookingSuccess(
+            @RequestParam String bookingReference,
             Model model
-    ){
-        model.addAttribute("bookingReference",bookingRefernece);
+    ) {
+        BookingSuccessView successView = onlineBookingService.getBookingSuccessView(bookingReference);
+
+        model.addAttribute("successView", successView);
+
         return "guest/BookingSuccess";
     }
-
-}
+    }

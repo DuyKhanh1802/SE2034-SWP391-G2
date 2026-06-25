@@ -38,6 +38,8 @@ public class BookingConfirmView {
         private String variantName;
         private String viewType;
 
+        private String imageUrl;
+
         private Integer adults;
         private Integer children;
 
@@ -81,5 +83,6 @@ public class BookingConfirmView {
         private String accountName;
         private String transferContent;
         private BigDecimal amount;
+        private String qrImageUrl;
     }
 }

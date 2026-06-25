@@ -142,7 +142,7 @@ public class MailService {
                             "Tên chủ tài khoản: " + accountName + "\n" +
                             "Nội dung chuyển khoản: " + transferContent + "\n\n" +
 
-                            "Sau khi ViHotel xác nhận giao dịch chuyển khoản thành công, " +
+                            "Sau khi V'Hotel xác nhận giao dịch chuyển khoản thành công, " +
                             "trạng thái đặt phòng của quý khách sẽ được cập nhật thành ĐÃ XÁC NHẬN.\n\n" +
 
                             "Trân trọng,\n" +

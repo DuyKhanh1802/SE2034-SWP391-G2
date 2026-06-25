@@ -1,21 +1,14 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.DepositStatus;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Promotion;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariant;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.*;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingConfirmRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.SelectedRoomServiceRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingCompleteResult;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingConfirmView;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingSuccessView;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingDetailRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PromotionRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeVariantRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +27,8 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class OnlineBookingService {
@@ -47,6 +42,7 @@ public class OnlineBookingService {
     private static final int MAX_PHONE_LENGTH = 20;
     private static final int MAX_SPECIAL_REQUEST_LENGTH = 500;
     private static final int MAX_BOOKING_NIGHTS = 30;
+    private static final String BANK_BIN = "970418";
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
@@ -54,12 +50,11 @@ public class OnlineBookingService {
     private static final Pattern PHONE_PATTERN =
             Pattern.compile("^[0-9()+\\s-]{8,20}$");
 
-    /*
-     * TODO: đổi thông tin này theo tài khoản thật của khách sạn.
-     */
-    private static final String BANK_NAME = "Vietcombank";
-    private static final String BANK_ACCOUNT_NUMBER = "0123456789";
-    private static final String BANK_ACCOUNT_NAME = "VHOTEL HANOI";
+
+    private static final String BANK_NAME = "BIDV";
+
+    private static final String BANK_ACCOUNT_NUMBER = "8830016176";
+    private static final String BANK_ACCOUNT_NAME = "V'HOTEL HANOI";
 
     private final BookingSelectionService bookingSelectionService;
     private final PromotionService promotionService;
@@ -70,6 +65,7 @@ public class OnlineBookingService {
     private final RoomTypeVariantRepository roomTypeVariantRepository;
     private final ServiceRepository serviceRepository;
     private final PromotionRepository promotionRepository;
+    private final PaymentRepository paymentRepository;
 
     @Transactional(readOnly = true)
     public BookingConfirmView prepareConfirmView(BookingConfirmRequest request) {
@@ -148,6 +144,7 @@ public class OnlineBookingService {
             roomLine.setViewType(room.getViewType());
             roomLine.setAdults(guestInfo.adults());
             roomLine.setChildren(guestInfo.children());
+            roomLine.setImageUrl(room.getPrimaryImageUrl());
             roomLine.setPricePerNight(pricePerNight);
             roomLine.setRoomSubtotal(roomLineSubtotal);
             roomLine.setIncludedServiceSummary(room.getServiceSummary());
@@ -201,6 +198,14 @@ public class OnlineBookingService {
         bankTransferInfo.setAccountName(BANK_ACCOUNT_NAME);
         bankTransferInfo.setTransferContent(request.getBookingReference());
         bankTransferInfo.setAmount(grandTotal);
+        String qrImageUrl = buildVietQrUrl(
+                BANK_BIN,
+                BANK_ACCOUNT_NUMBER,
+                grandTotal,
+                request.getBookingReference(),
+                BANK_ACCOUNT_NAME
+        );
+        bankTransferInfo.setQrImageUrl(qrImageUrl);
 
         BookingConfirmView confirmView = new BookingConfirmView();
 
@@ -315,6 +320,17 @@ public class OnlineBookingService {
         booking.setIsDeleted(false);
 
         Booking savedBooking = bookingRepository.save(booking);
+
+        Payment payment = new Payment();
+
+        payment.setBooking(savedBooking);
+        payment.setAmount(savedBooking.getGrandTotal());
+        payment.setMethod(PaymentMethod.TRANSFER);
+        payment.setPaymentType(PaymentType.DEPOSIT);
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setTransactionRef(savedBooking.getBookingReference());
+        payment.setCreatedAt(Instant.now());
+        paymentRepository.save(payment);
 
         List<BookingDetail> details = new ArrayList<>();
 
@@ -431,6 +447,44 @@ public class OnlineBookingService {
         if (request.getRoomCount() == null || request.getRoomCount() < 1) {
             request.setRoomCount(1);
         }
+    }
+
+    public BookingSuccessView getBookingSuccessView(String bookingReference) {
+        Booking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking."));
+
+        BigDecimal amount = booking.getGrandTotal();
+
+        if (amount == null) {
+            amount = booking.getTotalAmount();
+        }
+
+        String transferContent = booking.getBookingReference();
+
+        String qrImageUrl = buildVietQrUrl(
+                BANK_BIN,
+                BANK_ACCOUNT_NUMBER,
+                amount,
+                transferContent,
+                BANK_ACCOUNT_NAME
+        );
+
+        BookingSuccessView view = new BookingSuccessView();
+
+        view.setBookingReference(booking.getBookingReference());
+        view.setCheckInDate(booking.getCheckInDate());
+        view.setCheckOutDate(booking.getCheckOutDate());
+        view.setTotalRooms(booking.getTotalRooms());
+
+        view.setAmount(amount);
+
+        view.setBankName(BANK_NAME);
+        view.setAccountNumber(BANK_ACCOUNT_NUMBER);
+        view.setAccountName(BANK_ACCOUNT_NAME);
+        view.setTransferContent(transferContent);
+        view.setQrImageUrl(qrImageUrl);
+
+        return view;
     }
 
     private void validateGuestInformation(BookingConfirmRequest request) {
@@ -732,5 +786,35 @@ public class OnlineBookingService {
     }
 
     private record RoomGuestInfo(Integer adults, Integer children) {
+    }
+
+    private String buildVietQrUrl(
+            String bankBin,
+            String accountNumber,
+            BigDecimal amount,
+            String transferContent,
+            String accountName
+    ) {
+        String safeAmount = "0";
+
+        if (amount != null) {
+            safeAmount = amount.setScale(0, RoundingMode.HALF_UP).toPlainString();
+        }
+
+        String encodedContent = URLEncoder.encode(
+                transferContent == null ? "" : transferContent,
+                StandardCharsets.UTF_8
+        );
+
+        String encodedAccountName = URLEncoder.encode(
+                accountName == null ? "" : accountName,
+                StandardCharsets.UTF_8
+        );
+
+        return "https://img.vietqr.io/image/"
+                + bankBin + "-" + accountNumber + "-compact2.png"
+                + "?amount=" + safeAmount
+                + "&addInfo=" + encodedContent
+                + "&accountName=" + encodedAccountName;
     }
 }
