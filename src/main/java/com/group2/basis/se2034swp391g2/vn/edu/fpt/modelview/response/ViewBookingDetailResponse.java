@@ -94,6 +94,7 @@ public class ViewBookingDetailResponse {
         private BigDecimal amount;
         private String status;
         private Instant paidAt;
+        private String transactionRef;
     }
 
     @Data
