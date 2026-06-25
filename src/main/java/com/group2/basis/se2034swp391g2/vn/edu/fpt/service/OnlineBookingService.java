@@ -288,6 +288,7 @@ public class OnlineBookingService {
         booking.setGuest(null);
         booking.setPromotion(promotion);
         booking.setDiscountAmount(confirmView.getPriceSummary().getDiscountAmount());
+        
         booking.setCheckInDate(request.getCheckInDate());
         booking.setCheckOutDate(request.getCheckOutDate());
 
