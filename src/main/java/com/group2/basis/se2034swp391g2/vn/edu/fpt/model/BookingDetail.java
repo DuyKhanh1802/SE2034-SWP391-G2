@@ -68,6 +68,9 @@ public class BookingDetail {
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    @Column(name = "service_summary", columnDefinition = "NVARCHAR(MAX)")
+    private String serviceSummary;
+
     @Column(name = "room_code", unique = true, length = 8)
     private String roomCode;
 
