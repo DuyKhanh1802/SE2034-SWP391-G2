@@ -17,14 +17,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,8 +38,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final SecureRandom secureRandom = new SecureRandom();
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -251,30 +247,6 @@ public class UserServiceImpl implements UserService {
 
     private UserType resolveUserType(Set<RoleName> roleNames) {
         return roleNames.size() == 1 && roleNames.contains(RoleName.GUEST) ? UserType.GUEST : UserType.STAFF;
-    }
-
-    @Override
-    @Transactional
-    public String resetPassword(Long id) {
-        User existingUser = getUserById(id);
-        String temporaryPassword = generateTemporaryPassword();
-
-        existingUser.setPasswordHash(passwordEncoder.encode(temporaryPassword));
-        existingUser.setUpdatedAt(Instant.now());
-        userRepository.save(existingUser);
-
-        return temporaryPassword;
-    }
-
-    private String generateTemporaryPassword() {
-        String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-        StringBuilder password = new StringBuilder("Vh@");
-
-        for (int i = 0; i < 9; i++) {
-            password.append(alphabet.charAt(secureRandom.nextInt(alphabet.length())));
-        }
-
-        return password.toString();
     }
 
     private void validateSelfAccountUpdate(User existingUser, AccountUpdateRequest request) {

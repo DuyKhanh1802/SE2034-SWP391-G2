@@ -47,7 +47,7 @@ public class Payment {
     private String transactionRef;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "processed_by", nullable = false)
+    @JoinColumn(name = "processed_by")
     private User processedBy;
 
     @Column(name = "paid_at", nullable = false)
