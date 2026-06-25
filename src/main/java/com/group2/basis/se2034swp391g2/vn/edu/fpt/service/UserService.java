@@ -17,5 +17,4 @@ public interface UserService {
                               Pageable pageable);
     User getUserById(Long id);
     void updateUser(Long id, AccountUpdateRequest request);
-    String resetPassword(Long id);
 }
