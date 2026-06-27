@@ -132,7 +132,7 @@
                             <i class="fa-regular fa-eye"></i>
                         </a>
 
-                        <a sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE','USER_RESET_PASSWORD')"
+                        <a sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE')"
                            th:if="${currentUserId == null or currentUserId != user.id}"
                            th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
                            class="action-btn"
@@ -140,7 +140,7 @@
                             <i class="fa-regular fa-pen-to-square"></i>
                         </a>
 
-                        <span sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE','USER_RESET_PASSWORD')"
+                        <span sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE')"
                               th:if="${currentUserId != null and currentUserId == user.id}"
                               class="action-btn is-disabled"
                               title="Không thể chỉnh sửa tài khoản đang đăng nhập."

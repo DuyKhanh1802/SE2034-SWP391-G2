@@ -118,7 +118,7 @@ public class UserController {
 
     @GetMapping("/{id}/edit")
     @PreAuthorize("hasAnyAuthority('" + PermissionCode.USER_MANAGE + "','"
-            + PermissionCode.USER_APPROVE + "','" + PermissionCode.USER_RESET_PASSWORD + "')")
+            + PermissionCode.USER_APPROVE + "')")
     public String showEditUserForm(@PathVariable("id") Long id,
                                    Authentication authentication,
                                    Model model,
@@ -162,23 +162,6 @@ public class UserController {
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
-        return "redirect:/system-admin/list-user/" + id + "/edit";
-    }
-
-    @PostMapping("/{id}/reset-password")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_RESET_PASSWORD + "')")
-    public String resetPassword(@PathVariable("id") Long id,
-                                Authentication authentication,
-                                RedirectAttributes redirectAttributes) {
-        Long currentAdminId = getCurrentUserId(authentication);
-        if (currentAdminId != null && currentAdminId.equals(id)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể chỉnh sửa tài khoản đang đăng nhập.");
-            return "redirect:/system-admin/list-user";
-        }
-
-        String temporaryPassword = userService.resetPassword(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã đặt lại mật khẩu thành công.");
-        redirectAttributes.addFlashAttribute("temporaryPassword", temporaryPassword);
         return "redirect:/system-admin/list-user/" + id + "/edit";
     }
 

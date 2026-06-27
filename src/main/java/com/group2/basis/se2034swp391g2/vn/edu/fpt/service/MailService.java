@@ -103,5 +103,57 @@ public class MailService {
         }
     }
 
-    
+
+    public void sendBookingPendingPaymentEmail(
+            String toEmail,
+            String guestName,
+            String bookingReference,
+            String checkInDate,
+            String checkOutDate,
+            Integer totalRooms,
+            String totalAmount,
+            String bankName,
+            String accountNumber,
+            String accountName,
+            String transferContent
+    ){
+        try{
+            SimpleMailMessage message = new SimpleMailMessage();
+
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("V'Hotel Hanoi - Đã tiếp nhận yêu cầu đặt phòng");
+            message.setText(
+                    "Xin chào " + guestName + ",\n\n" +
+                            "Cảm ơn quý khách đã lựa chọn V'Hotel Hanoi.\n\n" +
+                            "Chúng tôi đã tiếp nhận yêu cầu đặt phòng trực tuyến của quý khách.\n" +
+                            "Hiện tại, đơn đặt phòng của quý khách đang chờ xác nhận thanh toán.\n\n" +
+
+                            "Thông tin đặt phòng:\n" +
+                            "Mã đặt phòng: " + bookingReference + "\n" +
+                            "Ngày nhận phòng: " + checkInDate + "\n" +
+                            "Ngày trả phòng: " + checkOutDate + "\n" +
+                            "Tổng số phòng: " + totalRooms + "\n" +
+                            "Số tiền cần chuyển khoản: " + totalAmount + "\n\n" +
+
+                            "Thông tin chuyển khoản:\n" +
+                            "Ngân hàng: " + bankName + "\n" +
+                            "Số tài khoản: " + accountNumber + "\n" +
+                            "Tên chủ tài khoản: " + accountName + "\n" +
+                            "Nội dung chuyển khoản: " + transferContent + "\n\n" +
+
+                            "Sau khi V'Hotel xác nhận giao dịch chuyển khoản thành công, " +
+                            "trạng thái đặt phòng của quý khách sẽ được cập nhật thành ĐÃ XÁC NHẬN.\n\n" +
+
+                            "Trân trọng,\n" +
+                            "Đội ngũ V'Hotel Hanoi"
+            );
+            mailSender.send(message);
+        } catch (MailException e){
+            e.printStackTrace();
+            throw new RuntimeException("Gửi email chờ xác nhận thanh toán thất bại: " + e.getMessage(), e);
+        }
+    }
+
+
 }

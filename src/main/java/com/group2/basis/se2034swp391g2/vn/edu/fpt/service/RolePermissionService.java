@@ -118,7 +118,6 @@ public class RolePermissionService {
 
         addDependency(permissionIds, codes, PermissionCode.USER_MANAGE, PermissionCode.USER_VIEW);
         addDependency(permissionIds, codes, PermissionCode.USER_APPROVE, PermissionCode.USER_VIEW);
-        addDependency(permissionIds, codes, PermissionCode.USER_RESET_PASSWORD, PermissionCode.USER_VIEW);
         addDependency(permissionIds, codes, PermissionCode.ROOM_MANAGE, PermissionCode.ROOM_VIEW);
         addDependency(permissionIds, codes, PermissionCode.PROMOTION_MANAGE, PermissionCode.PROMOTION_VIEW);
         addDependency(permissionIds, codes, PermissionCode.FINANCE_MANAGE, PermissionCode.FINANCE_VIEW);
