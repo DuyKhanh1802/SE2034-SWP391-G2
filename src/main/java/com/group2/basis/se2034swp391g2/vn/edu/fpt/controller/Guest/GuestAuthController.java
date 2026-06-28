@@ -1,6 +1,7 @@
-package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Page;
+package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Guest;
 
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Page.GuestSessionAdvice;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
@@ -105,7 +106,7 @@ public class GuestAuthController {
         session.setAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION, guestSession);
 
 
-        return "redirect:/page/my-booking";
+        return "redirect:/guest/my_booking";
     }
 
 

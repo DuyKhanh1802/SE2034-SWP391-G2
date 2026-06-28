@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Booking</title>
+    <link rel="stylesheet" th:href="@{/guest/my_booking.css}">
+</head>
+<body>
+
+<div class="page">
+
+    <div class="top-card">
+        <div>
+            <p class="label">Welcome</p>
+            <h1 th:text="${myBooking.guestName}">Guest Name</h1>
+            <p>
+                Booking Reference:
+                <strong th:text="${myBooking.bookingReference}">BK-0001</strong>
+            </p>
+        </div>
+
+        <div class="status-box">
+            <span>Booking Status</span>
+            <strong th:text="${myBooking.bookingStatus}">CONFIRMED</strong>
+        </div>
+    </div>
+
+    <div class="grid">
+
+        <div class="card">
+            <h2>Room Information</h2>
+
+            <div class="info-row">
+                <span>Room Number</span>
+                <strong th:text="${myBooking.roomNumber != null ? myBooking.roomNumber : 'Not assigned yet'}">101</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Room Code</span>
+                <strong th:text="${myBooking.roomCode}">ABC123</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Room Type</span>
+                <strong th:text="${myBooking.roomTypeName}">Deluxe</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Variant</span>
+                <strong th:text="${myBooking.variantName}">Deluxe King</strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Stay Information</h2>
+
+            <div class="info-row">
+                <span>Check-in</span>
+                <strong th:text="${#temporals.format(myBooking.checkInDate, 'dd/MM/yyyy')}">01/07/2026</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Check-out</span>
+                <strong th:text="${#temporals.format(myBooking.checkOutDate, 'dd/MM/yyyy')}">03/07/2026</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Nights</span>
+                <strong th:text="${myBooking.numNights}">2</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Guests</span>
+                <strong>
+                    <span th:text="${myBooking.numAdults}">2</span> adults,
+                    <span th:text="${myBooking.numChildren}">0</span> children
+                </strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Guest Information</h2>
+
+            <div class="info-row">
+                <span>Name</span>
+                <strong th:text="${myBooking.guestName}">Guest Name</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Email</span>
+                <strong th:text="${myBooking.guestEmail}">guest@email.com</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Phone</span>
+                <strong th:text="${myBooking.guestPhone}">0123456789</strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Payment Summary</h2>
+
+            <div class="info-row">
+                <span>Deposit Status</span>
+                <strong th:text="${myBooking.depositStatus}">PAID</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Room Subtotal</span>
+                <strong th:text="${#numbers.formatDecimal(myBooking.roomSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </strong>
+            </div>
+
+            <div class="info-row">
+                <span>Service Charge</span>
+                <strong th:text="${#numbers.formatDecimal(myBooking.serviceChargeAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </strong>
+            </div>
+
+            <div class="info-row">
+                <span>VAT</span>
+                <strong th:text="${#numbers.formatDecimal(myBooking.vatAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </strong>
+            </div>
+
+            <div class="info-row total">
+                <span>Total For This Room</span>
+                <strong th:text="${#numbers.formatDecimal(myBooking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </strong>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card full-card" th:if="${myBooking.serviceSummary != null}">
+        <h2>Selected Services</h2>
+        <pre th:text="${myBooking.serviceSummary}">Breakfast x2</pre>
+    </div>
+
+    <div class="card full-card" th:if="${myBooking.specialRequests != null}">
+        <h2>Special Requests</h2>
+        <p th:text="${myBooking.specialRequests}">Special request here</p>
+    </div>
+
+    <div class="actions">
+        <a th:href="@{/guest/my-folio}" class="btn">View My Folio</a>
+        <a th:href="@{/guest/services}" class="btn secondary">Order Service</a>
+    </div>
+
+</div>
+
+</body>
+</html>
