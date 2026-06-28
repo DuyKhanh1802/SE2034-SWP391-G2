@@ -260,8 +260,13 @@ public class BookingController {
     }
 
     @GetMapping("/view/{bookingId}")
-    public String viewBookingDetail(@PathVariable Long bookingId, Model model){
-        model.addAttribute("detail",bookingService.getBookingDetail(bookingId));
+    public String viewBookingDetail(@PathVariable Long bookingId, Model model) {
+        model.addAttribute("detail", bookingService.getBookingDetail(bookingId));
+        model.addAttribute(
+                "availableRoomsByDetail",
+                bookingService.getAvailableRoomsForPendingBooking(bookingId)
+        );
+
         return "receptionist/ViewBookingDetail";
     }
 
@@ -335,6 +340,67 @@ public class BookingController {
 
             redirectAttributes.addFlashAttribute("successMessage", "Lưu thanh toán thành công.");
         } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    @PostMapping("/{bookingId}/cancel")
+    public String cancelBooking(@PathVariable Long bookingId,
+                                @RequestParam String cancelReason,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.cancelBooking(bookingId, cancelReason);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Hủy đặt phòng thành công."
+            );
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    @PostMapping("/{bookingId}/no-show")
+    public String markNoShow(@PathVariable Long bookingId,
+                             @RequestParam String reason,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.markNoShow(bookingId, reason);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Đã đánh dấu khách không đến."
+            );
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    @PostMapping("/{bookingId}/confirm")
+    public String confirmBooking(@PathVariable Long bookingId,
+                                 @RequestParam List<Long> bookingDetailIds,
+                                 @RequestParam List<Long> roomIds,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.confirmOnlineBooking(bookingId, bookingDetailIds, roomIds);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Xác nhận đặt phòng và phân phòng thành công. Email xác nhận đã được gửi cho khách."
+            );
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 

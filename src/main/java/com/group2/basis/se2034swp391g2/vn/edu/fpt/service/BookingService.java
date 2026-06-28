@@ -1059,6 +1059,7 @@ public class BookingService {
                                         ? String.valueOf(detail.getVariant().getViewType())
                                         : null
                         )
+                        .variantId(detail.getVariant() != null ? detail.getVariant().getId() : null)
                         .pricePerNight(detail.getPricePerNight())
                         .numNights(detail.getNumNights())
                         .subtotal(detail.getSubtotal())
@@ -1093,6 +1094,13 @@ public class BookingService {
                 .bookingReference(booking.getBookingReference())
                 .bookingStatus(booking.getStatus())
                 .depositStatus(booking.getDepositStatus())
+                .cancelReason(booking.getCancelReason())
+                .cancelledAt(booking.getCancelledAt())
+                .cancelledByName(
+                        booking.getCancelledBy() != null
+                                ? booking.getCancelledBy().getFirstName() + " " + booking.getCancelledBy().getLastName()
+                                : "N/A"
+                )
 
                 .guestName(guestName)
                 .guestEmail(booking.getGuestEmail())
@@ -1415,4 +1423,172 @@ public class BookingService {
         }
     }
 
+    @Transactional
+    public void cancelBooking(Long bookingId, String cancelReason) {
+        if (bookingId == null) {
+            throw new IllegalArgumentException("Thiếu mã đặt phòng.");
+        }
+
+        if (cancelReason == null || cancelReason.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập lý do hủy đặt phòng.");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (Boolean.TRUE.equals(booking.getIsDeleted())) {
+            throw new IllegalArgumentException("Đặt phòng này đã bị xóa.");
+        }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new IllegalArgumentException("Đặt phòng này đã bị hủy trước đó.");
+        }
+
+        if (booking.getStatus() == BookingStatus.CHECKED_IN
+                || booking.getStatus() == BookingStatus.CHECKED_OUT) {
+            throw new IllegalArgumentException("Không thể hủy đặt phòng đã nhận phòng hoặc đã trả phòng.");
+        }
+
+        User currentStaff = getCurrentStaffUser();
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setCancelReason(cancelReason.trim());
+        booking.setCancelledAt(Instant.now());
+        booking.setCancelledBy(currentStaff);
+
+        if (booking.getDepositStatus() == DepositStatus.PAID) {
+            booking.setDepositStatus(DepositStatus.FORFEITED);
+        }
+
+        bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void markNoShow(Long bookingId, String reason) {
+        if (bookingId == null) {
+            throw new IllegalArgumentException("Thiếu mã đặt phòng.");
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập lý do no-show.");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (Boolean.TRUE.equals(booking.getIsDeleted())) {
+            throw new IllegalArgumentException("Đặt phòng này đã bị xóa.");
+        }
+
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new IllegalArgumentException("Chỉ đặt phòng đã xác nhận mới có thể đánh dấu no-show.");
+        }
+
+        User currentStaff = getCurrentStaffUser();
+
+        booking.setStatus(BookingStatus.NO_SHOW);
+        booking.setCancelReason(reason.trim());
+        booking.setCancelledAt(Instant.now());
+        booking.setCancelledBy(currentStaff);
+
+        if (booking.getDepositStatus() == DepositStatus.PAID) {
+            booking.setDepositStatus(DepositStatus.FORFEITED);
+        }
+
+        bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void confirmOnlineBooking(Long bookingId,
+                                     List<Long> bookingDetailIds,
+                                     List<Long> roomIds) {
+        Booking booking = bookingRepository.findByIdAndIsDeletedFalse(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new IllegalStateException("Chỉ có thể xác nhận đặt phòng đang chờ xác nhận.");
+        }
+
+        if (booking.getGuestEmail() == null || booking.getGuestEmail().isBlank()) {
+            throw new IllegalStateException("Đặt phòng chưa có email khách, không thể gửi xác nhận.");
+        }
+
+        if (bookingDetailIds == null || roomIds == null || bookingDetailIds.size() != roomIds.size()) {
+            throw new IllegalArgumentException("Vui lòng phân phòng đầy đủ.");
+        }
+
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+
+        for (int i = 0; i < bookingDetailIds.size(); i++) {
+            Long detailId = bookingDetailIds.get(i);
+            Long roomId = roomIds.get(i);
+
+            BookingDetail detail = details.stream()
+                    .filter(d -> d.getId().equals(detailId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Chi tiết đặt phòng không hợp lệ."));
+
+            Room room = roomRepository.findById(roomId)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng đã chọn."));
+
+            if (Boolean.TRUE.equals(room.getIsDeleted())) {
+                throw new IllegalStateException("Phòng đã chọn đã bị xóa.");
+            }
+
+            if (room.getStatus() != RoomStatus.AVAILABLE) {
+                throw new IllegalStateException("Phòng " + room.getRoomNumber() + " không khả dụng.");
+            }
+
+            if (room.getVariant() == null || detail.getVariant() == null
+                    || !room.getVariant().getId().equals(detail.getVariant().getId())) {
+                throw new IllegalStateException(
+                        "Phòng " + room.getRoomNumber() + " không đúng hạng phòng khách đã đặt."
+                );
+            }
+
+            detail.setRoom(room);
+        }
+
+        Payment depositPayment = paymentRepository
+                .findFirstByBookingIdAndPaymentTypeAndStatus(
+                        bookingId,
+                        PaymentType.DEPOSIT,
+                        PaymentStatus.PENDING
+                )
+                .orElseThrow(() -> new IllegalStateException("Không tìm thấy giao dịch cọc đang chờ xác nhận."));
+
+        depositPayment.setStatus(PaymentStatus.SUCCESS);
+        depositPayment.setPaidAt(Instant.now());
+        depositPayment.setProcessedBy(getCurrentStaffUser());
+
+        booking.setDepositStatus(DepositStatus.PAID);
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        bookingDetailRepository.saveAll(details);
+        paymentRepository.save(depositPayment);
+        bookingRepository.save(booking);
+
+        mailService.sendBookingConfirmedEmail(booking, details);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, List<Room>> getAvailableRoomsForPendingBooking(Long bookingId) {
+        Booking booking = bookingRepository.findByIdAndIsDeletedFalse(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            return Collections.emptyMap();
+        }
+
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+
+        return details.stream()
+                .filter(detail -> detail.getVariant() != null)
+                .collect(Collectors.toMap(
+                        BookingDetail::getId,
+                        detail -> roomRepository.findAvailableRoomsByVariantId(detail.getVariant().getId())
+                ));
+    }
 }

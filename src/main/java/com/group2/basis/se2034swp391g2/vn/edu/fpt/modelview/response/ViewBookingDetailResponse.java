@@ -50,6 +50,10 @@ public class ViewBookingDetailResponse {
 
     private Instant createdAt;
 
+    private String cancelReason;
+    private Instant cancelledAt;
+    private String cancelledByName;
+
     @Builder.Default
     private List<RoomLine> rooms = new ArrayList<>();
 
@@ -82,6 +86,7 @@ public class ViewBookingDetailResponse {
         private String roomCode;
         private Instant roomCodeExpiresAt;
         private LocalDate checkOutDate;
+        private Long variantId;
     }
 
     @Data

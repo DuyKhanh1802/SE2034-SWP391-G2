@@ -5,6 +5,9 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
+import java.util.List;
 
 @Service
 public class MailService {
@@ -155,5 +158,71 @@ public class MailService {
         }
     }
 
+    public void sendBookingConfirmedEmail(Booking booking, List<BookingDetail> details) {
+        String to = booking.getGuestEmail();
+        String subject = "[V'Hotel Hanoi] Xác nhận đặt phòng thành công";
 
+        String guestName = booking.getGuestLastName() + " " + booking.getGuestFirstName();
+
+        String roomInfo = details.stream()
+                .map(detail -> {
+                    String variantName = detail.getVariant() != null
+                            ? detail.getVariant().getVariantName()
+                            : "Hạng phòng";
+
+                    String roomNumber = detail.getRoom() != null
+                            ? detail.getRoom().getRoomNumber()
+                            : "Chưa phân phòng";
+
+                    return "- " + variantName + " - Phòng " + roomNumber;
+                })
+                .collect(java.util.stream.Collectors.joining("\n"));
+
+        String body = """
+            Xin chào %s,
+
+            Đặt phòng của quý khách đã được V'Hotel Hanoi xác nhận.
+
+            Mã đặt phòng: %s
+            Ngày nhận phòng: %s
+            Ngày trả phòng: %s
+
+            Phòng đã phân:
+            %s
+
+            Số tiền đã thanh toán: %,d VND
+
+            Thời gian nhận phòng dự kiến: từ 14:00.
+            Mã phòng sẽ được gửi cho quý khách sau khi hoàn tất thủ tục check-in.
+
+            Trân trọng,
+            V'Hotel Hanoi
+            """.formatted(
+                guestName,
+                booking.getBookingReference(),
+                booking.getCheckInDate(),
+                booking.getCheckOutDate(),
+                roomInfo,
+                booking.getDepositAmount() != null ? booking.getDepositAmount().longValue() : 0L
+        );
+
+        sendSimpleEmail(to, subject, body);
+    }
+
+    private void sendSimpleEmail(String toEmail, String subject, String body) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject(subject);
+            message.setText(body);
+
+            mailSender.send(message);
+
+        } catch (MailException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Gửi email thất bại: " + e.getMessage(), e);
+        }
+    }
 }

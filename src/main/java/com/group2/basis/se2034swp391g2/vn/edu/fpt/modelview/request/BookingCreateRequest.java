@@ -35,7 +35,7 @@ public class BookingCreateRequest {
 
     private List<Long> roomIds;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dateOfBirth;
 
     private Long countryId;

@@ -96,6 +96,10 @@
     <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/receptionist/check-in')}"
           th:href="@{/receptionist/CheckInQueue.css}">
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/')
+          and #strings.endsWith(currentUri ?: '', '/check-in')}"
+          th:href="@{/receptionist/CheckInProcedure.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/view')
