@@ -1,13 +1,15 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response;
 
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-
+@Data
 public class GuestMyBookingView {
     private Long bookingId;
-    private Long getBookingId;
+    private Long bookingDetailId;
 
 
     private String bookingReference;
@@ -15,8 +17,8 @@ public class GuestMyBookingView {
     private String depositStatus;
 
 
-    private String firstName;
-    private String lastName;
+    private String guestName;
+
     private String email;
     private String phone;
 
@@ -39,7 +41,7 @@ public class GuestMyBookingView {
     private BigDecimal pricePerNight;
     private BigDecimal roomSubtotal;
     private BigDecimal serviceChargeAmount;
-    private BigDecimal varAmount;
+    private BigDecimal vatAmount;
     private BigDecimal totalAmount;
 
 
