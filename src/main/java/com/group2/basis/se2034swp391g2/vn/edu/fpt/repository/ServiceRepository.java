@@ -290,4 +290,5 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
             @Param("priceFilter") String priceFilter,
             Pageable pageable
     );
+
 }

@@ -6,8 +6,10 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.GuestMyBookingView;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.GuestRoomSession;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingDetailRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.GuestBookingService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -19,13 +21,13 @@ import java.time.Instant;
 
 
 @Controller
-@RequiredArgsConstructor
 @RequestMapping("/guest")
+@RequiredArgsConstructor
 public class GuestAuthController {
 
 
     private final BookingDetailRepository bookingDetailRepository;
-
+    private final GuestBookingService guestBookingService;
 
     @GetMapping("/login")
     public String showLoginPage(HttpSession session) {
@@ -106,9 +108,8 @@ public class GuestAuthController {
         session.setAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION, guestSession);
 
 
-        return "redirect:/guest/my_booking";
+        return "redirect:/page/home";
     }
-
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {

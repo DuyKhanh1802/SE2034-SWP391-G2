@@ -4,9 +4,11 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+import java.util.Optional;
+@Repository
 public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
     List<FolioItem> findByBookingIdAndIsVoidedFalseOrderByPostedAtAsc(Long bookingId);
 
@@ -19,4 +21,9 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
             ORDER BY COALESCE(SUM(f.quantity), 0) DESC
             """)
     List<Object[]> findTopServiceSales(Pageable pageable);
+
+    List<FolioItem> findByBooking_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(Long bookingId);
+    Optional<FolioItem> findByBooking_IdAndService_IdAndIsVoidedFalse(Long bookingId, Long serviceId);
+    Optional<FolioItem> findByIdAndBooking_IdAndServiceIsNotNullAndIsVoidedFalse(Long id, Long bookingId);
+
 }
