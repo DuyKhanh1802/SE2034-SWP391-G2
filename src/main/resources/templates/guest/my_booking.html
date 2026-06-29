@@ -320,16 +320,18 @@
                         </strong>
                     </td>
 
-                    <form th:action="@{/guest/services/remove}" method="post">
-                        <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
-                        <button class="delete-button" type="submit" title="Xóa dịch vụ">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </form>
+                    <td>
+                        <form th:action="@{/guest/services/remove}" method="post">
+                            <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
+                            <button class="delete-button" type="submit" title="Xóa dịch vụ">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
                 </tr>
 
                 <tr th:if="${myBooking.selectedServices == null || myBooking.selectedServices.isEmpty()}">
-                    <td colspan="7" class="empty-row">
+                    <td colspan="6" class="empty-row">
                         Bạn chưa chọn dịch vụ nào.
                     </td>
                 </tr>
