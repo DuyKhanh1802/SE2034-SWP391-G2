@@ -78,7 +78,7 @@
                 <th>Loại phiếu</th>
                 <th>Nhóm giao dịch</th>
                 <th>Số tiền</th>
-                <th>Nguồn</th>
+                <th>Phương thức thanh toán</th>
                 <th>Trạng thái</th>
                 <th></th>
             </tr>
@@ -116,10 +116,10 @@
                     </span>
                 </td>
                 <td>
-                    <span class="source-chip"
-                          th:classappend="${transaction.sourceType == 'PAYMENT'} ? ' payment' : (${transaction.sourceType == 'INVENTORY_RECEIPT'} ? ' inventory' : ' manual')"
-                          th:text="${transaction.sourceDisplayName}">
-                        Thanh toán khách hàng
+                    <span class="payment-method-chip"
+                          th:classappend="${transaction.paymentMethodDisplayName == 'Chưa có'} ? ' empty' : ' has-method'"
+                          th:text="${transaction.paymentMethodDisplayName}">
+                        Tiền mặt
                     </span>
                 </td>
                 <td>

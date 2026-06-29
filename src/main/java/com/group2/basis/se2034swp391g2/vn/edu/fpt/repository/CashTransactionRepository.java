@@ -1,7 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.repository;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionSourceType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.CashTransaction;
@@ -27,9 +26,13 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
             """)
     List<String> findSimpleDocumentCodes();
 
-    boolean existsBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
+    boolean existsByCategoryAndSourceId(CashTransactionCategory category, Long sourceId);
 
-    Optional<CashTransaction> findBySourceTypeAndSourceId(CashTransactionSourceType sourceType, Long sourceId);
+    Optional<CashTransaction> findByCategoryAndSourceId(CashTransactionCategory category, Long sourceId);
+
+    boolean existsBySourceIdAndCategoryIn(Long sourceId, List<CashTransactionCategory> categories);
+
+    Optional<CashTransaction> findFirstBySourceIdAndCategoryIn(Long sourceId, List<CashTransactionCategory> categories);
 
     // Lấy chi tiết kèm người tạo, người hủy và giao dịch liên quan để Thymeleaf hiển thị.
     @Query("""
@@ -52,14 +55,17 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
             FROM CashTransaction ct
             WHERE (:type IS NULL OR ct.type = :type)
             AND (:category IS NULL OR ct.category = :category)
-            AND (:sourceType IS NULL OR ct.sourceType = :sourceType)
             AND (:paymentMethod IS NULL OR (
-                ct.sourceType = :paymentSourceType
-                AND EXISTS (
-                    SELECT payment.id
-                    FROM Payment payment
-                    WHERE payment.id = ct.sourceId
-                    AND payment.method = :paymentMethod
+                ct.paymentMethod = :paymentMethod
+                OR (
+                    ct.paymentMethod IS NULL
+                    AND ct.category IN :paymentCategories
+                    AND EXISTS (
+                        SELECT payment.id
+                        FROM Payment payment
+                        WHERE payment.id = ct.sourceId
+                        AND payment.method = :paymentMethod
+                    )
                 )
             ))
             AND (:fromDate IS NULL OR ct.createdAt >= :fromDate)
@@ -70,9 +76,8 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
             """)
     List<CashTransaction> search(@Param("type") CashTransactionType type,
                                  @Param("category") CashTransactionCategory category,
-                                 @Param("sourceType") CashTransactionSourceType sourceType,
                                  @Param("paymentMethod") PaymentMethod paymentMethod,
-                                 @Param("paymentSourceType") CashTransactionSourceType paymentSourceType,
+                                 @Param("paymentCategories") List<CashTransactionCategory> paymentCategories,
                                  @Param("fromDate") Instant fromDate,
                                  @Param("toDate") Instant toDate,
                                  @Param("keyword") String keyword);

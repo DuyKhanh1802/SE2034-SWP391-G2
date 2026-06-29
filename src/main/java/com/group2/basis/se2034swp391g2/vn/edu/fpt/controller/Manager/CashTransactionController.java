@@ -96,6 +96,8 @@ public class CashTransactionController {
             CashTransaction transaction = cashTransactionService.getTransaction(id);
             model.addAttribute("transaction", transaction);
             model.addAttribute("inventoryReceipt", cashTransactionService.getInventoryReceiptForTransaction(transaction));
+            model.addAttribute("isPaymentTransaction", isPaymentCategory(transaction.getCategory()));
+            model.addAttribute("isInventoryTransaction", transaction.getCategory() == CashTransactionCategory.INVENTORY_PURCHASE);
             // Chỉ hiện form hủy khi transaction đủ điều kiện hủy.
             model.addAttribute("canCancel", cashTransactionService.canCancelManualVoucher(transaction));
             return "manager/transaction_detail";
@@ -142,5 +144,12 @@ public class CashTransactionController {
     private void addCreateScreenAttributes(Model model, CashTransactionCreateRequest request) {
         model.addAttribute("voucher", request);
         model.addAttribute("transactionTypes", CashTransactionType.values());
+        model.addAttribute("paymentMethods", PaymentMethod.values());
+    }
+
+    private boolean isPaymentCategory(CashTransactionCategory category) {
+        return category == CashTransactionCategory.DEPOSIT
+                || category == CashTransactionCategory.BOOKING_PAYMENT
+                || category == CashTransactionCategory.REFUND;
     }
 }
