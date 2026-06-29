@@ -205,6 +205,13 @@
                             <div><label>Đơn giá trước VAT</label><input id="receiptUnitCost" class="form-control-admin" type="number" step="1" min="1" name="unitCost" required></div>
                         </div>
                         <div><label>Thuế VAT</label><input class="form-control-admin" th:value="${inventoryVatRate + '%'}" disabled></div>
+                        <div>
+                            <label>Phương thức thanh toán</label>
+                            <select class="form-control-admin" name="paymentMethod" required>
+                                <option value="CASH">Tiền mặt</option>
+                                <option value="TRANSFER">Chuyển khoản</option>
+                            </select>
+                        </div>
                         <label class="expiry-toggle">
                             <input id="trackExpiry" type="checkbox">
                             <span>Hạn sử dụng</span>

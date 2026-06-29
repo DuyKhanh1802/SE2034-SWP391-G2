@@ -30,4 +30,6 @@ public class CashTransactionResponse {
     private String paymentMethodDisplayName;
 
     private String statusDisplayName;
+
+    private String paymentMethodDisplayName;
 }

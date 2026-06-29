@@ -277,6 +277,7 @@ public class CashTransactionService {
     public CashTransaction createInventoryPurchase(BigDecimal amount,
                                                    String description,
                                                    Long receiptId,
+                                                   PaymentMethod paymentMethod,
                                                    User createdBy) {
         validateAmount(amount);
         if (receiptId != null && cashTransactionRepository.existsByCategoryAndSourceId(
@@ -407,6 +408,15 @@ public class CashTransactionService {
         }
     }
 
+    private void validateInventoryPaymentMethod(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) {
+            throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
+        }
+        if (paymentMethod != PaymentMethod.CASH && paymentMethod != PaymentMethod.TRANSFER) {
+            throw new IllegalArgumentException("Phiếu nhập kho chỉ hỗ trợ tiền mặt hoặc chuyển khoản.");
+        }
+    }
+
     private void validateManualTransactionRequest(CashTransactionCreateRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Vui lòng nhập thông tin phiếu.");
@@ -499,6 +509,9 @@ public class CashTransactionService {
                 .amount(transaction.getAmount())
                 .paymentMethodDisplayName(paymentMethodDisplayName)
                 .statusDisplayName(resolveStatus(transaction).getDisplayName())
+                .paymentMethodDisplayName(transaction.getPaymentMethod() != null
+                        ? transaction.getPaymentMethod().getLabel()
+                        : "Chưa ghi nhận")
                 .build();
     }
 
