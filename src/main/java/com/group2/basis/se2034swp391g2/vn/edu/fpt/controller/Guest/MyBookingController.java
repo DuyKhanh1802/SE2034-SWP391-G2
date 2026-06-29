@@ -79,17 +79,17 @@ public class MyBookingController {
         return "redirect:/guest/my-booking";
     }
 
-//    @PostMapping("/services/remove")
-//    public String remove(@RequestParam Long folioItemId,
-//                         HttpSession session
-//    ) {
-//        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
-//        if (guestRoomSession == null) {
-//            return "redirect:/guest/login";
-//        }
-//
-//        guestBookingService.removeService(guestRoomSession.getBookingId(), folioItemId);
-//        return "redirect:/guest/my-booking";
-//    }
+    @PostMapping("/services/remove")
+    public String remove(@RequestParam Long folioItemId,
+                         HttpSession session
+    ) {
+        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+        if (guestRoomSession == null) {
+            return "redirect:/guest/login";
+        }
+
+        guestBookingService.removeService(guestRoomSession.getBookingId(), folioItemId);
+        return "redirect:/guest/my-booking";
+    }
 
 }

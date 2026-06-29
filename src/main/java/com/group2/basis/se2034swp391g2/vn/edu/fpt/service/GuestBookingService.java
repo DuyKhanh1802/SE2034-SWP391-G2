@@ -276,16 +276,16 @@ public class GuestBookingService {
         folioItemRepository.save(item);
     }
 
-//    @Transactional
-//    public void removeService(Long bookingId, Long folioItemId) {
-//        FolioItem item = getValidGuestServiceItem(bookingId, folioItemId);
-//
-//        item.setIsVoided(true);
-//        item.setVoidedAt(Instant.now());
-//        item.setVoidedReason("Khách xóa dịch vụ khỏi My Booking");
-//
-//        folioItemRepository.save(item);
-//    }
+    @Transactional
+    public void removeService(Long bookingId, Long folioItemId) {
+        FolioItem item = getValidGuestServiceItem(bookingId, folioItemId);
+
+        item.setIsVoided(true);
+        item.setVoidedAt(Instant.now());
+        item.setVoidedReason("Khách xóa dịch vụ khỏi My Booking");
+
+        folioItemRepository.save(item);
+    }
 
     private FolioItem getValidGuestServiceItem(Long bookingId, Long folioItemId) {
         return folioItemRepository

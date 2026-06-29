@@ -280,7 +280,7 @@
                     <th>Số lượng</th>
                     <th>Đơn giá</th>
                     <th>Thành tiền</th>
-
+                    <th>Thao tác</th>
                 </tr>
                 </thead>
 
@@ -320,6 +320,12 @@
                         </strong>
                     </td>
 
+                    <form th:action="@{/guest/services/remove}" method="post">
+                        <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
+                        <button class="delete-button" type="submit" title="Xóa dịch vụ">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </form>
                 </tr>
 
                 <tr th:if="${myBooking.selectedServices == null || myBooking.selectedServices.isEmpty()}">
