@@ -241,8 +241,10 @@ public class CashTransactionService {
     public CashTransaction createInventoryPurchase(BigDecimal amount,
                                                    String description,
                                                    Long receiptId,
+                                                   PaymentMethod paymentMethod,
                                                    User createdBy) {
         validateAmount(amount);
+        validateInventoryPaymentMethod(paymentMethod);
         if (receiptId != null && cashTransactionRepository.existsBySourceTypeAndSourceId(
                 CashTransactionSourceType.INVENTORY_RECEIPT, receiptId)) {
             return cashTransactionRepository.findBySourceTypeAndSourceId(
@@ -255,6 +257,7 @@ public class CashTransactionService {
                 .category(CashTransactionCategory.INVENTORY_PURCHASE)
                 .amount(normalizeMoneyByType(amount, CashTransactionType.EXPENSE))
                 .description(description)
+                .paymentMethod(paymentMethod)
                 .sourceType(CashTransactionSourceType.INVENTORY_RECEIPT)
                 .sourceId(receiptId)
                 .createdBy(createdBy)
@@ -292,6 +295,7 @@ public class CashTransactionService {
                 .category(category)
                 .amount(normalizeMoneyByType(payment.getAmount(), type))
                 .description(buildPaymentDescription(payment))
+                .paymentMethod(payment.getMethod())
                 .sourceType(CashTransactionSourceType.PAYMENT)
                 .sourceId(payment.getId())
                 .createdBy(payment.getProcessedBy())
@@ -372,6 +376,15 @@ public class CashTransactionService {
         }
     }
 
+    private void validateInventoryPaymentMethod(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) {
+            throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
+        }
+        if (paymentMethod != PaymentMethod.CASH && paymentMethod != PaymentMethod.TRANSFER) {
+            throw new IllegalArgumentException("Phiếu nhập kho chỉ hỗ trợ tiền mặt hoặc chuyển khoản.");
+        }
+    }
+
     private void validateManualTransactionRequest(CashTransactionCreateRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Vui lòng nhập thông tin phiếu.");
@@ -434,6 +447,9 @@ public class CashTransactionService {
                 .sourceType(transaction.getSourceType().name())
                 .sourceDisplayName(transaction.getSourceType().getDisplayName())
                 .statusDisplayName(resolveStatus(transaction).getDisplayName())
+                .paymentMethodDisplayName(transaction.getPaymentMethod() != null
+                        ? transaction.getPaymentMethod().getLabel()
+                        : "Chưa ghi nhận")
                 .build();
     }
 

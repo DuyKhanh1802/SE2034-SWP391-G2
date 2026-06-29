@@ -32,4 +32,6 @@ public class CashTransactionResponse {
     private String sourceType;
 
     private String statusDisplayName;
+
+    private String paymentMethodDisplayName;
 }

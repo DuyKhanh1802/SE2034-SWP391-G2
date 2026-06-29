@@ -50,6 +50,10 @@
                 <dd class="detail-source-text" th:text="${transaction.sourceType.displayName}">Thanh toán</dd>
                 <dt>Thời gian</dt>
                 <dd th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</dd>
+                <dt>Phương thức thanh toán</dt>
+                <dd th:text="${transaction.paymentMethod != null ? transaction.paymentMethod.label : 'Chưa ghi nhận'}">
+                    Chưa ghi nhận
+                </dd>
                 <dt>Người tạo</dt>
                 <dd th:text="${transaction.createdBy != null ? transaction.createdBy.email : 'Hệ thống'}">manager</dd>
                 <dt>Nội dung</dt>
