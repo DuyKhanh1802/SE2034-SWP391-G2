@@ -170,72 +170,102 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                                   Pageable pageable);
 
     @Query("""
-        SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse(
-            b.id,
-            b.bookingReference,
-            CONCAT(b.guestLastName, ' ', b.guestFirstName),
-            b.checkInDate,
-            b.checkOutDate,
-            b.specialRequests,
-            b.totalAmount,
-            CAST(b.status AS string)
-        )
-        FROM Booking b
-        WHERE b.id = :bookingId
-        AND b.isDeleted = false
-        """)
+    SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse(
+        b.id,
+        b.bookingReference,
+        CONCAT(b.guestLastName, ' ', b.guestFirstName),
+        b.checkInDate,
+        b.checkOutDate,
+        b.specialRequests,
+        b.totalAmount,
+        CAST(b.status AS string),
+        b.numAdults,
+        b.numChildren,
+        CAST(u.identityType AS string),
+        u.identityNumber,
+        COALESCE((
+            SELECT SUM(p.amount)
+            FROM Payment p
+            WHERE p.booking = b
+              AND CAST(p.status AS string) = 'SUCCESS'
+        ), 0),
+        b.totalAmount - COALESCE((
+            SELECT SUM(p.amount)
+            FROM Payment p
+            WHERE p.booking = b
+              AND CAST(p.status AS string) = 'SUCCESS'
+        ), 0)
+    )
+    FROM Booking b
+    LEFT JOIN b.guest u
+    WHERE b.id = :bookingId
+      AND b.isDeleted = false
+    """)
     CheckInProcedureResponse findCheckInProcedureByBookingId(@Param("bookingId") Long bookingId);
 
     @Query(value = """
-        SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(
-            b.id,
-            b.bookingReference,
-            CONCAT(b.guestLastName, ' ', b.guestFirstName),
-            CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
-            b.checkInDate,
-            b.checkOutDate,
-            CAST(b.status AS string),
-            b.totalAmount
-        )
-        FROM Booking b
-        JOIN BookingDetail bd ON bd.booking = b
-        JOIN Room r ON bd.room = r
-        JOIN r.variant v
-        JOIN v.roomType rt
-        WHERE b.isDeleted = false
-        AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED
-        AND (
-            :keyword = ''
-            OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-        )
-        """,
-        countQuery = """
-        SELECT COUNT(bd.id)
-        FROM Booking b
-        JOIN BookingDetail bd ON bd.booking = b
-        JOIN Room r ON bd.room = r
-        JOIN r.variant v
-        JOIN v.roomType rt
-        WHERE b.isDeleted = false
-        AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED
-        AND (
-            :keyword = ''
-            OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-        )
-        """)
-    Page<BookingResponse> findConfirmedBookingsForCheckIn(@Param("keyword") String keyword, Pageable pageable);
+    SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse(
+        b.id,
+        b.bookingReference,
+        CONCAT(b.guestLastName, ' ', b.guestFirstName),
+        CONCAT(v.variantName, ' - Phòng ', r.roomNumber),
+        b.checkInDate,
+        b.checkOutDate,
+        CAST(b.status AS string),
+        b.totalAmount
+    )
+    FROM Booking b
+    JOIN BookingDetail bd ON bd.booking = b
+    JOIN Room r ON bd.room = r
+    JOIN r.variant v
+    JOIN v.roomType rt
+    WHERE b.isDeleted = false
+    AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED
+    AND (
+        :keyword = ''
+        OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    )
+    AND (:roomTypeId IS NULL OR rt.id = :roomTypeId)
+    AND (:checkInDate IS NULL OR b.checkInDate = :checkInDate)
+    AND (:status IS NULL OR :status = '' OR CAST(b.status AS string) = :status)
+    ORDER BY b.checkInDate ASC, b.id DESC
+    """,
+            countQuery = """
+    SELECT COUNT(bd.id)
+    FROM Booking b
+    JOIN BookingDetail bd ON bd.booking = b
+    JOIN Room r ON bd.room = r
+    JOIN r.variant v
+    JOIN v.roomType rt
+    WHERE b.isDeleted = false
+    AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED
+    AND (
+        :keyword = ''
+        OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(rt.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(v.variantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    )
+    AND (:roomTypeId IS NULL OR rt.id = :roomTypeId)
+    AND (:checkInDate IS NULL OR b.checkInDate = :checkInDate)
+    AND (:status IS NULL OR :status = '' OR CAST(b.status AS string) = :status)
+    """)
+    Page<BookingResponse> findConfirmedBookingsForCheckIn(
+            @Param("keyword") String keyword,
+            @Param("roomTypeId") Long roomTypeId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("status") String status,
+            Pageable pageable
+    );
 
     long countByCreatedAtBetween(java.time.Instant from, java.time.Instant to);
 

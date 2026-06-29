@@ -808,9 +808,20 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookingResponse> getConfirmedBookingsForCheckIn(String keyword, Pageable pageable) {
-        String searchKeyword = keyword == null ? "" : keyword.trim();
-        return bookingRepository.findConfirmedBookingsForCheckIn(searchKeyword, pageable);
+    public Page<BookingResponse> getConfirmedBookingsForCheckIn(
+            String keyword,
+            Long roomTypeId,
+            LocalDate checkInDate,
+            String status,
+            Pageable pageable
+    ) {
+        return bookingRepository.findConfirmedBookingsForCheckIn(
+                keyword == null ? "" : keyword.trim(),
+                roomTypeId,
+                checkInDate,
+                status == null || status.isBlank() ? "CONFIRMED" : status,
+                pageable
+        );
     }
 
     @Transactional
@@ -1340,20 +1351,22 @@ public class BookingService {
 
         User guest = booking.getGuest();
 
-        if (guest != null) {
-            guest.setFirstName(firstName);
-            guest.setLastName(lastName);
-            guest.setPhone(phone);
-            guest.setEmail(email);
-            guest.setGender(request.getGender());
-            guest.setDateOfBirth(request.getDateOfBirth());
-            guest.setCountry(country);
-            guest.setIdentityNumber(identityNumber);
-            guest.setIdentityType(resolveIdentityType(country));
-
-            userRepository.save(guest);
+        if (guest == null) {
+            guest = new User();
+            booking.setGuest(guest);
         }
 
+        guest.setFirstName(firstName);
+        guest.setLastName(lastName);
+        guest.setPhone(phone);
+        guest.setEmail(email);
+        guest.setGender(request.getGender());
+        guest.setDateOfBirth(request.getDateOfBirth());
+        guest.setCountry(country);
+        guest.setIdentityNumber(identityNumber);
+        guest.setIdentityType(resolveIdentityType(country));
+
+        userRepository.save(guest);
         bookingRepository.save(booking);
     }
 

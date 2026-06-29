@@ -14,7 +14,7 @@
 
     <section class="welcome-section">
         <h1>Danh sách nhận phòng</h1>
-        <p>Booking đã xác nhận, đã phân phòng và sẵn sàng làm thủ tục check-in.</p>
+        <p>Đặt phòng đã xác nhận, đã phân phòng và sẵn sàng làm thủ tục nhận phòng.</p>
     </section>
 
     <!-- FILTER -->
@@ -44,9 +44,12 @@
 
             <div class="filter-group">
                 <label>Ngày nhận</label>
-                <input type="date"
-                       name="arrivalDate"
-                       th:value="${arrivalDate}">
+                <input type="text"
+                       name="checkInDate"
+                       class="checkin-queue-date-picker"
+                       autocomplete="off"
+                       th:value="${checkInDate != null ? #temporals.format(checkInDate, 'dd/MM/yyyy') : ''}"
+                       placeholder="dd/mm/yyyy">
             </div>
 
             <div class="filter-group">
@@ -77,7 +80,7 @@
 
         </form>
 
-        </form>
+
     </section>
 
     <!-- CHECK-IN LIST -->
@@ -85,7 +88,7 @@
 
         <div class="section-title-row">
             <div>
-                <h2>Booking chờ check-in</h2>
+                <h2>Đặt phòng chờ nhận phòng</h2>
                 <p class="mb-0 text-muted">
                     Chỉ hiển thị booking trạng thái CONFIRMED và đã có phòng được phân.
                 </p>
@@ -132,20 +135,22 @@
                     </td>
 
 
-
-
-
                     <td>
                         <span class="status-badge status-confirmed"
-                              th:text="${booking.status}">
-                            CONFIRMED
+                              th:text="
+                                ${booking.status == 'PENDING'} ? 'Chờ xác nhận' :
+                                (${booking.status == 'CONFIRMED'} ? 'Đã xác nhận' :
+                                (${booking.status == 'CHECKED_IN'} ? 'Đã nhận phòng' :
+                                (${booking.status == 'CHECKED_OUT'} ? 'Đã trả phòng' :
+                                (${booking.status == 'CANCELLED'} ? 'Đã hủy' :
+                                    'Khách không đến'))))">
                         </span>
                     </td>
 
                     <td class="text-end">
                         <a th:href="@{/receptionist/bookings/{id}/check-in(id=${booking.bookingId})}"
                            class="action-strong">
-                            Check-in
+                            Nhận phòng
                         </a>
                     </td>
                 </tr>
@@ -153,7 +158,7 @@
                 <tr th:if="${bookings == null or #lists.isEmpty(bookings)}">
                     <td colspan="7" class="text-center py-5">
                         <p class="mb-0 text-muted">
-                            Không có booking nào đang chờ check-in.
+                            Không có đặt phòng nào đang chờ nhận phòng.
                         </p>
                     </td>
                 </tr>
@@ -180,7 +185,7 @@
                         page=${currentPage - 1},
                         keyword=${keyword},
                         roomTypeId=${roomTypeId},
-                        arrivalDate=${arrivalDate},
+                        checkInDate=${checkInDate},
                         status=${status}
                    )}">
                     <i class="bi bi-chevron-left"></i>
@@ -193,7 +198,7 @@
                         page=${i},
                         keyword=${keyword},
                         roomTypeId=${roomTypeId},
-                        arrivalDate=${arrivalDate},
+                        checkInDate=${checkInDate},
                         status=${status}
                    )}"
                    th:text="${i + 1}">
@@ -206,7 +211,7 @@
                         page=${currentPage + 1},
                         keyword=${keyword},
                         roomTypeId=${roomTypeId},
-                        arrivalDate=${arrivalDate},
+                       checkInDate=${checkInDate},
                         status=${status}
                    )}">
                     <i class="bi bi-chevron-right"></i>

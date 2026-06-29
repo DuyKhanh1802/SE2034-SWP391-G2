@@ -560,3 +560,14 @@ a:hover {
         font-size: 11px;
     }
 }
+.flatpickr-calendar {
+    z-index: 9999 !important;
+}
+
+.queue-filter-bar {
+    overflow: visible;
+}
+
+.dashboard-section {
+    overflow: visible;
+}
