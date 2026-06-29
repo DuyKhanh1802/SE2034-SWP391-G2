@@ -1,17 +1,16 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Receptionist;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FinancialChargeSetting;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingCreateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingUpdateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CountryRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FinancialChargeSettingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.FinancialChargeService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 
 import java.math.BigDecimal;
@@ -34,16 +33,16 @@ public class BookingController {
     private final PaymentService paymentService;
     private final CountryRepository countryRepository;
     private final ServiceRepository serviceRepository;
-    private final FinancialChargeSettingRepository financialChargeSettingRepository;
+    private final FinancialChargeService financialChargeService;
     public BookingController(BookingService bookingService,
                              CountryRepository countryRepository,
                              ServiceRepository serviceRepository,
-                             FinancialChargeSettingRepository financialChargeSettingRepository,
+                             FinancialChargeService financialChargeService,
                              PaymentService paymentService) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
         this.serviceRepository = serviceRepository;
-        this.financialChargeSettingRepository = financialChargeSettingRepository;
+        this.financialChargeService = financialChargeService;
         this.paymentService = paymentService;
     }
 
@@ -105,14 +104,7 @@ public class BookingController {
         model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
         model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
 
-        FinancialChargeSetting setting = financialChargeSettingRepository
-                .findCurrentSetting(LocalDate.now())
-                .orElseThrow(() -> new IllegalArgumentException("Chưa cấu hình thuế và phí dịch vụ."));
-
-        model.addAttribute("vatRate", setting.getVatRate());
-        model.addAttribute("serviceChargeRate", setting.getServiceChargeRate());
-        model.addAttribute("taxOnServiceCharge", setting.getTaxOnServiceCharge());
-        model.addAttribute("priceDisplayMode", setting.getPriceDisplayMode());
+        addFinancialChargeAttributes(model);
 
         boolean hasApplied =
                 checkInDate != null
@@ -164,14 +156,7 @@ public class BookingController {
             model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
             model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
 
-            FinancialChargeSetting setting = financialChargeSettingRepository
-                    .findCurrentSetting(LocalDate.now())
-                    .orElseThrow(() -> new IllegalArgumentException("Chưa cấu hình thuế và phí dịch vụ."));
-
-            model.addAttribute("vatRate", setting.getVatRate());
-            model.addAttribute("serviceChargeRate", setting.getServiceChargeRate());
-            model.addAttribute("taxOnServiceCharge", setting.getTaxOnServiceCharge());
-            model.addAttribute("priceDisplayMode", setting.getPriceDisplayMode());
+            addFinancialChargeAttributes(model);
 
             try {
                 model.addAttribute(
@@ -339,5 +324,12 @@ public class BookingController {
         }
 
         return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    private void addFinancialChargeAttributes(Model model) {
+        model.addAttribute("vatRate", financialChargeService.getVatRate());
+        model.addAttribute("serviceChargeRate", financialChargeService.getServiceChargeRate());
+        model.addAttribute("taxOnServiceCharge", financialChargeService.isTaxOnServiceCharge());
+        model.addAttribute("priceDisplayMode", financialChargeService.getPriceDisplayMode());
     }
 }

@@ -162,9 +162,8 @@ public class InventoryManagementService {
         validatePositive(quantity, "Số lượng nhập phải lớn hơn 0.");
         validatePositive(unitCost, "Đơn giá nhập phải lớn hơn 0.");
 
-        FinancialChargeSetting chargeSetting = financialChargeService.getCurrentSetting();
         BigDecimal subtotal = quantity.multiply(unitCost).setScale(0, java.math.RoundingMode.HALF_UP);
-        BigDecimal vatRate = chargeSetting.getInventoryVatRate();
+        BigDecimal vatRate = financialChargeService.getInventoryVatRate();
         BigDecimal vatAmount = financialChargeService.calculateRateAmount(subtotal, vatRate);
         BigDecimal totalCost = subtotal.add(vatAmount).setScale(0, java.math.RoundingMode.HALF_UP);
         InventoryReceipt receipt = InventoryReceipt.builder()
