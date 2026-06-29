@@ -161,7 +161,8 @@ public class InventoryController {
                                          @RequestParam BigDecimal unitCost,
                                          @RequestParam(required = false) String supplier,
                                          @RequestParam(required = false) String note,
-                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate receiptDate,
+                                         @RequestParam(required = false)
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate receiptDate,
                                          @RequestParam(required = false) String batchCode,
                                          @RequestParam(required = false)
                                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiryDate,

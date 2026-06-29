@@ -186,7 +186,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form id="receiptForm" th:action="@{/storekeeper/inventory/receipts}" method="post"
-                      th:attr="data-vat-rate=${inventoryVatRate}">
+                      th:attr="data-vat-rate=${inventoryVatRate},data-today=${today}">
                     <div class="modal-header">
                         <div><span class="eyebrow">INVENTORY RECEIPT</span><h2 class="modal-title">Lập phiếu nhập</h2></div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -204,10 +204,7 @@
                             <div><label>Số lượng</label><input id="receiptQuantity" class="form-control-admin" type="number" step="0.01" min="0.01" name="quantity" required></div>
                             <div><label>Đơn giá trước VAT</label><input id="receiptUnitCost" class="form-control-admin" type="number" step="1" min="1" name="unitCost" required></div>
                         </div>
-                        <div class="form-grid">
-                            <div><label>Ngày nhập kho</label><input id="receiptDate" class="form-control-admin" type="date" name="receiptDate" th:value="${today}" th:max="${today}" required></div>
-                            <div><label>Thuế VAT</label><input class="form-control-admin" th:value="${inventoryVatRate + '%'}" disabled></div>
-                        </div>
+                        <div><label>Thuế VAT</label><input class="form-control-admin" th:value="${inventoryVatRate + '%'}" disabled></div>
                         <label class="expiry-toggle">
                             <input id="trackExpiry" type="checkbox">
                             <span>Hạn sử dụng</span>
@@ -245,7 +242,6 @@
             const form = document.getElementById("receiptForm");
             const quantity = document.getElementById("receiptQuantity");
             const unitCost = document.getElementById("receiptUnitCost");
-            const receiptDate = document.getElementById("receiptDate");
             const trackExpiry = document.getElementById("trackExpiry");
             const expiryFields = document.getElementById("expiryFields");
             const batchCode = document.getElementById("receiptBatchCode");
@@ -256,6 +252,7 @@
             if (!form || !quantity || !unitCost) return;
 
             const vatRate = Number(form.dataset.vatRate || 0);
+            const today = form.dataset.today || new Date().toISOString().slice(0, 10);
             const formatter = new Intl.NumberFormat("vi-VN");
 
             function updateReceiptPreview() {
@@ -275,10 +272,8 @@
 
             async function updateBatchCodePreview() {
                 if (!trackExpiry || !trackExpiry.checked || !batchCode) return;
-                const selectedReceiptDate = receiptDate && receiptDate.value ? receiptDate.value : "";
                 try {
-                    const response = await fetch("/storekeeper/inventory/receipts/next-batch-code?receiptDate="
-                        + encodeURIComponent(selectedReceiptDate));
+                    const response = await fetch("/storekeeper/inventory/receipts/next-batch-code");
                     batchCode.value = response.ok ? await response.text() : "";
                 } catch (error) {
                     batchCode.value = "";
@@ -306,27 +301,21 @@
             }
 
             function validateReceiptDates() {
-                const today = receiptDate && receiptDate.max ? receiptDate.max : new Date().toISOString().slice(0, 10);
                 let message = "";
                 const expiryEnabled = trackExpiry && trackExpiry.checked;
 
-                if (receiptDate && receiptDate.value && receiptDate.value > today) {
-                    message = "Ngày nhập kho không được ở tương lai.";
-                } else if (expiryEnabled && expiryDate && !expiryDate.value) {
+                if (expiryEnabled && expiryDate && !expiryDate.value) {
                     message = "Vui lòng chọn hạn sử dụng.";
-                } else if (expiryEnabled && expiryDate && expiryDate.value && receiptDate && receiptDate.value
-                    && expiryDate.value <= receiptDate.value) {
+                } else if (expiryEnabled && expiryDate && expiryDate.value <= today) {
                     message = "Hạn sử dụng phải sau ngày nhập kho.";
                 }
 
-                [receiptDate, expiryDate, batchCode].forEach(function (input) {
+                [expiryDate, batchCode].forEach(function (input) {
                     if (input) input.setCustomValidity("");
                 });
                 if (message) {
-                    if (expiryDate && expiryDate.value) {
+                    if (expiryDate) {
                         expiryDate.setCustomValidity(message);
-                    } else if (receiptDate) {
-                        receiptDate.setCustomValidity(message);
                     }
                 }
                 showReceiptValidation(message);
@@ -335,12 +324,9 @@
 
             quantity.addEventListener("input", updateReceiptPreview);
             unitCost.addEventListener("input", updateReceiptPreview);
-            [receiptDate, expiryDate, batchCode].forEach(function (input) {
+            [expiryDate, batchCode].forEach(function (input) {
                 if (input) input.addEventListener("input", validateReceiptDates);
             });
-            if (receiptDate) {
-                receiptDate.addEventListener("change", updateBatchCodePreview);
-            }
             if (trackExpiry) {
                 trackExpiry.addEventListener("change", updateExpiryFields);
             }
