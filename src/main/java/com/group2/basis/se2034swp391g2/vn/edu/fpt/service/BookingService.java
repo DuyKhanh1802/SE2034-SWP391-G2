@@ -36,7 +36,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ServiceCategoryType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FinancialChargeSetting;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
 
 import java.math.RoundingMode;
@@ -80,7 +79,7 @@ public class BookingService {
     private final RoomTypeVariantServiceRepository roomTypeVariantServiceRepository;
     private final ServiceRepository serviceRepository;
     private final FolioItemRepository folioItemRepository;
-    private final FinancialChargeSettingRepository financialChargeSettingRepository;
+    private final FinancialChargeService financialChargeService;
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
@@ -91,7 +90,7 @@ public class BookingService {
                           RoomTypeVariantServiceRepository roomTypeVariantServiceRepository,
                           ServiceRepository serviceRepository,
                           FolioItemRepository folioItemRepository,
-                          FinancialChargeSettingRepository financialChargeSettingRepository,
+                          FinancialChargeService financialChargeService,
                           PaymentService paymentService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
@@ -103,7 +102,7 @@ public class BookingService {
         this.roomTypeVariantServiceRepository = roomTypeVariantServiceRepository;
         this.serviceRepository = serviceRepository;
         this.folioItemRepository = folioItemRepository;
-        this.financialChargeSettingRepository=financialChargeSettingRepository;
+        this.financialChargeService = financialChargeService;
         this.paymentService = paymentService;
     }
 
@@ -191,23 +190,11 @@ public class BookingService {
         LocalDate checkInDate = request.getCheckInDate();
         LocalDate checkOutDate = request.getCheckOutDate();
         User currentStaff = getCurrentStaffUser();
-        FinancialChargeSetting setting = financialChargeSettingRepository
-                .findCurrentSetting(LocalDate.now())
-                .orElseThrow(() -> new IllegalArgumentException("Chưa cấu hình thuế và phí dịch vụ."));
 
-        BigDecimal vatRatePercent = setting.getVatRate() == null
-                ? BigDecimal.ZERO
-                : setting.getVatRate();
-
-        BigDecimal serviceChargeRatePercent = setting.getServiceChargeRate() == null
-                ? BigDecimal.ZERO
-                : setting.getServiceChargeRate();
-
-        BigDecimal vatRateDecimal = vatRatePercent
-                .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
-
-        BigDecimal serviceChargeRateDecimal = serviceChargeRatePercent
-                .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+        BigDecimal vatRatePercent = financialChargeService.getVatRate();
+        BigDecimal serviceChargeRatePercent = financialChargeService.getServiceChargeRate();
+        BigDecimal vatRateDecimal = financialChargeService.toDecimalRate(vatRatePercent);
+        BigDecimal serviceChargeRateDecimal = financialChargeService.toDecimalRate(serviceChargeRatePercent);
         List<Room> selectedRooms = roomRepository.findAvailableRoomsByIds(
                 request.getRoomIds(),
                 checkInDate,
@@ -298,7 +285,7 @@ public class BookingService {
             // VAT base
             BigDecimal detailVatBase = detailBaseAmount;
 
-            if (Boolean.TRUE.equals(setting.getTaxOnServiceCharge())) {
+            if (financialChargeService.isTaxOnServiceCharge()) {
                 detailVatBase = detailVatBase.add(detailServiceChargeAmount);
             }
 
@@ -351,8 +338,7 @@ public class BookingService {
         BigDecimal serviceSubtotal = createAdditionalServiceFolioItems(
                 savedBooking,
                 request,
-                currentStaff,
-                setting
+                currentStaff
         );
 
         BigDecimal additionalServiceChargeTotal = serviceSubtotal
@@ -361,7 +347,7 @@ public class BookingService {
 
         BigDecimal serviceVatBase = serviceSubtotal;
 
-        if (Boolean.TRUE.equals(setting.getTaxOnServiceCharge())) {
+        if (financialChargeService.isTaxOnServiceCharge()) {
             serviceVatBase = serviceVatBase.add(additionalServiceChargeTotal);
         }
 
@@ -1150,8 +1136,7 @@ public class BookingService {
 
     private BigDecimal createAdditionalServiceFolioItems(Booking booking,
                                                          BookingCreateRequest request,
-                                                         User currentStaff,
-                                                         FinancialChargeSetting setting) {
+                                                         User currentStaff) {
         if (request.getServiceIds() == null || request.getServiceIds().isEmpty()) {
             return BigDecimal.ZERO;
         }
@@ -1166,19 +1151,10 @@ public class BookingService {
         BigDecimal serviceSubtotal = BigDecimal.ZERO;
         List<FolioItem> folioItems = new ArrayList<>();
 
-        BigDecimal serviceChargeRate = setting.getServiceChargeRate() == null
-                ? BigDecimal.ZERO
-                : setting.getServiceChargeRate();
-
-        BigDecimal vatRate = setting.getVatRate() == null
-                ? BigDecimal.ZERO
-                : setting.getVatRate();
-
-        BigDecimal serviceChargeRateDecimal = serviceChargeRate
-                .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
-
-        BigDecimal vatRateDecimal = vatRate
-                .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+        BigDecimal serviceChargeRate = financialChargeService.getServiceChargeRate();
+        BigDecimal vatRate = financialChargeService.getVatRate();
+        BigDecimal serviceChargeRateDecimal = financialChargeService.toDecimalRate(serviceChargeRate);
+        BigDecimal vatRateDecimal = financialChargeService.toDecimalRate(vatRate);
 
         for (com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service : services) {
             if (Boolean.TRUE.equals(service.getIsDeleted())
@@ -1206,7 +1182,7 @@ public class BookingService {
 
             BigDecimal vatBase = baseAmount;
 
-            if (Boolean.TRUE.equals(setting.getTaxOnServiceCharge())) {
+            if (financialChargeService.isTaxOnServiceCharge()) {
                 vatBase = vatBase.add(serviceChargeAmount);
             }
 
@@ -1234,7 +1210,7 @@ public class BookingService {
                     .totalAmount(totalAmount)
                     .amount(totalAmount)
 
-                    .priceDisplayMode(setting.getPriceDisplayMode())
+                    .priceDisplayMode(financialChargeService.getPriceDisplayMode())
                     .postedBy(currentStaff)
                     .postedAt(Instant.now())
                     .isVoided(false)
