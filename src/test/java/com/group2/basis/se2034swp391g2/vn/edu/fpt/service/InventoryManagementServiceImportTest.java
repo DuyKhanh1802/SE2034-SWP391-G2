@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryCategory;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryReceipt;
@@ -169,7 +170,7 @@ class InventoryManagementServiceImportTest {
         service.createReceipt(
                 1L, BigDecimal.ONE, BigDecimal.TEN,
                 null, null, receiptDate, null,
-                receiptDate.plusDays(10), null);
+                receiptDate.plusDays(10), PaymentMethod.TRANSFER, null);
 
         ArgumentCaptor<InventoryReceipt> receiptCaptor = ArgumentCaptor.forClass(InventoryReceipt.class);
         verify(inventoryReceiptRepository).save(receiptCaptor.capture());
@@ -190,7 +191,7 @@ class InventoryManagementServiceImportTest {
 
         assertThatThrownBy(() -> service.createReceipt(
                 1L, BigDecimal.ONE, BigDecimal.TEN,
-                null, null, receiptDate, "LOT-001", receiptDate, null))
+                null, null, receiptDate, "LOT-001", receiptDate, PaymentMethod.CASH, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Hạn sử dụng phải sau ngày nhập kho");
     }

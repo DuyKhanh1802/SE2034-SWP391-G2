@@ -4,6 +4,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryTransaction;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.InventoryTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.InventoryManagementService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import jakarta.servlet.http.HttpSession;
@@ -150,12 +151,14 @@ public class InventoryController {
                                          @RequestParam(required = false) String batchCode,
                                          @RequestParam(required = false)
                                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiryDate,
+                                         @RequestParam PaymentMethod paymentMethod,
                                          Authentication authentication,
                                          HttpSession session,
                                          RedirectAttributes redirectAttributes) {
         try {
             inventoryManagementService.createReceipt(
                     itemId, quantity, unitCost, supplier, note, receiptDate, batchCode, expiryDate,
+                    paymentMethod,
                     resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage", "Da lap phieu nhap hang va ghi nhan chi quy.");
         } catch (IllegalArgumentException | IllegalStateException e) {
