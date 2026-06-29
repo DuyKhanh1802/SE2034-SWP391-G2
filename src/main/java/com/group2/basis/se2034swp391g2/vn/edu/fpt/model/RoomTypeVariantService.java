@@ -1,8 +1,13 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(
         name = "room_type_variant_services",
         uniqueConstraints = {

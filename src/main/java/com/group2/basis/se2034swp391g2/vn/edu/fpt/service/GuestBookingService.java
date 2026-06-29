@@ -5,6 +5,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ImageEntityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariantService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.GuestServiceView;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.*;
@@ -103,7 +104,7 @@ public class GuestBookingService {
 
             view.setBeds(mapBeds(variant));
             view.setBedSummary(buildBedSummary(view.getBeds()));
-
+            view.setIncludedServices(mapIncludedServices(variant));
             String roomImageUrl = findImageUrl(ImageEntityType.ROOM_TYPE_VARIANT, variant.getId());
 
             if (roomImageUrl == null && variant.getRoomType() != null) {
@@ -175,12 +176,16 @@ public class GuestBookingService {
         List<com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service> services =
                 serviceRepository.findByIsDeletedFalseAndIsAvailableTrueOrderByNameAsc();
 
-        if (category != null && !category.isBlank() && !"ALL".equalsIgnoreCase(category)) {
+        String selectedCategory = category == null || category.isBlank()
+                ? "ALL"
+                : category.trim().toUpperCase();
+
+        if (!"ALL".equals(selectedCategory)) {
             services = services.stream()
                     .filter(service -> service.getCategory() != null)
                     .filter(service -> service.getCategory().getType() != null)
-                    .filter(service -> service.getCategory().getType().name().equalsIgnoreCase(category))
-                    .collect(Collectors.toList());
+                    .filter(service -> service.getCategory().getType().name().equals(selectedCategory))
+                    .toList();
         }
 
         List<GuestServiceView> result = new ArrayList<>();
@@ -205,7 +210,6 @@ public class GuestBookingService {
 
         return result;
     }
-
     @Transactional
     public void addService(Long bookingId, Long serviceId) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -272,16 +276,16 @@ public class GuestBookingService {
         folioItemRepository.save(item);
     }
 
-    @Transactional
-    public void removeService(Long bookingId, Long folioItemId) {
-        FolioItem item = getValidGuestServiceItem(bookingId, folioItemId);
-
-        item.setIsVoided(true);
-        item.setVoidedAt(Instant.now());
-        item.setVoidedReason("Khách xóa dịch vụ khỏi My Booking");
-
-        folioItemRepository.save(item);
-    }
+//    @Transactional
+//    public void removeService(Long bookingId, Long folioItemId) {
+//        FolioItem item = getValidGuestServiceItem(bookingId, folioItemId);
+//
+//        item.setIsVoided(true);
+//        item.setVoidedAt(Instant.now());
+//        item.setVoidedReason("Khách xóa dịch vụ khỏi My Booking");
+//
+//        folioItemRepository.save(item);
+//    }
 
     private FolioItem getValidGuestServiceItem(Long bookingId, Long folioItemId) {
         return folioItemRepository
@@ -362,6 +366,47 @@ public class GuestBookingService {
                 .collect(Collectors.toList());
     }
 
+    private List<GuestIncludedServiceView> mapIncludedServices(RoomTypeVariant variant) {
+        if (variant == null || variant.getIncludedServices() == null) {
+            return new ArrayList<>();
+        }
+
+        List<GuestIncludedServiceView> result = new ArrayList<>();
+
+        for (RoomTypeVariantService item : variant.getIncludedServices()) {
+            // Kiểm tra các điều kiện filter (loại bỏ null và các mục đã xóa)
+            if (item == null) {
+                continue;
+            }
+            if (Boolean.TRUE.equals(item.getIsDeleted())) {
+                continue;
+            }
+            if (item.getService() == null) {
+                continue;
+            }
+            if (Boolean.TRUE.equals(item.getService().getIsDeleted())) {
+                continue;
+            }
+
+            Service service = item.getService();
+            GuestIncludedServiceView view = new GuestIncludedServiceView();
+
+            view.setServiceId(service.getId());
+            view.setServiceName(service.getName());
+            view.setQuantity(item.getQuantity());
+            view.setIncludedType(item.getIncludedType());
+            view.setNote(item.getNote());
+
+            if (service.getCategory() != null) {
+                view.setCategoryName(service.getCategory().getName());
+            }
+
+            result.add(view);
+        }
+
+        return result;
+    }
+
     private List<GuestBedView> mapBeds(RoomTypeVariant variant) {
         List<GuestBedView> result = new ArrayList<>();
 
@@ -430,7 +475,6 @@ public class GuestBookingService {
             view.setQuantity(item.getQuantity());
             view.setUnitPrice(item.getUnitPrice());
             view.setTotalAmount(item.getTotalAmount());
-            view.setStatus("Đang chờ");
 
             result.add(view);
         }

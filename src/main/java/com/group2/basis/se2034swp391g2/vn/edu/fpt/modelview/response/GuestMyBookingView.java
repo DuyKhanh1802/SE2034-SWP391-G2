@@ -69,6 +69,7 @@ public class GuestMyBookingView {
     private List<GuestBedView> beds = new ArrayList<>();
     private List<GuestSelectedServiceView> selectedServices = new ArrayList<>();
     private List<GuestFolioTransactionView> folioTransactions = new ArrayList<>();
+    private List<GuestIncludedServiceView> includedServices = new ArrayList<>();
 
     private BigDecimal folioTotalCharge = BigDecimal.ZERO;
     private BigDecimal folioPaidAmount = BigDecimal.ZERO;

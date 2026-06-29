@@ -3,200 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <title>Đặt phòng của tôi</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
     <link rel="stylesheet" th:href="@{/guest/my_booking.css}">
 </head>
 <body>
 
-<div class="page">
+<div class="guest-booking-page">
 
-    <a class="back-link" th:href="@{/page/home}">← Quay lại trang chủ</a>
+    <a class="back-home" th:href="@{/page/home}">
+        ← Quay lại trang chủ
+    </a>
 
-    <section class="hero-card">
-        <div>
-            <p class="eyebrow">Đặt phòng của tôi</p>
-            <h1 th:text="${myBooking.guestName}">Nguyễn Văn A</h1>
-            <p class="muted">
-                Mã đặt phòng:
-                <strong th:text="${myBooking.bookingReference}">BK-0001</strong>
-            </p>
+    <header class="page-heading">
+        <h1>Đặt phòng của tôi</h1>
+        <p>Thông tin đặt phòng và các dịch vụ trong thời gian lưu trú của bạn.</p>
+    </header>
+
+    <!-- BOOKING SUMMARY -->
+    <section class="booking-summary-card">
+        <div class="summary-column">
+            <span>Mã đặt phòng</span>
+            <strong th:text="${myBooking.bookingReference}">BK-2025-0715</strong>
         </div>
 
-        <div class="status-area">
-            <span>Trạng thái</span>
+        <div class="summary-column">
+            <span>Tên khách</span>
+            <strong th:text="${myBooking.guestName}">Nguyễn Văn An</strong>
+        </div>
+
+        <div class="summary-column">
+            <span>Nhận phòng</span>
+            <strong th:text="${myBooking.checkInDate}">Jul 18, 2025</strong>
+            <small>3:00 PM</small>
+        </div>
+
+        <div class="summary-column">
+            <span>Trả phòng</span>
+            <strong th:text="${myBooking.checkOutDate}">Jul 21, 2025</strong>
+            <small>12:00 PM</small>
+        </div>
+
+        <div class="summary-status">
             <strong th:text="${myBooking.bookingStatus}">CONFIRMED</strong>
+            <p>
+                <span th:text="${myBooking.numNights}">3</span> đêm
+            </p>
+            <p>
+                <span th:text="${myBooking.totalRooms}">2</span> phòng
+            </p>
         </div>
     </section>
 
-    <section class="card">
-        <div class="section-title">
-            <div>
-                <p class="eyebrow">Tổng quan</p>
-                <h2>Thông tin đặt phòng</h2>
-            </div>
-        </div>
-
-        <div class="info-grid">
-            <div class="info-item">
-                <span>Ngày đặt</span>
-                <strong th:text="${myBooking.bookingDate}">2026-06-28</strong>
-            </div>
-
-            <div class="info-item">
-                <span>Email</span>
-                <strong th:text="${myBooking.guestEmail}">guest@gmail.com</strong>
-            </div>
-
-            <div class="info-item">
-                <span>Số điện thoại</span>
-                <strong th:text="${myBooking.guestPhone}">0123456789</strong>
-            </div>
-
-            <div class="info-item">
-                <span>Ngày nhận phòng</span>
-                <strong th:text="${myBooking.checkInDate}">2026-07-01</strong>
-            </div>
-
-            <div class="info-item">
-                <span>Ngày trả phòng</span>
-                <strong th:text="${myBooking.checkOutDate}">2026-07-03</strong>
-            </div>
-
-            <div class="info-item">
-                <span>Số đêm</span>
-                <strong th:text="${myBooking.numNights}">2</strong>
-            </div>
-
-            <div class="info-item">
-                <span>Số khách</span>
-                <strong>
-                    <span th:text="${myBooking.numAdults}">2</span> người lớn,
-                    <span th:text="${myBooking.numChildren}">0</span> trẻ em
-                </strong>
-            </div>
-
-            <div class="info-item">
-                <span>Số phòng</span>
-                <strong th:text="${myBooking.totalRooms}">1</strong>
-            </div>
-        </div>
-
-        <div class="special-request">
+    <!-- SPECIAL REQUEST -->
+    <section class="stay-info-row">
+        <div class="stay-info-item">
             <span>Yêu cầu đặc biệt</span>
-            <p th:text="${myBooking.specialRequests != null && !myBooking.specialRequests.isBlank()
+            <strong th:text="${myBooking.specialRequests != null && !myBooking.specialRequests.isBlank()
                 ? myBooking.specialRequests
                 : 'Không có yêu cầu đặc biệt'}">
                 Tầng cao, phòng yên tĩnh
-            </p>
+            </strong>
+        </div>
+
+        <div class="stay-info-item">
+            <span>Email</span>
+            <strong th:text="${myBooking.guestEmail}">guest@gmail.com</strong>
+        </div>
+
+        <div class="stay-info-item">
+            <span>Liên hệ</span>
+            <strong th:text="${myBooking.guestPhone}">+84 123 456 789</strong>
         </div>
     </section>
 
-    <section class="card room-card">
-        <div class="room-image" th:if="${myBooking.roomImageUrl != null}">
-            <img th:src="${myBooking.roomImageUrl}" alt="Ảnh phòng">
+    <!-- ROOM INFO -->
+    <section class="room-section-card">
+        <div class="room-image-box">
+            <img th:if="${myBooking.roomImageUrl != null}"
+                 th:src="${myBooking.roomImageUrl}"
+                 alt="Ảnh phòng">
+
+            <div class="room-image-placeholder" th:if="${myBooking.roomImageUrl == null}">
+                Ảnh phòng
+            </div>
         </div>
 
-        <div class="room-image placeholder" th:if="${myBooking.roomImageUrl == null}">
-            <span>Ảnh phòng</span>
-        </div>
-
-        <div class="room-content">
-            <p class="eyebrow">Thông tin phòng</p>
-            <h2>
-                <span th:text="${myBooking.roomTypeName}">Deluxe Room</span>
-                <small th:text="${myBooking.variantName}">Ocean View King</small>
-            </h2>
-
-            <p class="room-desc" th:text="${myBooking.roomTypeDescription}">
-                Phòng rộng rãi, thiết kế hiện đại, phù hợp cho kỳ nghỉ thoải mái.
-            </p>
-
-            <div class="room-meta">
-                <span th:text="'Số phòng: ' + ${myBooking.roomNumber}">Số phòng: Chưa phân phòng</span>
-                <span th:if="${myBooking.floor != null}" th:text="'Tầng: ' + ${myBooking.floor}">Tầng: 4</span>
-                <span th:text="'Hướng nhìn: ' + ${myBooking.viewType}">Hướng nhìn: CITY</span>
-                <span th:text="'Diện tích: ' + ${myBooking.roomSize} + ' m²'">Diện tích: 32 m²</span>
-                <span th:text="'Giường: ' + ${myBooking.bedSummary}">Giường: 1 King</span>
-                <span th:text="'Sức chứa: ' + ${myBooking.capacity} + ' khách'">Sức chứa: 2 khách</span>
+        <div class="room-info">
+            <div class="room-title">
+                <span>Thông tin phòng</span>
+                <h2>
+                    <span th:text="${myBooking.variantName}">Deluxe Ocean View</span>
+                </h2>
             </div>
 
-            <div class="amenities">
-                <span class="amenity"
-                      th:each="amenity : ${myBooking.amenities}"
-                      th:text="${amenity.name}">
-                    Wi-Fi
-                </span>
+            <div class="room-grid">
+                <div>
+                    <span>Số phòng</span>
+                    <strong th:text="${myBooking.roomNumber}">1012</strong>
+                </div>
+
+                <div>
+                    <span>Hạng phòng</span>
+                    <strong th:text="${myBooking.roomTypeName}">Deluxe Ocean View</strong>
+                </div>
+
+                <div>
+                    <span>Tầng</span>
+                    <strong th:text="${myBooking.floor != null ? myBooking.floor : 'Chưa phân phòng'}">10</strong>
+                </div>
+
+                <div>
+                    <span>Loại giường</span>
+                    <strong th:text="${myBooking.bedSummary}">King Bed</strong>
+                </div>
+
+                <div>
+                    <span>Sức chứa</span>
+                    <strong>
+                        <span th:text="${myBooking.capacity}">2</span> khách
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Trạng thái phòng</span>
+                    <strong class="room-status" th:text="${myBooking.roomStatus}">Occupied</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="amenities-box">
+            <h3>Tiện nghi phòng</h3>
+
+            <div class="amenities-grid">
+                <div class="amenity-item" th:each="amenity : ${myBooking.amenities}">
+                    <i th:class="${amenity.icon != null && !#strings.isEmpty(amenity.icon)
+        ? 'amenity-icon ' + amenity.icon
+        : 'amenity-icon fa-solid fa-circle'}">
+                    </i>
+
+                    <span th:text="${amenity.name}">Wi-Fi</span>
+                </div>
+                <div class="empty-text" th:if="${myBooking.amenities == null || myBooking.amenities.isEmpty()}">
+                    Chưa có thông tin tiện nghi.
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="card">
-        <div class="section-title">
+    <!-- SERVICES -->
+
+    <section class="main-card included-service-section"
+             th:if="${myBooking.includedServices != null && !myBooking.includedServices.isEmpty()}">
+
+        <div class="section-header">
             <div>
-                <p class="eyebrow">Dịch vụ thêm</p>
+                <h2>Dịch vụ bao gồm</h2>
+                <p class="section-subtitle">
+                    Những dịch vụ đã nằm trong hạng phòng bạn đặt.
+                </p>
+            </div>
+        </div>
+
+        <div class="included-service-grid">
+            <div class="included-service-item"
+                 th:each="item : ${myBooking.includedServices}">
+
+                <div class="included-service-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+                <div>
+                    <h3 th:text="${item.serviceName}">Bữa sáng miễn phí</h3>
+
+                    <p>
+                        <span th:text="${item.categoryName}">Ẩm thực</span>
+                        <span> · Số lượng: </span>
+                        <strong th:text="${item.quantity}">1</strong>
+                    </p>
+
+                    <small th:if="${item.note != null && !item.note.isBlank()}"
+                           th:text="${item.note}">
+                        Áp dụng trong thời gian lưu trú.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="main-card service-section">
+        <div class="section-header service-header">
+            <div>
                 <h2>Nâng tầm kỳ nghỉ của bạn</h2>
             </div>
 
-            <div class="filters">
-                <a th:href="@{/guest/my-booking}"
-                   th:classappend="${selectedCategory == 'ALL'} ? 'active' : ''">
-                    Tất cả
-                </a>
+            <div class="service-header-right">
+                <div class="filter-group">
+                    <a th:href="@{/guest/my-booking}"
+                       th:classappend="${selectedCategory == 'ALL'} ? 'active' : ''">
+                        Tất cả
+                    </a>
 
-                <a th:href="@{/guest/my-booking(category='FOOD')}"
-                   th:classappend="${selectedCategory == 'FOOD'} ? 'active' : ''">
-                    Đồ ăn
-                </a>
+                    <a th:href="@{/guest/my-booking(category='FOOD')}"
+                       th:classappend="${selectedCategory == 'FOOD'} ? 'active' : ''">
+                        Đồ ăn
+                    </a>
 
-                <a th:href="@{/guest/my-booking(category='SPA')}"
-                   th:classappend="${selectedCategory == 'SPA'} ? 'active' : ''">
-                    Spa
-                </a>
+                    <a th:href="@{/guest/my-booking(category='SPA')}"
+                       th:classappend="${selectedCategory == 'SPA'} ? 'active' : ''">
+                        Spa
+                    </a>
+                </div>
+
+                <div class="service-arrows">
+                    <button type="button" data-scroll-services="prev">←</button>
+                    <button type="button" data-scroll-services="next">→</button>
+                </div>
             </div>
         </div>
 
-        <div class="service-row">
-            <div class="service-card" th:each="service : ${services}">
-                <div class="service-image" th:if="${service.imageUrl != null}">
-                    <img th:src="${service.imageUrl}" alt="Ảnh dịch vụ">
-                </div>
+        <div class="service-carousel">
+            <div class="service-track" id="serviceTrack">
+                <article class="service-card" th:each="service : ${services}">
+                    <div class="service-image">
+                        <img th:if="${service.imageUrl != null}"
+                             th:src="${service.imageUrl}"
+                             alt="Ảnh dịch vụ">
 
-                <div class="service-image placeholder" th:if="${service.imageUrl == null}">
-                    <span>Dịch vụ</span>
-                </div>
-
-                <div class="service-body">
-                    <span class="service-category" th:text="${service.categoryName}">Đồ ăn</span>
-                    <h3 th:text="${service.name}">Bữa sáng tại phòng</h3>
-                    <p th:text="${service.description}">Bữa sáng được phục vụ tại phòng.</p>
-
-                    <div class="service-footer">
-                        <strong>
-                            <span th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ
-                        </strong>
-
-                        <form th:action="@{/guest/services/add}" method="post">
-                            <input type="hidden" name="serviceId" th:value="${service.serviceId}">
-                            <button type="submit">Thêm dịch vụ</button>
-                        </form>
+                        <div class="service-image-placeholder" th:if="${service.imageUrl == null}">
+                            Dịch vụ
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="empty-state" th:if="${services == null || services.isEmpty()}">
-                Không có dịch vụ phù hợp.
+                    <div class="service-content">
+                        <h3 th:text="${service.name}">Bữa sáng tại phòng</h3>
+
+                        <p th:text="${service.description}">
+                            Bữa sáng được phục vụ tận phòng.
+                        </p>
+
+                        <div class="service-bottom">
+                            <strong>
+                            <span th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT')}">
+                                450,000
+                            </span> VND
+                            </strong>
+
+                            <form th:action="@{/guest/services/add}" method="post">
+                                <input type="hidden" name="serviceId" th:value="${service.serviceId}">
+                                <button type="submit">Thêm dịch vụ</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+
+                <div class="empty-service" th:if="${services == null || services.isEmpty()}">
+                    Không có dịch vụ phù hợp.
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="card">
-        <div class="section-title">
-            <div>
-                <p class="eyebrow">Dịch vụ</p>
-                <h2>Dịch vụ đã chọn</h2>
-            </div>
+    <!-- SELECTED SERVICES -->
+    <section class="main-card">
+        <div class="section-header">
+            <h2>Dịch vụ đã chọn</h2>
         </div>
 
-        <div class="table-wrap">
+        <div class="table-wrapper">
             <table>
                 <thead>
                 <tr>
@@ -205,24 +280,24 @@
                     <th>Số lượng</th>
                     <th>Đơn giá</th>
                     <th>Thành tiền</th>
-                    <th>Trạng thái</th>
-                    <th>Thao tác</th>
+
                 </tr>
                 </thead>
 
                 <tbody>
                 <tr th:each="item : ${myBooking.selectedServices}">
                     <td th:text="${item.serviceName}">Bữa sáng tại phòng</td>
+
                     <td th:text="${item.categoryName}">Đồ ăn</td>
 
                     <td>
-                        <div class="qty-control">
+                        <div class="quantity-box">
                             <form th:action="@{/guest/services/decrease}" method="post">
                                 <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
                                 <button type="submit" th:disabled="${item.quantity <= 1}">−</button>
                             </form>
 
-                            <strong th:text="${item.quantity}">1</strong>
+                            <span th:text="${item.quantity}">1</span>
 
                             <form th:action="@{/guest/services/increase}" method="post">
                                 <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
@@ -232,23 +307,19 @@
                     </td>
 
                     <td>
-                        <span th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ
+                        <span th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')}">
+                            450,000
+                        </span> VND
                     </td>
 
                     <td>
-                        <strong th:text="${#numbers.formatDecimal(item.totalAmount, 0, 'COMMA', 0, 'POINT')}">150,000</strong> đ
+                        <strong>
+                            <span th:text="${#numbers.formatDecimal(item.totalAmount, 0, 'COMMA', 0, 'POINT')}">
+                                450,000
+                            </span> VND
+                        </strong>
                     </td>
 
-                    <td>
-                        <span class="badge" th:text="${item.status}">Đang chờ</span>
-                    </td>
-
-                    <td>
-                        <form th:action="@{/guest/services/remove}" method="post">
-                            <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
-                            <button class="delete-btn" type="submit">Xóa</button>
-                        </form>
-                    </td>
                 </tr>
 
                 <tr th:if="${myBooking.selectedServices == null || myBooking.selectedServices.isEmpty()}">
@@ -260,78 +331,90 @@
             </table>
         </div>
 
-        <p class="note">Những dịch vụ đã chọn sẽ được tính vào folio của bạn.</p>
+        <p class="table-note">
+            * Những dịch vụ đã chọn sẽ được tính vào folio của bạn.
+        </p>
     </section>
 
-    <section class="card folio-summary">
-        <div>
-            <p class="eyebrow">Folio</p>
-            <h2>Folio của tôi</h2>
-        </div>
+    <!-- FOLIO SUMMARY -->
+    <section class="folio-section">
+        <h2>Folio của tôi</h2>
 
-        <div class="folio-grid">
+        <div class="folio-content">
             <div class="folio-box">
                 <span>Tổng phát sinh</span>
                 <strong>
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioTotalCharge, 0, 'COMMA', 0, 'POINT')}">0</span> đ
+                    <span th:text="${#numbers.formatDecimal(myBooking.folioTotalCharge, 0, 'COMMA', 0, 'POINT')}">
+                        0
+                    </span> VND
                 </strong>
             </div>
 
             <div class="folio-box">
                 <span>Đã thanh toán</span>
-                <strong>
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioPaidAmount, 0, 'COMMA', 0, 'POINT')}">0</span> đ
+                <strong class="paid">
+                    <span th:text="${#numbers.formatDecimal(myBooking.folioPaidAmount, 0, 'COMMA', 0, 'POINT')}">
+                        0
+                    </span> VND
                 </strong>
             </div>
 
-            <div class="folio-box highlight">
+            <div class="folio-box">
                 <span>Còn phải trả</span>
-                <strong>
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioRemainingBalance, 0, 'COMMA', 0, 'POINT')}">0</span> đ
+                <strong class="balance">
+                    <span th:text="${#numbers.formatDecimal(myBooking.folioRemainingBalance, 0, 'COMMA', 0, 'POINT')}">
+                        0
+                    </span> VND
                 </strong>
             </div>
-        </div>
 
-        <a class="primary-btn" href="#folio-modal">Xem chi tiết Folio</a>
+            <a class="folio-detail-button" href="#folio-detail">
+                Xem chi tiết Folio →
+            </a>
+        </div>
     </section>
 
 </div>
 
-<div id="folio-modal" class="modal">
-    <div class="modal-box">
+<!-- FOLIO MODAL -->
+<div id="folio-detail" class="modal-overlay">
+    <div class="folio-modal">
         <div class="modal-header">
             <div>
-                <p class="eyebrow">Chi tiết</p>
                 <h2>Chi tiết Folio</h2>
+                <p>Tất cả phát sinh và thanh toán trong thời gian lưu trú.</p>
             </div>
 
-            <a class="close-btn" href="#">×</a>
+            <a class="modal-close" href="#">×</a>
         </div>
 
         <div class="modal-summary">
             <div>
                 <span>Tổng phát sinh</span>
                 <strong>
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioTotalCharge, 0, 'COMMA', 0, 'POINT')}">0</span> đ
+                    <span th:text="${#numbers.formatDecimal(myBooking.folioTotalCharge, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    VND
                 </strong>
             </div>
 
             <div>
                 <span>Đã thanh toán</span>
                 <strong>
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioPaidAmount, 0, 'COMMA', 0, 'POINT')}">0</span> đ
+                    <span th:text="${#numbers.formatDecimal(myBooking.folioPaidAmount, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    VND
                 </strong>
             </div>
 
             <div>
                 <span>Còn phải trả</span>
                 <strong>
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioRemainingBalance, 0, 'COMMA', 0, 'POINT')}">0</span> đ
+                    <span th:text="${#numbers.formatDecimal(myBooking.folioRemainingBalance, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    VND
                 </strong>
             </div>
         </div>
 
-        <div class="table-wrap modal-table">
+        <div class="table-wrapper">
             <table>
                 <thead>
                 <tr>
@@ -346,7 +429,7 @@
 
                 <tbody>
                 <tr th:each="tx : ${myBooking.folioTransactions}">
-                    <td th:text="${tx.postedAt}">2026-06-28</td>
+                    <td th:text="${tx.postedAt}">2025-07-18</td>
                     <td th:text="${tx.description}">Tiền phòng</td>
                     <td th:text="${tx.category}">Phòng</td>
 
@@ -366,11 +449,34 @@
             </table>
         </div>
 
-        <div class="modal-actions">
-            <a class="secondary-btn" href="#">Đóng</a>
+        <div class="modal-footer">
+            <a href="#">Đóng</a>
         </div>
     </div>
 </div>
 
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const serviceTrack = document.getElementById("serviceTrack");
+
+        if (!serviceTrack) {
+            return;
+        }
+
+        const buttons = document.querySelectorAll("[data-scroll-services]");
+
+        buttons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                const direction = button.getAttribute("data-scroll-services");
+                const scrollAmount = serviceTrack.clientWidth * 0.8;
+
+                serviceTrack.scrollBy({
+                    left: direction === "next" ? scrollAmount : -scrollAmount,
+                    behavior: "smooth"
+                });
+            });
+        });
+    });
+</script>
 </html>

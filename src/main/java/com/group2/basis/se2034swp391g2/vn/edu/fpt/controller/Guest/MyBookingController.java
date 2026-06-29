@@ -34,7 +34,7 @@ public class MyBookingController {
         String selectedCategory = category == null || category.isBlank() ? "ALL" : category.trim().toUpperCase();
         model.addAttribute("guestSession", guestRoomSession);
         model.addAttribute("myBooking", myBooking);
-        model.addAttribute("service", guestBookingService.getAvailableService(selectedCategory));
+        model.addAttribute("services", guestBookingService.getAvailableService(selectedCategory));
         model.addAttribute("selectedCategory", selectedCategory);
 
         return "guest/my_booking";
@@ -79,17 +79,17 @@ public class MyBookingController {
         return "redirect:/guest/my-booking";
     }
 
-    @PostMapping("/services/remove")
-    public String remove(@RequestParam Long folioItemId,
-                         HttpSession session
-    ) {
-        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
-        if (guestRoomSession == null) {
-            return "redirect:/guest/login";
-        }
-
-        guestBookingService.removeService(guestRoomSession.getBookingId(), folioItemId);
-        return "redirect:/guest/my-booking";
-    }
+//    @PostMapping("/services/remove")
+//    public String remove(@RequestParam Long folioItemId,
+//                         HttpSession session
+//    ) {
+//        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+//        if (guestRoomSession == null) {
+//            return "redirect:/guest/login";
+//        }
+//
+//        guestBookingService.removeService(guestRoomSession.getBookingId(), folioItemId);
+//        return "redirect:/guest/my-booking";
+//    }
 
 }

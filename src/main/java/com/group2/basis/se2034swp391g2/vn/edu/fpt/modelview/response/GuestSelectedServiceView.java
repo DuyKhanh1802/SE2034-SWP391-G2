@@ -12,5 +12,5 @@ public class GuestSelectedServiceView {
     private Integer quantity;
     private BigDecimal unitPrice;
     private BigDecimal totalAmount;
-    private String status;
+    //private String status;
 }
