@@ -27,7 +27,7 @@
                     <i class="fa-solid fa-file-import"></i> Import hàng hóa
                 </button>
                 <button class="btn-admin-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal"
-                        th:disabled="${#lists.isEmpty(allItems) or !financialChargeConfigured}">
+                        th:disabled="${!financialChargeConfigured}">
                     <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
                 </button>
             </div>
@@ -96,7 +96,8 @@
                               class="stock-status-text stock-status-normal">Ổn định</span>
                     </td>
                     <td class="inventory-cell-center">
-                        <span th:if="${item.latestBatchExpiryDate == null}" class="expiry-status-none">Không khai báo</span>
+                        <span th:if="${item.latestBatchExpiryDate == null}"
+                              class="expiry-status-none">Không khai báo</span>
                         <span th:if="${item.expiryStatus == 'EXPIRED'}"
                               class="expiry-status expiry-expired"
                               th:text="${#temporals.format(item.latestBatchExpiryDate, 'dd/MM/yyyy') + ' · Hết hạn'}"></span>
@@ -109,13 +110,16 @@
                     </td>
                     <td>
                         <div class="action-group">
-                            <a class="action-btn" th:href="@{/storekeeper/inventory/{id}(id=${item.id})}" title="Xem chi tiết">
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/{id}(id=${item.id})}"
+                               title="Xem chi tiết">
                                 <i class="fa-regular fa-eye"></i>
                             </a>
-                            <a class="action-btn" th:href="@{/storekeeper/inventory/{id}/edit(id=${item.id})}" title="Chỉnh sửa">
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/{id}/edit(id=${item.id})}"
+                               title="Chỉnh sửa">
                                 <i class="fa-regular fa-pen-to-square"></i>
                             </a>
-                            <a class="action-btn" th:href="@{/storekeeper/inventory/history(itemId=${item.id})}" title="Lịch sử biến động">
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/history(itemId=${item.id})}"
+                               title="Lịch sử biến động">
                                 <i class="fa-solid fa-clock-rotate-left"></i>
                             </a>
                         </div>
@@ -135,7 +139,8 @@
             <nav th:if="${totalPages > 1}" aria-label="Phân trang kho hàng">
                 <ul class="pagination mb-0">
                     <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
-                        <a class="page-link" th:href="@{/storekeeper/inventory(page=${currentPage - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}">
+                        <a class="page-link"
+                           th:href="@{/storekeeper/inventory(page=${currentPage - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}">
                             <i class="fa-solid fa-chevron-left"></i>
                         </a>
                     </li>
@@ -146,7 +151,8 @@
                            th:text="${pageNumber + 1}">1</a>
                     </li>
                     <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
-                        <a class="page-link" th:href="@{/storekeeper/inventory(page=${currentPage + 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}">
+                        <a class="page-link"
+                           th:href="@{/storekeeper/inventory(page=${currentPage + 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}">
                             <i class="fa-solid fa-chevron-right"></i>
                         </a>
                     </li>
@@ -160,7 +166,8 @@
             <div class="modal-content">
                 <form th:action="@{/storekeeper/inventory/items/import}" method="post" enctype="multipart/form-data">
                     <div class="modal-header">
-                        <div><span class="eyebrow">EXCEL IMPORT</span><h2 class="modal-title">Import hàng hóa</h2></div>
+                        <div><span class="eyebrow">EXCEL IMPORT</span>
+                            <h2 class="modal-title">Import hàng hóa</h2></div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
@@ -188,29 +195,41 @@
                 <form id="receiptForm" th:action="@{/storekeeper/inventory/receipts}" method="post"
                       th:attr="data-vat-rate=${inventoryVatRate},data-today=${today}">
                     <div class="modal-header">
-                        <div><span class="eyebrow">INVENTORY RECEIPT</span><h2 class="modal-title">Lập phiếu nhập</h2></div>
+                        <div><span class="eyebrow">INVENTORY RECEIPT</span>
+                            <h2 class="modal-title">Lập phiếu nhập</h2></div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body admin-form">
                         <div>
                             <label>Hàng hóa</label>
-                            <select class="form-control-admin" name="itemId" required>
+                            <select id="receiptItemSelect" class="form-control-admin" name="itemId"
+                                    data-options-url="/storekeeper/inventory/items/options" required>
                                 <option value="" selected disabled>Chọn hàng hóa</option>
-                                <option th:each="item : ${allItems}" th:value="${item.id}"
-                                        th:text="${item.code + ' - ' + item.name}"></option>
                             </select>
                         </div>
                         <div class="form-grid">
-                            <div><label>Số lượng</label><input id="receiptQuantity" class="form-control-admin" type="number" step="0.01" min="0.01" name="quantity" required></div>
-                            <div><label>Đơn giá trước VAT</label><input id="receiptUnitCost" class="form-control-admin" type="number" step="1" min="1" name="unitCost" required></div>
+                            <div><label>Số lượng</label><input id="receiptQuantity" class="form-control-admin"
+                                                               type="number" step="0.01" min="0.01" name="quantity"
+                                                               required></div>
+                            <div><label>Đơn giá trước VAT</label><input id="receiptUnitCost" class="form-control-admin"
+                                                                        type="number" step="1" min="1" name="unitCost"
+                                                                        required></div>
                         </div>
-                        <div><label>Thuế VAT</label><input class="form-control-admin" th:value="${inventoryVatRate + '%'}" disabled></div>
+                        <div><label>Thuế VAT</label><input class="form-control-admin"
+                                                           th:value="${inventoryVatRate + '%'}" disabled></div>
                         <div>
                             <label>Phương thức thanh toán</label>
                             <select class="form-control-admin" name="paymentMethod" required>
                                 <option value="CASH">Tiền mặt</option>
                                 <option value="TRANSFER">Chuyển khoản</option>
                             </select>
+                        </div>
+                        <div class="form-grid">
+                            <div><label>Tiền VAT dự kiến</label><input id="receiptVatAmount" class="form-control-admin"
+                                                                       value="0 VND" disabled></div>
+                            <div><label>Tổng thanh toán dự kiến</label><input id="receiptTotalCost"
+                                                                              class="form-control-admin" value="0 VND"
+                                                                              disabled></div>
                         </div>
                         <label class="expiry-toggle">
                             <input id="trackExpiry" type="checkbox">
@@ -227,13 +246,12 @@
                                 <input id="receiptExpiryDate" class="form-control-admin" type="date" name="expiryDate">
                             </div>
                         </div>
-                        <div id="receiptValidationMessage" class="admin-alert warning mb-0" style="display: none;"></div>
-                        <div class="form-grid">
-                            <div><label>Tiền VAT dự kiến</label><input id="receiptVatAmount" class="form-control-admin" value="0 VND" disabled></div>
-                            <div><label>Tổng thanh toán dự kiến</label><input id="receiptTotalCost" class="form-control-admin" value="0 VND" disabled></div>
-                        </div>
-                        <div><label>Nhà cung cấp</label><input class="form-control-admin" name="supplier" maxlength="150"></div>
-                        <div><label>Ghi chú</label><textarea class="form-control-admin" name="note" rows="3" maxlength="300"></textarea></div>
+                        <div id="receiptValidationMessage" class="admin-alert warning mb-0"
+                             style="display: none;"></div>
+                        <div><label>Nhà cung cấp</label><input class="form-control-admin" name="supplier"
+                                                               maxlength="150"></div>
+                        <div><label>Ghi chú</label><textarea class="form-control-admin" name="note" rows="3"
+                                                             maxlength="300"></textarea></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
