@@ -3,7 +3,8 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryCategory;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryReceipt;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FinancialChargeSetting;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryTransaction;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.InventoryCategoryRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.InventoryItemRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.InventoryReceiptRepository;
@@ -68,7 +69,7 @@ class InventoryManagementServiceImportTest {
                 new String[]{"Tên hàng", "Loại", "Đơn vị", "Tồn", "Ngưỡng", "Giá"},
                 new Object[][]{{"Khăn", "Đồ dùng tiêu hao", "cái", 10, 2, 5000}});
 
-        assertThatThrownBy(() -> service.importItemsFromExcel(file))
+        assertThatThrownBy(() -> service.importItemsFromExcel(file, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Tiêu đề không đúng mẫu");
 
@@ -84,7 +85,7 @@ class InventoryManagementServiceImportTest {
                 {"", "Không tồn tại", "", "-1", "1,000", "12.5"}
         });
 
-        assertThatThrownBy(() -> service.importItemsFromExcel(file))
+        assertThatThrownBy(() -> service.importItemsFromExcel(file, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("File Excel có")
                 .hasMessageContaining("Tên hàng là bắt buộc")
@@ -119,7 +120,13 @@ class InventoryManagementServiceImportTest {
                 {"Hàng đã có", "Đồ dùng tiêu hao", "cái", 2, 1, 5000}
         });
 
-        InventoryManagementService.InventoryImportResult result = service.importItemsFromExcel(file);
+        User importer = User.builder()
+                .id(7L)
+                .firstName("Nam")
+                .lastName("Hà Đức")
+                .build();
+
+        InventoryManagementService.InventoryImportResult result = service.importItemsFromExcel(file, importer);
 
         assertThat(result.importedCount()).isEqualTo(1);
         assertThat(result.skippedCount()).isEqualTo(1);
@@ -130,6 +137,10 @@ class InventoryManagementServiceImportTest {
         assertThat(itemCaptor.getValue().getOpeningQuantity()).isEqualByComparingTo(new BigDecimal("1.5"));
         assertThat(itemCaptor.getValue().getMinimumQuantity()).isEqualByComparingTo(new BigDecimal("0.25"));
         assertThat(itemCaptor.getValue().getUnitCost()).isEqualByComparingTo(new BigDecimal("15000"));
+
+        ArgumentCaptor<InventoryTransaction> transactionCaptor = ArgumentCaptor.forClass(InventoryTransaction.class);
+        verify(inventoryTransactionRepository).save(transactionCaptor.capture());
+        assertThat(transactionCaptor.getValue().getCreatedBy()).isSameAs(importer);
     }
 
     @Test
@@ -152,10 +163,7 @@ class InventoryManagementServiceImportTest {
             receipt.setId(9L);
             return receipt;
         });
-        when(financialChargeService.getCurrentSetting()).thenReturn(
-                FinancialChargeSetting.builder()
-                        .inventoryVatRate(BigDecimal.ZERO)
-                        .build());
+        when(financialChargeService.getInventoryVatRate()).thenReturn(BigDecimal.ZERO);
         when(financialChargeService.calculateRateAmount(any(), any())).thenReturn(BigDecimal.ZERO);
 
         service.createReceipt(

@@ -29,33 +29,6 @@
         </div>
     </section>
 
-    <section class="admin-card">
-        <form class="admin-form" method="post" th:action="@{/storekeeper/inventory/{id}/edit(id=${item.id})}">
-            <div class="form-grid">
-                <div><label>Tên hàng hóa</label><input class="form-control-admin" name="name" th:value="${item.name}" maxlength="150" required></div>
-                <div>
-                    <label>Loại hàng</label>
-                    <select class="form-control-admin" name="categoryId" required>
-                        <option value="" disabled>Chọn loại hàng</option>
-                        <option th:each="categoryOption : ${categories}"
-                                th:value="${categoryOption.id}"
-                                th:text="${categoryOption.name}"
-                                th:selected="${item.category != null and categoryOption.id == item.category.id}">
-                        </option>
-                    </select>
-                </div>
-                <div><label>Đơn vị tính</label><input class="form-control-admin" name="unit" th:value="${item.unit}" maxlength="30" required></div>
-                <div><label>Mức tồn tối thiểu</label><input class="form-control-admin" type="number" name="minimumQuantity" th:value="${@inventoryQuantityFormatter.format(item.minimumQuantity)}" step="0.01" min="0" required></div>
-                <div><label>Tồn hiện tại</label><input class="form-control-admin" th:value="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}" disabled></div>
-                <div><label>Giá vốn bình quân</label><input class="form-control-admin" th:value="${#numbers.formatDecimal(item.unitCost, 0, 'POINT', 0, 'COMMA') + ' VND'}" disabled></div>
-            </div>
-            <div class="detail-actions mt-2">
-                <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/{id}(id=${item.id})}">Hủy</a>
-                <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi</button>
-            </div>
-        </form>
-    </section>
-
     <section class="detail-grid">
         <form class="admin-card admin-form" th:action="@{/storekeeper/inventory/service-mappings}" method="post">
             <div><h2 class="modal-title">Cập nhật tiêu hao của dịch vụ</h2></div>

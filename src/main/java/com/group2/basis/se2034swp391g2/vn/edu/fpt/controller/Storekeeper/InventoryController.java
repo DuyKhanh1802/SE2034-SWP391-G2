@@ -85,7 +85,6 @@ public class InventoryController {
             model.addAttribute("refreshMappings", inventoryManagementService.getRefreshMappingsForItem(id));
             model.addAttribute("services", inventoryManagementService.getAvailableServices());
             model.addAttribute("roomTypes", inventoryManagementService.getRoomTypes());
-            model.addAttribute("categories", inventoryManagementService.getCategories());
             model.addAttribute("canDelete", inventoryManagementService.canDeleteItem(id));
             return "storekeeper/InventoryEdit";
         } catch (IllegalArgumentException e) {
@@ -123,29 +122,14 @@ public class InventoryController {
         return "redirect:/storekeeper/inventory/" + id + "/edit";
     }
 
-    @PostMapping("/storekeeper/inventory/{id}/edit")
-    public String updateInventoryItem(@PathVariable Long id,
-                                      @RequestParam String name,
-                                      @RequestParam Long categoryId,
-                                      @RequestParam String unit,
-                                      @RequestParam BigDecimal minimumQuantity,
-                                      RedirectAttributes redirectAttributes) {
-        try {
-            inventoryManagementService.updateItem(id, name, categoryId, unit, minimumQuantity);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật hàng hóa.");
-            return "redirect:/storekeeper/inventory/" + id;
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/storekeeper/inventory/" + id + "/edit";
-        }
-    }
-
     @PostMapping("/storekeeper/inventory/items/import")
     public String importInventoryItems(@RequestParam("file") MultipartFile file,
+                                       Authentication authentication,
+                                       HttpSession session,
                                        RedirectAttributes redirectAttributes) {
         try {
             InventoryManagementService.InventoryImportResult result =
-                    inventoryManagementService.importItemsFromExcel(file);
+                    inventoryManagementService.importItemsFromExcel(file, resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage",
                     "Da import " + result.importedCount() + " hang hoa. Bo qua "
                             + result.skippedCount() + " hang hoa da ton tai.");

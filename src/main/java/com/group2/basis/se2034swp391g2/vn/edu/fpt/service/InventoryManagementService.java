@@ -94,7 +94,7 @@ public class InventoryManagementService {
 
     @Transactional(readOnly = true)
     public BigDecimal getInventoryVatRate() {
-        return financialChargeService.getCurrentSetting().getInventoryVatRate();
+        return financialChargeService.getInventoryVatRate();
     }
 
     @Transactional(readOnly = true)
@@ -109,34 +109,6 @@ public class InventoryManagementService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hàng hóa."));
         attachLatestBatchExpiry(item);
         return item;
-    }
-
-    @Transactional
-    public InventoryItem updateItem(Long id,
-                                    String name,
-                                    Long categoryId,
-                                    String unit,
-                                    BigDecimal minimumQuantity) {
-        InventoryItem item = getItem(id);
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Tên hàng hóa là bắt buộc.");
-        }
-        if (unit == null || unit.isBlank()) {
-            throw new IllegalArgumentException("Đơn vị tính là bắt buộc.");
-        }
-        InventoryCategory category = getCategory(categoryId);
-
-        String normalizedName = name.trim();
-        if (inventoryItemRepository.existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(normalizedName, id)) {
-            throw new IllegalArgumentException("Tên hàng hóa đã tồn tại.");
-        }
-
-        item.setName(normalizedName);
-        item.setCategory(category);
-        item.setLegacyCategory(category.getName());
-        item.setUnit(unit.trim());
-        item.setMinimumQuantity(normalizeQuantity(minimumQuantity, "Mức tồn tối thiểu", false));
-        return inventoryItemRepository.save(item);
     }
 
     @Transactional(readOnly = true)
@@ -162,7 +134,7 @@ public class InventoryManagementService {
     }
 
     @Transactional
-    public InventoryImportResult importItemsFromExcel(MultipartFile file) {
+    public InventoryImportResult importItemsFromExcel(MultipartFile file, User createdBy) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Vui lòng chọn file Excel cần import.");
         }
@@ -265,7 +237,7 @@ public class InventoryManagementService {
 
             for (InventoryImportRow row : validRows) {
                 createItem(row.name(), row.category(), row.unit(),
-                        row.openingQuantity(), row.minimumQuantity(), row.unitCost());
+                        row.openingQuantity(), row.minimumQuantity(), row.unitCost(), createdBy);
             }
             return new InventoryImportResult(validRows.size(), skippedCount);
         } catch (IOException e) {
@@ -278,7 +250,8 @@ public class InventoryManagementService {
                                      String unit,
                                      BigDecimal openingQuantity,
                                      BigDecimal minimumQuantity,
-                                     BigDecimal unitCost) {
+                                     BigDecimal unitCost,
+                                     User createdBy) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Tên hàng hóa là bắt buộc.");
         }
@@ -311,7 +284,7 @@ public class InventoryManagementService {
         InventoryItem savedItem = inventoryItemRepository.save(item);
         if (opening.compareTo(BigDecimal.ZERO) > 0) {
             recordInventoryTransaction(savedItem, InventoryTransactionType.IN, opening,
-                    "Tồn đầu kỳ", "OPENING", savedItem.getId(), null);
+                    "Tồn đầu kỳ", "OPENING", savedItem.getId(), createdBy);
         }
         return savedItem;
     }
