@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -19,14 +20,15 @@ public class InventoryItem {
     @Column(name = "inventory_item_id")
     private Long id;
 
-    @Column(name = "item_code", nullable = false, unique = true, length = 30)
-    private String code;
-
     @Column(name = "name", nullable = false, length = 150, columnDefinition = "NVARCHAR(150)")
     private String name;
 
     @Column(name = "category", length = 100, columnDefinition = "NVARCHAR(100)")
-    private String category;
+    private String legacyCategory;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_category_id")
+    private InventoryCategory category;
 
     @Column(name = "unit", nullable = false, length = 30, columnDefinition = "NVARCHAR(30)")
     private String unit;
@@ -51,6 +53,9 @@ public class InventoryItem {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @Transient
+    private LocalDate latestBatchExpiryDate;
 
     @PrePersist
     protected void onCreate() {
@@ -79,5 +84,32 @@ public class InventoryItem {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = Instant.now();
+    }
+
+    public String getCategoryName() {
+        if (category != null && category.getName() != null) {
+            return category.getName();
+        }
+        return legacyCategory;
+    }
+
+    @Transient
+    public String getCode() {
+        return id == null ? null : "IT-%04d".formatted(id);
+    }
+
+    @Transient
+    public String getExpiryStatus() {
+        if (latestBatchExpiryDate == null) {
+            return "NONE";
+        }
+        LocalDate today = LocalDate.now();
+        if (latestBatchExpiryDate.isBefore(today)) {
+            return "EXPIRED";
+        }
+        if (!latestBatchExpiryDate.isAfter(today.plusDays(30))) {
+            return "EXPIRING_SOON";
+        }
+        return "VALID";
     }
 }
