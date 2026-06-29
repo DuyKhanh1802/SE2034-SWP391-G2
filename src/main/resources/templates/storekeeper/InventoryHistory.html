@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="page-title">
+        <h1>Lịch sử biến động kho</h1>
+        <p>Tra cứu giao dịch nhập, xuất, nguồn chứng từ và số tồn sau mỗi biến động.</p>
+    </section>
+
+    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+
+    <section class="admin-card inventory-toolbar">
+        <div><h2>Nhật ký nhập xuất</h2></div>
+        <a class="btn-admin-outline" th:href="@{/storekeeper/inventory}"><i class="fa-solid fa-arrow-left"></i> Danh sách hàng hóa</a>
+    </section>
+
+    <section class="admin-card">
+        <form method="get" th:action="@{/storekeeper/inventory/history}" class="history-filters">
+            <div>
+                <label>Hàng hóa</label>
+                <select class="filter-control" name="itemId">
+                    <option value="">Tất cả hàng hóa</option>
+                    <option th:each="item : ${items}" th:value="${item.id}"
+                            th:text="${item.code + ' - ' + item.name}"
+                            th:selected="${item.id == selectedItemId}"></option>
+                </select>
+            </div>
+            <div>
+                <label>Loại biến động</label>
+                <select class="filter-control" name="type">
+                    <option value="">Tất cả loại</option>
+                    <option th:each="typeOption : ${transactionTypes}"
+                            th:value="${typeOption}"
+                            th:selected="${typeOption == selectedType}"
+                            th:text="${typeOption.name() == 'IN' ? 'Nhập kho' : (typeOption.name() == 'OUT' ? 'Xuất kho' : (typeOption.name() == 'DISPOSAL' ? 'Xuất hủy' : 'Điều chỉnh'))}"></option>
+                </select>
+            </div>
+            <div><label>Từ ngày</label><input class="filter-control" type="date" name="dateFrom" th:value="${dateFrom}"></div>
+            <div><label>Đến ngày</label><input class="filter-control" type="date" name="dateTo" th:value="${dateTo}"></div>
+            <input type="hidden" name="size" th:value="${pageSize}">
+            <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc lịch sử</button>
+        </form>
+    </section>
+
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table admin-table">
+                <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Hàng hóa</th>
+                    <th>Loại</th>
+                    <th>Số lượng</th>
+                    <th>Tồn sau biến động</th>
+                    <th>Nguồn</th>
+                    <th>Nội dung</th>
+                    <th>Người thực hiện</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="transaction : ${transactions}">
+                    <td th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td>
+                        <span class="item-code" th:text="${transaction.item.code}"></span>
+                        <div class="mt-1" th:text="${transaction.item.name}"></div>
+                    </td>
+                    <td>
+                        <span class="movement-type"
+                              th:classappend="${transaction.type.name() == 'IN' ? ' movement-in' : (transaction.type.name() == 'OUT' ? ' movement-out' : (transaction.type.name() == 'DISPOSAL' ? ' movement-disposal' : ' movement-adjustment'))}"
+                              th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : (transaction.type.name() == 'DISPOSAL' ? 'Xuất hủy' : 'Điều chỉnh'))}"></span>
+                    </td>
+                    <td><strong th:text="${@inventoryQuantityFormatter.format(transaction.quantity) + ' ' + transaction.item.unit}"></strong></td>
+                    <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + transaction.item.unit : '—'}"></td>
+                    <td th:text="${transaction.sourceLabel}"></td>
+                    <td th:text="${transaction.descriptionLabel}"></td>
+                    <td th:text="${transaction.createdBy != null
+                        ? ((transaction.createdBy.lastName ?: '') + ' ' + (transaction.createdBy.firstName ?: '')).trim()
+                        : 'Hệ thống'}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="8" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
+            <div class="text-muted small"><span th:text="${totalElements}">0</span> giao dịch</div>
+            <nav th:if="${totalPages > 1}">
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
+                        <a class="page-link" th:href="@{/storekeeper/inventory/history(page=${currentPage - 1},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"><i class="fa-solid fa-chevron-left"></i></a>
+                    </li>
+                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${pageNumber == currentPage} ? ' active'">
+                        <a class="page-link" th:href="@{/storekeeper/inventory/history(page=${pageNumber},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}" th:text="${pageNumber + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
+                        <a class="page-link" th:href="@{/storekeeper/inventory/history(page=${currentPage + 1},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"><i class="fa-solid fa-chevron-right"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+</main>
+</body>
+</html>
