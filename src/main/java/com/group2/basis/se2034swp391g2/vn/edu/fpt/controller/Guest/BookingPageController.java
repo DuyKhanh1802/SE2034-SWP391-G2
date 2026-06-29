@@ -1,11 +1,15 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Guest;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingConfirmRequest;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingCompleteResult;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingConfirmView;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingSuccessView;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.BookingServiceProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.ServiceProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingSelectionService;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.OnlineBookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
 import lombok.*;
 import org.springframework.data.domain.Page;
@@ -13,6 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +30,7 @@ import java.util.List;
 public class BookingPageController {
     private final BookingSelectionService bookingSelectionService;
     private final PromotionService promotionService;
+    private final OnlineBookingService onlineBookingService;
 
     @GetMapping("/services")
     public String bookingService(
@@ -135,20 +141,79 @@ public class BookingPageController {
             @ModelAttribute BookingConfirmRequest request,
             Model model
     ) {
-        List<GuestRoomVariantProjection> selectedRooms =
-                bookingSelectionService.getSelectRoomsForService(
-                        request.getVariantIds(),
-                        request.getCheckInDate(),
-                        request.getCheckOutDate()
-                );
-
-        PromotionApplyResponse promotionResult =
-                promotionService.checkPromotionCode(request.getPromoCode());
+        BookingConfirmView confirmView = onlineBookingService.prepareConfirmView(request);
 
         model.addAttribute("request", request);
-        model.addAttribute("selectedRooms", selectedRooms);
-        model.addAttribute("promotionResult", promotionResult);
+        model.addAttribute("confirmView", confirmView);
 
-        return "page/BookingConfirm";
+        return "guest/BookingConfirm";
     }
-}
+
+    @GetMapping("/confirm")
+    public String bookingCofirmWithoutService(
+            @RequestParam String variantIds,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate checkInDate,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate checkOutDate,
+
+            @RequestParam(defaultValue = "1") Integer adults,
+            @RequestParam(defaultValue = "0") Integer children,
+            @RequestParam(defaultValue = "1") Integer roomCount,
+            @RequestParam(required = false) String roomGuests,
+            @RequestParam(required = false) String promoCode,
+
+            Model model
+    ) {
+        BookingConfirmRequest request = new BookingConfirmRequest();
+         request.setVariantIds(variantIds);
+         request.setCheckInDate(checkInDate);
+         request.setCheckOutDate(checkOutDate);
+         request.setAdults(adults);
+         request.setChildren(children);
+         request.setRoomCount(roomCount);
+         request.setRoomGuests(roomGuests);
+         request.setPromoCode(promoCode);
+
+         return bookingConfirm(request,model);
+    }
+
+    @PostMapping("/complete")
+    public String completeBooking(
+            @ModelAttribute BookingConfirmRequest request,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            BookingCompleteResult result = onlineBookingService.completeOnlineBooking(request);
+
+            redirectAttributes.addAttribute("bookingReference", result.getBookingReference());
+
+            return "redirect:/page/booking/success";
+        } catch (IllegalArgumentException e) {
+            BookingConfirmView confirmView = onlineBookingService.prepareConfirmView(request);
+
+            model.addAttribute("request", request);
+            model.addAttribute("confirmView", confirmView);
+            model.addAttribute("errorMessage", e.getMessage());
+
+            return "guest/BookingConfirm";
+        }
+    }
+
+    @GetMapping("/success")
+    public String bookingSuccess(
+            @RequestParam String bookingReference,
+            Model model
+    ) {
+        BookingSuccessView successView = onlineBookingService.getBookingSuccessView(bookingReference);
+
+        model.addAttribute("successView", successView);
+
+        return "guest/BookingSuccess";
+    }
+    }

@@ -351,9 +351,8 @@ public class InventoryManagementService {
         }
         String generatedBatchCode = expiryDate == null ? null : generateBatchCode(effectiveReceiptDate);
 
-        FinancialChargeSetting chargeSetting = financialChargeService.getCurrentSetting();
         BigDecimal subtotal = quantity.multiply(unitCost).setScale(0, java.math.RoundingMode.HALF_UP);
-        BigDecimal vatRate = chargeSetting.getInventoryVatRate();
+        BigDecimal vatRate = financialChargeService.getInventoryVatRate();
         BigDecimal vatAmount = financialChargeService.calculateRateAmount(subtotal, vatRate);
         BigDecimal totalCost = subtotal.add(vatAmount).setScale(0, java.math.RoundingMode.HALF_UP);
         InventoryReceipt receipt = InventoryReceipt.builder()
