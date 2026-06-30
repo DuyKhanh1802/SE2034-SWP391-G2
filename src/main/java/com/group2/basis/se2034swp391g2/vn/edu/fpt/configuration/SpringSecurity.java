@@ -44,7 +44,6 @@ public class SpringSecurity {
                                 "/images/**",
                                 "/system_admin/**",
                                 "/hotel_admin/**",
-                                "/Admin/**",
                                 "/guest/**"
                         ).permitAll()
 

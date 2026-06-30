@@ -40,8 +40,8 @@
                 <tbody>
                 <tr th:each="item : ${lowStockItems}">
                     <td th:text="${item.name}">Hàng hóa</td>
-                    <td th:text="${item.currentQuantity + ' ' + item.unit}">0</td>
-                    <td th:text="${item.minimumQuantity + ' ' + item.unit}">0</td>
+                    <td th:text="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}">0</td>
+                    <td th:text="${@inventoryQuantityFormatter.format(item.minimumQuantity) + ' ' + item.unit}">0</td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(lowStockItems)}"><td colspan="3">Không có cảnh báo tồn kho thấp.</td></tr>
                 </tbody>

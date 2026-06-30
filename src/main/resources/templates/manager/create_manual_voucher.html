@@ -45,6 +45,19 @@
                        required>
                 <p class="form-hint">Chỉ nhập số dương, hệ thống tự xử lý dấu tiền theo loại phiếu.</p>
             </div>
+
+            <div>
+                <label for="paymentMethod">Phương thức thanh toán</label>
+                <select id="paymentMethod" th:field="*{paymentMethod}" required>
+                    <option value="">Chọn phương thức</option>
+                    <option th:each="methodOption : ${paymentMethods}"
+                            th:value="${methodOption.name()}"
+                            th:text="${methodOption.label}">
+                        Tiền mặt
+                    </option>
+                </select>
+                <p class="form-hint">Ghi lại cách phát sinh dòng tiền để dễ đối soát.</p>
+            </div>
         </div>
 
         <label for="description">Nội dung phiếu</label>
