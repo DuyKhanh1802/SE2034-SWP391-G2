@@ -25,6 +25,7 @@ import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -33,7 +34,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,8 +68,13 @@ public class InventoryManagementService {
     @Transactional(readOnly = true)
     public List<InventoryItem> getItems() {
         List<InventoryItem> items = inventoryItemRepository.findAllByIsDeletedFalse(Sort.by("id").ascending());
-        items.forEach(this::attachLatestBatchExpiry);
+        attachLatestBatchExpiry(items);
         return items;
+    }
+
+    @Transactional(readOnly = true)
+    public List<InventoryItem> getItemsForSelection() {
+        return inventoryItemRepository.findAllByIsDeletedFalse(Sort.by("id").ascending());
     }
 
     @Transactional(readOnly = true)
@@ -84,7 +92,7 @@ public class InventoryManagementService {
                 categoryId,
                 normalizeStockStatus(stockStatus),
                 pageable);
-        result.getContent().forEach(this::attachLatestBatchExpiry);
+        attachLatestBatchExpiry(result.getContent());
         return result;
     }
 
@@ -547,6 +555,47 @@ public class InventoryManagementService {
                 .ifPresent(receipt -> item.setLatestBatchExpiryDate(receipt.getExpiryDate()));
     }
 
+    private void attachLatestBatchExpiry(List<InventoryItem> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        List<Long> itemIds = items.stream()
+                .map(InventoryItem::getId)
+                .filter(id -> id != null)
+                .toList();
+        if (itemIds.isEmpty()) {
+            return;
+        }
+
+        Map<Long, LocalDate> expiryDatesByItemId = inventoryReceiptRepository
+                .findLatestExpiryDatesByItemIds(itemIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> ((Number) row[0]).longValue(),
+                        row -> toLocalDate(row[1]),
+                        (first, ignored) -> first
+                ));
+
+        items.forEach(item -> item.setLatestBatchExpiryDate(expiryDatesByItemId.get(item.getId())));
+    }
+
+    private LocalDate toLocalDate(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof LocalDate localDate) {
+            return localDate;
+        }
+        if (value instanceof Date date) {
+            return date.toLocalDate();
+        }
+        if (value instanceof java.util.Date date) {
+            return date.toInstant().atZone(APP_ZONE).toLocalDate();
+        }
+        throw new IllegalArgumentException("Unsupported expiry date value: " + value);
+    }
+
     @Transactional(readOnly = true)
     public Page<InventoryTransaction> getTransactions(Long itemId,
                                                       InventoryTransactionType type,
@@ -601,9 +650,11 @@ public class InventoryManagementService {
 
     @Transactional(readOnly = true)
     public List<String> getExpiringSoonItemCodes() {
-        return getItems().stream()
-                .filter(item -> "EXPIRING_SOON".equals(item.getExpiryStatus()))
-                .map(InventoryItem::getCode)
+        LocalDate today = LocalDate.now(APP_ZONE);
+        return inventoryReceiptRepository
+                .findItemIdsWithLatestExpiryDateBetween(today, today.plusDays(30))
+                .stream()
+                .map(id -> "IT-%04d".formatted(id))
                 .toList();
     }
 
