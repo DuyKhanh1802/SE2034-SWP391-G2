@@ -23,8 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 
 @Controller
 @RequiredArgsConstructor
@@ -131,8 +133,7 @@ public class InventoryController {
             InventoryManagementService.InventoryImportResult result =
                     inventoryManagementService.importItemsFromExcel(file, resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Da import " + result.importedCount() + " hang hoa. Bo qua "
-                            + result.skippedCount() + " hang hoa da ton tai.");
+                    formatImportSuccessMessage(result));
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -164,6 +165,14 @@ public class InventoryController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/storekeeper/inventory";
+    }
+
+    private String formatImportSuccessMessage(InventoryManagementService.InventoryImportResult result) {
+        NumberFormat currencyFormatter = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
+        return "Đã import " + result.importedCount()
+                + " hàng hóa. Bỏ qua " + result.skippedCount()
+                + " hàng hóa đã tồn tại. Tổng giá trị tồn khởi tạo: "
+                + currencyFormatter.format(result.totalOpeningCost()) + " VND.";
     }
 
     @GetMapping("/storekeeper/inventory/items/options")

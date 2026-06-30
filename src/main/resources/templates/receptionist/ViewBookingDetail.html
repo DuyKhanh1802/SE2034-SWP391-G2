@@ -15,6 +15,9 @@
 
     <section class="booking-detail-page">
 
+        <div th:if="${successMessage}" class="alert alert-success mb-3" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger mb-3" th:text="${errorMessage}"></div>
+
         <!-- HEADER -->
         <div class="detail-header">
             <div>
@@ -250,6 +253,8 @@
                         <th>Số lượng</th>
                         <th>Đơn giá</th>
                         <th>Thành tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
                     </tr>
                     </thead>
 
@@ -267,6 +272,39 @@
 
                         <td th:text="${#numbers.formatDecimal(service.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                             0 VND
+                        </td>
+
+                        <td>
+                            <span class="service-status"
+                                  th:classappend="${service.serviceStatus == 'COMPLETED'} ? ' service-status-completed' :
+                                      (${service.serviceStatus == 'CANCELLED'} ? ' service-status-cancelled' : ' service-status-requested')"
+                                  th:text="${service.serviceStatusLabel}">
+                                Chờ phục vụ
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="service-action-group" th:if="${service.serviceStatus == 'REQUESTED'
+                                and detail.bookingStatus.name() != 'CANCELLED'
+                                and detail.bookingStatus.name() != 'CHECKED_OUT'
+                                and detail.bookingStatus.name() != 'NO_SHOW'}">
+                                <form method="post"
+                                      th:action="@{/receptionist/bookings/view/{bookingId}/services/{folioItemId}/confirm(bookingId=${detail.bookingId},folioItemId=${service.folioItemId})}">
+                                    <button type="submit" class="btn-detail primary service-action-btn">
+                                        Xác nhận phục vụ
+                                    </button>
+                                </form>
+                                <form method="post"
+                                      th:action="@{/receptionist/bookings/view/{bookingId}/services/{folioItemId}/cancel(bookingId=${detail.bookingId},folioItemId=${service.folioItemId})}">
+                                    <button type="submit" class="btn-detail outline service-action-btn">
+                                        Hủy
+                                    </button>
+                                </form>
+                            </div>
+                            <span class="service-action-empty" th:unless="${service.serviceStatus == 'REQUESTED'
+                                and detail.bookingStatus.name() != 'CANCELLED'
+                                and detail.bookingStatus.name() != 'CHECKED_OUT'
+                                and detail.bookingStatus.name() != 'NO_SHOW'}">-</span>
                         </td>
                     </tr>
                     </tbody>

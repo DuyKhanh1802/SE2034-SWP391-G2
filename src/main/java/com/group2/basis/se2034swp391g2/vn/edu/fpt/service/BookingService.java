@@ -35,6 +35,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ServiceCategoryType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
 
@@ -80,6 +81,7 @@ public class BookingService {
     private final ServiceRepository serviceRepository;
     private final FolioItemRepository folioItemRepository;
     private final FinancialChargeService financialChargeService;
+    private final InventoryManagementService inventoryManagementService;
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
@@ -91,7 +93,8 @@ public class BookingService {
                           ServiceRepository serviceRepository,
                           FolioItemRepository folioItemRepository,
                           FinancialChargeService financialChargeService,
-                          PaymentService paymentService) {
+                          PaymentService paymentService,
+                          InventoryManagementService inventoryManagementService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingDetailRepository = bookingDetailRepository;
@@ -104,6 +107,7 @@ public class BookingService {
         this.folioItemRepository = folioItemRepository;
         this.financialChargeService = financialChargeService;
         this.paymentService = paymentService;
+        this.inventoryManagementService = inventoryManagementService;
     }
 
     public List<BookingResponse> searchBookings(String keyword,
@@ -430,6 +434,74 @@ public class BookingService {
 
         booking.setDepositStatus(DepositStatus.PAID);
         bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void confirmServiceServed(Long bookingId, Long folioItemId) {
+        FolioItem folioItem = getServiceFolioItem(bookingId, folioItemId);
+        FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
+
+        if (currentStatus == FolioItemStatus.COMPLETED) {
+            throw new IllegalArgumentException("Dịch vụ này đã được xác nhận phục vụ.");
+        }
+        if (currentStatus == FolioItemStatus.CANCELLED) {
+            throw new IllegalArgumentException("Không thể xác nhận dịch vụ đã hủy.");
+        }
+
+        inventoryManagementService.consumeForService(
+                folioItem.getService(),
+                BigDecimal.valueOf(folioItem.getQuantity() == null ? 1 : folioItem.getQuantity()),
+                folioItem.getId(),
+                getCurrentStaffUser()
+        );
+
+        folioItem.setServiceStatus(FolioItemStatus.COMPLETED);
+        folioItemRepository.save(folioItem);
+    }
+
+    @Transactional
+    public void cancelRequestedService(Long bookingId, Long folioItemId) {
+        FolioItem folioItem = getServiceFolioItem(bookingId, folioItemId);
+        FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
+
+        if (currentStatus == FolioItemStatus.COMPLETED) {
+            throw new IllegalArgumentException("Dịch vụ đã phục vụ nên không thể hủy.");
+        }
+        if (currentStatus == FolioItemStatus.CANCELLED) {
+            throw new IllegalArgumentException("Dịch vụ này đã được hủy.");
+        }
+
+        folioItem.setServiceStatus(FolioItemStatus.CANCELLED);
+        folioItemRepository.save(folioItem);
+    }
+
+    private FolioItem getServiceFolioItem(Long bookingId, Long folioItemId) {
+        if (bookingId == null || folioItemId == null) {
+            throw new IllegalArgumentException("Thiếu thông tin dịch vụ cần xử lý.");
+        }
+
+        FolioItem folioItem = folioItemRepository.findById(folioItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ trong booking."));
+
+        if (Boolean.TRUE.equals(folioItem.getIsVoided())
+                || folioItem.getBooking() == null
+                || !bookingId.equals(folioItem.getBooking().getId())
+                || folioItem.getService() == null) {
+            throw new IllegalArgumentException("Dịch vụ không thuộc booking này hoặc đã bị hủy chứng từ.");
+        }
+
+        Booking booking = folioItem.getBooking();
+        if (booking.getStatus() == BookingStatus.CANCELLED
+                || booking.getStatus() == BookingStatus.CHECKED_OUT
+                || booking.getStatus() == BookingStatus.NO_SHOW) {
+            throw new IllegalArgumentException("Không thể xử lý dịch vụ khi booking đã kết thúc hoặc đã hủy.");
+        }
+
+        return folioItem;
+    }
+
+    private FolioItemStatus getEffectiveServiceStatus(FolioItem folioItem) {
+        return folioItem.getServiceStatus() == null ? FolioItemStatus.REQUESTED : folioItem.getServiceStatus();
     }
 
     private void validateCreateBookingRequest(BookingCreateRequest request) {
@@ -972,8 +1044,11 @@ public class BookingService {
                 folioItemRepository.findByBookingIdAndIsVoidedFalseOrderByPostedAtAsc(bookingId);
         List<ViewBookingDetailResponse.ServiceLine> serviceLines = folioItems.stream()
                 .map(item -> ViewBookingDetailResponse.ServiceLine.builder()
+                        .folioItemId(item.getId())
                         .serviceName(item.getDescription())
                         .itemType(item.getItemType() != null ? item.getItemType().name() : "N/A")
+                        .serviceStatus(getEffectiveServiceStatus(item).name())
+                        .serviceStatusLabel(getEffectiveServiceStatus(item).getLabel())
                         .quantity(item.getQuantity())
                         .unitPrice(item.getUnitPrice())
                         .amount(item.getAmount())
@@ -1198,6 +1273,7 @@ public class BookingService {
                     .booking(booking)
                     .service(service)
                     .itemType(resolveServiceFolioItemType(service))
+                    .serviceStatus(FolioItemStatus.REQUESTED)
                     .description(service.getName())
                     .quantity(quantity)
                     .unitPrice(unitPrice)
