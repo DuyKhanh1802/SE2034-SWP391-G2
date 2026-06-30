@@ -280,6 +280,7 @@ public class CashTransactionService {
                                                    PaymentMethod paymentMethod,
                                                    User createdBy) {
         validateAmount(amount);
+        validateInventoryPaymentMethod(paymentMethod);
         if (receiptId != null && cashTransactionRepository.existsByCategoryAndSourceId(
                 CashTransactionCategory.INVENTORY_PURCHASE, receiptId)) {
             return cashTransactionRepository.findByCategoryAndSourceId(
@@ -291,6 +292,7 @@ public class CashTransactionService {
                 .type(CashTransactionType.EXPENSE)
                 .category(CashTransactionCategory.INVENTORY_PURCHASE)
                 .amount(normalizeMoneyByType(amount, CashTransactionType.EXPENSE))
+                .paymentMethod(paymentMethod)
                 .description(description)
                 .sourceId(receiptId)
                 .createdBy(createdBy)
@@ -509,9 +511,6 @@ public class CashTransactionService {
                 .amount(transaction.getAmount())
                 .paymentMethodDisplayName(paymentMethodDisplayName)
                 .statusDisplayName(resolveStatus(transaction).getDisplayName())
-                .paymentMethodDisplayName(transaction.getPaymentMethod() != null
-                        ? transaction.getPaymentMethod().getLabel()
-                        : "Chưa ghi nhận")
                 .build();
     }
 
