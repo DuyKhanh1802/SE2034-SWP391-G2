@@ -18,8 +18,8 @@ public class CashTransactionRequest {
     // Nhóm giao dịch: ALL hoặc một giá trị trong CashTransactionCategory.
     private String category = "ALL";
 
-    // Nguồn phát sinh: ALL hoặc một giá trị trong CashTransactionSourceType.
-    private String sourceType = "ALL";
+    // Phương thức thanh toán: ALL, CASH, CARD hoặc TRANSFER.
+    private String paymentMethod = "ALL";
 
     // Ngày bắt đầu để lọc giao dịch.
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

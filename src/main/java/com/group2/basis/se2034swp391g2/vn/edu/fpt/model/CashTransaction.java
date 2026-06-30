@@ -1,9 +1,9 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionSourceType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -45,9 +45,10 @@ public class CashTransaction {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "source_type", nullable = false, length = 30)
-    private CashTransactionSourceType sourceType;
+    @Column(name = "payment_method", length = 20)
+    private PaymentMethod paymentMethod;
 
+    // Id tham chieu sang bang payment hoac phieu nhap kho, tuy theo category.
     @Column(name = "source_id")
     private Long sourceId;
 

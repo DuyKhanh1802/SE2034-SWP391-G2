@@ -378,7 +378,8 @@ button,
 }
 
 .category-chip,
-.source-chip {
+.source-chip,
+.payment-method-chip {
     display: inline-flex;
     align-items: center;
     font-size: 13px;
@@ -453,6 +454,19 @@ button,
 
 .source-chip.manual {
     border-color: #94a3b8;
+}
+
+.payment-method-chip {
+    border-left: 3px solid #0f766e;
+    padding-left: 9px;
+    color: #0f766e;
+    font-weight: 600;
+}
+
+.payment-method-chip.empty {
+    border-color: #cbd5e1;
+    color: #64748b;
+    font-weight: 500;
 }
 
 .table-action-btn {

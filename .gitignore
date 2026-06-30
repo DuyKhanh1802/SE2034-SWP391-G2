@@ -32,6 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 
-# Ignore .properties files
-application.properties
 /scripts/

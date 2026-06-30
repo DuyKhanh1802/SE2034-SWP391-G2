@@ -1,8 +1,8 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Manager;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionSourceType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.CashTransaction;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CashTransactionCreateRequest;
@@ -43,7 +43,7 @@ public class CashTransactionController {
         model.addAttribute("searchRequest", searchRequest);
         model.addAttribute("transactionTypes", CashTransactionType.values());
         model.addAttribute("transactionCategories", CashTransactionCategory.values());
-        model.addAttribute("sourceTypes", CashTransactionSourceType.values());
+        model.addAttribute("paymentMethods", PaymentMethod.values());
         model.addAttribute("totalTransactions", response.getTotalTransactions());
         model.addAttribute("currentPage", response.getCurrentPage());
         model.addAttribute("totalPages", response.getTotalPages());
@@ -95,6 +95,9 @@ public class CashTransactionController {
             addHeaderAttributes(model, authentication, session, "Chi tiết dòng tiền");
             CashTransaction transaction = cashTransactionService.getTransaction(id);
             model.addAttribute("transaction", transaction);
+            model.addAttribute("inventoryReceipt", cashTransactionService.getInventoryReceiptForTransaction(transaction));
+            model.addAttribute("isPaymentTransaction", isPaymentCategory(transaction.getCategory()));
+            model.addAttribute("isInventoryTransaction", transaction.getCategory() == CashTransactionCategory.INVENTORY_PURCHASE);
             // Chỉ hiện form hủy khi transaction đủ điều kiện hủy.
             model.addAttribute("canCancel", cashTransactionService.canCancelManualVoucher(transaction));
             return "manager/transaction_detail";
@@ -141,5 +144,12 @@ public class CashTransactionController {
     private void addCreateScreenAttributes(Model model, CashTransactionCreateRequest request) {
         model.addAttribute("voucher", request);
         model.addAttribute("transactionTypes", CashTransactionType.values());
+        model.addAttribute("paymentMethods", PaymentMethod.values());
+    }
+
+    private boolean isPaymentCategory(CashTransactionCategory category) {
+        return category == CashTransactionCategory.DEPOSIT
+                || category == CashTransactionCategory.BOOKING_PAYMENT
+                || category == CashTransactionCategory.REFUND;
     }
 }
