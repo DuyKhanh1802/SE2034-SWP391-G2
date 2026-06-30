@@ -47,19 +47,22 @@ public class AdminUserViewService {
                 .filter(role -> role != null && role.getRoleName() != null)
                 .sorted((left, right) -> Integer.compare(getRoleOrder(left.getRoleName()), getRoleOrder(right.getRoleName())))
                 .map(role -> toRoleLabel(role.getRoleName()))
-                .collect(Collectors.joining(", "));
+                .findFirst()
+                .orElse("No role assigned");
     }
 
-    public List<Long> getSelectedRoleIds(User user) {
+    public Long getSelectedRoleId(User user) {
         if (user.getUserRoles() == null || user.getUserRoles().isEmpty()) {
-            return List.of();
+            return null;
         }
 
         return user.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .filter(role -> role != null && role.getId() != null)
+                .sorted((left, right) -> Integer.compare(getRoleOrder(left.getRoleName()), getRoleOrder(right.getRoleName())))
                 .map(role -> role.getId())
-                .toList();
+                .findFirst()
+                .orElse(null);
     }
 
     public String getGenderLabel(User user) {
