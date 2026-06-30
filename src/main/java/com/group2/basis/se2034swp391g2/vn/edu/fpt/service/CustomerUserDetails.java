@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,7 +26,9 @@ public class CustomerUserDetails implements UserDetails {
         user.getUserRoles().stream()
                 .map(userRole -> userRole.getRole())
                 .filter(role -> role != null && role.getRoleName() != null)
-                .forEach(role -> {
+                .sorted((left, right) -> Integer.compare(getRoleOrder(left.getRoleName()), getRoleOrder(right.getRoleName())))
+                .findFirst()
+                .ifPresent(role -> {
                     authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName().name()));
                     role.getRolePermissions().stream()
                             .map(rolePermission -> rolePermission.getPermission())
@@ -37,6 +40,17 @@ public class CustomerUserDetails implements UserDetails {
                 });
 
         return authorities;
+    }
+
+    private int getRoleOrder(RoleName roleName) {
+        return switch (roleName) {
+            case SYSTEM_ADMIN -> 1;
+            case HOTEL_ADMIN -> 2;
+            case MANAGER -> 3;
+            case STOREKEEPER -> 4;
+            case RECEPTIONIST -> 5;
+            case GUEST -> 6;
+        };
     }
 
     @Override

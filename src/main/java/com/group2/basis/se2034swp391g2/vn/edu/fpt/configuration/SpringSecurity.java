@@ -2,7 +2,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.configuration;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.constants.PermissionCode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.RoleSwitchController;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.context.annotation.Bean;
@@ -49,15 +48,12 @@ public class SpringSecurity {
                                 "/guest/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/user/switch-role").authenticated()
                         .requestMatchers(HttpMethod.GET, "/profile/*.css").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/edit").permitAll()
                         .requestMatchers(HttpMethod.POST, "/profile/update").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/**").hasAuthority(PermissionCode.PROFILE_VIEW)
                         .requestMatchers(HttpMethod.POST, "/profile/**").hasAuthority(PermissionCode.PROFILE_EDIT)
 
-                        .requestMatchers("/system-admin/role-permissions/**")
-                        .hasAuthority(PermissionCode.ROLE_PERMISSION_MANAGE)
                         .requestMatchers(HttpMethod.POST, "/system-admin/list-user/*/review")
                         .hasAuthority(PermissionCode.USER_APPROVE)
                         .requestMatchers(HttpMethod.GET, "/system-admin/list-user/*/edit")
@@ -149,11 +145,37 @@ public class SpringSecurity {
         return (request, response, authentication) -> {
             Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
 
-            RoleName activeRole = RoleSwitchController.resolveDefaultActiveRole(roles);
-            request.getSession(true).setAttribute(RoleSwitchController.CURRENT_ACTIVE_ROLE, activeRole.name());
-            request.getSession(true).setAttribute(RoleSwitchController.CURRENT_ACTIVE_ROLE_LABEL, RoleSwitchController.getRoleLabel(activeRole));
-            request.getSession(true).setAttribute(RoleSwitchController.AVAILABLE_ACTIVE_ROLE_OPTIONS, RoleSwitchController.getAvailableActiveRoleOptions(roles));
-            response.sendRedirect(RoleSwitchController.getDashboardPath(activeRole));
+            response.sendRedirect(getDashboardPath(resolveDefaultRole(roles)));
+        };
+    }
+
+    private RoleName resolveDefaultRole(Set<String> authorities) {
+        if (authorities.contains("ROLE_SYSTEM_ADMIN")) {
+            return RoleName.SYSTEM_ADMIN;
+        }
+        if (authorities.contains("ROLE_HOTEL_ADMIN")) {
+            return RoleName.HOTEL_ADMIN;
+        }
+        if (authorities.contains("ROLE_MANAGER")) {
+            return RoleName.MANAGER;
+        }
+        if (authorities.contains("ROLE_STOREKEEPER")) {
+            return RoleName.STOREKEEPER;
+        }
+        if (authorities.contains("ROLE_RECEPTIONIST")) {
+            return RoleName.RECEPTIONIST;
+        }
+        return RoleName.GUEST;
+    }
+
+    private String getDashboardPath(RoleName role) {
+        return switch (role) {
+            case SYSTEM_ADMIN -> "/system-admin/list-user";
+            case HOTEL_ADMIN -> "/hotel-admin/dashboard";
+            case MANAGER -> "/manager/dashboard";
+            case STOREKEEPER -> "/storekeeper/inventory";
+            case RECEPTIONIST -> "/receptionist/dashboard";
+            case GUEST -> "/page/home";
         };
     }
 
