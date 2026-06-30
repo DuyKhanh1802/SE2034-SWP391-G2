@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -131,6 +132,7 @@ class InventoryManagementServiceImportTest {
 
         assertThat(result.importedCount()).isEqualTo(1);
         assertThat(result.skippedCount()).isEqualTo(1);
+        assertThat(result.totalOpeningCost()).isEqualByComparingTo(new BigDecimal("22500"));
 
         ArgumentCaptor<InventoryItem> itemCaptor = ArgumentCaptor.forClass(InventoryItem.class);
         verify(inventoryItemRepository).save(itemCaptor.capture());
@@ -142,6 +144,55 @@ class InventoryManagementServiceImportTest {
         ArgumentCaptor<InventoryTransaction> transactionCaptor = ArgumentCaptor.forClass(InventoryTransaction.class);
         verify(inventoryTransactionRepository).save(transactionCaptor.capture());
         assertThat(transactionCaptor.getValue().getCreatedBy()).isSameAs(importer);
+        assertThat(transactionCaptor.getValue().getSourceType()).isEqualTo("RECEIPT_OPENING");
+    }
+
+    @Test
+    void importsOpeningStockWithExpiryAsReceiptBatch() throws Exception {
+        InventoryCategory category = InventoryCategory.builder()
+                .id(6L)
+                .name("Món ăn")
+                .isActive(true)
+                .build();
+        when(inventoryCategoryRepository.findByNameIgnoreCaseAndIsActiveTrue("Món ăn"))
+                .thenReturn(Optional.of(category));
+        when(inventoryItemRepository.existsByNameIgnoreCaseAndIsDeletedFalse("Sữa tươi"))
+                .thenReturn(false);
+        when(inventoryItemRepository.save(any())).thenAnswer(invocation -> {
+            InventoryItem item = invocation.getArgument(0);
+            item.setId(31L);
+            return item;
+        });
+        when(inventoryReceiptRepository.findTopByBatchCodeStartingWithOrderByBatchCodeDesc(any()))
+                .thenReturn(Optional.empty());
+        when(inventoryReceiptRepository.existsByBatchCode(any())).thenReturn(false);
+        when(inventoryReceiptRepository.saveAndFlush(any(InventoryReceipt.class))).thenAnswer(invocation -> {
+            InventoryReceipt receipt = invocation.getArgument(0);
+            if (receipt.getId() == null) {
+                receipt.setId(12L);
+            }
+            return receipt;
+        });
+
+        MockMultipartFile file = workbook(validHeaders(), new Object[][]{
+                {"Sữa tươi", "Món ăn", "hộp", 12, 3, 18000, LocalDate.now().plusDays(45).toString()}
+        });
+
+        InventoryManagementService.InventoryImportResult result = service.importItemsFromExcel(file, null);
+
+        assertThat(result.totalOpeningCost()).isEqualByComparingTo(new BigDecimal("216000"));
+
+        ArgumentCaptor<InventoryReceipt> receiptCaptor = ArgumentCaptor.forClass(InventoryReceipt.class);
+        verify(inventoryReceiptRepository, times(2)).saveAndFlush(receiptCaptor.capture());
+        InventoryReceipt savedReceipt = receiptCaptor.getAllValues().get(receiptCaptor.getAllValues().size() - 1);
+        assertThat(savedReceipt.getCode()).isEqualTo("IR-0012");
+        assertThat(savedReceipt.getBatchCode()).startsWith("LOT-");
+        assertThat(savedReceipt.getExpiryDate()).isEqualTo(LocalDate.now().plusDays(45));
+
+        ArgumentCaptor<InventoryTransaction> transactionCaptor = ArgumentCaptor.forClass(InventoryTransaction.class);
+        verify(inventoryTransactionRepository).save(transactionCaptor.capture());
+        assertThat(transactionCaptor.getValue().getSourceType()).isEqualTo("RECEIPT_OPENING");
+        assertThat(transactionCaptor.getValue().getSourceId()).isEqualTo(12L);
     }
 
     @Test
@@ -158,10 +209,11 @@ class InventoryManagementServiceImportTest {
         when(inventoryReceiptRepository.findTopByBatchCodeStartingWithOrderByBatchCodeDesc("LOT-260625-"))
                 .thenReturn(Optional.empty());
         when(inventoryReceiptRepository.existsByBatchCode("LOT-260625-001")).thenReturn(false);
-        when(inventoryReceiptRepository.existsByCode(any())).thenReturn(false);
-        when(inventoryReceiptRepository.save(any(InventoryReceipt.class))).thenAnswer(invocation -> {
+        when(inventoryReceiptRepository.saveAndFlush(any(InventoryReceipt.class))).thenAnswer(invocation -> {
             InventoryReceipt receipt = invocation.getArgument(0);
-            receipt.setId(9L);
+            if (receipt.getId() == null) {
+                receipt.setId(9L);
+            }
             return receipt;
         });
         when(financialChargeService.getInventoryVatRate()).thenReturn(BigDecimal.ZERO);
@@ -173,8 +225,10 @@ class InventoryManagementServiceImportTest {
                 receiptDate.plusDays(10), PaymentMethod.TRANSFER, null);
 
         ArgumentCaptor<InventoryReceipt> receiptCaptor = ArgumentCaptor.forClass(InventoryReceipt.class);
-        verify(inventoryReceiptRepository).save(receiptCaptor.capture());
-        assertThat(receiptCaptor.getValue().getBatchCode()).isEqualTo("LOT-260625-001");
+        verify(inventoryReceiptRepository, times(2)).saveAndFlush(receiptCaptor.capture());
+        InventoryReceipt savedReceipt = receiptCaptor.getAllValues().get(receiptCaptor.getAllValues().size() - 1);
+        assertThat(savedReceipt.getCode()).isEqualTo("IR-0009");
+        assertThat(savedReceipt.getBatchCode()).isEqualTo("LOT-260625-001");
     }
 
     @Test
@@ -203,7 +257,8 @@ class InventoryManagementServiceImportTest {
                 "don_vi",
                 "ton_dau_ky",
                 "nguong_canh_bao",
-                "gia_von_truoc_vat"
+                "gia_von_truoc_vat",
+                "han_su_dung"
         };
     }
 

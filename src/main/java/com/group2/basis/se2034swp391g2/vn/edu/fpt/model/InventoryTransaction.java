@@ -64,6 +64,7 @@ public class InventoryTransaction {
         }
         return switch (sourceType) {
             case "OPENING" -> "Tồn đầu kỳ";
+            case "RECEIPT_OPENING" -> "Nhập tồn kho khởi tạo";
             case "INVENTORY_RECEIPT" -> "Phiếu nhập kho";
             case "INVENTORY_DISPOSAL" -> "Hủy hàng hóa";
             case "FOLIO_ITEM" -> "Tiêu hao dịch vụ";
@@ -79,6 +80,9 @@ public class InventoryTransaction {
         }
         if ("INVENTORY_RECEIPT".equals(sourceType) && description.startsWith("Nhập hàng IR-")) {
             return "Nhập kho từ phiếu nhập";
+        }
+        if ("RECEIPT_OPENING".equals(sourceType)) {
+            return "Nhập tồn kho khởi tạo từ file Excel";
         }
         return description;
     }
