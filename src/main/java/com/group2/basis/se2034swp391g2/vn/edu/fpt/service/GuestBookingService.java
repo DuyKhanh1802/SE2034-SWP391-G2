@@ -132,7 +132,7 @@ public class GuestBookingService {
         view.setSpecialRequests(booking.getSpecialRequests());
 
         List<FolioItem> selectedItems =
-                folioItemRepository.findByBooking_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(booking.getId());
+                folioItemRepository.findByBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());;
 
         view.setSelectedServices(mapSelectedServices(selectedItems));
 
@@ -140,11 +140,9 @@ public class GuestBookingService {
                 paymentRepository.findByBooking_IdAndStatusOrderByPaidAtAsc(booking.getId(), PaymentStatus.SUCCESS);
 
         BigDecimal baseBookingTotal = firstNonNull(
-                booking.getGrandTotal(),
-                booking.getTotalAmount(),
                 detail.getTotalAmount(),
                 BigDecimal.ZERO
-        );
+        );;
 
         BigDecimal selectedServiceTotal = selectedItems.stream()
                 .map(item -> zeroIfNull(item.getTotalAmount()))
@@ -211,11 +209,13 @@ public class GuestBookingService {
         return result;
     }
     @Transactional
-    public void addService(Long bookingId, Long serviceId) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking"));
+    public void addService(Long bookingDetailId, Long serviceId) {
+        BookingDetail detail = bookingDetailRepository.findById(bookingDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin phòng"));
 
-        if (Boolean.TRUE.equals(booking.getIsDeleted())) {
+        Booking booking = detail.getBooking();
+
+        if (booking == null || Boolean.TRUE.equals(booking.getIsDeleted())) {
             throw new IllegalArgumentException("Booking không hợp lệ");
         }
 
@@ -228,12 +228,13 @@ public class GuestBookingService {
         }
 
         FolioItem item = folioItemRepository
-                .findByBooking_IdAndService_IdAndIsVoidedFalse(bookingId, serviceId)
+                .findByBookingDetail_IdAndService_IdAndIsVoidedFalse(bookingDetailId, serviceId)
                 .orElse(null);
 
         if (item == null) {
             item = new FolioItem();
             item.setBooking(booking);
+            item.setBookingDetail(detail);
             item.setService(service);
             item.setDescription(service.getName());
             item.setItemType(resolveFolioItemType(service));
@@ -251,8 +252,8 @@ public class GuestBookingService {
     }
 
     @Transactional
-    public void increaseService(Long bookingId, Long folioItemId) {
-        FolioItem item = getValidGuestServiceItem(bookingId, folioItemId);
+    public void increaseService(Long bookingDetailId, Long folioItemId) {
+        FolioItem item = getValidGuestServiceItem(bookingDetailId, folioItemId);
 
         item.setQuantity(item.getQuantity() == null ? 1 : item.getQuantity() + 1);
 
@@ -261,8 +262,8 @@ public class GuestBookingService {
     }
 
     @Transactional
-    public void decreaseService(Long bookingId, Long folioItemId) {
-        FolioItem item = getValidGuestServiceItem(bookingId, folioItemId);
+    public void decreaseService(Long bookingDetailId, Long folioItemId) {
+        FolioItem item = getValidGuestServiceItem(bookingDetailId, folioItemId);
 
         Integer currentQuantity = item.getQuantity() == null ? 1 : item.getQuantity();
 
@@ -277,8 +278,8 @@ public class GuestBookingService {
     }
 
     @Transactional
-    public void removeService(Long bookingId, Long folioItemId) {
-        FolioItem item = getValidGuestServiceItem(bookingId, folioItemId);
+    public void removeService(Long bookingDetailId, Long folioItemId) {
+        FolioItem item = getValidGuestServiceItem(bookingDetailId, folioItemId);
 
         item.setIsVoided(true);
         item.setVoidedAt(Instant.now());
@@ -287,9 +288,9 @@ public class GuestBookingService {
         folioItemRepository.save(item);
     }
 
-    private FolioItem getValidGuestServiceItem(Long bookingId, Long folioItemId) {
+    private FolioItem getValidGuestServiceItem(Long bookingDetailId, Long folioItemId) {
         return folioItemRepository
-                .findByIdAndBooking_IdAndServiceIsNotNullAndIsVoidedFalse(folioItemId, bookingId)
+                .findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(folioItemId, bookingDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ đã chọn"));
     }
 

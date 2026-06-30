@@ -22,8 +22,11 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
             """)
     List<Object[]> findTopServiceSales(Pageable pageable);
 
-    List<FolioItem> findByBooking_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(Long bookingId);
-    Optional<FolioItem> findByBooking_IdAndService_IdAndIsVoidedFalse(Long bookingId, Long serviceId);
-    Optional<FolioItem> findByIdAndBooking_IdAndServiceIsNotNullAndIsVoidedFalse(Long id, Long bookingId);
+    List<FolioItem> findByBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(Long bookingDetailId);
+
+    Optional<FolioItem> findByBookingDetail_IdAndService_IdAndIsVoidedFalse(Long bookingDetailId, Long serviceId);
+
+    Optional<FolioItem> findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(Long folioItemId, Long bookingDetailId);
+
 
 }

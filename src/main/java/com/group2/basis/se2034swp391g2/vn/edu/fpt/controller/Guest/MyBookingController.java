@@ -5,8 +5,8 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.GuestMyBook
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.GuestRoomSession;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.GuestBookingService;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import lombok.*;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,21 +17,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 @RequestMapping("/guest")
 public class MyBookingController {
+
     private final GuestBookingService guestBookingService;
 
     @GetMapping("/my-booking")
     public String myBooking(@RequestParam(required = false) String category,
                             HttpSession session,
                             Model model) {
-        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+
+        GuestRoomSession guestRoomSession =
+                (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
 
         if (guestRoomSession == null) {
             return "redirect:/guest/login";
         }
 
-        GuestMyBookingView myBooking = guestBookingService.getMyBooking(guestRoomSession.getBookingDetailId());
+        Long bookingDetailId = guestRoomSession.getBookingDetailId();
 
-        String selectedCategory = category == null || category.isBlank() ? "ALL" : category.trim().toUpperCase();
+        GuestMyBookingView myBooking = guestBookingService.getMyBooking(bookingDetailId);
+
+        String selectedCategory = category == null || category.isBlank()
+                ? "ALL"
+                : category.trim().toUpperCase();
+
         model.addAttribute("guestSession", guestRoomSession);
         model.addAttribute("myBooking", myBooking);
         model.addAttribute("services", guestBookingService.getAvailableService(selectedCategory));
@@ -40,56 +48,75 @@ public class MyBookingController {
         return "guest/my_booking";
     }
 
-    @PostMapping("/services/increase")
-    public String increaseService(@RequestParam Long folioItemId,
-                                  HttpSession session
-    ) {
-        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+    @PostMapping("/services/add")
+    public String addService(@RequestParam Long serviceId,
+                             HttpSession session) {
+
+        GuestRoomSession guestRoomSession =
+                (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+
         if (guestRoomSession == null) {
             return "redirect:/guest/login";
         }
 
-        guestBookingService.increaseService(guestRoomSession.getBookingId(), folioItemId);
+        Long bookingDetailId = guestRoomSession.getBookingDetailId();
+
+        guestBookingService.addService(bookingDetailId, serviceId);
+
         return "redirect:/guest/my-booking";
     }
 
-    @PostMapping("/services/add")
-    public String addService(@RequestParam Long serviceId,
-                             HttpSession session
-    ) {
-        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+    @PostMapping("/services/increase")
+    public String increaseService(@RequestParam Long folioItemId,
+                                  HttpSession session) {
+
+        GuestRoomSession guestRoomSession =
+                (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+
         if (guestRoomSession == null) {
             return "redirect:/guest/login";
         }
 
-        guestBookingService.addService(guestRoomSession.getBookingId(), serviceId);
+        Long bookingDetailId = guestRoomSession.getBookingDetailId();
+
+        guestBookingService.increaseService(bookingDetailId, folioItemId);
+
         return "redirect:/guest/my-booking";
     }
 
     @PostMapping("/services/decrease")
     public String decrease(@RequestParam Long folioItemId,
-                           HttpSession session
-    ) {
-        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+                           HttpSession session) {
+
+        GuestRoomSession guestRoomSession =
+                (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+
         if (guestRoomSession == null) {
             return "redirect:/guest/login";
         }
 
-        guestBookingService.decreaseService(guestRoomSession.getBookingId(), folioItemId);
+        Long bookingDetailId = guestRoomSession.getBookingDetailId();
+
+        guestBookingService.decreaseService(bookingDetailId, folioItemId);
+
         return "redirect:/guest/my-booking";
     }
 
     @PostMapping("/services/remove")
     public String remove(@RequestParam Long folioItemId,
-                         HttpSession session
-    ) {
-        GuestRoomSession guestRoomSession = (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+                         HttpSession session) {
+
+        GuestRoomSession guestRoomSession =
+                (GuestRoomSession) session.getAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+
         if (guestRoomSession == null) {
             return "redirect:/guest/login";
         }
 
-        guestBookingService.removeService(guestRoomSession.getBookingId(), folioItemId);
+        Long bookingDetailId = guestRoomSession.getBookingDetailId();
+
+        guestBookingService.removeService(bookingDetailId, folioItemId);
+
         return "redirect:/guest/my-booking";
     }
-
 }
