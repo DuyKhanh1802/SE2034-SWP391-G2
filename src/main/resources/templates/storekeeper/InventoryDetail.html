@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="page-title">
+        <h1>Chi tiết hàng hóa</h1>
+        <p>Thông tin tồn kho, chi phí bình quân và các liên kết tiêu hao của hàng hóa.</p>
+    </section>
+
+    <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+
+    <section class="admin-card detail-header">
+        <div>
+            <h2 th:text="${item.name}">Hàng hóa</h2>
+        </div>
+        <div class="detail-actions">
+            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory}"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history(itemId=${item.id})}"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</a>
+            <a class="btn-admin-primary" th:href="@{/storekeeper/inventory/{id}/edit(id=${item.id})}"><i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa</a>
+        </div>
+    </section>
+
+    <section class="summary-grid">
+        <div class="summary-card"><span>Tồn đầu kỳ</span><strong th:text="${@inventoryQuantityFormatter.format(item.openingQuantity) + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tổng nhập</span><strong th:text="${@inventoryQuantityFormatter.format(totalIn) + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tổng xuất</span><strong th:text="${@inventoryQuantityFormatter.format(totalOut) + ' ' + item.unit}">0</strong></div>
+        <div class="summary-card"><span>Tồn hiện tại</span><strong th:classappend="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' text-danger'" th:text="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}">0</strong></div>
+    </section>
+
+    <section class="admin-card">
+        <div class="detail-grid">
+            <div class="detail-item"><span>Mã hàng</span><strong th:text="${item.code}"></strong></div>
+            <div class="detail-item"><span>Loại hàng</span><strong th:text="${item.categoryName ?: 'Chưa phân loại'}"></strong></div>
+            <div class="detail-item"><span>Đơn vị tính</span><strong th:text="${item.unit}"></strong></div>
+            <div class="detail-item"><span>Mức tồn tối thiểu</span><strong th:text="${@inventoryQuantityFormatter.format(item.minimumQuantity) + ' ' + item.unit}"></strong></div>
+            <div class="detail-item"><span>Giá vốn bình quân</span><strong th:text="${#numbers.formatDecimal(item.unitCost, 0, 'POINT', 0, 'COMMA') + ' VND'}"></strong></div>
+            <div class="detail-item"><span>Trạng thái</span>
+                <strong th:if="${item.currentQuantity.signum() == 0}" class="text-danger">Hết hàng</strong>
+                <strong th:if="${item.currentQuantity.signum() > 0 and item.currentQuantity.compareTo(item.minimumQuantity) <= 0}"
+                        class="text-warning">Sắp hết hàng</strong>
+                <strong th:if="${item.currentQuantity.compareTo(item.minimumQuantity) > 0}" class="text-success">Tồn kho ổn định</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="px-4 pt-4">
+            <span class="eyebrow">RECEIPT BATCHES</span>
+            <h2 class="modal-title">Lô nhập gần đây</h2>
+            <p class="form-hint">Hạn sử dụng được theo dõi theo phiếu nhập; tồn kho hiện vẫn được quản lý tổng theo hàng hóa.</p>
+        </div>
+        <div class="table-responsive mt-3">
+            <table class="table admin-table">
+                <thead>
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Mã lô</th>
+                    <th>Ngày nhập</th>
+                    <th>Số lượng nhập</th>
+                    <th>Hạn sử dụng</th>
+                    <th>Trạng thái hạn</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="receipt : ${receipts}">
+                    <td th:text="${receipt.code}"></td>
+                    <td th:text="${receipt.batchCode ?: '—'}"></td>
+                    <td th:text="${#temporals.format(receipt.receiptDate, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${@inventoryQuantityFormatter.format(receipt.quantity) + ' ' + item.unit}"></td>
+                    <td th:text="${receipt.expiryDate != null ? #temporals.format(receipt.expiryDate, 'dd/MM/yyyy') : 'Không khai báo'}"></td>
+                    <td>
+                        <span th:if="${receipt.expiryDate == null}" class="expiry-status-none">Không theo dõi</span>
+                        <span th:if="${receipt.expired}" class="expiry-status expiry-expired">Đã hết hạn</span>
+                        <span th:if="${!receipt.expired and receipt.expiringSoon}" class="expiry-status expiry-soon">Sắp hết hạn</span>
+                        <span th:if="${receipt.expiryDate != null and !receipt.expired and !receipt.expiringSoon}"
+                              class="expiry-status expiry-valid">Còn hạn</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(receipts)}">
+                    <td colspan="6" class="text-center py-5 text-muted">Chưa có phiếu nhập cho hàng hóa này.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="px-4 pt-4"><span class="eyebrow">CONSUMPTION MAPPINGS</span><h2 class="modal-title">Liên kết tiêu hao</h2></div>
+        <div class="table-responsive mt-3">
+            <table class="table admin-table">
+                <thead><tr><th>Nguồn sử dụng</th><th>Loại</th><th>Tiêu hao/lần</th><th>Chi phí/lần</th></tr></thead>
+                <tbody>
+                <tr th:each="mapping : ${mappings}">
+                    <td th:text="${mapping.service.name}"></td><td>Dịch vụ</td>
+                    <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerUse) + ' ' + item.unit}"></td>
+                    <td th:text="${#numbers.formatDecimal(mapping.quantityPerUse.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}"></td>
+                </tr>
+                <tr th:each="mapping : ${refreshMappings}">
+                    <td th:text="${mapping.roomType.name}"></td><td>Lấp đồ phòng</td>
+                    <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerRefresh) + ' ' + item.unit}"></td>
+                    <td th:text="${#numbers.formatDecimal(mapping.quantityPerRefresh.multiply(item.unitCost), 0, 'POINT', 0, 'COMMA') + ' VND'}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(mappings) and #lists.isEmpty(refreshMappings)}"><td colspan="4" class="text-center py-5 text-muted">Chưa có liên kết tiêu hao.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

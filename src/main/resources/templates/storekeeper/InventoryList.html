@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="page-title">
+        <h1>Quản lý kho hàng</h1>
+        <p>Theo dõi số lượng tồn, ngưỡng tối thiểu và thực hiện các nghiệp vụ nhập kho trên một màn hình.</p>
+    </section>
+
+    <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${configurationError}" class="admin-alert warning"
+         th:text="${configurationError + ' Chức năng lập phiếu nhập tạm thời bị khóa.'}"></div>
+
+    <section class="admin-card">
+        <div class="inventory-toolbar mb-4">
+            <div>
+                <h2>Danh sách hàng hóa</h2>
+            </div>
+            <div class="toolbar-actions">
+                <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history}">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử kho
+                </a>
+                <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="fa-solid fa-file-import"></i> Import hàng hóa
+                </button>
+                <button class="btn-admin-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal"
+                        th:disabled="${!financialChargeConfigured}">
+                    <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
+                </button>
+            </div>
+        </div>
+
+        <form class="inventory-filters" method="get" th:action="@{/storekeeper/inventory}">
+            <label class="search-control">
+                <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+                <input name="keyword" th:value="${keyword}" placeholder="Tìm theo tên hàng hóa...">
+            </label>
+            <select class="filter-control" name="categoryId">
+                <option value="">Tất cả loại hàng</option>
+                <option th:each="categoryOption : ${categories}"
+                        th:value="${categoryOption.id}"
+                        th:text="${categoryOption.name}"
+                        th:selected="${categoryOption.id == selectedCategoryId}"></option>
+            </select>
+            <select class="filter-control" name="stockStatus">
+                <option value="ALL" th:selected="${stockStatus == null or stockStatus == 'ALL'}">Tất cả tồn kho</option>
+                <option value="OUT_OF_STOCK" th:selected="${stockStatus == 'OUT_OF_STOCK'}">Hết hàng</option>
+                <option value="LOW" th:selected="${stockStatus == 'LOW'}">Sắp hết hàng</option>
+                <option value="NORMAL" th:selected="${stockStatus == 'NORMAL'}">Tồn kho ổn định</option>
+            </select>
+            <input type="hidden" name="size" th:value="${pageSize}">
+            <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
+        </form>
+
+        <div th:if="${!#lists.isEmpty(expiringSoonItemCodes)}" class="admin-alert warning mt-3 mb-0">
+            Có hàng hoá sắp hết hạn, cần nhập lô hàng mới:
+            <strong th:text="${expiringSoonItemCodesText}"></strong>.
+        </div>
+    </section>
+
+    <section class="admin-card p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table admin-table inventory-items-table align-middle">
+                <thead>
+                <tr>
+                    <th>Mã hàng</th>
+                    <th>Tên hàng hóa</th>
+                    <th>Loại</th>
+                    <th class="inventory-cell-center">Đơn vị</th>
+                    <th class="inventory-cell-center">Tồn hiện tại</th>
+                    <th class="inventory-cell-center">Trạng thái</th>
+                    <th class="inventory-cell-center">HSD lô gần nhất</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${items}">
+                    <td><span class="item-code" th:text="${item.code}">IT-0001</span></td>
+                    <td><strong th:text="${item.name}">Hàng hóa</strong></td>
+                    <td th:text="${item.categoryName ?: 'Chưa phân loại'}">Loại</td>
+                    <td class="inventory-cell-center" th:text="${item.unit}">Cái</td>
+                    <td class="inventory-cell-center">
+                        <span class="quantity"
+                              th:classappend="${item.currentQuantity.signum() == 0} ? ' out' : (${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' low')"
+                              th:text="${@inventoryQuantityFormatter.format(item.currentQuantity)}">0</span>
+                    </td>
+                    <td class="inventory-cell-center">
+                        <span th:if="${item.currentQuantity.signum() == 0}"
+                              class="stock-status-text stock-status-out">Hết hàng</span>
+                        <span th:if="${item.currentQuantity.signum() > 0 and item.currentQuantity.compareTo(item.minimumQuantity) <= 0}"
+                              class="stock-status-text stock-status-low">Sắp hết hàng</span>
+                        <span th:if="${item.currentQuantity.compareTo(item.minimumQuantity) > 0}"
+                              class="stock-status-text stock-status-normal">Ổn định</span>
+                    </td>
+                    <td class="inventory-cell-center">
+                        <span th:if="${item.latestBatchExpiryDate == null}"
+                              class="expiry-status-none">Không khai báo</span>
+                        <span th:if="${item.expiryStatus == 'EXPIRED'}"
+                              class="expiry-status expiry-expired"
+                              th:text="${#temporals.format(item.latestBatchExpiryDate, 'dd/MM/yyyy') + ' · Hết hạn'}"></span>
+                        <span th:if="${item.expiryStatus == 'EXPIRING_SOON'}"
+                              class="expiry-status expiry-soon"
+                              th:text="${#temporals.format(item.latestBatchExpiryDate, 'dd/MM/yyyy') + ' · Sắp hết hạn'}"></span>
+                        <span th:if="${item.expiryStatus == 'VALID'}"
+                              class="expiry-status expiry-valid"
+                              th:text="${#temporals.format(item.latestBatchExpiryDate, 'dd/MM/yyyy')}"></span>
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/{id}(id=${item.id})}"
+                               title="Xem chi tiết">
+                                <i class="fa-regular fa-eye"></i>
+                            </a>
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/{id}/edit(id=${item.id})}"
+                               title="Chỉnh sửa">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </a>
+                            <a class="action-btn" th:href="@{/storekeeper/inventory/history(itemId=${item.id})}"
+                               title="Lịch sử biến động">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(items)}">
+                    <td colspan="8" class="text-center py-5 text-muted">Không tìm thấy hàng hóa phù hợp.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
+            <div class="text-muted small">
+                <span th:text="${totalElements}">0</span> hàng hóa
+            </div>
+            <nav th:if="${totalPages > 1}" aria-label="Phân trang kho hàng">
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
+                        <a class="page-link"
+                           th:href="@{/storekeeper/inventory(page=${currentPage - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${pageNumber == currentPage} ? ' active'">
+                        <a class="page-link"
+                           th:href="@{/storekeeper/inventory(page=${pageNumber},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                           th:text="${pageNumber + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
+                        <a class="page-link"
+                           th:href="@{/storekeeper/inventory(page=${currentPage + 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="@{/storekeeper/inventory/items/import}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <div><span class="eyebrow">EXCEL IMPORT</span>
+                            <h2 class="modal-title">Import hàng hóa</h2></div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="eyebrow mb-2 d-block">FILE DỮ LIỆU (.XLSX)</label>
+                        <input class="form-control-admin" type="file" name="file" accept=".xlsx" required>
+                        <p class="form-hint">
+                            Dùng đúng 6 cột: <code>ten_hang</code>, <code>loai</code>, <code>don_vi</code>,
+                            <code>ton_dau_ky</code>, <code>nguong_canh_bao</code>, <code>gia_von_truoc_vat</code>.
+                            Tên, loại và đơn vị là bắt buộc. Số lượng tối đa 2 chữ số thập phân;
+                            giá vốn là số nguyên không âm và không dùng dấu phân cách hàng nghìn.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn-admin-primary">Import Excel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="receiptForm" th:action="@{/storekeeper/inventory/receipts}" method="post"
+                      th:attr="data-vat-rate=${inventoryVatRate},data-today=${today}">
+                    <div class="modal-header">
+                        <div><span class="eyebrow">INVENTORY RECEIPT</span>
+                            <h2 class="modal-title">Lập phiếu nhập</h2></div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body admin-form">
+                        <div>
+                            <label>Hàng hóa</label>
+                            <select id="receiptItemSelect" class="form-control-admin" name="itemId"
+                                    data-options-url="/storekeeper/inventory/items/options" required>
+                                <option value="" selected disabled>Chọn hàng hóa</option>
+                            </select>
+                        </div>
+                        <div class="form-grid">
+                            <div><label>Số lượng</label><input id="receiptQuantity" class="form-control-admin"
+                                                               type="number" step="0.01" min="0.01" name="quantity"
+                                                               required></div>
+                            <div><label>Đơn giá trước VAT</label><input id="receiptUnitCost" class="form-control-admin"
+                                                                        type="number" step="1" min="1" name="unitCost"
+                                                                        required></div>
+                        </div>
+                        <div><label>Thuế VAT</label><input class="form-control-admin"
+                                                           th:value="${inventoryVatRate + '%'}" disabled></div>
+                        <div>
+                            <label>Phương thức thanh toán</label>
+                            <select class="form-control-admin" name="paymentMethod" required>
+                                <option value="CASH">Tiền mặt</option>
+                                <option value="TRANSFER">Chuyển khoản</option>
+                            </select>
+                        </div>
+                        <div class="form-grid">
+                            <div><label>Tiền VAT dự kiến</label><input id="receiptVatAmount" class="form-control-admin"
+                                                                       value="0 VND" disabled></div>
+                            <div><label>Tổng thanh toán dự kiến</label><input id="receiptTotalCost"
+                                                                              class="form-control-admin" value="0 VND"
+                                                                              disabled></div>
+                        </div>
+                        <label class="expiry-toggle">
+                            <input id="trackExpiry" type="checkbox">
+                            <span>Hạn sử dụng</span>
+                        </label>
+                        <div id="expiryFields" class="form-grid" style="display: none;">
+                            <div>
+                                <label>Mã lô</label>
+                                <input id="receiptBatchCode" class="form-control-admin" name="batchCode" maxlength="50"
+                                       readonly placeholder="Tự sinh theo ngày nhập kho">
+                            </div>
+                            <div>
+                                <label>Hạn sử dụng</label>
+                                <input id="receiptExpiryDate" class="form-control-admin" type="date" name="expiryDate">
+                            </div>
+                        </div>
+                        <div id="receiptValidationMessage" class="admin-alert warning mb-0"
+                             style="display: none;"></div>
+                        <div><label>Nhà cung cấp</label><input class="form-control-admin" name="supplier"
+                                                               maxlength="150"></div>
+                        <div><label>Ghi chú</label><textarea class="form-control-admin" name="note" rows="3"
+                                                             maxlength="300"></textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn-admin-primary">Tạo phiếu nhập</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</main>
+<th:block layout:fragment="scripts">
+    <script th:src="@{/storekeeper/js/Inventory.js}"></script>
+</th:block>
+</body>
+</html>

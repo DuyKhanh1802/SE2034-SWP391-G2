@@ -23,14 +23,14 @@
         </button>
 
             <ul class="dropdown-menu dropdown-menu-end profile-menu">
-                <li sec:authorize="hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN','MANAGER','RECEPTIONIST')">
+                <li sec:authorize="hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN','MANAGER','RECEPTIONIST','STOREKEEPER')">
                     <span class="dropdown-item-text profile-active-role">
                         <span>Vai trò hiện tại:</span>
                         <strong th:text="${session.CURRENT_ACTIVE_ROLE_LABEL ?: 'Chưa chọn'}">Chưa chọn</strong>
                     </span>
                 </li>
 
-                <li sec:authorize="hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN','MANAGER','RECEPTIONIST')">
+                <li sec:authorize="hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN','MANAGER','RECEPTIONIST','STOREKEEPER')">
                     <hr class="dropdown-divider">
                 </li>
 
