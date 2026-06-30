@@ -153,17 +153,16 @@
             <form th:action="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
                   th:object="${updateRequest}"
                   method="post"
-                  class="role-form multi-role-form">
+                  class="role-form single-role-form">
                 <input type="hidden" name="roleUpdateRequested" value="true">
                 <div class="role-check-list">
                     <label class="role-check-item"
                            th:each="roleOption : ${roleOptions}"
                            th:for="${'role-' + roleOption.key}">
-                        <input type="checkbox"
+                        <input type="radio"
                                th:id="${'role-' + roleOption.key}"
-                               th:field="*{roleIds}"
-                               th:value="${roleOption.key}"
-                               th:data-role-code="${roleCodesById[roleOption.key]}">
+                               th:field="*{roleId}"
+                               th:value="${roleOption.key}">
                         <span th:text="${roleOption.value}">Vai trò</span>
                     </label>
                 </div>

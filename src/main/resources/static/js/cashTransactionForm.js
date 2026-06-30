@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const amountInput = document.getElementById("amount");
+    const paymentMethodInput = document.getElementById("paymentMethod");
     const descriptionInput = document.getElementById("description");
 
     function setAmountMessage() {
@@ -20,6 +21,14 @@ document.addEventListener("DOMContentLoaded", function () {
         amountInput.setCustomValidity("");
     }
 
+    function setPaymentMethodMessage() {
+        if (!paymentMethodInput.value) {
+            paymentMethodInput.setCustomValidity("Vui lòng chọn phương thức thanh toán.");
+            return;
+        }
+        paymentMethodInput.setCustomValidity("");
+    }
+
     function setDescriptionMessage() {
         if (!descriptionInput.value.trim()) {
             descriptionInput.setCustomValidity("Vui lòng nhập nội dung phiếu.");
@@ -29,16 +38,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     amountInput.addEventListener("input", setAmountMessage);
+    paymentMethodInput.addEventListener("change", setPaymentMethodMessage);
     descriptionInput.addEventListener("input", setDescriptionMessage);
     amountInput.addEventListener("invalid", setAmountMessage);
+    paymentMethodInput.addEventListener("invalid", setPaymentMethodMessage);
     descriptionInput.addEventListener("invalid", setDescriptionMessage);
 
-    // Gắn sẵn lời nhắc tiếng Việt để popup của trình duyệt không hiện tiếng Anh.
+    // Gan san loi nhac tieng Viet de popup cua trinh duyet khong hien tieng Anh.
     setAmountMessage();
+    setPaymentMethodMessage();
     setDescriptionMessage();
 
     voucherForm.addEventListener("submit", function (event) {
         setAmountMessage();
+        setPaymentMethodMessage();
         setDescriptionMessage();
 
         if (!voucherForm.checkValidity()) {

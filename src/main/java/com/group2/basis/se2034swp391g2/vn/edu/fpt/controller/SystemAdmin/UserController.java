@@ -133,13 +133,12 @@ public class UserController {
 
         AccountUpdateRequest updateRequest = new AccountUpdateRequest();
         updateRequest.setIsActive(user.getIsActive());
-        updateRequest.setRoleIds(adminUserViewService.getSelectedRoleIds(user));
+        updateRequest.setRoleId(adminUserViewService.getSelectedRoleId(user));
 
         model.addAttribute("user", user);
         model.addAttribute("displayName", DisplayUtils.formatDisplayName(user));
         model.addAttribute("roleLabel", adminUserViewService.getRoleLabel(user));
         model.addAttribute("roleOptions", adminUserViewService.getRoleOptions());
-        model.addAttribute("roleCodesById", adminUserViewService.getRoleCodesById());
         model.addAttribute("updateRequest", updateRequest);
         model.addAttribute("pageTitle", "Chỉnh sửa người dùng");
         return "system_admin/EditUser";
