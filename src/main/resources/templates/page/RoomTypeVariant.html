@@ -392,6 +392,29 @@
                                 <p class="description" th:text="${room.description}">
                                     Không gian phòng sang trọng với tầm nhìn đẹp và tiện nghi cao cấp.
                                 </p>
+
+                                <div class="room-availability">
+    <span th:if="${checkInDate == null or checkOutDate == null}"
+          class="availability-badge neutral">
+        Chọn ngày để xem số phòng còn trống
+    </span>
+
+                                    <span th:if="${checkInDate != null and checkOutDate != null
+                  and room.availableRooms != null
+                  and room.availableRooms <= 2}"
+                                          class="availability-badge danger"
+                                          th:text="|Chỉ còn ${room.availableRooms} phòng|">
+        Chỉ còn 2 phòng
+    </span>
+
+                                    <span th:if="${checkInDate != null and checkOutDate != null
+                  and room.availableRooms != null
+                  and room.availableRooms > 2}"
+                                          class="availability-badge success"
+                                          th:text="|Còn ${room.availableRooms} phòng|">
+        Còn 5 phòng
+    </span>
+                                </div>
                             </div>
 
                             <div class="room-links">

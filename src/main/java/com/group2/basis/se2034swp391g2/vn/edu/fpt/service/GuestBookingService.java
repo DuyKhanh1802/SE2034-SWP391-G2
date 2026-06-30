@@ -31,8 +31,8 @@ public class GuestBookingService {
     private final PaymentRepository paymentRepository;
     private final ImageRepository imageRepository;
 
-    private static final BigDecimal SERVICE_CHARGE_RATE = BigDecimal.valueOf(5);
-    private static final BigDecimal VAT_RATE = BigDecimal.valueOf(8);
+    private static final BigDecimal SERVICE_CHARGE_RATE = BigDecimal.valueOf(0.05);
+    private static final BigDecimal VAT_RATE = BigDecimal.valueOf(0.08);
     private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
     private static final boolean TAX_ON_SERVICE_CHARGE = true;
