@@ -100,7 +100,7 @@
         }
 
 
-        @GetMapping("room-variants/{variantId}")
+        @GetMapping("/room-variants/{variantId}")
       public String viewRoomTypeVariantDetail(
               @PathVariable Long variantId,
               @RequestParam(required = false)

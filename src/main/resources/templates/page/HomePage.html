@@ -190,7 +190,9 @@
                                     </p>
 
                                     <div class="card-actions">
-                                        <a th:href="@{/portal/room-code}" class="text-link">ĐẶT NGAY</a>
+                                        <div class="room-category-reserve">
+                                            <a th:href="@{/page/rooms}" class="text-link">ĐẶT NGAY</a>
+                                        </div>
                                         <a th:href="@{/services/{id}(id=${service.id})}" class="text-link muted">CHI TIẾT</a>
                                     </div>
                                 </div>
