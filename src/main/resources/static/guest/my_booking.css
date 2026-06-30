@@ -759,4 +759,12 @@ td {
     color: #8a6a35;
     font-size: 12px;
 }
-
+.status-text {
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 14px;
+}

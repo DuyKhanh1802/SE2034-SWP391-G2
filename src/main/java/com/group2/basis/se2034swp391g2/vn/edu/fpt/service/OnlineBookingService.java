@@ -388,7 +388,6 @@ public class OnlineBookingService {
         }
 
         List<BookingDetail> savedDetails = bookingDetailRepository.saveAll(details);
-
         createAddOnServiceFolioItems(savedBooking, confirmView, savedDetails);
 
         String guestName = savedBooking.getGuestFirstName() + " " + savedBooking.getGuestLastName();

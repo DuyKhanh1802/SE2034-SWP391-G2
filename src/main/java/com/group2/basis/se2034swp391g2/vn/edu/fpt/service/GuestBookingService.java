@@ -1,9 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ImageEntityType;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariantService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.GuestServiceView;
@@ -28,7 +25,6 @@ public class GuestBookingService {
     private final BookingDetailRepository bookingDetailRepository;
     private final ServiceRepository serviceRepository;
     private final FolioItemRepository folioItemRepository;
-    private final PaymentRepository paymentRepository;
     private final ImageRepository imageRepository;
 
     private static final BigDecimal SERVICE_CHARGE_RATE = BigDecimal.valueOf(0.05);
@@ -70,6 +66,7 @@ public class GuestBookingService {
         view.setRoomCode(detail.getRoomCode());
 
         Room room = detail.getRoom();
+
         if (room != null) {
             view.setRoomNumber(room.getRoomNumber());
             view.setFloor(room.getFloor());
@@ -98,13 +95,13 @@ public class GuestBookingService {
 
             if (roomType != null) {
                 view.setRoomTypeName(roomType.getName());
-
                 view.setAmenities(mapAmenities(roomType));
             }
 
             view.setBeds(mapBeds(variant));
             view.setBedSummary(buildBedSummary(view.getBeds()));
             view.setIncludedServices(mapIncludedServices(variant));
+
             String roomImageUrl = findImageUrl(ImageEntityType.ROOM_TYPE_VARIANT, variant.getId());
 
             if (roomImageUrl == null && variant.getRoomType() != null) {
@@ -132,41 +129,14 @@ public class GuestBookingService {
         view.setSpecialRequests(booking.getSpecialRequests());
 
         List<FolioItem> selectedItems =
-                folioItemRepository.findByBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());;
+                folioItemRepository.findByBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(
+                        detail.getId()
+                );
 
         view.setSelectedServices(mapSelectedServices(selectedItems));
 
-        List<Payment> successPayments =
-                paymentRepository.findByBooking_IdAndStatusOrderByPaidAtAsc(booking.getId(), PaymentStatus.SUCCESS);
-
-        BigDecimal baseBookingTotal = firstNonNull(
-                detail.getTotalAmount(),
-                BigDecimal.ZERO
-        );;
-
-        BigDecimal selectedServiceTotal = selectedItems.stream()
-                .map(item -> zeroIfNull(item.getTotalAmount()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal paidAmount = successPayments.stream()
-                .map(payment -> zeroIfNull(payment.getAmount()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalCharge = baseBookingTotal.add(selectedServiceTotal);
-        BigDecimal remaining = totalCharge.subtract(paidAmount);
-
-        view.setFolioTotalCharge(totalCharge);
-        view.setFolioPaidAmount(paidAmount);
-        view.setFolioRemainingBalance(remaining);
-
-        view.setFolioTransactions(buildFolioTransactions(
-                booking,
-                baseBookingTotal,
-                selectedItems,
-                successPayments
-        ));
-
         return view;
+
     }
 
     @Transactional(readOnly = true)
@@ -491,14 +461,18 @@ public class GuestBookingService {
     ) {
         List<GuestFolioTransactionView> transactions = new ArrayList<>();
 
-        GuestFolioTransactionView roomCharge = new GuestFolioTransactionView();
-        roomCharge.setId(null);
-        roomCharge.setPostedAt(booking.getCreatedAt() == null ? Instant.now() : booking.getCreatedAt());
-        roomCharge.setDescription("Tiền phòng");
-        roomCharge.setCategory("Phòng");
-        roomCharge.setChargeAmount(zeroIfNull(baseBookingTotal));
-        roomCharge.setPaymentAmount(BigDecimal.ZERO);
-        transactions.add(roomCharge);
+        if (baseBookingTotal != null && baseBookingTotal.compareTo(BigDecimal.ZERO) > 0) {
+            GuestFolioTransactionView roomCharge = new GuestFolioTransactionView();
+
+            roomCharge.setId(null);
+            roomCharge.setPostedAt(booking.getCreatedAt() == null ? Instant.now() : booking.getCreatedAt());
+            roomCharge.setDescription("Tiền phòng");
+            roomCharge.setCategory("Phòng");
+            roomCharge.setChargeAmount(baseBookingTotal);
+            roomCharge.setPaymentAmount(BigDecimal.ZERO);
+
+            transactions.add(roomCharge);
+        }
 
         if (selectedItems != null) {
             for (FolioItem item : selectedItems) {
@@ -526,8 +500,8 @@ public class GuestBookingService {
                 GuestFolioTransactionView tx = new GuestFolioTransactionView();
 
                 tx.setId(payment.getId());
-                tx.setPostedAt(payment.getPaidAt());
-                tx.setDescription("Thanh toán " + payment.getMethod());
+                tx.setPostedAt(payment.getPaidAt() == null ? Instant.now() : payment.getPaidAt());
+                tx.setDescription(buildPaymentTransactionDescription(payment));
                 tx.setCategory("Thanh toán");
                 tx.setChargeAmount(BigDecimal.ZERO);
                 tx.setPaymentAmount(zeroIfNull(payment.getAmount()));
@@ -591,6 +565,18 @@ public class GuestBookingService {
 
         return amount
                 .multiply(rate)
-                .divide(ONE_HUNDRED, 0, RoundingMode.HALF_UP);
+                .setScale(0, RoundingMode.HALF_UP);
+    }
+
+    private String buildPaymentTransactionDescription(Payment payment) {
+        if (payment == null || payment.getPaymentType() == null) {
+            return "Thanh toán";
+        }
+
+        String methodLabel = payment.getMethod() == null
+                ? ""
+                : " - " + payment.getMethod().getLabel();
+
+        return payment.getPaymentType().getLabel() + methodLabel;
     }
 }

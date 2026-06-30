@@ -27,7 +27,8 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
             GROUP BY f.description
             ORDER BY COALESCE(SUM(f.quantity), 0) DESC
             """)
-    List<Object[]> findTopServiceSales(Pageable pageable);
+    List<Object[]> findTopServiceSalesExcludingStatus(@Param("excludedStatus") FolioItemStatus excludedStatus,
+                                                      Pageable pageable);
 
     List<FolioItem> findByBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(Long bookingDetailId);
 
@@ -36,6 +37,5 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
     Optional<FolioItem> findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(Long folioItemId, Long bookingDetailId);
 
 
-    List<Object[]> findTopServiceSalesExcludingStatus(@Param("excludedStatus") FolioItemStatus excludedStatus,
-                                                      Pageable pageable);
+
 }

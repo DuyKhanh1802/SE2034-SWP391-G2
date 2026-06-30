@@ -13,8 +13,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet">
+
     <link rel="stylesheet" th:href="@{/common/header.css}">
     <link rel="stylesheet" th:href="@{/common/public.css}">
     <link rel="stylesheet" th:href="@{/page/HomePage.css}">
@@ -49,6 +50,7 @@
             <h1>V'HOTEL</h1>
         </div>
     </section>
+
     <!-- FEATURED SERVICES -->
     <section class="featured-section section-space">
         <div class="container-fluid px-lg-5">
@@ -82,15 +84,6 @@
                             <p th:text="${service.description}">
                                 Service description
                             </p>
-
-                            <div class="card-actions">
-                                <div class="room-category-reserve">
-                                    <a th:href="@{/page/rooms(roomTypeId=${roomType.id})}">
-                                        Đặt ngay
-                                    </a>
-                                </div>
-                                <a th:href="@{/services/{id}(id=${service.id})}" class="text-link muted">CHI TIẾT</a>
-                            </div>
                         </div>
                     </article>
 
@@ -101,7 +94,6 @@
     </section>
 
     <!-- ROOM TYPE SLIDER -->
-    <!-- ROOM CATEGORY HERO SLIDER -->
     <section class="room-category-hero-section">
 
         <div class="room-category-slider-wrapper">
@@ -134,7 +126,7 @@
                     </div>
 
                     <div class="room-category-reserve">
-                        <a th:href="@{/booking(roomTypeId=${roomType.id})}">
+                        <a th:href="@{/page/rooms(roomTypeId=${roomType.id})}">
                             Đặt ngay
                         </a>
                     </div>
@@ -165,7 +157,7 @@
                             Tận hưởng những món ăn được chuẩn bị tinh tế, kết hợp giữa hương vị địa phương
                             và phong cách phục vụ sang trọng.
                         </p>
-                        <a th:href="@{/services/dining}" class="outline-dark-btn">VIEW ALL</a>
+                        <a th:href="@{/page/services/dining}" class="outline-dark-btn">VIEW ALL</a>
                     </div>
                 </div>
 
@@ -192,13 +184,6 @@
                                     <p th:text="${service.description}">
                                         Dining description
                                     </p>
-
-                                    <div class="card-actions">
-                                        <div class="room-category-reserve">
-                                            <a th:href="@{/page/rooms}" class="text-link">ĐẶT NGAY</a>
-                                        </div>
-                                        <a th:href="@{/services/{id}(id=${service.id})}" class="text-link muted">CHI TIẾT</a>
-                                    </div>
                                 </div>
                             </article>
 
@@ -212,54 +197,107 @@
         </div>
     </section>
 
-    <!-- WELLNESS -->
-    <section class="wellness-section section-space">
+    <!-- WELLNESS - REVERSE LAYOUT -->
+    <section class="dining-section section-space wellness-reverse-section">
         <div class="container-fluid px-lg-5">
 
-            <div class="section-heading text-center">
-                <p class="section-label">WELLNESS</p>
-                <h2>Wellness Experiences</h2>
-                <p class="section-desc">
-                    Tái tạo năng lượng với những dịch vụ chăm sóc sức khỏe và thư giãn tại V'Hotel.
-                </p>
-            </div>
+            <div class="row g-5 align-items-start">
 
-            <div class="wellness-grid mt-5">
+                <!-- 3 ảnh wellness bên trái -->
+                <div class="col-lg-9 order-2 order-lg-1">
+                    <div class="row g-4">
 
-                <article class="wellness-card"
-                         th:each="service : ${wellnessServices}">
+                        <div class="col-lg-4 col-md-6"
+                             th:each="service : ${wellnessServices}">
 
-                    <div class="wellness-image">
-                        <img th:if="${service.imageUrl != null}"
-                             th:src="${service.imageUrl}"
-                             th:alt="${service.name}">
+                            <article class="service-card vertical-card">
+                                <div class="card-image-wrap dining-img">
+                                    <img th:if="${service.imageUrl != null}"
+                                         th:src="${service.imageUrl}"
+                                         th:alt="${service.name}">
 
-                        <div th:if="${service.imageUrl == null}" class="image-placeholder tall">
-                            <span>WELLNESS</span>
+                                    <div th:if="${service.imageUrl == null}" class="image-placeholder">
+                                        <span>WELLNESS</span>
+                                    </div>
+                                </div>
+
+                                <div class="service-card-body">
+                                    <p class="card-kicker">V'HOTEL WELLNESS</p>
+                                    <h3 th:text="${service.name}">Wellness service</h3>
+                                    <p th:text="${service.description}">
+                                        Wellness description
+                                    </p>
+                                </div>
+                            </article>
+
                         </div>
-                    </div>
 
-                    <div class="wellness-content">
-                        <h3 th:text="${service.name}">Wellness service</h3>
-                        <p th:text="${service.description}">
-                            Wellness description
+                    </div>
+                </div>
+
+                <!-- chữ wellness bên phải -->
+                <div class="col-lg-3 order-1 order-lg-2">
+                    <div class="side-heading wellness-side-heading">
+                        <p class="section-label">WELLNESS</p>
+                        <h2>Wellness Experiences</h2>
+                        <p>
+                            Tái tạo năng lượng với những dịch vụ chăm sóc sức khỏe, thư giãn và cân bằng
+                            dành riêng cho kỳ nghỉ của bạn tại V'Hotel.
                         </p>
-
-                        <div class="wellness-actions">
-                            <a th:href="@{/services/{id}(id=${service.id})}">VIEW DETAILS</a>
-                            <a th:href="@{/portal/room-code}">BOOK SERVICE</a>
-                        </div>
+                        <a th:href="@{/page/services/wellness}" class="outline-dark-btn">VIEW ALL</a>
                     </div>
+                </div>
 
-                </article>
-
-            </div>
-
-            <div class="text-center mt-5">
-                <a th:href="@{/services/wellness}" class="outline-dark-btn">VIEW ALL WELLNESS</a>
             </div>
 
         </div>
+    </section>
+
+    <!-- FEATURED OFFER -->
+    <section class="featured-offer-section"
+             th:if="${featuredPromotion != null}">
+
+        <div class="featured-offer-media">
+            <img th:if="${featuredPromotion.imageUrl != null}"
+                 th:src="${featuredPromotion.imageUrl}"
+                 th:alt="${featuredPromotion.name}">
+
+            <div th:if="${featuredPromotion.imageUrl == null}"
+                 class="featured-offer-placeholder">
+                <span>V'HOTEL OFFER</span>
+            </div>
+        </div>
+
+        <div class="featured-offer-overlay"></div>
+
+        <div class="featured-offer-shell">
+            <div class="featured-offer-content">
+                <p class="featured-offer-kicker">SPECIAL OFFER</p>
+
+                <h2 th:text="${featuredPromotion.name}">
+                    Ưu đãi mùa hè 2026
+                </h2>
+
+                <p class="featured-offer-desc"
+                   th:text="${featuredPromotion.description}">
+                    Giảm 200.000 VND cho khách đặt phòng online trong mùa hè.
+                </p>
+
+                <div class="featured-offer-code">
+                    <span>Mã ưu đãi</span>
+                    <strong th:text="${featuredPromotion.code}">VH-202606-ACD8</strong>
+                </div>
+
+                <div class="featured-offer-actions">
+                    <a th:href="@{/page/promotions}">VIEW ALL</a>
+
+                    <a th:href="@{/page/rooms(promoCode=${featuredPromotion.code})}">
+                        BOOK NOW
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </section>
 
 </main>

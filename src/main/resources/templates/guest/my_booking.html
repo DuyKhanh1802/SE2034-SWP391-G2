@@ -322,11 +322,10 @@
                     </td>
 
                     <td>
-                        <strong>
-                            <span th:text="${#numbers.formatDecimal(item.status, 0, 'COMMA', 0, 'POINT')}">
-                                request
-                            </span> VND
-                        </strong>
+    <span class="status-text"
+          th:text="${item.status != null ? item.status : 'REQUEST'}">
+        REQUEST
+    </span>
                     </td>
 
                     <td>
@@ -353,43 +352,8 @@
         </p>
     </section>
 
-    <!-- FOLIO SUMMARY -->
-    <section class="folio-section">
-        <h2>Folio của tôi</h2>
-
-        <div class="folio-content">
-            <div class="folio-box">
-                <span>Tổng phát sinh</span>
-                <strong>
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioTotalCharge, 0, 'COMMA', 0, 'POINT')}">
-                        0
-                    </span> VND
-                </strong>
-            </div>
-
-            <div class="folio-box">
-                <span>Đã thanh toán</span>
-                <strong class="paid">
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioPaidAmount, 0, 'COMMA', 0, 'POINT')}">
-                        0
-                    </span> VND
-                </strong>
-            </div>
-
-            <div class="folio-box">
-                <span>Còn phải trả</span>
-                <strong class="balance">
-                    <span th:text="${#numbers.formatDecimal(myBooking.folioRemainingBalance, 0, 'COMMA', 0, 'POINT')}">
-                        0
-                    </span> VND
-                </strong>
-            </div>
-
-        </div>
-    </section>
 
 </div>
-
 
 
 </body>
