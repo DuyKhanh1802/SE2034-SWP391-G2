@@ -7,7 +7,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingSucc
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.BookingServiceProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.ServiceProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingSelectionService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.OnlineBookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
@@ -68,6 +67,7 @@ public class BookingPageController {
                 checkInDate,
                 checkOutDate
         );
+
         Page<BookingServiceProjection> servicePage = bookingSelectionService.getBookingService(
                 selectedCategory,
                 selectedSort,
@@ -170,16 +170,16 @@ public class BookingPageController {
             Model model
     ) {
         BookingConfirmRequest request = new BookingConfirmRequest();
-         request.setVariantIds(variantIds);
-         request.setCheckInDate(checkInDate);
-         request.setCheckOutDate(checkOutDate);
-         request.setAdults(adults);
-         request.setChildren(children);
-         request.setRoomCount(roomCount);
-         request.setRoomGuests(roomGuests);
-         request.setPromoCode(promoCode);
+        request.setVariantIds(variantIds);
+        request.setCheckInDate(checkInDate);
+        request.setCheckOutDate(checkOutDate);
+        request.setAdults(adults);
+        request.setChildren(children);
+        request.setRoomCount(roomCount);
+        request.setRoomGuests(roomGuests);
+        request.setPromoCode(promoCode);
 
-         return bookingConfirm(request,model);
+        return bookingConfirm(request,model);
     }
 
     @PostMapping("/complete")
@@ -216,4 +216,4 @@ public class BookingPageController {
 
         return "guest/BookingSuccess";
     }
-    }
+}

@@ -66,6 +66,7 @@ public class OnlineBookingService {
     private final ServiceRepository serviceRepository;
     private final PromotionRepository promotionRepository;
     private final PaymentRepository paymentRepository;
+    private final FolioItemRepository folioItemRepository;
 
     @Transactional(readOnly = true)
     public BookingConfirmView prepareConfirmView(BookingConfirmRequest request) {
@@ -386,7 +387,8 @@ public class OnlineBookingService {
             details.add(detail);
         }
 
-        bookingDetailRepository.saveAll(details);
+        List<BookingDetail> savedDetails = bookingDetailRepository.saveAll(details);
+        createAddOnServiceFolioItems(savedBooking, confirmView, savedDetails);
 
         String guestName = savedBooking.getGuestFirstName() + " " + savedBooking.getGuestLastName();
         guestName = guestName.trim();
@@ -411,6 +413,139 @@ public class OnlineBookingService {
         result.setBookingReference(savedBooking.getBookingReference());
 
         return result;    }
+
+    private void createAddOnServiceFolioItems(
+            Booking booking,
+            BookingConfirmView confirmView,
+            List<BookingDetail> savedDetails
+    ) {
+        if (confirmView.getRooms() == null || confirmView.getRooms().isEmpty()) {
+            return;
+        }
+
+        if (savedDetails == null || savedDetails.isEmpty()) {
+            return;
+        }
+
+        List<Long> serviceIds = new ArrayList<>();
+
+        for (BookingConfirmView.RoomLine roomLine : confirmView.getRooms()) {
+            if (roomLine.getAddOnServices() == null || roomLine.getAddOnServices().isEmpty()) {
+                continue;
+            }
+
+            for (BookingConfirmView.ServiceLine serviceLine : roomLine.getAddOnServices()) {
+                if (serviceLine.getServiceId() == null
+                        || serviceLine.getQuantity() == null
+                        || serviceLine.getQuantity() <= 0) {
+                    continue;
+                }
+
+                serviceIds.add(serviceLine.getServiceId());
+            }
+        }
+
+        if (serviceIds.isEmpty()) {
+            return;
+        }
+
+        List<com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service> services =
+                serviceRepository.findAllById(serviceIds);
+
+        Map<Long, com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service> serviceMap =
+                services.stream()
+                        .collect(Collectors.toMap(
+                                com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service::getId,
+                                service -> service
+                        ));
+
+        List<FolioItem> folioItems = new ArrayList<>();
+
+        List<BookingConfirmView.RoomLine> roomLines = confirmView.getRooms();
+
+        for (int i = 0; i < roomLines.size(); i++) {
+            BookingConfirmView.RoomLine roomLine = roomLines.get(i);
+
+            if (i >= savedDetails.size()) {
+                throw new IllegalArgumentException("Số phòng không khớp với booking detail.");
+            }
+
+            BookingDetail detail = savedDetails.get(i);
+
+            if (roomLine.getAddOnServices() == null || roomLine.getAddOnServices().isEmpty()) {
+                continue;
+            }
+
+            for (BookingConfirmView.ServiceLine serviceLine : roomLine.getAddOnServices()) {
+                if (serviceLine.getServiceId() == null
+                        || serviceLine.getQuantity() == null
+                        || serviceLine.getQuantity() <= 0) {
+                    continue;
+                }
+
+                com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
+                        serviceMap.get(serviceLine.getServiceId());
+
+                if (service == null
+                        || Boolean.TRUE.equals(service.getIsDeleted())
+                        || !Boolean.TRUE.equals(service.getIsAvailable())) {
+                    throw new IllegalArgumentException("Có dịch vụ không tồn tại hoặc không còn khả dụng.");
+                }
+
+                int quantity = serviceLine.getQuantity();
+                BigDecimal unitPrice = safeMoney(service.getPrice());
+
+                BigDecimal baseAmount = money(unitPrice.multiply(BigDecimal.valueOf(quantity)));
+                BigDecimal serviceChargeAmount = money(baseAmount.multiply(SERVICE_CHARGE_RATE));
+                BigDecimal vatAmount = money(baseAmount.add(serviceChargeAmount).multiply(VAT_RATE));
+                BigDecimal totalAmount = money(baseAmount.add(serviceChargeAmount).add(vatAmount));
+
+                FolioItem item = FolioItem.builder()
+                        .booking(booking)
+                        .bookingDetail(detail)
+                        .service(service)
+                        .itemType(resolveServiceFolioItemType(service))
+                        .description(service.getName())
+                        .quantity(quantity)
+                        .unitPrice(unitPrice)
+                        .baseAmount(baseAmount)
+                        .amount(baseAmount)
+                        .serviceChargeRate(SERVICE_CHARGE_RATE)
+                        .serviceChargeAmount(serviceChargeAmount)
+                        .vatRate(VAT_RATE)
+                        .vatAmount(vatAmount)
+                        .totalAmount(totalAmount)
+                        .priceDisplayMode(PriceDisplayMode.PLUS_PLUS)
+                        .postedAt(Instant.now())
+                        .isVoided(false)
+                        .build();
+
+                folioItems.add(item);
+            }
+        }
+
+        folioItemRepository.saveAll(folioItems);
+    }
+
+    private FolioItemType resolveServiceFolioItemType(
+            com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service
+    ) {
+        if (service == null || service.getCategory() == null || service.getCategory().getType() == null) {
+            throw new IllegalArgumentException("Dịch vụ chưa có loại danh mục hợp lệ.");
+        }
+
+        ServiceCategoryType type = service.getCategory().getType();
+
+        if (type == ServiceCategoryType.FOOD) {
+            return FolioItemType.FOOD;
+        }
+
+        if (type == ServiceCategoryType.SPA) {
+            return FolioItemType.SPA;
+        }
+
+        return FolioItemType.ADJUSTMENT;
+    }
 
     public String generateBookingReference() {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));

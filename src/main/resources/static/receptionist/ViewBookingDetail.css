@@ -267,6 +267,50 @@
     letter-spacing: 1px;
 }
 
+.service-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .6px;
+}
+
+.service-status-requested {
+    color: #9b6a00;
+}
+
+.service-status-completed {
+    color: #187448;
+}
+
+.service-status-cancelled {
+    color: #b42318;
+}
+
+.service-action-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.service-action-group form {
+    margin: 0;
+}
+
+.service-action-btn {
+    min-height: 34px;
+    padding: 7px 12px;
+    border-radius: 0;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.service-action-empty {
+    color: #888;
+}
+
 .empty-row {
     text-align: center;
     padding: 34px !important;

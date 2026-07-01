@@ -147,3 +147,24 @@
     text-decoration: none;
     letter-spacing: 0.04em;
 }
+
+/* =========================
+   PUBLIC GUEST DROPDOWN FIX
+========================= */
+
+.public-header,
+.header-top,
+.header-top-right,
+.guest-header-menu,
+.guest-profile {
+    overflow: visible;
+}
+
+.guest-profile-menu a {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.guest-profile.is-open .guest-profile-menu {
+    display: block;
+}

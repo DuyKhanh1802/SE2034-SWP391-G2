@@ -1661,3 +1661,31 @@ body.modal-open {
         overflow: visible;
     }
 }
+.room-availability {
+    margin-top: 12px;
+}
+
+.availability-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.availability-badge.success {
+    background: #edf7ed;
+    color: #1f7a3a;
+}
+
+.availability-badge.danger {
+    background: #fff1f1;
+    color: #c62828;
+}
+
+.availability-badge.neutral {
+    background: #f4f1ea;
+    color: #7a6240;
+}

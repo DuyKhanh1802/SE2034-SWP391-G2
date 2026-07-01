@@ -82,4 +82,9 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
     Optional<BookingDetail> findValidGuestRoomAccess(@Param("email") String email,
                                                      @Param("roomCode") String roomCode,
                                                      @Param("now") Instant now);
+
+
+    Optional<BookingDetail> findByRoomCode(String roomCode);
 }
+
+
