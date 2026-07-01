@@ -63,6 +63,27 @@ document.addEventListener("DOMContentLoaded", function () {
             addYearDropdown(instance, currentYear - 5, currentYear + 5);
         }
     });
+
+    // Check-in Queue filter date picker
+    flatpickr(".checkin-queue-date-picker", {
+        dateFormat: "d/m/Y",
+        locale: "vn",
+        allowInput: true,
+        disableMobile: true,
+        monthSelectorType: "dropdown",
+        onReady: function (selectedDates, dateStr, instance) {
+            addYearDropdown(instance, currentYear - 5, currentYear + 5);
+        },
+        onOpen: function (selectedDates, dateStr, instance) {
+            addYearDropdown(instance, currentYear - 5, currentYear + 5);
+        },
+        onMonthChange: function (selectedDates, dateStr, instance) {
+            addYearDropdown(instance, currentYear - 5, currentYear + 5);
+        },
+        onYearChange: function (selectedDates, dateStr, instance) {
+            addYearDropdown(instance, currentYear - 5, currentYear + 5);
+        }
+    });
     // Ngày sinh: chọn từ 1900 đến năm hiện tại
     flatpickr(".birth-date", {
         dateFormat: "Y-m-d",
