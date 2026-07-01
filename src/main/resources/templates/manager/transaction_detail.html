@@ -46,50 +46,50 @@
                 <dd th:text="${transaction.documentCode}">PT</dd>
                 <dt>Nhóm</dt>
                 <dd class="detail-accent-text" th:text="${transaction.category.displayName}">Nhóm giao dịch</dd>
-                <dt>Loại nguồn</dt>
-                <dd class="detail-source-text" th:text="${transaction.sourceType.displayName}">Thanh toán</dd>
                 <dt>Thời gian</dt>
-                <dd th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</dd>
-                <dt>Phương thức thanh toán</dt>
-                <dd th:text="${transaction.paymentMethod != null ? transaction.paymentMethod.label : 'Chưa ghi nhận'}">
-                    Chưa ghi nhận
-                </dd>
+                <dd th:text="${inventoryReceipt != null ? #temporals.format(inventoryReceipt.createdAt, 'dd/MM/yyyy HH:mm') : #temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</dd>
                 <dt>Người tạo</dt>
-                <dd th:text="${transaction.createdBy != null ? transaction.createdBy.email : 'Hệ thống'}">manager</dd>
+                <dd th:text="${inventoryReceipt != null ? (inventoryReceipt.createdBy != null ? inventoryReceipt.createdBy.email : 'Hệ thống') : (transaction.createdBy != null ? transaction.createdBy.email : 'Hệ thống')}">manager</dd>
                 <dt>Nội dung</dt>
-                <dd th:text="${transaction.description ?: 'Không có'}">Nội dung</dd>
+                <dd th:text="${inventoryReceipt != null ? (inventoryReceipt.note ?: transaction.description) : (transaction.description ?: 'Không có')}">Nội dung</dd>
             </dl>
         </div>
         <div class="panel"
-             th:if="${(transaction.sourceType.name() == 'PAYMENT' and transaction.sourceId != null)
-                     or (transaction.sourceType.name() == 'INVENTORY_RECEIPT' and transaction.sourceId != null)
+             th:if="${(isPaymentTransaction and transaction.sourceId != null)
+                     or (isInventoryTransaction and transaction.sourceId != null)
                      or transaction.originalTransaction != null
                      or (transaction.reversalTransaction != null and (transaction.status == null or transaction.status.name() != 'CANCELLED'))}">
             <h2 th:text="${transaction.originalTransaction != null ? 'Thông tin hủy phiếu' : 'Thông tin liên quan'}">
                 Thông tin liên quan
             </h2>
             <dl class="detail-list">
-                <dt th:if="${transaction.sourceType.name() == 'PAYMENT' and transaction.sourceId != null}">
+                <dt th:if="${isPaymentTransaction and transaction.sourceId != null}">
                     Mã thanh toán
                 </dt>
-                <dd th:if="${transaction.sourceType.name() == 'PAYMENT' and transaction.sourceId != null}"
+                <dd th:if="${isPaymentTransaction and transaction.sourceId != null}"
                     th:text="${transaction.sourceId}">
                     PAY
                 </dd>
 
-                <dt th:if="${transaction.sourceType.name() == 'PAYMENT'}">
+                <dt th:if="${isPaymentTransaction}">
                     Mã booking
                 </dt>
-                <dd th:if="${transaction.sourceType.name() == 'PAYMENT'}">
+                <dd th:if="${isPaymentTransaction}">
                     Chưa liên kết
                 </dd>
 
-                <dt th:if="${transaction.sourceType.name() == 'INVENTORY_RECEIPT' and transaction.sourceId != null}">
+                <dt th:if="${inventoryReceipt != null}">
                     Mã phiếu nhập
                 </dt>
-                <dd th:if="${transaction.sourceType.name() == 'INVENTORY_RECEIPT' and transaction.sourceId != null}"
-                    th:text="${transaction.sourceId}">
+                <dd th:if="${inventoryReceipt != null}"
+                    th:text="${inventoryReceipt.code}">
                     IR
+                </dd>
+
+                <dt th:if="${inventoryReceipt != null}">Vật tư</dt>
+                <dd th:if="${inventoryReceipt != null}"
+                    th:text="${inventoryReceipt.item != null ? inventoryReceipt.item.name : 'Không có'}">
+                    Vật tư
                 </dd>
 
                 <dt th:if="${transaction.originalTransaction != null}">Giao dịch gốc</dt>

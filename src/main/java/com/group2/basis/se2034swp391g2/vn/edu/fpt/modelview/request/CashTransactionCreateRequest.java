@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +18,9 @@ public class CashTransactionCreateRequest {
 
     // Số tiền manager nhập, luôn nhập số dương.
     private BigDecimal amount;
+
+    // Phuong thuc thanh toan cua phieu thu/chi thu cong.
+    private PaymentMethod paymentMethod;
 
     // Nội dung giải thích vì sao lập phiếu.
     private String description;

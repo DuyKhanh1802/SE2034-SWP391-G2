@@ -29,7 +29,7 @@
             </select>
 
             <select name="category">
-                <option value="ALL" th:selected="${searchRequest.category == 'ALL'}">Tất cả nhóm giao dịch</option>
+                <option value="ALL" th:selected="${searchRequest.category == 'ALL'}">Tất cả nguồn giao dịch</option>
                 <option th:each="categoryOption : ${transactionCategories}"
                         th:value="${categoryOption.name()}"
                         th:text="${categoryOption.displayName}"
@@ -38,13 +38,13 @@
                 </option>
             </select>
 
-            <select name="sourceType">
-                <option value="ALL" th:selected="${searchRequest.sourceType == 'ALL'}">Tất cả nguồn</option>
-                <option th:each="sourceOption : ${sourceTypes}"
-                        th:value="${sourceOption.name()}"
-                        th:text="${sourceOption.displayName}"
-                        th:selected="${searchRequest.sourceType == sourceOption.name()}">
-                    Thanh toán booking
+            <select name="paymentMethod">
+                <option value="ALL" th:selected="${searchRequest.paymentMethod == 'ALL'}">Tất cả phương thức</option>
+                <option th:each="methodOption : ${paymentMethods}"
+                        th:value="${methodOption.name()}"
+                        th:text="${methodOption.label}"
+                        th:selected="${searchRequest.paymentMethod == methodOption.name()}">
+                    Tiền mặt
                 </option>
             </select>
 
@@ -78,8 +78,7 @@
                 <th>Loại phiếu</th>
                 <th>Nhóm giao dịch</th>
                 <th>Số tiền</th>
-                <th>Thanh toán</th>
-                <th>Nguồn</th>
+                <th>Phương thức thanh toán</th>
                 <th>Trạng thái</th>
                 <th></th>
             </tr>
@@ -116,12 +115,11 @@
                         0 VND
                     </span>
                 </td>
-                <td th:text="${transaction.paymentMethodDisplayName}">Tiền mặt</td>
                 <td>
-                    <span class="source-chip"
-                          th:classappend="${transaction.sourceType == 'PAYMENT'} ? ' payment' : (${transaction.sourceType == 'INVENTORY_RECEIPT'} ? ' inventory' : ' manual')"
-                          th:text="${transaction.sourceDisplayName}">
-                        Thanh toán booking
+                    <span class="payment-method-chip"
+                          th:classappend="${transaction.paymentMethodDisplayName == 'Chưa có'} ? ' empty' : ' has-method'"
+                          th:text="${transaction.paymentMethodDisplayName}">
+                        Tiền mặt
                     </span>
                 </td>
                 <td>
@@ -137,7 +135,7 @@
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(transactions)}">
-                <td colspan="9">Chưa có giao dịch phù hợp.</td>
+                <td colspan="8">Chưa có giao dịch phù hợp.</td>
             </tr>
             </tbody>
         </table>
@@ -150,21 +148,21 @@
 
             <div class="pagination-custom" th:if="${totalPages > 1}">
                 <a th:if="${hasPrevious}"
-                   th:href="@{/manager/transactions(page=${currentPage - 1}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}">
+                   th:href="@{/manager/transactions(page=${currentPage - 1}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, paymentMethod=${searchRequest.paymentMethod}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}">
                     Trước
                 </a>
 
                 <button type="button" disabled th:if="${!hasPrevious}">Trước</button>
 
                 <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
-                   th:href="@{/manager/transactions(page=${pageNumber}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}"
+                   th:href="@{/manager/transactions(page=${pageNumber}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, paymentMethod=${searchRequest.paymentMethod}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}"
                    th:text="${pageNumber + 1}"
                    th:classappend="${pageNumber == currentPage ? 'active' : ''}">
                     1
                 </a>
 
                 <a th:if="${hasNext}"
-                   th:href="@{/manager/transactions(page=${currentPage + 1}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, sourceType=${searchRequest.sourceType}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}">
+                   th:href="@{/manager/transactions(page=${currentPage + 1}, size=${pageSize}, type=${searchRequest.type}, category=${searchRequest.category}, paymentMethod=${searchRequest.paymentMethod}, fromDate=${searchRequest.fromDate}, toDate=${searchRequest.toDate}, keyword=${searchRequest.keyword})}">
                     Sau
                 </a>
 

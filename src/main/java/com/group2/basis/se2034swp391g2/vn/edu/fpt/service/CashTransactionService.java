@@ -2,6 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.CashTransaction;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryReceipt;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CashTransactionCreateRequest;
@@ -9,6 +10,8 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CashTransact
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CashTransactionListResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CashTransactionResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CashTransactionRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.InventoryReceiptRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -19,16 +22,23 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CashTransactionService {
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
-    private static final DateTimeFormatter CODE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
+    private static final List<CashTransactionCategory> PAYMENT_CATEGORIES = List.of(
+            CashTransactionCategory.DEPOSIT,
+            CashTransactionCategory.BOOKING_PAYMENT,
+            CashTransactionCategory.REFUND
+    );
 
     private final CashTransactionRepository cashTransactionRepository;
+    private final InventoryReceiptRepository inventoryReceiptRepository;
+    private final PaymentRepository paymentRepository;
 
     @Transactional(readOnly = true)
     public List<CashTransaction> getRecentTransactions(int limit) {
@@ -39,6 +49,17 @@ public class CashTransactionService {
     public CashTransaction getTransaction(Long id) {
         return cashTransactionRepository.findDetailById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng tiền."));
+    }
+
+    @Transactional(readOnly = true)
+    public InventoryReceipt getInventoryReceiptForTransaction(CashTransaction transaction) {
+        if (transaction == null
+                || transaction.getCategory() != CashTransactionCategory.INVENTORY_PURCHASE
+                || transaction.getSourceId() == null) {
+            return null;
+        }
+
+        return inventoryReceiptRepository.findDetailById(transaction.getSourceId()).orElse(null);
     }
 
     @Transactional(readOnly = true)
@@ -59,16 +80,19 @@ public class CashTransactionService {
         }
 
         // Chuyển entity sang response để màn list chỉ nhận dữ liệu cần hiển thị.
-        List<CashTransactionResponse> allTransactions = searchTransactions(
+        List<CashTransaction> filteredTransactions = searchTransactions(
                 request.getType(),
                 request.getCategory(),
-                request.getSourceType(),
+                request.getPaymentMethod(),
                 request.getFromDate(),
                 request.getToDate(),
                 request.getKeyword()
-        )
+        );
+        Map<Long, String> paymentMethodMap = getPaymentMethodMap(filteredTransactions);
+
+        List<CashTransactionResponse> allTransactions = filteredTransactions
                 .stream()
-                .map(this::toResponse)
+                .map(transaction -> toResponse(transaction, paymentMethodMap))
                 .toList();
 
         int totalTransactions = allTransactions.size();
@@ -98,6 +122,7 @@ public class CashTransactionService {
                 selectedType,
                 null,
                 null,
+                PAYMENT_CATEGORIES,
                 null,
                 null,
                 keyword == null ? "" : keyword.trim()
@@ -107,21 +132,22 @@ public class CashTransactionService {
     @Transactional(readOnly = true)
     public List<CashTransaction> searchTransactions(String type,
                                                     String category,
-                                                    String sourceType,
+                                                    String paymentMethod,
                                                     LocalDate fromDate,
                                                     LocalDate toDate,
                                                     String keyword) {
         // Parse filter từ String trên form sang enum để repository query dễ hơn.
         CashTransactionType selectedType = parseType(type);
         CashTransactionCategory selectedCategory = parseCategory(category);
-        CashTransactionSourceType selectedSourceType = parseSourceType(sourceType);
+        PaymentMethod selectedPaymentMethod = parsePaymentMethod(paymentMethod);
         Instant fromDateTime = fromDate == null ? null : fromDate.atStartOfDay(APP_ZONE).toInstant();
         Instant toDateTime = toDate == null ? null : toDate.plusDays(1).atStartOfDay(APP_ZONE).toInstant();
 
         return cashTransactionRepository.search(
                 selectedType,
                 selectedCategory,
-                selectedSourceType,
+                selectedPaymentMethod,
+                PAYMENT_CATEGORIES,
                 fromDateTime,
                 toDateTime,
                 keyword == null ? "" : keyword.trim()
@@ -140,6 +166,7 @@ public class CashTransactionService {
                 request.getType(),
                 category,
                 request.getAmount(),
+                request.getPaymentMethod(),
                 request.getDescription().trim(),
                 createdBy
         );
@@ -151,6 +178,16 @@ public class CashTransactionService {
                                                    BigDecimal amount,
                                                    String description,
                                                    User createdBy) {
+        return createManualTransaction(type, category, amount, null, description, createdBy);
+    }
+
+    @Transactional
+    public CashTransaction createManualTransaction(CashTransactionType type,
+                                                   CashTransactionCategory category,
+                                                   BigDecimal amount,
+                                                   PaymentMethod paymentMethod,
+                                                   String description,
+                                                   User createdBy) {
         validateAmount(amount);
 
         // Tạo phiếu thủ công: phiếu thu lưu số dương, phiếu chi lưu số âm.
@@ -159,8 +196,8 @@ public class CashTransactionService {
                 .type(type)
                 .category(category)
                 .amount(normalizeMoneyByType(amount, type))
+                .paymentMethod(paymentMethod)
                 .description(description)
-                .sourceType(CashTransactionSourceType.MANUAL)
                 .createdBy(createdBy)
                 .status(CashTransactionStatus.COMPLETED)
                 .build();
@@ -193,8 +230,8 @@ public class CashTransactionService {
                 .type(reversalType)
                 .category(CashTransactionCategory.REVERSAL)
                 .amount(reversalAmount)
+                .paymentMethod(originalTransaction.getPaymentMethod())
                 .description("Đảo chiều hủy chứng từ " + originalTransaction.getDocumentCode())
-                .sourceType(CashTransactionSourceType.MANUAL)
                 .sourceId(originalTransaction.getId())
                 .originalTransaction(originalTransaction)
                 .createdBy(manager)
@@ -214,9 +251,8 @@ public class CashTransactionService {
 
         // Chỉ cho hủy phiếu thu/chi thủ công đã hoàn tất và chưa từng bị đảo chiều.
         CashTransactionStatus status = resolveStatus(transaction);
-        boolean isManualVoucher = transaction.getSourceType() == CashTransactionSourceType.MANUAL
-                && (transaction.getCategory() == CashTransactionCategory.MANUAL_INCOME
-                || transaction.getCategory() == CashTransactionCategory.MANUAL_EXPENSE);
+        boolean isManualVoucher = transaction.getCategory() == CashTransactionCategory.MANUAL_INCOME
+                || transaction.getCategory() == CashTransactionCategory.MANUAL_EXPENSE;
 
         return isManualVoucher
                 && status == CashTransactionStatus.COMPLETED
@@ -245,10 +281,10 @@ public class CashTransactionService {
                                                    User createdBy) {
         validateAmount(amount);
         validateInventoryPaymentMethod(paymentMethod);
-        if (receiptId != null && cashTransactionRepository.existsBySourceTypeAndSourceId(
-                CashTransactionSourceType.INVENTORY_RECEIPT, receiptId)) {
-            return cashTransactionRepository.findBySourceTypeAndSourceId(
-                    CashTransactionSourceType.INVENTORY_RECEIPT, receiptId).orElseThrow();
+        if (receiptId != null && cashTransactionRepository.existsByCategoryAndSourceId(
+                CashTransactionCategory.INVENTORY_PURCHASE, receiptId)) {
+            return cashTransactionRepository.findByCategoryAndSourceId(
+                    CashTransactionCategory.INVENTORY_PURCHASE, receiptId).orElseThrow();
         }
 
         CashTransaction transaction = CashTransaction.builder()
@@ -256,9 +292,8 @@ public class CashTransactionService {
                 .type(CashTransactionType.EXPENSE)
                 .category(CashTransactionCategory.INVENTORY_PURCHASE)
                 .amount(normalizeMoneyByType(amount, CashTransactionType.EXPENSE))
-                .description(description)
                 .paymentMethod(paymentMethod)
-                .sourceType(CashTransactionSourceType.INVENTORY_RECEIPT)
+                .description(description)
                 .sourceId(receiptId)
                 .createdBy(createdBy)
                 .status(CashTransactionStatus.COMPLETED)
@@ -273,10 +308,10 @@ public class CashTransactionService {
             throw new IllegalArgumentException("Payment must be successful to create cash transaction.");
         }
 
-        if (payment.getId() != null && cashTransactionRepository.existsBySourceTypeAndSourceId(
-                CashTransactionSourceType.PAYMENT, payment.getId())) {
-            return cashTransactionRepository.findBySourceTypeAndSourceId(
-                    CashTransactionSourceType.PAYMENT, payment.getId()).orElseThrow();
+        if (payment.getId() != null && cashTransactionRepository.existsBySourceIdAndCategoryIn(
+                payment.getId(), PAYMENT_CATEGORIES)) {
+            return cashTransactionRepository.findFirstBySourceIdAndCategoryIn(
+                    payment.getId(), PAYMENT_CATEGORIES).orElseThrow();
         }
 
         CashTransactionType type = payment.getPaymentType() == PaymentType.REFUND
@@ -294,9 +329,8 @@ public class CashTransactionService {
                 .type(type)
                 .category(category)
                 .amount(normalizeMoneyByType(payment.getAmount(), type))
-                .description(buildPaymentDescription(payment))
                 .paymentMethod(payment.getMethod())
-                .sourceType(CashTransactionSourceType.PAYMENT)
+                .description(buildPaymentDescription(payment))
                 .sourceId(payment.getId())
                 .createdBy(payment.getProcessedBy())
                 .createdAt(payment.getPaidAt())
@@ -363,11 +397,11 @@ public class CashTransactionService {
         return CashTransactionCategory.valueOf(category.trim().toUpperCase());
     }
 
-    private CashTransactionSourceType parseSourceType(String sourceType) {
-        if (sourceType == null || sourceType.isBlank() || "ALL".equalsIgnoreCase(sourceType)) {
+    private PaymentMethod parsePaymentMethod(String paymentMethod) {
+        if (paymentMethod == null || paymentMethod.isBlank() || "ALL".equalsIgnoreCase(paymentMethod)) {
             return null;
         }
-        return CashTransactionSourceType.valueOf(sourceType.trim().toUpperCase());
+        return PaymentMethod.valueOf(paymentMethod.trim().toUpperCase());
     }
 
     private void validateAmount(BigDecimal amount) {
@@ -391,6 +425,9 @@ public class CashTransactionService {
         }
         if (request.getType() == null) {
             throw new IllegalArgumentException("Vui lòng chọn loại phiếu.");
+        }
+        if (request.getPaymentMethod() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
         }
         validateAmount(request.getAmount());
         if (request.getDescription() == null || request.getDescription().isBlank()) {
@@ -434,7 +471,35 @@ public class CashTransactionService {
         return transactions.subList(startIndex, endIndex);
     }
 
-    private CashTransactionResponse toResponse(CashTransaction transaction) {
+    private Map<Long, String> getPaymentMethodMap(List<CashTransaction> transactions) {
+        List<Long> paymentIds = transactions.stream()
+                .filter(transaction -> PAYMENT_CATEGORIES.contains(transaction.getCategory()))
+                .map(CashTransaction::getSourceId)
+                .filter(id -> id != null)
+                .distinct()
+                .toList();
+
+        if (paymentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        // Lay phuong thuc thanh toan tu bang payments cho cac dong tien sinh tu payment.
+        return paymentRepository.findAllById(paymentIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        Payment::getId,
+                        payment -> payment.getMethod().getLabel()
+                ));
+    }
+
+    private CashTransactionResponse toResponse(CashTransaction transaction, Map<Long, String> paymentMethodMap) {
+        String paymentMethodDisplayName = "Chưa có";
+        if (transaction.getPaymentMethod() != null) {
+            paymentMethodDisplayName = transaction.getPaymentMethod().getLabel();
+        } else if (PAYMENT_CATEGORIES.contains(transaction.getCategory()) && transaction.getSourceId() != null) {
+            paymentMethodDisplayName = paymentMethodMap.getOrDefault(transaction.getSourceId(), "Chưa có");
+        }
+
         return CashTransactionResponse.builder()
                 .id(transaction.getId())
                 .documentCode(transaction.getDocumentCode())
@@ -444,25 +509,36 @@ public class CashTransactionService {
                 .category(transaction.getCategory().name())
                 .categoryDisplayName(transaction.getCategory().getDisplayName())
                 .amount(transaction.getAmount())
-                .sourceType(transaction.getSourceType().name())
-                .sourceDisplayName(transaction.getSourceType().getDisplayName())
+                .paymentMethodDisplayName(paymentMethodDisplayName)
                 .statusDisplayName(resolveStatus(transaction).getDisplayName())
-                .paymentMethodDisplayName(transaction.getPaymentMethod() != null
-                        ? transaction.getPaymentMethod().getLabel()
-                        : "Chưa ghi nhận")
                 .build();
     }
 
     private String generateDocumentCode(CashTransactionType type) {
         String prefix = type == CashTransactionType.INCOME ? "PT" : "PC";
-        String datePart = LocalDate.now(APP_ZONE).format(CODE_DATE_FORMATTER);
-        String documentCode;
 
-        do {
-            int randomNumber = (int) (Math.random() * 9000) + 1000;
-            documentCode = prefix + "-" + datePart + "-" + randomNumber;
-        } while (cashTransactionRepository.existsByDocumentCode(documentCode));
+        // Mã chứng từ chạy chung một dãy số cho cả phiếu thu và phiếu chi.
+        int nextNumber = cashTransactionRepository.findSimpleDocumentCodes()
+                .stream()
+                .filter(this::isSimpleDocumentCode)
+                .mapToInt(this::getDocumentNumber)
+                .max()
+                .orElse(0) + 1;
 
-        return documentCode;
+        return prefix + "-" + String.format("%04d", nextNumber);
+    }
+
+    private boolean isSimpleDocumentCode(String documentCode) {
+        if (documentCode == null
+                || (!documentCode.startsWith("PT-") && !documentCode.startsWith("PC-"))) {
+            return false;
+        }
+
+        String numberPart = documentCode.substring(3);
+        return numberPart.length() == 4 && numberPart.chars().allMatch(Character::isDigit);
+    }
+
+    private int getDocumentNumber(String documentCode) {
+        return Integer.parseInt(documentCode.substring(3));
     }
 }

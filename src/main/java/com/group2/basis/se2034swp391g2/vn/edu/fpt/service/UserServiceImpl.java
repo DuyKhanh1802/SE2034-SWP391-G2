@@ -13,6 +13,9 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRoleRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,16 +23,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -143,22 +140,9 @@ public class UserServiceImpl implements UserService {
         userRepository.save(existingUser);
 
         if (Boolean.TRUE.equals(request.getRoleUpdateRequested())) {
-            List<Long> submittedRoleIds = request.getRoleIds() == null ? List.of() : request.getRoleIds();
-            List<Long> requestedRoleIds = submittedRoleIds.stream()
-                    .filter(roleId -> roleId != null)
-                    .toList();
-            List<Long> roleIds = requestedRoleIds.stream()
-                    .distinct()
-                    .toList();
+            Role newRole = validateSingleRole(request.getRoleId());
 
-            List<Role> newRoles = roleRepository.findAllById(roleIds);
-            validateRoleCombination(requestedRoleIds, newRoles);
-
-            Set<RoleName> roleNames = newRoles.stream()
-                    .map(Role::getRoleName)
-                    .collect(Collectors.toSet());
-
-            existingUser.setUserType(resolveUserType(roleNames));
+            existingUser.setUserType(resolveUserType(newRole.getRoleName()));
             existingUser.setUpdatedAt(Instant.now());
             userRepository.saveAndFlush(existingUser);
 
@@ -170,15 +154,13 @@ public class UserServiceImpl implements UserService {
                     ? entityManager.getReference(User.class, request.getCurrentAdminId())
                     : null;
 
-            for (Role role : newRoles) {
-                UserRole newUserRole = new UserRole();
-                newUserRole.setId(new UserRoleId(id, role.getId()));
-                newUserRole.setUser(entityManager.getReference(User.class, id));
-                newUserRole.setRole(entityManager.getReference(Role.class, role.getId()));
-                newUserRole.setAssignedAt(Instant.now());
-                newUserRole.setAssignedBy(assignedBy);
-                userRoleRepository.save(newUserRole);
-            }
+            UserRole newUserRole = new UserRole();
+            newUserRole.setId(new UserRoleId(id, newRole.getId()));
+            newUserRole.setUser(entityManager.getReference(User.class, id));
+            newUserRole.setRole(entityManager.getReference(Role.class, newRole.getId()));
+            newUserRole.setAssignedAt(Instant.now());
+            newUserRole.setAssignedBy(assignedBy);
+            userRoleRepository.save(newUserRole);
         }
     }
 
@@ -204,49 +186,23 @@ public class UserServiceImpl implements UserService {
         existingUser.setApprovalStatus(approvalStatus);
     }
 
-    private void validateRoleCombination(List<Long> requestedRoleIds, List<Role> roles) {
-        if (requestedRoleIds.isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng chọn ít nhất một vai trò.");
+    private Role validateSingleRole(Long roleId) {
+        if (roleId == null) {
+            throw new IllegalArgumentException("Vui lòng chọn một vai trò.");
         }
 
-        int distinctRoleCount = new HashSet<>(requestedRoleIds).size();
-        if (distinctRoleCount != requestedRoleIds.size()) {
-            throw new IllegalArgumentException("Không được chọn trùng vai trò.");
-        }
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new IllegalArgumentException("Vai trò không hợp lệ."));
 
-        if (roles.size() != distinctRoleCount) {
+        if (role.getRoleName() == null) {
             throw new IllegalArgumentException("Vai trò không hợp lệ.");
         }
 
-        Set<RoleName> roleNames = roles.stream()
-                .map(Role::getRoleName)
-                .collect(Collectors.toCollection(HashSet::new));
-
-        if (roleNames.contains(RoleName.GUEST) && roleNames.size() > 1) {
-            throw new IllegalArgumentException("Khách hàng không thể có thêm vai trò nhân viên.");
-        }
-
-        if (roleNames.contains(RoleName.SYSTEM_ADMIN) && roleNames.size() > 1) {
-            throw new IllegalArgumentException("Quản trị hệ thống không thể kiêm nhiệm vai trò khác.");
-        }
-
-        boolean hasHotelAdmin = roleNames.contains(RoleName.HOTEL_ADMIN);
-        boolean hasManager = roleNames.contains(RoleName.MANAGER);
-        boolean hasStorekeeper = roleNames.contains(RoleName.STOREKEEPER);
-        boolean hasReceptionist = roleNames.contains(RoleName.RECEPTIONIST);
-
-        if (!hasHotelAdmin
-                && !hasManager
-                && !hasStorekeeper
-                && !hasReceptionist
-                && !roleNames.contains(RoleName.GUEST)
-                && !roleNames.contains(RoleName.SYSTEM_ADMIN)) {
-            throw new IllegalArgumentException("Tổ hợp vai trò không hợp lệ.");
-        }
+        return role;
     }
 
-    private UserType resolveUserType(Set<RoleName> roleNames) {
-        return roleNames.size() == 1 && roleNames.contains(RoleName.GUEST) ? UserType.GUEST : UserType.STAFF;
+    private UserType resolveUserType(RoleName roleName) {
+        return roleName == RoleName.GUEST ? UserType.GUEST : UserType.STAFF;
     }
 
     private void validateSelfAccountUpdate(User existingUser, AccountUpdateRequest request) {
