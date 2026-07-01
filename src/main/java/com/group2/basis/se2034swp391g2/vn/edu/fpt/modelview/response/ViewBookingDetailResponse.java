@@ -107,8 +107,11 @@ public class ViewBookingDetailResponse {
     @AllArgsConstructor
     @Builder
     public static class ServiceLine {
+        private Long folioItemId;
         private String serviceName;
         private String itemType;
+        private String serviceStatus;
+        private String serviceStatusLabel;
         private Integer quantity;
         private BigDecimal unitPrice;
         private BigDecimal amount;

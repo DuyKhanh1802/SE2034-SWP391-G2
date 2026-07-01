@@ -1,11 +1,9 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeVariantRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.BookingServiceProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.ServiceProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +14,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 @RequiredArgsConstructor
 @Service
