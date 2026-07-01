@@ -8,9 +8,7 @@
     </div>
 
     <!-- SYSTEM ADMIN -->
-    <ul class="sidebar-menu"
-        sec:authorize="hasRole('SYSTEM_ADMIN')"
-        th:if="${session.CURRENT_ACTIVE_ROLE == 'SYSTEM_ADMIN'}">
+    <ul class="sidebar-menu" sec:authorize="hasRole('SYSTEM_ADMIN')">
         <li sec:authorize="hasAuthority('USER_VIEW')"
             th:classappend="${#strings.startsWith(currentUri ?: '', '/system-admin/list-user')} ? 'active' : ''">
             <a th:href="@{/system-admin/list-user}">
@@ -18,20 +16,10 @@
                 <span>Quản lý người dùng</span>
             </a>
         </li>
-        <li sec:authorize="hasAuthority('ROLE_PERMISSION_MANAGE')"
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/system-admin/role-permissions')} ? 'active' : ''">
-            <a th:href="@{/system-admin/role-permissions}">
-                <i class="fas fa-user-shield"></i>
-                <span>Phân quyền vai trò</span>
-            </a>
-        </li>
     </ul>
 
     <!-- HOTEL ADMIN -->
-    <ul class="sidebar-menu"
-        sec:authorize="hasRole('HOTEL_ADMIN')"
-        th:if="${session.CURRENT_ACTIVE_ROLE == 'HOTEL_ADMIN'}">
-
+    <ul class="sidebar-menu" sec:authorize="hasRole('HOTEL_ADMIN')">
         <li sec:authorize="hasAuthority('HOTEL_DASHBOARD_VIEW')"
             th:classappend="${#strings.equals(currentUri ?: '', '/hotel-admin/dashboard')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/dashboard}">
@@ -74,9 +62,7 @@
     </ul>
 
     <!-- MANAGER -->
-    <ul class="sidebar-menu"
-        sec:authorize="hasRole('MANAGER')"
-        th:if="${session.CURRENT_ACTIVE_ROLE == 'MANAGER'}">
+    <ul class="sidebar-menu" sec:authorize="hasRole('MANAGER')">
         <li sec:authorize="hasAuthority('MANAGER_DASHBOARD_VIEW')"
             th:classappend="${#strings.equals(currentUri ?: '', '/manager/dashboard')} ? 'active' : ''">
             <a th:href="@{/manager/dashboard}">
@@ -108,9 +94,7 @@
     </ul>
 
     <!-- STOREKEEPER -->
-    <ul class="sidebar-menu"
-        sec:authorize="hasRole('STOREKEEPER')"
-        th:if="${session.CURRENT_ACTIVE_ROLE == 'STOREKEEPER'}">
+    <ul class="sidebar-menu" sec:authorize="hasRole('STOREKEEPER')">
         <li sec:authorize="hasAuthority('INVENTORY_VIEW')"
             th:classappend="${#strings.startsWith(currentUri ?: '', '/storekeeper/inventory')} ? 'active' : ''">
             <a th:href="@{/storekeeper/inventory}">
@@ -121,9 +105,7 @@
     </ul>
 
     <!-- RECEPTIONIST -->
-    <ul class="sidebar-menu"
-        sec:authorize="hasRole('RECEPTIONIST')"
-        th:if="${session.CURRENT_ACTIVE_ROLE == 'RECEPTIONIST'}">
+    <ul class="sidebar-menu" sec:authorize="hasRole('RECEPTIONIST')">
         <li sec:authorize="hasAuthority('RECEPTION_DASHBOARD_VIEW')"
             th:classappend="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')} ? 'active' : ''">
             <a th:href="@{/receptionist/dashboard}">
@@ -169,7 +151,4 @@
     </ul>
 
     <div class="sidebar-section-spacer"></div>
-
-    <ul class="sidebar-menu">
-    </ul>
 </div>

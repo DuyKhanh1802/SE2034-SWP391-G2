@@ -21,4 +21,5 @@ public class BookingUpdateRequest {
     private Long countryId;
     private String identityNumber;
     private String notes;
+    private Integer birthYear;
 }

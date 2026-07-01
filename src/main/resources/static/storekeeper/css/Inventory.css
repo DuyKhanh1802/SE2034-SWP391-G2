@@ -131,19 +131,32 @@ a { text-decoration: none; }
 .filter-control,
 .form-control-admin { padding: 9px 12px; }
 
-.expiry-toggle {
+.admin-form label.expiry-toggle {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    width: fit-content;
+    margin-bottom: 0;
     color: #555;
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 600;
+    line-height: 16px;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
 }
 
-.expiry-toggle input {
+.admin-form label.expiry-toggle input {
     width: 16px;
     height: 16px;
+    flex: 0 0 16px;
+    margin: 0;
     accent-color: #111;
+}
+
+.admin-form label.expiry-toggle span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 16px;
 }
 
 .form-control-admin[type="number"]::-webkit-outer-spin-button,

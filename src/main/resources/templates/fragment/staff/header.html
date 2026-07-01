@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
@@ -18,43 +18,17 @@
                  alt="profile">
 
             <span th:text="${currentUserDisplayName != null ? currentUserDisplayName : 'Tài khoản'}">
-                    Tài khoản
-                </span>
+                Tài khoản
+            </span>
         </button>
 
-            <ul class="dropdown-menu dropdown-menu-end profile-menu">
-                <li sec:authorize="hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN','MANAGER','RECEPTIONIST','STOREKEEPER')">
-                    <span class="dropdown-item-text profile-active-role">
-                        <span>Vai trò hiện tại:</span>
-                        <strong th:text="${session.CURRENT_ACTIVE_ROLE_LABEL ?: 'Chưa chọn'}">Chưa chọn</strong>
-                    </span>
-                </li>
-
-                <li sec:authorize="hasAnyRole('SYSTEM_ADMIN','HOTEL_ADMIN','MANAGER','RECEPTIONIST','STOREKEEPER')">
-                    <hr class="dropdown-divider">
-                </li>
-
-                <th:block th:if="${session.AVAILABLE_ACTIVE_ROLE_OPTIONS != null and #lists.size(session.AVAILABLE_ACTIVE_ROLE_OPTIONS) > 1}">
-                    <li th:each="roleOption : ${session.AVAILABLE_ACTIVE_ROLE_OPTIONS}"
-                        th:if="${roleOption.name() != session.CURRENT_ACTIVE_ROLE}">
-                        <a class="dropdown-item"
-                           th:href="@{/api/user/switch-role(role=${roleOption.name()})}">
-                            <i class="fa-solid fa-repeat me-2"></i>
-                            <span>Chuyển sang </span><span th:text="${roleOption.label()}">Vai trò</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                </th:block>
-
-                <li>
-                    <a class="dropdown-item" th:href="@{/profile/edit}">
-                        <i class="fa-regular fa-user me-2"></i>
-                        Cập nhật profile
-                    </a>
-                </li>
+        <ul class="dropdown-menu dropdown-menu-end profile-menu">
+            <li>
+                <a class="dropdown-item" th:href="@{/profile/edit}">
+                    <i class="fa-regular fa-user me-2"></i>
+                    Cập nhật profile
+                </a>
+            </li>
 
             <li>
                 <a class="dropdown-item" href="#">

@@ -5,7 +5,7 @@
       layout:decorate="~{layout/staff-layout}">
 
 <head>
-    <title>ViHotel HMS - Chỉnh sửa thông tin khách</title>
+    <title>ViHotel HMS - Chỉnh sửa thông tin khách hàng</title>
 </head>
 
 <body>
@@ -31,7 +31,7 @@
                         <span>Chỉnh sửa</span>
                     </div>
 
-                    <h1>Chỉnh sửa thông tin khách</h1>
+                    <h1>Chỉnh sửa thông tin khách hàng</h1>
 
                     <p>
                         Chỉ cập nhật thông tin khách hàng và ghi chú.
@@ -154,11 +154,12 @@
                         </div>
 
                         <div class="edit-form-group">
-                            <label>Ngày sinh</label>
-                            <input type="text"
-                                   class="date-picker birth-date"
-                                   th:field="*{dateOfBirth}"
-                                   placeholder="dd/mm/yyyy">
+                            <label>NĂM SINH</label>
+                            <input type="number"
+                                   th:field="*{birthYear}"
+                                   min="1900"
+                                   max="2026"
+                                   placeholder="Ví dụ: 1998">
                         </div>
 
                         <div class="edit-form-group">
@@ -260,35 +261,73 @@
                 </div>
             </div>
 
+            <div class="detail-card" th:if="${detail.services != null and !#lists.isEmpty(detail.services)}">
+                <div class="detail-card-title">
+                    <h2>Dịch vụ đã thêm</h2>
+                </div>
+
+                <div class="room-detail-table service-detail-table">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Phòng</th>
+                            <th>Dịch vụ</th>
+                            <th>Loại</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="service : ${detail.services}">
+                            <td>
+                                <strong th:text="${service.roomNumber != null ? 'Phòng ' + service.roomNumber : 'Chưa xác định'}">
+                                    Phòng 101
+                                </strong>
+                            </td>
+                            <td th:text="${service.serviceName}">Bữa sáng Việt Nam</td>
+                            <td th:text="${service.itemType}">FOOD</td>
+                            <td th:text="${service.quantity}">1</td>
+                            <td th:text="${#numbers.formatDecimal(service.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</td>
+                            <td th:text="${#numbers.formatDecimal(service.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- DEPOSIT + PRICE: chỉ hiển thị -->
             <div class="detail-grid two-columns">
 
                 <div class="detail-card">
                     <div class="detail-card-title">
-                        <h2>Cọc & thanh toán</h2>
+                        <h2>Thanh toán</h2>
 
                     </div>
 
                     <div class="payment-summary-grid">
-                        <div>
-                            <span>Trạng thái cọc</span>
-                            <strong th:text="${detail.depositStatus.label}">
-                                PAID
-                            </strong>
-                        </div>
+                        <div class="payment-summary-grid">
+                            <div>
+                                <span>Tổng tiền</span>
+                                <strong th:text="${#numbers.formatDecimal(detail.grandTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    0 VND
+                                </strong>
+                            </div>
 
-                        <div>
-                            <span>Tiền cọc yêu cầu</span>
-                            <strong th:text="${#numbers.formatDecimal(detail.depositRequired, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                                1,456,000 VND
-                            </strong>
-                        </div>
+                            <div>
+                                <span>Đã thanh toán</span>
+                                <strong th:text="${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    0 VND
+                                </strong>
+                            </div>
 
-                        <div>
-                            <span>Tiền cọc đã trả</span>
-                            <strong th:text="${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                                0 VND
-                            </strong>
+                            <div>
+                                <span>Còn phải thanh toán</span>
+                                <strong th:text="${#numbers.formatDecimal(detail.remainingEstimate, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    0 VND
+                                </strong>
+                            </div>
                         </div>
                     </div>
 
@@ -325,7 +364,19 @@
                                 2,600,000 VND
                             </strong>
                         </div>
+                        <div class="price-row">
+                            <span>Tiền dịch vụ thêm</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.serviceSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                0 VND
+                            </strong>
+                        </div>
 
+                        <div class="price-row">
+                            <span>Phí dịch vụ</span>
+                            <strong th:text="${#numbers.formatDecimal(detail.serviceChargeTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                0 VND
+                            </strong>
+                        </div>
                         <div class="price-row">
                             <span>VAT / Thuế phí</span>
                             <strong th:text="${#numbers.formatDecimal(detail.vatTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
@@ -341,14 +392,7 @@
                         </div>
 
                         <div class="price-row">
-                            <span>Tiền cọc yêu cầu</span>
-                            <strong th:text="${#numbers.formatDecimal(detail.depositRequired, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                                1,456,000 VND
-                            </strong>
-                        </div>
-
-                        <div class="price-row">
-                            <span>Tiền cọc đã trả</span>
+                            <span>Đã thanh toán</span>
                             <strong th:text="'- ' + ${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                                 - 0 VND
                             </strong>

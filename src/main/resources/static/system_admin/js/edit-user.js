@@ -19,62 +19,43 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    const checkboxes = Array.from(
-        document.querySelectorAll('.multi-role-form input[type="checkbox"]')
+    const roleForm = document.querySelector(".single-role-form");
+    const radios = Array.from(
+        document.querySelectorAll('.single-role-form input[type="radio"][name="roleId"]')
     );
     const message = document.getElementById("roleValidationMessage");
 
-    if (!message || checkboxes.length === 0) {
+    if (!roleForm || !message || radios.length === 0) {
         return;
     }
 
-    function roleLabel(roleCode) {
-        const labels = {
-            SYSTEM_ADMIN: "Quản trị hệ thống",
-            HOTEL_ADMIN: "Quản trị khách sạn",
-            MANAGER: "Quản lý",
-            STOREKEEPER: "Thủ kho",
-            RECEPTIONIST: "Lễ tân",
-            GUEST: "Khách hàng"
-        };
-        return labels[roleCode] || roleCode;
-    }
-
     function updateRoleMessage() {
-        const selected = checkboxes
-            .filter(function (checkbox) {
-                return checkbox.checked;
-            })
-            .map(function (checkbox) {
-                return checkbox.dataset.roleCode;
-            });
+        const selected = radios.find(function (radio) {
+            return radio.checked;
+        });
 
         message.classList.remove("text-success", "text-danger", "text-warning");
 
-        if (selected.length === 0) {
-            message.textContent = "Vui lòng chọn ít nhất một vai trò.";
+        if (!selected) {
+            message.textContent = "Vui lòng chọn một vai trò.";
             message.classList.add("text-warning");
-            return;
+            return false;
         }
 
-        if (selected.includes("GUEST") && selected.length > 1) {
-            message.textContent = "Không hợp lệ: Khách hàng không thể có thêm vai trò nhân viên.";
-            message.classList.add("text-danger");
-            return;
-        }
-
-        if (selected.includes("SYSTEM_ADMIN") && selected.length > 1) {
-            message.textContent = "Không hợp lệ: Quản trị viên hệ thống không thể kiêm nhiệm vai trò khác.";
-            message.classList.add("text-danger");
-            return;
-        }
-
-        message.textContent = "Hợp lệ: " + selected.map(roleLabel).join(", ");
+        const label = selected.closest(".role-check-item").querySelector("span").textContent.trim();
+        message.textContent = "Vai trò đang chọn: " + label;
         message.classList.add("text-success");
+        return true;
     }
 
-    checkboxes.forEach(function (checkbox) {
-        checkbox.addEventListener("change", updateRoleMessage);
+    roleForm.addEventListener("submit", function (event) {
+        if (!updateRoleMessage()) {
+            event.preventDefault();
+        }
+    });
+
+    radios.forEach(function (radio) {
+        radio.addEventListener("change", updateRoleMessage);
     });
     updateRoleMessage();
 });

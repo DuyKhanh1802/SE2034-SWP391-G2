@@ -58,6 +58,71 @@
             </div>
         </div>
 
+        <!-- CANCELLATION INFO -->
+        <div class="detail-card cancellation-card"
+             th:if="${detail.bookingStatus.name() == 'CANCELLED'
+             or detail.bookingStatus.name() == 'NO_SHOW'}">
+
+            <div class="detail-card-title">
+                <h2 th:text="${detail.bookingStatus.name() == 'NO_SHOW'
+             ? 'Thông tin khách không đến'
+             : 'Thông tin hủy đặt phòng'}">
+                    Thông tin hủy đặt phòng
+                </h2>
+            </div>
+
+            <div class="cancellation-grid">
+                <div class="cancellation-item">
+                    <span>Trạng thái</span>
+                    <strong th:text="${detail.bookingStatus.name() == 'NO_SHOW'
+                 ? 'Khách không đến'
+                 : 'Đã hủy'}">
+                        Đã hủy
+                    </strong>
+                </div>
+
+                <div class="cancellation-item">
+                    <span>Trạng thái cọc</span>
+                    <strong th:text="${detail.depositStatus.label}">
+                        Mất cọc
+                    </strong>
+                </div>
+
+                <div class="cancellation-item">
+                    <span>Thời gian hủy</span>
+                    <strong th:text="${detail.cancelledAt != null
+                    ? #temporals.format(detail.cancelledAt, 'dd/MM/yyyy HH:mm')
+                    : 'N/A'}">
+                        24/06/2026 15:30
+                    </strong>
+                </div>
+
+                <div class="cancellation-item">
+                    <span>Người xử lý</span>
+                    <strong th:text="${detail.cancelledByName}">
+                        Receptionist
+                    </strong>
+                </div>
+            </div>
+
+            <div class="cancellation-reason">
+                <span th:text="${detail.bookingStatus.name() == 'NO_SHOW'
+                    ? 'Lý do no-show'
+                     : 'Lý do hủy'}">
+                    Lý do hủy
+                </span>
+
+                <p th:text="${detail.cancelReason != null and !#strings.isEmpty(detail.cancelReason)
+                    ? detail.cancelReason
+                    : (detail.bookingStatus.name() == 'NO_SHOW'
+                    ? 'Không có lý do no-show.'
+                    : 'Không có lý do hủy.')}">
+                    Khách yêu cầu hủy đặt phòng.
+                </p>
+            </div>
+
+        </div>
+
         <!-- RESERVATION + GUEST -->
         <div class="detail-grid two-columns">
 
@@ -141,8 +206,8 @@
                     </div>
 
                     <div>
-                        <span>Ngày sinh</span>
-                        <strong th:text="${detail.dateOfBirth != null ? #temporals.format(detail.dateOfBirth, 'dd/MM/yyyy') : 'N/A'}">
+                        <span>Năm sinh</span>
+                        <strong th:text="${detail.dateOfBirth != null ? #temporals.format(detail.dateOfBirth, 'yyyy') : 'N/A'}">
                             N/A
                         </strong>
                     </div>
@@ -181,7 +246,30 @@
 
                     <tbody>
                     <tr th:each="room : ${detail.rooms}">
-                        <td th:text="${room.roomNumber}">101</td>
+                        <td>
+                            <select th:if="${detail.bookingStatus.name() == 'PENDING'}"
+                                    name="roomIds"
+                                    required
+                                    class="form-select"
+                                    form="confirmBookingForm">
+                                <option value="">Chọn phòng</option>
+                                <option th:each="availableRoom : ${availableRoomsByDetail[room.bookingDetailId]}"
+                                        th:value="${availableRoom.id}"
+                                        th:text="'Phòng ' + ${availableRoom.roomNumber}">
+                                </option>
+                            </select>
+
+                            <span th:unless="${detail.bookingStatus.name() == 'PENDING'}"
+                                  th:text="${room.roomNumber}">
+                                        101
+                            </span>
+
+                            <input th:if="${detail.bookingStatus.name() == 'PENDING'}"
+                                   type="hidden"
+                                   name="bookingDetailIds"
+                                   th:value="${room.bookingDetailId}"
+                                   form="confirmBookingForm">
+                        </td>
 
                         <td>
                             <strong th:text="${room.variantName != null ? room.variantName : room.roomTypeName}">
@@ -245,6 +333,7 @@
                 <table>
                     <thead>
                     <tr>
+                        <th>Phòng</th>
                         <th>Dịch vụ</th>
                         <th>Loại</th>
                         <th>Số lượng</th>
@@ -255,6 +344,11 @@
 
                     <tbody>
                     <tr th:each="service : ${detail.services}">
+                        <td>
+                            <strong th:text="${service.roomNumber != null ? 'Phòng ' + service.roomNumber : 'Chưa xác định'}">
+                                Phòng 101
+                            </strong>
+                        </td>
                         <td th:text="${service.serviceName}">Bữa sáng Việt Nam</td>
 
                         <td th:text="${service.itemType}">FOOD</td>
@@ -279,25 +373,27 @@
             <!-- Deposit & Payments -->
             <div class="detail-card">
                 <div class="detail-card-title">
-                    <h2>Cọc & thanh toán</h2>
+                    <h2>Thanh toán</h2>
                 </div>
 
                 <div class="payment-summary-grid">
                     <div>
-                        <span>Trạng thái cọc</span>
-                        <strong th:text="${detail.depositStatus.label}">PAID</strong>
-                    </div>
-
-                    <div>
-                        <span>Tiền cọc yêu cầu</span>
-                        <strong th:text="${#numbers.formatDecimal(detail.depositRequired, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                            1,456,000 VND
+                        <span>Tổng tiền</span>
+                        <strong th:text="${#numbers.formatDecimal(detail.grandTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
                         </strong>
                     </div>
 
                     <div>
-                        <span>Tiền cọc đã trả</span>
+                        <span>Đã thanh toán</span>
                         <strong th:text="${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Còn phải thanh toán</span>
+                        <strong th:text="${#numbers.formatDecimal(detail.remainingEstimate, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                             0 VND
                         </strong>
                     </div>
@@ -305,25 +401,15 @@
 
                 <div class="payment-action-row">
 
-                    <button type="button"
-                            class="btn-detail primary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#depositPaymentModal"
-                            th:if="${detail.depositStatus.name() != 'PAID'
-                    and detail.bookingStatus.name() != 'CANCELLED'
-                    and detail.bookingStatus.name() != 'CHECKED_OUT'}">
-                        <i class="bi bi-cash-coin"></i>
-                        THU TIỀN CỌC
-                    </button>
+
 
                     <button type="button"
                             class="btn-detail outline"
                             data-bs-toggle="modal"
                             data-bs-target="#fullPaymentModal"
-                            th:if="${detail.bookingStatus.name() == 'PENDING'
-                    or detail.bookingStatus.name() == 'CONFIRMED'}">
+                            th:if="${detail.bookingStatus.name() == 'CONFIRMED'}">
                         <i class="bi bi-credit-card"></i>
-                        THU FULL TRƯỚC
+                        THU TOÀN BỘ
                     </button>
 
                 </div>
@@ -425,14 +511,7 @@
                     </div>
 
                     <div class="price-row">
-                        <span>Tiền cọc yêu cầu</span>
-                        <strong th:text="${#numbers.formatDecimal(detail.depositRequired, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                            1,456,000 VND
-                        </strong>
-                    </div>
-
-                    <div class="price-row">
-                        <span>Tiền cọc đã trả</span>
+                        <span>Đã thanh toán</span>
                         <strong th:text="'- ' + ${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                             - 0 VND
                         </strong>
@@ -448,7 +527,11 @@
             </div>
 
         </div>
-
+        <form id="confirmBookingForm"
+              th:if="${detail.bookingStatus.name() == 'PENDING'}"
+              th:action="@{/receptionist/bookings/{id}/confirm(id=${detail.bookingId})}"
+              method="post">
+        </form>
         <!-- ACTIONS -->
         <div class="detail-card action-card">
 
@@ -461,52 +544,66 @@
 
             <div class="action-right">
                 <!-- PENDING -->
-                <form th:if="${detail.bookingStatus.name() == 'PENDING'}"
-                      th:action="@{/receptionist/bookings/{id}/confirm(id=${detail.bookingId})}"
-                      method="post"
-                      style="display:inline;">
-                    <button type="submit" class="btn-detail primary">
-                        <i class="bi bi-check-circle"></i>
-                        XÁC NHẬN ĐẶT PHÒNG
-                    </button>
-                </form>
-
-                <a th:if="${detail.bookingStatus.name() == 'PENDING'}"
-                   th:href="@{/receptionist/bookings/edit/{id}(id=${detail.bookingId})}"
-                   class="btn-detail outline">
-                    <i class="bi bi-pencil-square"></i>
-                    SỬA
-                </a>
-
                 <button th:if="${detail.bookingStatus.name() == 'PENDING'}"
-                        type="button"
-                        class="btn-detail danger">
-                    <i class="bi bi-x-circle"></i>
-                    TỪ CHỐI ĐẶT PHÒNG
+                        type="submit"
+                        form="confirmBookingForm"
+                        class="btn-detail primary">
+                    <i class="bi bi-check-circle"></i>
+                    XÁC NHẬN & PHÂN PHÒNG
                 </button>
 
 
                 <!-- CONFIRMED -->
-                <a th:if="${detail.bookingStatus.name() == 'CONFIRMED'}"
+                <a th:if="${detail.bookingStatus.name() == 'CONFIRMED'
+           and detail.gender != 'N/A'
+           and detail.dateOfBirth != null
+           and detail.identityType != 'N/A'
+           and detail.identityNumber != 'N/A'}"
                    th:href="@{/receptionist/bookings/{id}/check-in(id=${detail.bookingId})}"
                    class="btn-detail primary">
                     <i class="bi bi-box-arrow-in-right"></i>
                     TIẾN HÀNH NHẬN PHÒNG
                 </a>
 
-                <a th:href="@{/receptionist/bookings/edit/{id}(id=${detail.bookingId})}"
+                <button th:if="${detail.bookingStatus.name() == 'CONFIRMED'
+                and (detail.gender == 'N/A'
+                or detail.dateOfBirth == null
+                or detail.identityType == 'N/A'
+                or detail.identityNumber == 'N/A')}"
+                        type="button"
+                        class="btn-detail primary"
+                        disabled>
+                    <i class="bi bi-exclamation-circle"></i>
+                    CẬP NHẬT THÔNG TIN KHÁCH TRƯỚC
+                </button>
+
+                <a th:if="${detail.bookingStatus.name() != 'CANCELLED'
+           and detail.bookingStatus.name() != 'CHECKED_OUT'
+           and detail.bookingStatus.name() != 'NO_SHOW'}"
+                   th:href="@{/receptionist/bookings/edit/{id}(id=${detail.bookingId})}"
                    class="btn-detail outline">
                     <i class="bi bi-pencil-square"></i>
                     SỬA
                 </a>
 
-                <button th:if="${detail.bookingStatus.name() == 'CONFIRMED'}"
+                <button th:if="${detail.bookingStatus.name() == 'PENDING'
+                or detail.bookingStatus.name() == 'CONFIRMED'}"
                         type="button"
-                        class="btn-detail danger">
+                        class="btn-detail danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cancelBookingModal">
                     <i class="bi bi-x-circle"></i>
                     HỦY ĐẶT PHÒNG
                 </button>
 
+                <button th:if="${detail.bookingStatus.name() == 'CONFIRMED'}"
+                        type="button"
+                        class="btn-detail danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#noShowModal">
+                    <i class="bi bi-person-x"></i>
+                    ĐÁNH DẤU NO-SHOW
+                </button>
 
                 <!-- CHECKED_IN -->
                 <a th:if="${detail.bookingStatus.name() == 'CHECKED_IN'}"
@@ -547,62 +644,12 @@
                 </a>
 
 
-                <!-- CANCELLED -->
-                <a th:if="${detail.bookingStatus.name() == 'CANCELLED'}"
-                   th:href="@{/receptionist/bookings/{id}/cancellation(id=${detail.bookingId})}"
-                   class="btn-detail outline">
-                    <i class="bi bi-info-circle"></i>
-                    XEM CHI TIẾT HỦY
-                </a>
+
 
             </div>
         </div>
-        <div class="modal fade" id="depositPaymentModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <form class="modal-content"
-                      th:action="@{/receptionist/bookings/{id}/payments(id=${detail.bookingId})}"
-                      method="post">
 
-                    <div class="modal-header">
-                        <h5 class="modal-title">Thu tiền cọc</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
 
-                    <div class="modal-body">
-                        <input type="hidden" name="paymentType" value="DEPOSIT">
-
-                        <div class="mb-3">
-                            <label class="form-label">Số tiền cọc</label>
-                            <input type="number"
-                                   name="amount"
-                                   class="form-control"
-                                   th:value="${detail.depositRequired}"
-                                   required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Phương thức thanh toán</label>
-                            <select name="method" class="form-select" required>
-                                <option value="CASH">Tiền mặt</option>
-                                <option value="CARD">Thẻ</option>
-                                <option value="TRANSFER">Chuyển khoản</option>
-                            </select>
-                        </div>
-
-                        <div class="alert alert-info mb-0">
-                            Sau khi xác nhận, hệ thống sẽ tạo mã giao dịch dạng <strong>ĐC-...</strong>
-                            và tự đẩy sang sổ dòng tiền.
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-success">Xác nhận thu cọc</button>
-                    </div>
-
-                </form>
-            </div>
-        </div>
         <div class="modal fade" id="fullPaymentModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form class="modal-content"
@@ -644,6 +691,95 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
                         <button type="submit" class="btn btn-dark">Xác nhận thu full</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <div class="modal fade" id="cancelBookingModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content"
+                      th:action="@{/receptionist/bookings/{id}/cancel(id=${detail.bookingId})}"
+                      method="post">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Hủy đặt phòng</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            Sau khi hủy, booking sẽ chuyển sang trạng thái <strong>Đã hủy</strong>.
+                            Nếu khách đã thanh toán cọc, tiền cọc sẽ không được hoàn lại.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Lý do hủy</label>
+                            <textarea name="cancelReason"
+                                      class="form-control"
+                                      rows="4"
+                                      maxlength="300"
+                                      required
+                                      placeholder="Nhập lý do hủy đặt phòng..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-light"
+                                data-bs-dismiss="modal">
+                            Đóng
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Xác nhận hủy
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+        <div class="modal fade" id="noShowModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content"
+                      th:action="@{/receptionist/bookings/{id}/no-show(id=${detail.bookingId})}"
+                      method="post">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Đánh dấu khách không đến</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            Chức năng này dùng khi khách không đến sau thời gian giữ phòng.
+                            Nếu khách đã thanh toán cọc, tiền cọc sẽ không được hoàn lại.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Lý do no-show</label>
+                            <textarea name="reason"
+                                      class="form-control"
+                                      rows="4"
+                                      maxlength="300"
+                                      required
+                                      placeholder="Ví dụ: Khách không đến sau 30 phút quá giờ giữ phòng..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-light"
+                                data-bs-dismiss="modal">
+                            Đóng
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Xác nhận no-show
+                        </button>
                     </div>
 
                 </form>

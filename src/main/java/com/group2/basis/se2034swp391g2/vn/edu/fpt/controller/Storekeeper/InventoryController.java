@@ -4,6 +4,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryTransaction;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.InventoryTransactionType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.InventoryManagementService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import jakarta.servlet.http.HttpSession;
@@ -45,7 +46,6 @@ public class InventoryController {
         Page<InventoryItem> itemPage = inventoryManagementService.getItems(
                 keyword, categoryId, stockStatus, page, size);
         model.addAttribute("items", itemPage.getContent());
-        model.addAttribute("allItems", inventoryManagementService.getItems());
         model.addAttribute("categories", inventoryManagementService.getCategories());
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedCategoryId", categoryId);
@@ -150,12 +150,14 @@ public class InventoryController {
                                          @RequestParam(required = false) String batchCode,
                                          @RequestParam(required = false)
                                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiryDate,
+                                         @RequestParam PaymentMethod paymentMethod,
                                          Authentication authentication,
                                          HttpSession session,
                                          RedirectAttributes redirectAttributes) {
         try {
             inventoryManagementService.createReceipt(
                     itemId, quantity, unitCost, supplier, note, receiptDate, batchCode, expiryDate,
+                    paymentMethod,
                     resolveCurrentUser(authentication, session));
             redirectAttributes.addFlashAttribute("successMessage", "Da lap phieu nhap hang va ghi nhan chi quy.");
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -164,11 +166,23 @@ public class InventoryController {
         return "redirect:/storekeeper/inventory";
     }
 
+    @GetMapping("/storekeeper/inventory/items/options")
+    @ResponseBody
+    public List<InventoryItemOption> getInventoryItemOptions() {
+        return inventoryManagementService.getItemsForSelection()
+                .stream()
+                .map(item -> new InventoryItemOption(item.getId(), item.getCode() + " - " + item.getName()))
+                .toList();
+    }
+
     @GetMapping("/storekeeper/inventory/receipts/next-batch-code")
     @ResponseBody
     public String previewReceiptBatchCode(@RequestParam(required = false)
                                           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate receiptDate) {
         return inventoryManagementService.previewBatchCode(receiptDate);
+    }
+
+    public record InventoryItemOption(Long id, String text) {
     }
 
     @PostMapping("/storekeeper/inventory/{itemId}/service-mappings/{mappingId}/delete")

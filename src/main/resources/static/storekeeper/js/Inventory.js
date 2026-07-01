@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const validationMessage = document.getElementById("receiptValidationMessage");
     const vatAmount = document.getElementById("receiptVatAmount");
     const totalCost = document.getElementById("receiptTotalCost");
+    const itemSelect = document.getElementById("receiptItemSelect");
+    const receiptModal = document.getElementById("receiptModal");
     if (!form || !quantity || !unitCost) {
         return;
     }
@@ -41,6 +43,47 @@ document.addEventListener("DOMContentLoaded", function () {
             batchCode.value = response.ok ? await response.text() : "";
         } catch (error) {
             batchCode.value = "";
+        }
+    }
+
+    async function loadReceiptItems() {
+        if (!itemSelect || itemSelect.dataset.loaded === "true") {
+            return;
+        }
+
+        const placeholder = itemSelect.querySelector("option[value='']");
+        if (placeholder) {
+            placeholder.textContent = "Đang tải hàng hóa...";
+        }
+        itemSelect.disabled = true;
+
+        try {
+            const response = await fetch(itemSelect.dataset.optionsUrl || "/storekeeper/inventory/items/options");
+            if (!response.ok) {
+                throw new Error("Cannot load inventory items");
+            }
+
+            const items = await response.json();
+            itemSelect.querySelectorAll("option:not([value=''])").forEach(function (option) {
+                option.remove();
+            });
+            items.forEach(function (item) {
+                const option = document.createElement("option");
+                option.value = item.id;
+                option.textContent = item.text;
+                itemSelect.appendChild(option);
+            });
+
+            itemSelect.dataset.loaded = "true";
+            if (placeholder) {
+                placeholder.textContent = items.length ? "Chọn hàng hóa" : "Chưa có hàng hóa";
+            }
+        } catch (error) {
+            if (placeholder) {
+                placeholder.textContent = "Không tải được danh sách hàng hóa";
+            }
+        } finally {
+            itemSelect.disabled = false;
         }
     }
 
@@ -93,6 +136,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     if (trackExpiry) {
         trackExpiry.addEventListener("change", updateExpiryFields);
+    }
+    if (receiptModal) {
+        receiptModal.addEventListener("show.bs.modal", loadReceiptItems);
     }
     form.addEventListener("submit", function (event) {
         if (!validateReceiptDates()) {
