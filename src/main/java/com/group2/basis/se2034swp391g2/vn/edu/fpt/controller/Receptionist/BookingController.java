@@ -265,32 +265,6 @@ public class BookingController {
         return "receptionist/ViewBookingDetail";
     }
 
-    @PostMapping("/view/{bookingId}/services/{folioItemId}/confirm")
-    public String confirmServiceServed(@PathVariable Long bookingId,
-                                       @PathVariable Long folioItemId,
-                                       RedirectAttributes redirectAttributes) {
-        try {
-            bookingService.confirmServiceServed(bookingId, folioItemId);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã xác nhận phục vụ dịch vụ và ghi nhận tiêu hao kho.");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/receptionist/bookings/view/" + bookingId;
-    }
-
-    @PostMapping("/view/{bookingId}/services/{folioItemId}/cancel")
-    public String cancelRequestedService(@PathVariable Long bookingId,
-                                         @PathVariable Long folioItemId,
-                                         RedirectAttributes redirectAttributes) {
-        try {
-            bookingService.cancelRequestedService(bookingId, folioItemId);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy dịch vụ chờ phục vụ.");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/receptionist/bookings/view/" + bookingId;
-    }
-
     @GetMapping("/edit/{bookingId}")
     public String showEditBookingForm(@PathVariable Long bookingId,
                                       Model model,
