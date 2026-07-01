@@ -291,19 +291,23 @@
 .service-action-group {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    min-width: max-content;
 }
 
 .service-action-group form {
+    flex: 0 1 auto;
     margin: 0;
 }
 
 .service-action-btn {
-    min-height: 34px;
-    padding: 7px 12px;
+    min-height: 28px;
+    padding: 2px 2px;
     border-radius: 0;
-    font-size: 11px;
+    font-size: 9px;
+    line-height: 1.1;
     white-space: nowrap;
 }
 

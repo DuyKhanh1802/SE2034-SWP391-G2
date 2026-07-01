@@ -34,9 +34,6 @@ public class InventoryTransaction {
     @Column(name = "remaining_quantity", precision = 12, scale = 2)
     private BigDecimal remainingQuantity;
 
-    @Column(name = "description", length = 300, columnDefinition = "NVARCHAR(300)")
-    private String description;
-
     @Column(name = "source_type", length = 50)
     private String sourceType;
 
@@ -73,17 +70,4 @@ public class InventoryTransaction {
         };
     }
 
-    @Transient
-    public String getDescriptionLabel() {
-        if (description == null || description.isBlank()) {
-            return "-";
-        }
-        if ("INVENTORY_RECEIPT".equals(sourceType) && description.startsWith("Nhập hàng IR-")) {
-            return "Nhập kho từ phiếu nhập";
-        }
-        if ("RECEIPT_OPENING".equals(sourceType)) {
-            return "Nhập tồn kho khởi tạo từ file Excel";
-        }
-        return description;
-    }
 }

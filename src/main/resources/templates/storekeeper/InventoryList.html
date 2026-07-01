@@ -11,8 +11,6 @@
 
     <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
     <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
-    <div th:if="${configurationError}" class="admin-alert warning"
-         th:text="${configurationError + ' Chức năng lập phiếu nhập tạm thời bị khóa.'}"></div>
 
     <section class="admin-card">
         <div class="inventory-toolbar mb-4">
@@ -23,8 +21,12 @@
                 <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history}">
                     <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử kho
                 </a>
-                <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#importModal">
-                    <i class="fa-solid fa-file-import"></i> Import hàng hóa
+                <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#itemImportModal">
+                    <i class="fa-solid fa-file-import"></i> Import danh sách hàng hóa
+                </button>
+                <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#receiptImportModal"
+                        th:disabled="${!financialChargeConfigured}">
+                    <i class="fa-solid fa-boxes-packing"></i> Import lô hàng nhập
                 </button>
                 <button class="btn-admin-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal"
                         th:disabled="${!financialChargeConfigured}">
@@ -55,6 +57,10 @@
             <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
         </form>
 
+        <div th:if="${!#lists.isEmpty(lowStockItemCodes)}" class="admin-alert warning mt-3 mb-0">
+            Có hàng hoá sắp hết hoặc đã hết hàng, cần nhập thêm:
+            <strong th:text="${lowStockItemCodesText}"></strong>.
+        </div>
         <div th:if="${!#lists.isEmpty(expiringSoonItemCodes)}" class="admin-alert warning mt-3 mb-0">
             Có hàng hoá sắp hết hạn, cần nhập lô hàng mới:
             <strong th:text="${expiringSoonItemCodesText}"></strong>.
@@ -79,7 +85,7 @@
                 <tbody>
                 <tr th:each="item : ${items}">
                     <td><span class="item-code" th:text="${item.code}">IT-0001</span></td>
-                    <td><strong th:text="${item.name}">Hàng hóa</strong></td>
+                    <td th:text="${item.name}">Hàng hóa</td>
                     <td th:text="${item.categoryName ?: 'Chưa phân loại'}">Loại</td>
                     <td class="inventory-cell-center" th:text="${item.unit}">Cái</td>
                     <td class="inventory-cell-center">
@@ -161,30 +167,58 @@
         </div>
     </section>
 
-    <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="itemImportModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form th:action="@{/storekeeper/inventory/items/import}" method="post" enctype="multipart/form-data">
                     <div class="modal-header">
                         <div><span class="eyebrow">EXCEL IMPORT</span>
-                            <h2 class="modal-title">Import hàng hóa</h2></div>
+                            <h2 class="modal-title">Import danh sách hàng hóa</h2></div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <label class="eyebrow mb-2 d-block">FILE DỮ LIỆU (.XLSX)</label>
                         <input class="form-control-admin" type="file" name="file" accept=".xlsx" required>
                         <p class="form-hint">
-                            Dùng đúng 7 cột: <code>ten_hang</code>, <code>loai</code>, <code>don_vi</code>,
-                            <code>ton_dau_ky</code>, <code>nguong_canh_bao</code>, <code>gia_von_truoc_vat</code>,
-                            <code>han_su_dung</code>.
+                            Dùng đúng 5 cột: <code>ten_hang</code>, <code>loai</code>, <code>don_vi</code>,
+                            <code>ton_dau_ky</code>, <code>nguong_canh_bao</code>.
                             Tên, loại và đơn vị là bắt buộc. Số lượng tối đa 2 chữ số thập phân;
-                            giá vốn trước VAT là đơn giá của 1 đơn vị hàng hóa, là số nguyên không âm
-                            và không dùng dấu phân cách hàng nghìn.
+                            file này chỉ dùng để tạo danh mục hàng hóa và tồn khởi tạo, không khai báo giá vốn hoặc hạn sử dụng.
                         </p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn-admin-primary">Import Excel</button>
+                        <button type="submit" class="btn-admin-primary">Import danh sách</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="receiptImportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="@{/storekeeper/inventory/receipts/import}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <div><span class="eyebrow">RECEIPT BATCH IMPORT</span>
+                            <h2 class="modal-title">Import lô hàng nhập</h2></div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="eyebrow mb-2 d-block">FILE LÔ NHẬP (.XLSX)</label>
+                        <input class="form-control-admin" type="file" name="file" accept=".xlsx" required>
+                        <p class="form-hint">
+                            Dùng đúng 7 cột: <code>ten_hang</code>, <code>so_luong</code>,
+                            <code>gia_von_truoc_vat</code>, <code>han_su_dung</code>,
+                            <code>phuong_thuc_thanh_toan</code>, <code>nha_cung_cap</code>, <code>ghi_chu</code>.
+                            Tên hàng phải tồn tại trong danh sách hàng hóa. Giá vốn trước VAT là đơn giá của 1 đơn vị;
+                            phương thức thanh toán nhập <code>CASH</code> hoặc <code>TRANSFER</code>.
+                            Mã phiếu và mã lô sẽ được hệ thống tự sinh.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn-admin-primary">Import lô nhập</button>
                     </div>
                 </form>
             </div>

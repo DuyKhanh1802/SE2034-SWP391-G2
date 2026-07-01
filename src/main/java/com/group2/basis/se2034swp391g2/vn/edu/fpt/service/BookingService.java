@@ -35,6 +35,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ServiceCategoryType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 
 
@@ -82,6 +83,7 @@ public class BookingService {
     private final RoomTypeVariantServiceRepository roomTypeVariantServiceRepository;
     private final ServiceRepository serviceRepository;
     private final FolioItemRepository folioItemRepository;
+    private final InventoryManagementService inventoryManagementService;
 
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
@@ -93,6 +95,7 @@ public class BookingService {
                           RoomTypeVariantServiceRepository roomTypeVariantServiceRepository,
                           ServiceRepository serviceRepository,
                           FolioItemRepository folioItemRepository,
+                          InventoryManagementService inventoryManagementService,
 
                           PaymentService paymentService) {
         this.bookingRepository = bookingRepository;
@@ -105,6 +108,7 @@ public class BookingService {
         this.roomTypeVariantServiceRepository = roomTypeVariantServiceRepository;
         this.serviceRepository = serviceRepository;
         this.folioItemRepository = folioItemRepository;
+        this.inventoryManagementService = inventoryManagementService;
 
         this.paymentService = paymentService;
     }
@@ -430,6 +434,96 @@ public class BookingService {
             throw new IllegalArgumentException("Thiếu mã đặt phòng");
         }
         return bookingRepository.findById(bookingId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng"));
+    }
+
+    @Transactional
+    public void confirmServiceServed(Long bookingId, Long folioItemId) {
+        FolioItem folioItem = getServiceFolioItem(bookingId, folioItemId);
+        FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
+
+        if (currentStatus == FolioItemStatus.COMPLETED) {
+            throw new IllegalArgumentException("Dịch vụ này đã được xác nhận phục vụ.");
+        }
+        if (currentStatus == FolioItemStatus.CANCELLED) {
+            throw new IllegalArgumentException("Không thể xác nhận dịch vụ đã hủy.");
+        }
+        if (currentStatus == FolioItemStatus.NOT_USED_NO_REFUND) {
+            throw new IllegalArgumentException("Không thể xác nhận dịch vụ khách đã báo không sử dụng.");
+        }
+        inventoryManagementService.consumeForService(
+                folioItem.getService(),
+                BigDecimal.valueOf(folioItem.getQuantity() == null ? 1 : folioItem.getQuantity()),
+                folioItem.getId(),
+                getCurrentStaffUser()
+        );
+
+        folioItem.setServiceStatus(FolioItemStatus.COMPLETED);
+        folioItemRepository.save(folioItem);
+    }
+
+    @Transactional
+    public void markServiceNotUsedNoRefund(Long bookingId, Long folioItemId) {
+        FolioItem folioItem = getServiceFolioItem(bookingId, folioItemId);
+        FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
+
+        if (currentStatus == FolioItemStatus.COMPLETED) {
+            throw new IllegalArgumentException("Dịch vụ đã phục vụ nên không thể ghi nhận không sử dụng.");
+        }
+        if (currentStatus == FolioItemStatus.CANCELLED) {
+            throw new IllegalArgumentException("Dịch vụ này đã được hủy.");
+        }
+        if (currentStatus == FolioItemStatus.NOT_USED_NO_REFUND) {
+            throw new IllegalArgumentException("Dịch vụ này đã được ghi nhận không sử dụng và không hoàn tiền.");
+        }
+
+        folioItem.setServiceStatus(FolioItemStatus.NOT_USED_NO_REFUND);
+        folioItemRepository.save(folioItem);
+    }
+
+    @Transactional
+    public void cancelRequestedService(Long bookingId, Long folioItemId) {
+        FolioItem folioItem = getServiceFolioItem(bookingId, folioItemId);
+        FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
+
+        if (currentStatus == FolioItemStatus.COMPLETED) {
+            throw new IllegalArgumentException("Dịch vụ đã phục vụ nên không thể hủy.");
+        }
+        if (currentStatus == FolioItemStatus.CANCELLED) {
+            throw new IllegalArgumentException("Dịch vụ này đã được hủy.");
+        }
+        if (currentStatus == FolioItemStatus.NOT_USED_NO_REFUND) {
+            throw new IllegalArgumentException("Dịch vụ này đã được ghi nhận không sử dụng và không hoàn tiền.");
+        }
+
+        folioItem.setServiceStatus(FolioItemStatus.CANCELLED);
+        folioItemRepository.save(folioItem);
+    }
+
+    private FolioItem getServiceFolioItem(Long bookingId, Long folioItemId) {
+        if (bookingId == null || folioItemId == null) {
+            throw new IllegalArgumentException("Thiếu thông tin dịch vụ cần xử lý.");
+        }
+
+        FolioItem folioItem = folioItemRepository.findById(folioItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ trong booking."));
+
+        if (Boolean.TRUE.equals(folioItem.getIsVoided())
+                || folioItem.getBooking() == null
+                || !bookingId.equals(folioItem.getBooking().getId())
+                || folioItem.getService() == null) {
+            throw new IllegalArgumentException("Dịch vụ không thuộc booking này hoặc đã bị hủy chứng từ.");
+        }
+
+        Booking booking = folioItem.getBooking();
+        if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+            throw new IllegalArgumentException("Chỉ có thể xử lý dịch vụ sau khi khách đã nhận phòng.");
+        }
+
+        return folioItem;
+    }
+
+    private FolioItemStatus getEffectiveServiceStatus(FolioItem folioItem) {
+        return folioItem.getServiceStatus() == null ? FolioItemStatus.REQUESTED : folioItem.getServiceStatus();
     }
 
     @Transactional
@@ -1003,7 +1097,10 @@ public class BookingService {
         List<FolioItem> folioItems =
                 folioItemRepository.findByBookingIdAndIsVoidedFalseOrderByPostedAtAsc(bookingId);
         List<ViewBookingDetailResponse.ServiceLine> serviceLines = folioItems.stream()
-                .map(item -> ViewBookingDetailResponse.ServiceLine.builder()
+                .map(item -> {
+                    FolioItemStatus serviceStatus = getEffectiveServiceStatus(item);
+                    return ViewBookingDetailResponse.ServiceLine.builder()
+                        .folioItemId(item.getId())
                         .bookingDetailId(item.getBookingDetail() != null
                                 ? item.getBookingDetail().getId()
                                 : null)
@@ -1013,6 +1110,8 @@ public class BookingService {
                                 : "Chưa xác định")
                         .serviceName(item.getDescription())
                         .itemType(item.getItemType() != null ? item.getItemType().name() : "N/A")
+                        .serviceStatus(serviceStatus.name())
+                        .serviceStatusLabel(serviceStatus.getLabel())
                         .quantity(item.getQuantity())
                         .unitPrice(item.getUnitPrice())
                         .amount(item.getAmount())
@@ -1020,7 +1119,8 @@ public class BookingService {
                         .postedBy(item.getPostedBy() != null
                                 ? item.getPostedBy().getFirstName() + " " + item.getPostedBy().getLastName()
                                 : "N/A")
-                        .build())
+                        .build();
+                })
                 .toList();
 
         BigDecimal roomTotal = booking.getRoomSubtotal() == null

@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
     Optional<InventoryItem> findByIdAndIsDeletedFalse(Long id);
 
+    Optional<InventoryItem> findByNameIgnoreCaseAndIsDeletedFalse(String name);
+
     boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
     boolean existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(String name, Long id);

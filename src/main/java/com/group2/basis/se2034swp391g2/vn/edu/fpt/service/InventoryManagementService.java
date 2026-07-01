@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.Normalizer;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.Instant;
@@ -54,15 +55,22 @@ public class InventoryManagementService {
     );
     private static final long MAX_IMPORT_FILE_SIZE = 5L * 1024 * 1024;
     private static final int MAX_IMPORT_ROWS = 1000;
-    private static final int IMPORT_COLUMN_COUNT = 7;
-    private static final List<String> IMPORT_HEADERS = List.of(
+    private static final int ITEM_IMPORT_COLUMN_COUNT = 5;
+    private static final List<String> ITEM_IMPORT_HEADERS = List.of(
             "ten_hang",
             "loai",
             "don_vi",
             "ton_dau_ky",
-            "nguong_canh_bao",
+            "nguong_canh_bao");
+    private static final int RECEIPT_IMPORT_COLUMN_COUNT = 7;
+    private static final List<String> RECEIPT_IMPORT_HEADERS = List.of(
+            "ten_hang",
+            "so_luong",
             "gia_von_truoc_vat",
-            "han_su_dung");
+            "han_su_dung",
+            "phuong_thuc_thanh_toan",
+            "nha_cung_cap",
+            "ghi_chu");
 
     private final InventoryItemRepository inventoryItemRepository;
     private final InventoryCategoryRepository inventoryCategoryRepository;
@@ -180,7 +188,7 @@ public class InventoryManagementService {
 
             DataFormatter formatter = new DataFormatter(Locale.US);
             Sheet sheet = workbook.getSheetAt(0);
-            validateImportHeader(sheet, formatter);
+            validateImportHeader(sheet, formatter, ITEM_IMPORT_HEADERS, ITEM_IMPORT_COLUMN_COUNT);
 
             if (sheet.getLastRowNum() > MAX_IMPORT_ROWS) {
                 throw new IllegalArgumentException("File Excel chỉ được chứa tối đa 1.000 dòng dữ liệu.");
@@ -193,13 +201,13 @@ public class InventoryManagementService {
 
             for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
                 Row row = sheet.getRow(rowIndex);
-                if (isEmptyRow(formatter, row)) {
+                if (isEmptyRow(formatter, row, ITEM_IMPORT_COLUMN_COUNT)) {
                     continue;
                 }
 
                 int excelRowNumber = rowIndex + 1;
                 List<String> rowErrors = new ArrayList<>();
-                validateNoExtraColumns(formatter, row, excelRowNumber, rowErrors);
+                validateNoExtraColumns(formatter, row, excelRowNumber, ITEM_IMPORT_COLUMN_COUNT, rowErrors);
 
                 String name = readTextCell(formatter, row, 0, "Tên hàng", excelRowNumber, rowErrors);
                 String categoryName = readTextCell(formatter, row, 1, "Loại hàng", excelRowNumber, rowErrors);
@@ -224,22 +232,9 @@ public class InventoryManagementService {
                         row, 3, "Tồn đầu kỳ", excelRowNumber, 2, 10, rowErrors);
                 BigDecimal minimumQuantity = readDecimalCell(
                         row, 4, "Ngưỡng cảnh báo", excelRowNumber, 2, 10, rowErrors);
-                BigDecimal unitCost = readDecimalCell(
-                        row, 5, "Giá vốn trước VAT", excelRowNumber, 0, 15, rowErrors);
-                LocalDate expiryDate = readDateCell(
-                        formatter, row, 6, "Hạn sử dụng", excelRowNumber, rowErrors);
-
                 String normalizedName = name == null ? null : name.trim().toLowerCase(Locale.ROOT);
                 if (normalizedName != null && !normalizedName.isBlank() && !namesInFile.add(normalizedName)) {
                     rowErrors.add("Dòng " + excelRowNumber + ": tên hàng bị trùng trong chính file Excel.");
-                }
-                if (expiryDate != null) {
-                    if (openingQuantity == null || openingQuantity.compareTo(BigDecimal.ZERO) <= 0) {
-                        rowErrors.add("Dòng " + excelRowNumber + ": chỉ khai báo hạn sử dụng khi tồn đầu kỳ lớn hơn 0.");
-                    }
-                    if (!expiryDate.isAfter(LocalDate.now(APP_ZONE))) {
-                        rowErrors.add("Dòng " + excelRowNumber + ": hạn sử dụng phải sau ngày import.");
-                    }
                 }
 
                 if (!rowErrors.isEmpty()) {
@@ -254,7 +249,7 @@ public class InventoryManagementService {
 
                 validRows.add(new InventoryImportRow(
                         name.trim(), category, unit.trim(),
-                        openingQuantity, minimumQuantity, unitCost, expiryDate));
+                        openingQuantity, minimumQuantity, BigDecimal.ZERO));
             }
 
             if (!errors.isEmpty()) {
@@ -264,13 +259,11 @@ public class InventoryManagementService {
                 throw new IllegalArgumentException("File Excel không có dòng hàng hóa nào.");
             }
 
-            BigDecimal totalOpeningCost = BigDecimal.ZERO;
             for (InventoryImportRow row : validRows) {
                 createItem(row.name(), row.category(), row.unit(),
-                        row.openingQuantity(), row.minimumQuantity(), row.unitCost(), row.expiryDate(), createdBy);
-                totalOpeningCost = totalOpeningCost.add(calculateOpeningCost(row));
+                        row.openingQuantity(), row.minimumQuantity(), row.unitCost());
             }
-            return new InventoryImportResult(validRows.size(), skippedCount, totalOpeningCost);
+            return new InventoryImportResult(validRows.size(), skippedCount, BigDecimal.ZERO);
         } catch (IOException e) {
             throw new IllegalArgumentException("Không thể đóng hoặc hoàn tất việc đọc file Excel.");
         }
@@ -281,9 +274,7 @@ public class InventoryManagementService {
                                      String unit,
                                      BigDecimal openingQuantity,
                                      BigDecimal minimumQuantity,
-                                     BigDecimal unitCost,
-                                     LocalDate expiryDate,
-                                     User createdBy) {
+                                     BigDecimal unitCost) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Tên hàng hóa là bắt buộc.");
         }
@@ -304,57 +295,15 @@ public class InventoryManagementService {
         InventoryItem item = InventoryItem.builder()
                 .name(name.trim())
                 .category(category)
-                .legacyCategory(category.getName())
                 .unit(unit.trim())
                 .openingQuantity(opening)
-                .currentQuantity(opening)
+                .currentQuantity(BigDecimal.ZERO)
                 .minimumQuantity(normalizedMinimumQuantity)
                 .unitCost(normalizedUnitCost)
                 .isDeleted(false)
                 .build();
 
-        InventoryItem savedItem = inventoryItemRepository.save(item);
-        if (opening.compareTo(BigDecimal.ZERO) > 0) {
-            if (expiryDate == null) {
-                recordInventoryTransaction(savedItem, InventoryTransactionType.IN, opening,
-                        "Nhập tồn kho khởi tạo từ file Excel", "RECEIPT_OPENING", savedItem.getId(), createdBy);
-            } else {
-                createOpeningReceiptForImport(savedItem, opening, normalizedUnitCost, expiryDate, createdBy);
-            }
-        }
-        return savedItem;
-    }
-
-    private void createOpeningReceiptForImport(InventoryItem item,
-                                               BigDecimal quantity,
-                                               BigDecimal unitCost,
-                                               LocalDate expiryDate,
-                                               User createdBy) {
-        LocalDate receiptDate = LocalDate.now(APP_ZONE);
-        BigDecimal subtotal = quantity.multiply(unitCost).setScale(0, RoundingMode.HALF_UP);
-        InventoryReceipt receipt = InventoryReceipt.builder()
-                .code(generateTemporaryReceiptCode())
-                .item(item)
-                .quantity(quantity)
-                .unitCost(unitCost)
-                .subtotal(subtotal)
-                .vatRate(BigDecimal.ZERO)
-                .vatAmount(BigDecimal.ZERO)
-                .totalCost(subtotal)
-                .supplier("Import Excel")
-                .note("Tồn đầu kỳ từ file import")
-                .receiptDate(receiptDate)
-                .batchCode(generateBatchCode(receiptDate))
-                .expiryDate(expiryDate)
-                .createdBy(createdBy)
-                .build();
-
-        InventoryReceipt savedReceipt = inventoryReceiptRepository.saveAndFlush(receipt);
-        savedReceipt.setCode(formatReceiptCode(savedReceipt.getId()));
-        savedReceipt = inventoryReceiptRepository.saveAndFlush(savedReceipt);
-
-        recordInventoryTransaction(item, InventoryTransactionType.IN, quantity,
-                "Nhập tồn kho khởi tạo từ file Excel", "RECEIPT_OPENING", savedReceipt.getId(), createdBy);
+        return inventoryItemRepository.save(item);
     }
 
     public record InventoryImportResult(int importedCount, int skippedCount, BigDecimal totalOpeningCost) {
@@ -365,14 +314,135 @@ public class InventoryManagementService {
                                       String unit,
                                       BigDecimal openingQuantity,
                                       BigDecimal minimumQuantity,
-                                      BigDecimal unitCost,
-                                      LocalDate expiryDate) {
+                                      BigDecimal unitCost) {
     }
 
-    private BigDecimal calculateOpeningCost(InventoryImportRow row) {
-        BigDecimal quantity = row.openingQuantity() == null ? BigDecimal.ZERO : row.openingQuantity();
-        BigDecimal unitCost = row.unitCost() == null ? BigDecimal.ZERO : row.unitCost();
-        return quantity.multiply(unitCost).setScale(0, RoundingMode.HALF_UP);
+    @Transactional
+    public ReceiptImportResult importReceiptsFromExcel(MultipartFile file, User createdBy) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn file Excel cần import.");
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
+            throw new IllegalArgumentException("Chỉ hỗ trợ file Excel định dạng .xlsx.");
+        }
+        if (file.getSize() > MAX_IMPORT_FILE_SIZE) {
+            throw new IllegalArgumentException("File Excel không được vượt quá 5 MB.");
+        }
+
+        Workbook workbook;
+        try {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } catch (IOException | RuntimeException e) {
+            throw new IllegalArgumentException("File không phải workbook .xlsx hợp lệ hoặc đã bị hỏng.");
+        }
+
+        try (workbook) {
+            if (workbook.getNumberOfSheets() == 0) {
+                throw new IllegalArgumentException("File Excel không có sheet dữ liệu.");
+            }
+
+            DataFormatter formatter = new DataFormatter(Locale.US);
+            Sheet sheet = workbook.getSheetAt(0);
+            validateImportHeader(sheet, formatter, RECEIPT_IMPORT_HEADERS, RECEIPT_IMPORT_COLUMN_COUNT);
+
+            if (sheet.getLastRowNum() > MAX_IMPORT_ROWS) {
+                throw new IllegalArgumentException("File Excel chỉ được chứa tối đa 1.000 dòng dữ liệu.");
+            }
+
+            List<ReceiptImportRow> validRows = new ArrayList<>();
+            List<String> errors = new ArrayList<>();
+
+            for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+                if (isEmptyRow(formatter, row, RECEIPT_IMPORT_COLUMN_COUNT)) {
+                    continue;
+                }
+
+                int excelRowNumber = rowIndex + 1;
+                List<String> rowErrors = new ArrayList<>();
+                validateNoExtraColumns(formatter, row, excelRowNumber, RECEIPT_IMPORT_COLUMN_COUNT, rowErrors);
+
+                String itemName = readTextCell(formatter, row, 0, "Tên hàng", excelRowNumber, rowErrors);
+                validateRequiredAndLength(itemName, "Tên hàng", 150, excelRowNumber, rowErrors);
+                InventoryItem item = null;
+                if (itemName != null && !itemName.isBlank()) {
+                    item = inventoryItemRepository.findByNameIgnoreCaseAndIsDeletedFalse(itemName.trim()).orElse(null);
+                    if (item == null) {
+                        rowErrors.add("Dòng " + excelRowNumber + ": hàng hóa '" + itemName + "' không tồn tại.");
+                    }
+                }
+
+                BigDecimal quantity = readDecimalCell(
+                        row, 1, "Số lượng nhập", excelRowNumber, 2, 10, rowErrors);
+                BigDecimal unitCost = readDecimalCell(
+                        row, 2, "Giá vốn trước VAT", excelRowNumber, 0, 15, rowErrors);
+                LocalDate expiryDate = readDateCell(
+                        formatter, row, 3, "Hạn sử dụng", excelRowNumber, rowErrors);
+                String paymentMethodText = readTextCell(
+                        formatter, row, 4, "Phương thức thanh toán", excelRowNumber, rowErrors);
+                String supplier = readTextCell(formatter, row, 5, "Nhà cung cấp", excelRowNumber, rowErrors);
+                String note = readTextCell(formatter, row, 6, "Ghi chú", excelRowNumber, rowErrors);
+
+                validatePositiveQuantity(quantity, "Số lượng nhập", excelRowNumber, rowErrors);
+                validatePositiveMoney(unitCost, "Giá vốn trước VAT", excelRowNumber, rowErrors);
+                if (expiryDate != null && !expiryDate.isAfter(LocalDate.now(APP_ZONE))) {
+                    rowErrors.add("Dòng " + excelRowNumber + ": hạn sử dụng phải sau ngày nhập kho.");
+                }
+                validateOptionalLength(supplier, "Nhà cung cấp", 150, excelRowNumber, rowErrors);
+                validateOptionalLength(note, "Ghi chú", 300, excelRowNumber, rowErrors);
+
+                PaymentMethod paymentMethod = parseImportPaymentMethod(paymentMethodText, excelRowNumber, rowErrors);
+
+                if (!rowErrors.isEmpty()) {
+                    errors.addAll(rowErrors);
+                    continue;
+                }
+
+                validRows.add(new ReceiptImportRow(
+                        item, quantity, unitCost, expiryDate, paymentMethod,
+                        normalizeText(supplier), normalizeText(note)));
+            }
+
+            if (!errors.isEmpty()) {
+                throw new IllegalArgumentException(buildImportErrorMessage(errors));
+            }
+            if (validRows.isEmpty()) {
+                throw new IllegalArgumentException("File Excel không có dòng lô hàng nhập nào.");
+            }
+
+            BigDecimal totalCost = BigDecimal.ZERO;
+            for (ReceiptImportRow row : validRows) {
+                InventoryReceipt receipt = createReceipt(
+                        row.item().getId(),
+                        row.quantity(),
+                        row.unitCost(),
+                        row.supplier(),
+                        row.note(),
+                        null,
+                        null,
+                        row.expiryDate(),
+                        row.paymentMethod(),
+                        createdBy);
+                totalCost = totalCost.add(receipt.getTotalCost());
+            }
+            return new ReceiptImportResult(validRows.size(), totalCost);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Không thể đóng hoặc hoàn tất việc đọc file Excel.");
+        }
+    }
+
+    public record ReceiptImportResult(int importedCount, BigDecimal totalCost) {
+    }
+
+    private record ReceiptImportRow(InventoryItem item,
+                                    BigDecimal quantity,
+                                    BigDecimal unitCost,
+                                    LocalDate expiryDate,
+                                    PaymentMethod paymentMethod,
+                                    String supplier,
+                                    String note) {
     }
 
     @Transactional
@@ -430,7 +500,7 @@ public class InventoryManagementService {
         inventoryItemRepository.save(item);
 
         recordInventoryTransaction(item, InventoryTransactionType.IN, quantity,
-                "Nhập kho từ phiếu nhập", "INVENTORY_RECEIPT", savedReceipt.getId(), createdBy);
+                "INVENTORY_RECEIPT", savedReceipt.getId(), createdBy);
 
         cashTransactionService.createInventoryPurchase(totalCost,
                 "Chi nhập kho " + savedReceipt.getCode() + " - " + item.getName(),
@@ -451,19 +521,11 @@ public class InventoryManagementService {
         validateMaxScale(quantity, 2, "Số lượng hủy");
         ensureSufficientStock(item, quantity);
 
-        String normalizedReason = normalizeText(reason);
-        if (normalizedReason == null) {
-            normalizedReason = "Hủy hàng hóa";
-        }
-        if (normalizedReason.length() > 250) {
-            throw new IllegalArgumentException("Lý do hủy không được vượt quá 250 ký tự.");
-        }
-
         item.setCurrentQuantity(item.getCurrentQuantity().subtract(quantity));
         inventoryItemRepository.save(item);
 
         recordInventoryTransaction(item, InventoryTransactionType.DISPOSAL, quantity,
-                normalizedReason, "INVENTORY_DISPOSAL", item.getId(), createdBy);
+                "INVENTORY_DISPOSAL", item.getId(), createdBy);
     }
 
     @Transactional
@@ -535,6 +597,9 @@ public class InventoryManagementService {
         }
         BigDecimal multiplier = serviceQuantity == null ? BigDecimal.ONE : serviceQuantity;
         List<ServiceInventoryMapping> mappings = serviceInventoryMappingRepository.findByService_Id(service.getId());
+        if (mappings.isEmpty()) {
+            throw new IllegalStateException("Dịch vụ chưa được cấu hình tiêu hao kho. Vui lòng liên hệ thủ kho.");
+        }
 
         for (ServiceInventoryMapping mapping : mappings) {
             InventoryItem item = mapping.getItem();
@@ -543,7 +608,7 @@ public class InventoryManagementService {
             item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
             inventoryItemRepository.save(item);
             recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
-                    "Tiêu hao từ dịch vụ " + service.getName(), "FOLIO_ITEM", sourceId, createdBy);
+                    "FOLIO_ITEM", sourceId, createdBy);
         }
     }
 
@@ -563,7 +628,7 @@ public class InventoryManagementService {
             item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
             inventoryItemRepository.save(item);
             recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
-                    "Lấp đồ phòng sau checkout - " + roomType.getName(), "ROOM_REFRESH", sourceId, createdBy);
+                    "ROOM_REFRESH", sourceId, createdBy);
         }
     }
 
@@ -729,7 +794,6 @@ public class InventoryManagementService {
     private void recordInventoryTransaction(InventoryItem item,
                                             InventoryTransactionType type,
                                             BigDecimal quantity,
-                                            String description,
                                             String sourceType,
                                             Long sourceId,
                                             User createdBy) {
@@ -738,7 +802,6 @@ public class InventoryManagementService {
                 .type(type)
                 .quantity(quantity)
                 .remainingQuantity(item.getCurrentQuantity())
-                .description(description)
                 .sourceType(sourceType)
                 .sourceId(sourceId)
                 .createdBy(createdBy)
@@ -772,32 +835,35 @@ public class InventoryManagementService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
-    private void validateImportHeader(Sheet sheet, DataFormatter formatter) {
+    private void validateImportHeader(Sheet sheet,
+                                      DataFormatter formatter,
+                                      List<String> expectedHeaders,
+                                      int expectedColumnCount) {
         Row header = sheet.getRow(0);
         if (header == null) {
             throw new IllegalArgumentException("Thiếu dòng tiêu đề của file Excel.");
         }
         List<String> actualHeaders = new ArrayList<>();
-        for (int columnIndex = 0; columnIndex < IMPORT_COLUMN_COUNT; columnIndex++) {
+        for (int columnIndex = 0; columnIndex < expectedColumnCount; columnIndex++) {
             String value = readCell(formatter, header, columnIndex);
             actualHeaders.add(value == null ? "" : value.toLowerCase(Locale.ROOT));
         }
-        if (!actualHeaders.equals(IMPORT_HEADERS)) {
+        if (!actualHeaders.equals(expectedHeaders)) {
             throw new IllegalArgumentException(
-                    "Tiêu đề không đúng mẫu. Thứ tự bắt buộc: " + String.join(", ", IMPORT_HEADERS) + ".");
+                    "Tiêu đề không đúng mẫu. Thứ tự bắt buộc: " + String.join(", ", expectedHeaders) + ".");
         }
         List<String> errors = new ArrayList<>();
-        validateNoExtraColumns(formatter, header, 1, errors);
+        validateNoExtraColumns(formatter, header, 1, expectedColumnCount, errors);
         if (!errors.isEmpty()) {
             throw new IllegalArgumentException(errors.getFirst());
         }
     }
 
-    private boolean isEmptyRow(DataFormatter formatter, Row row) {
+    private boolean isEmptyRow(DataFormatter formatter, Row row, int expectedColumnCount) {
         if (row == null) {
             return true;
         }
-        int lastCell = Math.max(row.getLastCellNum(), IMPORT_COLUMN_COUNT);
+        int lastCell = Math.max(row.getLastCellNum(), expectedColumnCount);
         for (int columnIndex = 0; columnIndex < lastCell; columnIndex++) {
             if (readCell(formatter, row, columnIndex) != null) {
                 return false;
@@ -809,13 +875,14 @@ public class InventoryManagementService {
     private void validateNoExtraColumns(DataFormatter formatter,
                                         Row row,
                                         int excelRowNumber,
+                                        int expectedColumnCount,
                                         List<String> errors) {
-        if (row == null || row.getLastCellNum() <= IMPORT_COLUMN_COUNT) {
+        if (row == null || row.getLastCellNum() <= expectedColumnCount) {
             return;
         }
-        for (int columnIndex = IMPORT_COLUMN_COUNT; columnIndex < row.getLastCellNum(); columnIndex++) {
+        for (int columnIndex = expectedColumnCount; columnIndex < row.getLastCellNum(); columnIndex++) {
             if (readCell(formatter, row, columnIndex) != null) {
-                errors.add("Dòng " + excelRowNumber + ": file chỉ được có đúng " + IMPORT_COLUMN_COUNT + " cột.");
+                errors.add("Dòng " + excelRowNumber + ": file chỉ được có đúng " + expectedColumnCount + " cột.");
                 return;
             }
         }
@@ -895,6 +962,57 @@ public class InventoryManagementService {
             errors.add("Dòng " + excelRowNumber + ": " + fieldName
                     + " không được vượt quá " + maxLength + " ký tự.");
         }
+    }
+
+    private void validateOptionalLength(String value,
+                                        String fieldName,
+                                        int maxLength,
+                                        int excelRowNumber,
+                                        List<String> errors) {
+        if (value != null && value.length() > maxLength) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName
+                    + " không được vượt quá " + maxLength + " ký tự.");
+        }
+    }
+
+    private void validatePositiveQuantity(BigDecimal value,
+                                          String fieldName,
+                                          int excelRowNumber,
+                                          List<String> errors) {
+        if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " phải lớn hơn 0.");
+        }
+    }
+
+    private void validatePositiveMoney(BigDecimal value,
+                                       String fieldName,
+                                       int excelRowNumber,
+                                       List<String> errors) {
+        if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
+            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " phải là số nguyên VND lớn hơn 0.");
+        }
+    }
+
+    private PaymentMethod parseImportPaymentMethod(String value, int excelRowNumber, List<String> errors) {
+        if (value == null || value.isBlank()) {
+            errors.add("Dòng " + excelRowNumber + ": Phương thức thanh toán là bắt buộc.");
+            return null;
+        }
+        String normalized = Normalizer.normalize(value.trim(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replace('đ', 'd')
+                .replace('Đ', 'D')
+                .toUpperCase(Locale.ROOT)
+                .replaceAll("[\\s_-]+", "");
+        return switch (normalized) {
+            case "CASH", "TIENMAT" -> PaymentMethod.CASH;
+            case "TRANSFER", "CHUYENKHOAN" -> PaymentMethod.TRANSFER;
+            default -> {
+                errors.add("Dòng " + excelRowNumber
+                        + ": Phương thức thanh toán chỉ nhận CASH/Tiền mặt hoặc TRANSFER/Chuyển khoản.");
+                yield null;
+            }
+        };
     }
 
     private BigDecimal readDecimalCell(Row row,

@@ -53,14 +53,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const placeholder = itemSelect.querySelector("option[value='']");
         if (placeholder) {
-            placeholder.textContent = "Đang tải hàng hóa...";
+            placeholder.textContent = "Đang tải danh sách hàng hóa...";
         }
         itemSelect.disabled = true;
 
         try {
             const response = await fetch(itemSelect.dataset.optionsUrl || "/storekeeper/inventory/items/options");
             if (!response.ok) {
-                throw new Error("Cannot load inventory items");
+                throw new Error("Không thể tải lên danh sách hàng hoá");
             }
 
             const items = await response.json();
