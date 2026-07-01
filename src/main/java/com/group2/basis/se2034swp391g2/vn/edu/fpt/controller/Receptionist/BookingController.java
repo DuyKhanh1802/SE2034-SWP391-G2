@@ -1,11 +1,11 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Receptionist;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FinancialChargeSetting;
+
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingCreateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingUpdateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CountryRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FinancialChargeSettingRepository;
+
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
@@ -34,16 +34,16 @@ public class BookingController {
     private final PaymentService paymentService;
     private final CountryRepository countryRepository;
     private final ServiceRepository serviceRepository;
-    private final FinancialChargeSettingRepository financialChargeSettingRepository;
+
     public BookingController(BookingService bookingService,
                              CountryRepository countryRepository,
                              ServiceRepository serviceRepository,
-                             FinancialChargeSettingRepository financialChargeSettingRepository,
+
                              PaymentService paymentService) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
         this.serviceRepository = serviceRepository;
-        this.financialChargeSettingRepository = financialChargeSettingRepository;
+
         this.paymentService = paymentService;
     }
 
@@ -100,46 +100,13 @@ public class BookingController {
         request.setChildren(children == null ? 0 : children);
         request.setChildAges(childAges);
 
-        model.addAttribute("countries", countryRepository.findAll());
-        model.addAttribute("request", request);
-        model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
-        model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
-
-        FinancialChargeSetting setting = financialChargeSettingRepository
-                .findCurrentSetting(LocalDate.now())
-                .orElseThrow(() -> new IllegalArgumentException("Chưa cấu hình thuế và phí dịch vụ."));
-
-        model.addAttribute("vatRate", setting.getVatRate());
-        model.addAttribute("serviceChargeRate", setting.getServiceChargeRate());
-        model.addAttribute("taxOnServiceCharge", setting.getTaxOnServiceCharge());
-        model.addAttribute("priceDisplayMode", setting.getPriceDisplayMode());
-
-        boolean hasApplied =
-                checkInDate != null
-                        && checkOutDate != null
-                        && adults != null;
-
-        model.addAttribute("hasApplied", hasApplied);
-
-        if (hasApplied) {
-            try {
-                model.addAttribute(
-                        "availableRooms",
-                        bookingService.getAvailableRooms(checkInDate, checkOutDate)
-                );
-            } catch (IllegalArgumentException e) {
-                model.addAttribute("errorMessage", e.getMessage());
-                model.addAttribute("availableRooms", java.util.Collections.emptyList());
-            }
-        } else {
-            model.addAttribute("availableRooms", java.util.Collections.emptyList());
-        }
+        loadAddWalkInPage(model, request, null);
 
         return "receptionist/AddWalkInBooking";
     }
 
     @PostMapping("/add-walk-in")
-    public String addWalkInBooking(@ModelAttribute BookingCreateRequest request,
+    public String addWalkInBooking(@ModelAttribute("request") BookingCreateRequest request,
                                    Model model,
                                    RedirectAttributes redirectAttributes) {
 
@@ -156,33 +123,61 @@ public class BookingController {
             );
 
             return "redirect:/receptionist/bookings";
+
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("countries", countryRepository.findAll());
-            model.addAttribute("request", request);
+            loadAddWalkInPage(model, request, e.getMessage());
+            return "receptionist/AddWalkInBooking";
+        }
+    }
 
-            model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
-            model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
+    private void loadAddWalkInPage(Model model,
+                                   BookingCreateRequest request,
+                                   String errorMessage) {
 
-            FinancialChargeSetting setting = financialChargeSettingRepository
-                    .findCurrentSetting(LocalDate.now())
-                    .orElseThrow(() -> new IllegalArgumentException("Chưa cấu hình thuế và phí dịch vụ."));
+        if (request.getChildren() == null) {
+            request.setChildren(0);
+        }
 
-            model.addAttribute("vatRate", setting.getVatRate());
-            model.addAttribute("serviceChargeRate", setting.getServiceChargeRate());
-            model.addAttribute("taxOnServiceCharge", setting.getTaxOnServiceCharge());
-            model.addAttribute("priceDisplayMode", setting.getPriceDisplayMode());
+        model.addAttribute("request", request);
 
+        model.addAttribute("countries", countryRepository.findAll());
+        model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
+        model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
+
+        model.addAttribute("vatRate", new BigDecimal("8"));
+        model.addAttribute("serviceChargeRate", new BigDecimal("5"));
+        model.addAttribute("taxOnServiceCharge", true);
+        model.addAttribute("priceDisplayMode", "EXCLUSIVE");
+
+        boolean hasApplied =
+                request.getCheckInDate() != null
+                        && request.getCheckOutDate() != null
+                        && request.getAdults() != null;
+
+        model.addAttribute("hasApplied", hasApplied);
+
+        if (hasApplied) {
             try {
                 model.addAttribute(
                         "availableRooms",
-                        bookingService.getAvailableRooms(request.getCheckInDate(), request.getCheckOutDate())
+                        bookingService.getAvailableRooms(
+                                request.getCheckInDate(),
+                                request.getCheckOutDate()
+                        )
                 );
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException roomError) {
                 model.addAttribute("availableRooms", java.util.Collections.emptyList());
-            }
 
-            return "receptionist/AddWalkInBooking";
+                if (errorMessage == null || errorMessage.isBlank()) {
+                    errorMessage = roomError.getMessage();
+                }
+            }
+        } else {
+            model.addAttribute("availableRooms", java.util.Collections.emptyList());
+        }
+
+        if (errorMessage != null && !errorMessage.isBlank()) {
+            model.addAttribute("errorMessage", errorMessage);
         }
     }
 
@@ -247,7 +242,7 @@ public class BookingController {
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Room code email has been sent to the guest."
+                    "Email mã phòng đã được gửi cho khách."
             );
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute(

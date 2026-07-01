@@ -681,3 +681,9 @@
     color: #333;
     line-height: 1.6;
 }
+.payment-summary-grid strong {
+    white-space: nowrap;
+}
+.payment-summary-grid > div {
+    min-width: 220px;
+}

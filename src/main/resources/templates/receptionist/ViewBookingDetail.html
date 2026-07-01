@@ -206,8 +206,8 @@
                     </div>
 
                     <div>
-                        <span>Ngày sinh</span>
-                        <strong th:text="${detail.dateOfBirth != null ? #temporals.format(detail.dateOfBirth, 'dd/MM/yyyy') : 'N/A'}">
+                        <span>Năm sinh</span>
+                        <strong th:text="${detail.dateOfBirth != null ? #temporals.format(detail.dateOfBirth, 'yyyy') : 'N/A'}">
                             N/A
                         </strong>
                     </div>
@@ -333,6 +333,7 @@
                 <table>
                     <thead>
                     <tr>
+                        <th>Phòng</th>
                         <th>Dịch vụ</th>
                         <th>Loại</th>
                         <th>Số lượng</th>
@@ -343,6 +344,11 @@
 
                     <tbody>
                     <tr th:each="service : ${detail.services}">
+                        <td>
+                            <strong th:text="${service.roomNumber != null ? 'Phòng ' + service.roomNumber : 'Chưa xác định'}">
+                                Phòng 101
+                            </strong>
+                        </td>
                         <td th:text="${service.serviceName}">Bữa sáng Việt Nam</td>
 
                         <td th:text="${service.itemType}">FOOD</td>
@@ -367,25 +373,27 @@
             <!-- Deposit & Payments -->
             <div class="detail-card">
                 <div class="detail-card-title">
-                    <h2>Cọc & thanh toán</h2>
+                    <h2>Thanh toán</h2>
                 </div>
 
                 <div class="payment-summary-grid">
                     <div>
-                        <span>Trạng thái cọc</span>
-                        <strong th:text="${detail.depositStatus.label}">PAID</strong>
-                    </div>
-
-                    <div>
-                        <span>Tiền cọc yêu cầu</span>
-                        <strong th:text="${#numbers.formatDecimal(detail.depositRequired, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                            1,456,000 VND
+                        <span>Tổng tiền</span>
+                        <strong th:text="${#numbers.formatDecimal(detail.grandTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
                         </strong>
                     </div>
 
                     <div>
-                        <span>Tiền cọc đã trả</span>
+                        <span>Đã thanh toán</span>
                         <strong th:text="${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Còn phải thanh toán</span>
+                        <strong th:text="${#numbers.formatDecimal(detail.remainingEstimate, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                             0 VND
                         </strong>
                     </div>
@@ -393,25 +401,15 @@
 
                 <div class="payment-action-row">
 
-                    <button type="button"
-                            class="btn-detail primary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#depositPaymentModal"
-                            th:if="${detail.depositStatus.name() != 'PAID'
-                    and detail.bookingStatus.name() != 'CANCELLED'
-                    and detail.bookingStatus.name() != 'CHECKED_OUT'}">
-                        <i class="bi bi-cash-coin"></i>
-                        THU TIỀN CỌC
-                    </button>
+
 
                     <button type="button"
                             class="btn-detail outline"
                             data-bs-toggle="modal"
                             data-bs-target="#fullPaymentModal"
-                            th:if="${detail.bookingStatus.name() == 'PENDING'
-                    or detail.bookingStatus.name() == 'CONFIRMED'}">
+                            th:if="${detail.bookingStatus.name() == 'CONFIRMED'}">
                         <i class="bi bi-credit-card"></i>
-                        THU FULL TRƯỚC
+                        THU TOÀN BỘ
                     </button>
 
                 </div>
@@ -513,14 +511,7 @@
                     </div>
 
                     <div class="price-row">
-                        <span>Tiền cọc yêu cầu</span>
-                        <strong th:text="${#numbers.formatDecimal(detail.depositRequired, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                            1,456,000 VND
-                        </strong>
-                    </div>
-
-                    <div class="price-row">
-                        <span>Tiền cọc đã trả</span>
+                        <span>Đã thanh toán</span>
                         <strong th:text="'- ' + ${#numbers.formatDecimal(detail.depositPaid, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                             - 0 VND
                         </strong>
@@ -561,28 +552,30 @@
                     XÁC NHẬN & PHÂN PHÒNG
                 </button>
 
-                <a th:if="${detail.bookingStatus.name() == 'PENDING'}"
-                   th:href="@{/receptionist/bookings/edit/{id}(id=${detail.bookingId})}"
-                   class="btn-detail outline">
-                    <i class="bi bi-pencil-square"></i>
-                    SỬA
-                </a>
-
-                <button th:if="${detail.bookingStatus.name() == 'PENDING'}"
-                        type="button"
-                        class="btn-detail danger">
-                    <i class="bi bi-x-circle"></i>
-                    TỪ CHỐI ĐẶT PHÒNG
-                </button>
-
 
                 <!-- CONFIRMED -->
-                <a th:if="${detail.bookingStatus.name() == 'CONFIRMED'}"
+                <a th:if="${detail.bookingStatus.name() == 'CONFIRMED'
+           and detail.gender != 'N/A'
+           and detail.dateOfBirth != null
+           and detail.identityType != 'N/A'
+           and detail.identityNumber != 'N/A'}"
                    th:href="@{/receptionist/bookings/{id}/check-in(id=${detail.bookingId})}"
                    class="btn-detail primary">
                     <i class="bi bi-box-arrow-in-right"></i>
                     TIẾN HÀNH NHẬN PHÒNG
                 </a>
+
+                <button th:if="${detail.bookingStatus.name() == 'CONFIRMED'
+                and (detail.gender == 'N/A'
+                or detail.dateOfBirth == null
+                or detail.identityType == 'N/A'
+                or detail.identityNumber == 'N/A')}"
+                        type="button"
+                        class="btn-detail primary"
+                        disabled>
+                    <i class="bi bi-exclamation-circle"></i>
+                    CẬP NHẬT THÔNG TIN KHÁCH TRƯỚC
+                </button>
 
                 <a th:if="${detail.bookingStatus.name() != 'CANCELLED'
            and detail.bookingStatus.name() != 'CHECKED_OUT'
@@ -655,52 +648,8 @@
 
             </div>
         </div>
-        <div class="modal fade" id="depositPaymentModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <form class="modal-content"
-                      th:action="@{/receptionist/bookings/{id}/payments(id=${detail.bookingId})}"
-                      method="post">
 
-                    <div class="modal-header">
-                        <h5 class="modal-title">Thu tiền cọc</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
 
-                    <div class="modal-body">
-                        <input type="hidden" name="paymentType" value="DEPOSIT">
-
-                        <div class="mb-3">
-                            <label class="form-label">Số tiền cọc</label>
-                            <input type="number"
-                                   name="amount"
-                                   class="form-control"
-                                   th:value="${detail.depositRequired}"
-                                   required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Phương thức thanh toán</label>
-                            <select name="method" class="form-select" required>
-                                <option value="CASH">Tiền mặt</option>
-                                <option value="CARD">Thẻ</option>
-                                <option value="TRANSFER">Chuyển khoản</option>
-                            </select>
-                        </div>
-
-                        <div class="alert alert-info mb-0">
-                            Sau khi xác nhận, hệ thống sẽ tạo mã giao dịch dạng <strong>ĐC-...</strong>
-                            và tự đẩy sang sổ dòng tiền.
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-success">Xác nhận thu cọc</button>
-                    </div>
-
-                </form>
-            </div>
-        </div>
         <div class="modal fade" id="fullPaymentModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <form class="modal-content"

@@ -35,8 +35,7 @@ public class BookingCreateRequest {
 
     private List<Long> roomIds;
 
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
-    private LocalDate dateOfBirth;
+    private Integer birthYear;
 
     private Long countryId;
 
@@ -55,7 +54,8 @@ public class BookingCreateRequest {
 
     private Map<Long, Integer> extraBedCounts;
 
+    private List<Long> serviceRoomIds;
     private List<Long> serviceIds;
-    private Map<Long, Integer> serviceQuantities;
+    private List<Integer> serviceQuantities;
     private List<Integer> childAges;
 }

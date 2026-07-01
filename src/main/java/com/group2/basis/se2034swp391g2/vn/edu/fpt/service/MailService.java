@@ -27,21 +27,23 @@ public class MailService {
 
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("ViHotel - Password Reset OTP");
+            message.setSubject("V'Hotel Hanoi - Mã OTP đặt lại mật khẩu");
+
             message.setText(
-                    "Hello,\n\n" +
-                            "We received a request to reset your ViHotel account password.\n\n" +
-                            "Your OTP code is: " + otp + "\n\n" +
-                            "This OTP will expire in 5 minutes.\n\n" +
-                            "If you did not request this action, please ignore this email.\n\n" +
-                            "ViHotel Team"
+                    "Xin chào,\n\n" +
+                            "Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản V'Hotel của quý khách.\n\n" +
+                            "Mã OTP của quý khách là: " + otp + "\n\n" +
+                            "Mã OTP có hiệu lực trong vòng 5 phút.\n\n" +
+                            "Nếu quý khách không thực hiện yêu cầu này, vui lòng bỏ qua email.\n\n" +
+                            "Trân trọng,\n" +
+                            "Đội ngũ V'Hotel Hanoi"
             );
 
             mailSender.send(message);
 
         } catch (MailException e) {
             e.printStackTrace();
-            throw new RuntimeException("Failed to send reset password OTP email: " + e.getMessage(), e);
+            throw new RuntimeException("Gửi email OTP thất bại: " + e.getMessage(), e);
         }
     }
 
@@ -57,25 +59,30 @@ public class MailService {
 
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("ViHotel Hanoi - Your Room Code");
+            message.setSubject("V'Hotel Hanoi - Mã truy cập phòng");
 
             message.setText(
-                    "Hello " + guestName + ",\n\n" +
-                            "Welcome to ViHotel Hanoi.\n\n" +
-                            "Your booking reference is: " + bookingReference + "\n" +
-                            "Room Number: " + roomNumber + "\n" +
-                            "Your Room Code: " + roomCode + "\n\n" +
-                            "Check-in Date: " + checkInDate + "\n" +
-                            "Check-out Date: " + checkOutDate + "\n\n" +
-                            "Please keep this code private. You can use this room code to access the guest portal during your stay.\n\n" +
-                            "ViHotel Hanoi Team"
+                    "Xin chào " + guestName + ",\n\n" +
+                            "Chào mừng quý khách đến với V'Hotel Hanoi.\n\n" +
+
+                            "Mã đặt phòng: " + bookingReference + "\n" +
+                            "Số phòng: " + roomNumber + "\n" +
+                            "Mã phòng: " + roomCode + "\n\n" +
+
+                            "Ngày nhận phòng: " + checkInDate + "\n" +
+                            "Ngày trả phòng: " + checkOutDate + "\n\n" +
+
+                            "Vui lòng giữ bí mật mã phòng. Quý khách có thể sử dụng mã này để truy cập cổng thông tin khách trong suốt thời gian lưu trú.\n\n" +
+
+                            "Trân trọng,\n" +
+                            "Đội ngũ V'Hotel Hanoi"
             );
 
             mailSender.send(message);
 
         } catch (MailException e) {
             e.printStackTrace();
-            throw new RuntimeException("Failed to send room code email: " + e.getMessage(), e);
+            throw new RuntimeException("Gửi email mã phòng thất bại: " + e.getMessage(), e);
         }
     }
 
@@ -88,21 +95,33 @@ public class MailService {
 
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("ViHotel Hanoi - Your Room Access Code");
+            message.setSubject("V'Hotel Hanoi - Thông tin truy cập phòng");
+
             message.setText(
-                    "Hello " + guestName + ",\n\n" +
-                            "Welcome to ViHotel Hanoi.\n\n" +
-                            "Your booking reference is: " + bookingReference + "\n\n" +
-                            emailContent + "\n\n" +
-                            "Please keep your room code private. You can use it to access the guest portal during your stay.\n\n" +
-                            "ViHotel Hanoi Team"
+                    "Xin chào " + guestName + ",\n\n" +
+                            "Chào mừng quý khách đến với V'Hotel Hanoi.\n\n" +
+
+                            "Mã đặt phòng của quý khách là: " + bookingReference + "\n\n" +
+
+                            "Thông tin truy cập phòng của quý khách:\n\n" +
+
+                            emailContent +
+
+                            "\n" +
+                            "Vui lòng giữ bí mật mã phòng của quý khách. " +
+                            "Quý khách có thể sử dụng mã này để truy cập cổng thông tin khách trong suốt thời gian lưu trú.\n\n" +
+
+                            "Nếu cần hỗ trợ, vui lòng liên hệ lễ tân của khách sạn bất cứ lúc nào.\n\n" +
+
+                            "Trân trọng,\n" +
+                            "Đội ngũ V'Hotel Hanoi"
             );
 
             mailSender.send(message);
 
         } catch (MailException e) {
             e.printStackTrace();
-            throw new RuntimeException("Failed to send room code email: " + e.getMessage(), e);
+            throw new RuntimeException("Gửi email mã phòng thất bại: " + e.getMessage(), e);
         }
     }
 
@@ -179,31 +198,44 @@ public class MailService {
                 .collect(java.util.stream.Collectors.joining("\n"));
 
         String body = """
-            Xin chào %s,
+                    Xin chào %s,
 
-            Đặt phòng của quý khách đã được V'Hotel Hanoi xác nhận.
+                    Đặt phòng của quý khách đã được V'Hotel Hanoi xác nhận thành công.
 
-            Mã đặt phòng: %s
-            Ngày nhận phòng: %s
-            Ngày trả phòng: %s
+                    Thông tin đặt phòng:
 
-            Phòng đã phân:
-            %s
+                    Mã đặt phòng: %s
+                    Ngày nhận phòng: %s
+                    Ngày trả phòng: %s
 
-            Số tiền đã thanh toán: %,d VND
+                    Phòng đã được phân:
 
-            Thời gian nhận phòng dự kiến: từ 14:00.
-            Mã phòng sẽ được gửi cho quý khách sau khi hoàn tất thủ tục check-in.
+                    %s
 
-            Trân trọng,
-            V'Hotel Hanoi
-            """.formatted(
+                    Số tiền đã thanh toán: %,d VND
+
+                    Quý khách có thể làm thủ tục nhận phòng từ 14:00.
+                    
+                    Quý khách vui lòng hoàn tất thủ tục nhận phòng trước 18:00 cùng ngày.
+                
+                    Nếu quý khách chưa đến khách sạn hoặc không liên hệ với lễ tân trước 18:00, đặt phòng có thể được xử lý theo trạng thái khách không đến theo chính sách của khách sạn.
+
+                    Sau khi hoàn tất thủ tục check-in, hệ thống sẽ tự động gửi mã phòng qua email để quý khách sử dụng trong suốt thời gian lưu trú.
+
+                    Xin cảm ơn quý khách đã lựa chọn V'Hotel Hanoi.
+
+                    Trân trọng,
+
+                    Đội ngũ V'Hotel Hanoi
+                """.formatted(
                 guestName,
                 booking.getBookingReference(),
                 booking.getCheckInDate(),
                 booking.getCheckOutDate(),
                 roomInfo,
-                booking.getDepositAmount() != null ? booking.getDepositAmount().longValue() : 0L
+                booking.getDepositAmount() != null
+                        ? booking.getDepositAmount().longValue()
+                        : 0L
         );
 
         sendSimpleEmail(to, subject, body);
@@ -223,6 +255,43 @@ public class MailService {
         } catch (MailException e) {
             e.printStackTrace();
             throw new RuntimeException("Gửi email thất bại: " + e.getMessage(), e);
+        }
+    }
+
+    public void sendCheckInDeadlineReminderEmail(String toEmail,
+                                                 String guestName,
+                                                 String bookingReference,
+                                                 String checkInDate) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("V'Hotel Hanoi - Nhắc nhở thời hạn nhận phòng");
+
+            message.setText(
+                    "Xin chào " + guestName + ",\n\n" +
+                            "V'Hotel Hanoi xin nhắc quý khách về đặt phòng sắp quá hạn nhận phòng.\n\n" +
+
+                            "Mã đặt phòng: " + bookingReference + "\n" +
+                            "Ngày nhận phòng: " + checkInDate + "\n\n" +
+
+                            "Theo chính sách của khách sạn, quý khách vui lòng hoàn tất thủ tục nhận phòng trước 18:00 cùng ngày.\n\n" +
+
+                            "Nếu quý khách chưa đến khách sạn hoặc không liên hệ với lễ tân trước 18:00, " +
+                            "đặt phòng có thể được xử lý theo trạng thái khách không đến.\n\n" +
+
+                            "Nếu quý khách cần hỗ trợ hoặc đến muộn, vui lòng liên hệ lễ tân để được hỗ trợ.\n\n" +
+
+                            "Trân trọng,\n" +
+                            "Đội ngũ V'Hotel Hanoi"
+            );
+
+            mailSender.send(message);
+
+        } catch (MailException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Gửi email nhắc nhận phòng thất bại: " + e.getMessage(), e);
         }
     }
 }

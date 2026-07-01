@@ -114,5 +114,7 @@ public class ViewBookingDetailResponse {
         private BigDecimal amount;
         private Instant postedAt;
         private String postedBy;
+        private Long bookingDetailId;
+        private String roomNumber;
     }
 }

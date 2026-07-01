@@ -11,7 +11,7 @@
 <body>
 <main layout:fragment="content">
     <link rel="stylesheet" th:href="@{/receptionist/CheckInProcedure.css}">
-
+    <input type="hidden" th:value="${checkInInfo.bookingId}" id="bookingId"/>
     <section class="checkin-procedure-page">
 
         <div class="procedure-header">
