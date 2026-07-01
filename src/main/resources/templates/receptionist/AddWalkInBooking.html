@@ -241,6 +241,7 @@
                                 <input type="text"
                                        class="required-field"
                                        th:field="*{lastName}"
+                                       maxlength="50"
                                        data-message="Vui lòng nhập họ của khách."
                                        placeholder="Ví dụ: Nguyễn"
                                        required>
@@ -252,6 +253,7 @@
                                 <input type="text"
                                        class="required-field"
                                        th:field="*{firstName}"
+                                       maxlength="50"
                                        data-message="Vui lòng nhập tên của khách."
                                        placeholder="Ví dụ: Văn An"
                                        required>
@@ -330,12 +332,12 @@
                             </div>
 
                             <div class="form-group-line">
-                                <label>NGÀY SINH</label>
-                                <input type="text"
-                                       class="date-picker birth-date"
-                                       th:field="*{dateOfBirth}"
-                                       placeholder="dd/mm/yyyy">
-                                <small class="field-error"></small>
+                                <label>NĂM SINH</label>
+
+                                <input type="number"
+                                       th:field="*{birthYear}"
+                                       class="year-input"
+                                       placeholder="1998">
                             </div>
 
                             <div class="form-group-line">
@@ -359,55 +361,15 @@
                         </div>
                     </div>
 
-                    <!-- Deposit -->
-                    <div class="deposit-section">
-                        <div class="deposit-header">
-                            <div>
-                                <span>THÔNG TIN ĐẶT CỌC</span>
-                                <p>Ghi nhận tiền cọc nếu khách đã thanh toán tại quầy.</p>
-                            </div>
-                        </div>
 
-                        <label class="deposit-check">
-                            <input type="checkbox"
-                                   id="depositPaid"
-                                   name="depositPaid"
-                                   value="true">
-                            <span>Khách đã thanh toán tiền cọc</span>
-                        </label>
-
-                        <div class="deposit-fields" id="depositFields">
-                            <div class="form-group-line">
-                                <label>SỐ TIỀN CỌC</label>
-                                <input type="number"
-                                       id="depositAmount"
-                                       name="depositAmount"
-                                       min="0"
-                                       step="1000"
-                                       readonly
-                                       placeholder="Hệ thống tự tính 50%">
-                            </div>
-
-                            <div class="form-group-line">
-                                <label>PHƯƠNG THỨC THANH TOÁN</label>
-                                <select id="depositMethod"
-                                        name="depositMethod"
-                                        data-message="Vui lòng chọn phương thức thanh toán tiền đặt cọc.">
-                                    <option value="">Chọn phương thức</option>
-                                    <option value="CASH">Tiền mặt</option>
-                                    <option value="CARD">Thẻ</option>
-                                    <option value="TRANSFER">Chuyển khoản</option>
-                                </select>
-                                <small class="field-error"></small>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Additional Services -->
                     <div class="walkin-card">
                         <div class="section-title">
-                            <h3>Dịch vụ thêm</h3>
-                            <p>Chọn thêm dịch vụ ăn uống hoặc chăm sóc sức khỏe nếu khách có nhu cầu.</p>
+                            <h3>Dịch vụ thêm theo phòng</h3>
+                            <p>
+                                Chọn phòng trước, sau đó thêm dịch vụ cho từng phòng. Mỗi dòng dịch vụ cần chọn phòng áp dụng.
+                            </p>
                         </div>
 
                         <!-- DINING -->
@@ -558,13 +520,10 @@
                             <span id="totalPrice">0 VND</span>
                         </div>
 
-                        <div class="summary-row deposit-summary-row">
-                            <span>Tiền cọc đã thu</span>
-                            <span id="depositPreview">0 VND</span>
-                        </div>
+
 
                         <div class="summary-total">
-                            <span>Còn lại dự kiến</span>
+                            <span>Tổng Tiền:</span>
                             <span id="remainingAmount">0 VND</span>
                         </div>
                     </div>
@@ -591,7 +550,8 @@
             </div> <!-- end booking-layout -->
 
         </form>
-
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
         <script th:src="@{/js/AddWalkInBooking.js}"></script>
 
     </section>

@@ -429,7 +429,7 @@ ul {
     color: #777;
 }
 
-.multi-role-form {
+.single-role-form {
     grid-template-columns: 1fr;
 }
 

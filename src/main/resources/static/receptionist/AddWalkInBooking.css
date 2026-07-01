@@ -1149,3 +1149,109 @@ body {
         grid-template-columns: 1fr;
     }
 }
+.service-room-select {
+    width: 100%;
+    height: 48px;
+    padding: 0 42px 0 16px;
+    border: 1px solid #d8cfc7;
+    background-color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    color: #222;
+    outline: none;
+    cursor: pointer;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: linear-gradient(45deg, transparent 50%, #222 50%),
+    linear-gradient(135deg, #222 50%, transparent 50%);
+    background-position: calc(100% - 18px) 20px,
+    calc(100% - 12px) 20px;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+}
+
+.service-room-select:focus {
+    border-color: #8b6b45;
+    box-shadow: 0 0 0 3px rgba(139, 107, 69, 0.12);
+}
+
+.service-room-select:hover {
+    border-color: #9b7a55;
+}
+.service-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #3f3f3f;
+}
+.ts-wrapper {
+    width: 100%;
+}
+
+.ts-control {
+    min-height: 45px;
+    border: none !important;
+    border-bottom: 1px solid #cfc7c0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 10px 0 !important;
+    box-shadow: none !important;
+    font-size: 16px;
+}
+
+.ts-control input {
+    font-size: 16px !important;
+}
+
+.ts-dropdown {
+    border: 1px solid #ddd !important;
+    font-size: 15px;
+    z-index: 9999;
+}
+/* ===== Country Tom Select ===== */
+
+.ts-wrapper {
+    width: 100%;
+}
+
+.ts-wrapper.single .ts-control {
+    min-height: 0 !important;
+    height: 46px;
+
+    padding: 0 !important;
+
+    border: none !important;
+    border-bottom: 1px solid #d8d2cb !important;
+    border-radius: 0 !important;
+
+    background: transparent !important;
+    box-shadow: none !important;
+
+    display: flex;
+    align-items: center;
+}
+
+.ts-wrapper.single .ts-control input {
+    height: 44px !important;
+    line-height: 44px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    font-size: 16px;
+}
+
+.ts-wrapper.single .ts-control > .item {
+    line-height: 44px;
+    padding: 0;
+}
+
+.ts-dropdown {
+    border-radius: 10px;
+}

@@ -13,18 +13,23 @@ import java.time.LocalDate;
 public class CheckInProcedureResponse {
 
     private Long bookingId;
-
     private String bookingReference;
-
     private String guestName;
 
     private LocalDate checkInDate;
-
     private LocalDate checkOutDate;
 
     private String specialRequests;
 
     private BigDecimal roomTotal;
-
     private String status;
+
+    private Integer adults;
+    private Integer children;
+
+    private String identityType;
+    private String identityNumber;
+
+    private BigDecimal paidAmount;
+    private BigDecimal remainingAmount;
 }

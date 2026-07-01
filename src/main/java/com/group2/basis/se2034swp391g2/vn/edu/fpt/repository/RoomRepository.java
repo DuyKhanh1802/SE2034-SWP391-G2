@@ -104,5 +104,15 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         """)
     List<String> findExistingRoomNumbers();
 
+    @Query("""
+    SELECT r
+    FROM Room r
+    JOIN FETCH r.variant v
+    WHERE r.isDeleted = false
+    AND r.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus.AVAILABLE
+    AND v.id = :variantId
+    ORDER BY r.roomNumber ASC
+""")
+    List<Room> findAvailableRoomsByVariantId(@Param("variantId") Long variantId);
 
 }

@@ -1,16 +1,17 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Receptionist;
 
+
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingCreateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingUpdateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CountryRepository;
+
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.FinancialChargeService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 
 import java.math.BigDecimal;
@@ -33,16 +34,16 @@ public class BookingController {
     private final PaymentService paymentService;
     private final CountryRepository countryRepository;
     private final ServiceRepository serviceRepository;
-    private final FinancialChargeService financialChargeService;
+
     public BookingController(BookingService bookingService,
                              CountryRepository countryRepository,
                              ServiceRepository serviceRepository,
-                             FinancialChargeService financialChargeService,
+
                              PaymentService paymentService) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
         this.serviceRepository = serviceRepository;
-        this.financialChargeService = financialChargeService;
+
         this.paymentService = paymentService;
     }
 
@@ -99,39 +100,13 @@ public class BookingController {
         request.setChildren(children == null ? 0 : children);
         request.setChildAges(childAges);
 
-        model.addAttribute("countries", countryRepository.findAll());
-        model.addAttribute("request", request);
-        model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
-        model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
-
-        addFinancialChargeAttributes(model);
-
-        boolean hasApplied =
-                checkInDate != null
-                        && checkOutDate != null
-                        && adults != null;
-
-        model.addAttribute("hasApplied", hasApplied);
-
-        if (hasApplied) {
-            try {
-                model.addAttribute(
-                        "availableRooms",
-                        bookingService.getAvailableRooms(checkInDate, checkOutDate)
-                );
-            } catch (IllegalArgumentException e) {
-                model.addAttribute("errorMessage", e.getMessage());
-                model.addAttribute("availableRooms", java.util.Collections.emptyList());
-            }
-        } else {
-            model.addAttribute("availableRooms", java.util.Collections.emptyList());
-        }
+        loadAddWalkInPage(model, request, null);
 
         return "receptionist/AddWalkInBooking";
     }
 
     @PostMapping("/add-walk-in")
-    public String addWalkInBooking(@ModelAttribute BookingCreateRequest request,
+    public String addWalkInBooking(@ModelAttribute("request") BookingCreateRequest request,
                                    Model model,
                                    RedirectAttributes redirectAttributes) {
 
@@ -148,26 +123,61 @@ public class BookingController {
             );
 
             return "redirect:/receptionist/bookings";
+
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("countries", countryRepository.findAll());
-            model.addAttribute("request", request);
+            loadAddWalkInPage(model, request, e.getMessage());
+            return "receptionist/AddWalkInBooking";
+        }
+    }
 
-            model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
-            model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
+    private void loadAddWalkInPage(Model model,
+                                   BookingCreateRequest request,
+                                   String errorMessage) {
 
-            addFinancialChargeAttributes(model);
+        if (request.getChildren() == null) {
+            request.setChildren(0);
+        }
 
+        model.addAttribute("request", request);
+
+        model.addAttribute("countries", countryRepository.findAll());
+        model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
+        model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
+
+        model.addAttribute("vatRate", new BigDecimal("8"));
+        model.addAttribute("serviceChargeRate", new BigDecimal("5"));
+        model.addAttribute("taxOnServiceCharge", true);
+        model.addAttribute("priceDisplayMode", "EXCLUSIVE");
+
+        boolean hasApplied =
+                request.getCheckInDate() != null
+                        && request.getCheckOutDate() != null
+                        && request.getAdults() != null;
+
+        model.addAttribute("hasApplied", hasApplied);
+
+        if (hasApplied) {
             try {
                 model.addAttribute(
                         "availableRooms",
-                        bookingService.getAvailableRooms(request.getCheckInDate(), request.getCheckOutDate())
+                        bookingService.getAvailableRooms(
+                                request.getCheckInDate(),
+                                request.getCheckOutDate()
+                        )
                 );
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException roomError) {
                 model.addAttribute("availableRooms", java.util.Collections.emptyList());
-            }
 
-            return "receptionist/AddWalkInBooking";
+                if (errorMessage == null || errorMessage.isBlank()) {
+                    errorMessage = roomError.getMessage();
+                }
+            }
+        } else {
+            model.addAttribute("availableRooms", java.util.Collections.emptyList());
+        }
+
+        if (errorMessage != null && !errorMessage.isBlank()) {
+            model.addAttribute("errorMessage", errorMessage);
         }
     }
 
@@ -232,7 +242,7 @@ public class BookingController {
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Room code email has been sent to the guest."
+                    "Email mã phòng đã được gửi cho khách."
             );
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute(
@@ -245,8 +255,13 @@ public class BookingController {
     }
 
     @GetMapping("/view/{bookingId}")
-    public String viewBookingDetail(@PathVariable Long bookingId, Model model){
-        model.addAttribute("detail",bookingService.getBookingDetail(bookingId));
+    public String viewBookingDetail(@PathVariable Long bookingId, Model model) {
+        model.addAttribute("detail", bookingService.getBookingDetail(bookingId));
+        model.addAttribute(
+                "availableRoomsByDetail",
+                bookingService.getAvailableRoomsForPendingBooking(bookingId)
+        );
+
         return "receptionist/ViewBookingDetail";
     }
 
@@ -352,10 +367,64 @@ public class BookingController {
         return "redirect:/receptionist/bookings/view/" + bookingId;
     }
 
-    private void addFinancialChargeAttributes(Model model) {
-        model.addAttribute("vatRate", financialChargeService.getVatRate());
-        model.addAttribute("serviceChargeRate", financialChargeService.getServiceChargeRate());
-        model.addAttribute("taxOnServiceCharge", financialChargeService.isTaxOnServiceCharge());
-        model.addAttribute("priceDisplayMode", financialChargeService.getPriceDisplayMode());
+    @PostMapping("/{bookingId}/cancel")
+    public String cancelBooking(@PathVariable Long bookingId,
+                                @RequestParam String cancelReason,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.cancelBooking(bookingId, cancelReason);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Hủy đặt phòng thành công."
+            );
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    @PostMapping("/{bookingId}/no-show")
+    public String markNoShow(@PathVariable Long bookingId,
+                             @RequestParam String reason,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.markNoShow(bookingId, reason);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Đã đánh dấu khách không đến."
+            );
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    @PostMapping("/{bookingId}/confirm")
+    public String confirmBooking(@PathVariable Long bookingId,
+                                 @RequestParam List<Long> bookingDetailIds,
+                                 @RequestParam List<Long> roomIds,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.confirmOnlineBooking(bookingId, bookingDetailIds, roomIds);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Xác nhận đặt phòng và phân phòng thành công. Email xác nhận đã được gửi cho khách."
+            );
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/receptionist/bookings/view/" + bookingId;
     }
 }

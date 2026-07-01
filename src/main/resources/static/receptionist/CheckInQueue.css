@@ -220,16 +220,17 @@ a:hover {
    FILTER BAR
 ========================= */
 
-.queue-filter-bar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 16px;
-    align-items: flex-end;
+.queue-filter-bar{
+    display:flex;
+    align-items:flex-end;
+    gap:20px;
+    flex-wrap:nowrap;
 }
 
-.filter-group {
-    display: flex;
-    flex-direction: column;
+.filter-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
 }
 
 .filter-group label {
@@ -267,7 +268,14 @@ a:hover {
 .filter-button-wrap {
     display: flex;
 }
-
+.filter-group.keyword{
+    flex:1;
+}
+.filter-group select,
+.filter-group input{
+    height:48px;
+    min-width:180px;
+}
 .btn-filter {
     height: 44px;
     border: none;
@@ -485,13 +493,15 @@ a:hover {
         gap: 12px;
     }
 
-    .filter-button-wrap {
-        width: 100%;
+    .filter-button-wrap{
+        display:flex;
+        align-items:flex-end;
     }
 
-    .btn-filter {
-        width: 100%;
-        justify-content: center;
+
+    .btn-filter{
+        height:48px;
+        white-space:nowrap;
     }
 
     .stat-card {
@@ -549,4 +559,15 @@ a:hover {
         padding: 6px 10px;
         font-size: 11px;
     }
+}
+.flatpickr-calendar {
+    z-index: 9999 !important;
+}
+
+.queue-filter-bar {
+    overflow: visible;
+}
+
+.dashboard-section {
+    overflow: visible;
 }

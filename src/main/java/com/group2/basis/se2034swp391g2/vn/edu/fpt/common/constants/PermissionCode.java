@@ -5,7 +5,6 @@ public final class PermissionCode {
     public static final String USER_VIEW = "USER_VIEW";
     public static final String USER_MANAGE = "USER_MANAGE";
     public static final String USER_APPROVE = "USER_APPROVE";
-    public static final String ROLE_PERMISSION_MANAGE = "ROLE_PERMISSION_MANAGE";
 
     public static final String HOTEL_DASHBOARD_VIEW = "HOTEL_DASHBOARD_VIEW";
     public static final String ROOM_VIEW = "ROOM_VIEW";

@@ -37,7 +37,8 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ServiceCategoryTy
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
+
+
 
 import java.math.RoundingMode;
 import java.util.HashSet;
@@ -65,7 +66,9 @@ public class BookingService {
     private static final int MAX_PHONE_LENGTH = 20;
     private static final int MAX_NOTES_LENGTH = 500;
     private static final int MAX_BOOKING_NIGHTS = 30;
-
+    private static final BigDecimal VAT_RATE = new BigDecimal("0.08");
+    private static final BigDecimal SERVICE_CHARGE_RATE = new BigDecimal("0.05");
+    private static final boolean TAX_ON_SERVICE_CHARGE = true;
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
@@ -82,6 +85,7 @@ public class BookingService {
     private final FolioItemRepository folioItemRepository;
     private final FinancialChargeService financialChargeService;
     private final InventoryManagementService inventoryManagementService;
+
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
@@ -95,6 +99,8 @@ public class BookingService {
                           FinancialChargeService financialChargeService,
                           PaymentService paymentService,
                           InventoryManagementService inventoryManagementService) {
+
+                          PaymentService paymentService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingDetailRepository = bookingDetailRepository;
@@ -105,7 +111,7 @@ public class BookingService {
         this.roomTypeVariantServiceRepository = roomTypeVariantServiceRepository;
         this.serviceRepository = serviceRepository;
         this.folioItemRepository = folioItemRepository;
-        this.financialChargeService = financialChargeService;
+
         this.paymentService = paymentService;
         this.inventoryManagementService = inventoryManagementService;
     }
@@ -129,13 +135,29 @@ public class BookingService {
         String searchKeyword = keyword == null ? "" : keyword.trim();
         String searchStatus = status == null ? "" : status.trim();
 
-        return bookingRepository.searchBookingListPaging(
+        return bookingRepository.searchBookingListPagingRaw(
                 searchKeyword,
                 searchStatus,
                 checkIn,
                 checkOut,
                 pageable
-        );
+        ).map(row -> new BookingResponse(
+                row.getBookingId(),
+                row.getBookingReference(),
+                row.getGuestName(),
+                buildRoomDisplay(row.getVariantName(), row.getRoomNumber()),
+                row.getCheckInDate(),
+                row.getCheckOutDate(),
+                row.getStatus(),
+                row.getTotalAmount()
+        ));
+    }
+    private String buildRoomDisplay(String variantName, String roomNumber) {
+        String roomText = roomNumber == null || roomNumber.isBlank()
+                ? "Chưa phân phòng"
+                : "Phòng " + roomNumber;
+
+        return variantName + " - " + roomText;
     }
 
     @Transactional(readOnly = true)
@@ -194,11 +216,11 @@ public class BookingService {
         LocalDate checkInDate = request.getCheckInDate();
         LocalDate checkOutDate = request.getCheckOutDate();
         User currentStaff = getCurrentStaffUser();
+        BigDecimal vatRate = VAT_RATE;
+        BigDecimal serviceChargeRate = SERVICE_CHARGE_RATE;
 
-        BigDecimal vatRatePercent = financialChargeService.getVatRate();
-        BigDecimal serviceChargeRatePercent = financialChargeService.getServiceChargeRate();
-        BigDecimal vatRateDecimal = financialChargeService.toDecimalRate(vatRatePercent);
-        BigDecimal serviceChargeRateDecimal = financialChargeService.toDecimalRate(serviceChargeRatePercent);
+        BigDecimal vatRateDecimal = vatRate;
+        BigDecimal serviceChargeRateDecimal = serviceChargeRate;
         List<Room> selectedRooms = roomRepository.findAvailableRoomsByIds(
                 request.getRoomIds(),
                 checkInDate,
@@ -236,9 +258,7 @@ public class BookingService {
                 .totalRooms(selectedRooms.size())
                 .specialRequests(request.getNotes())
                 .bookingReference(generateBookingReference())
-                .depositStatus(Boolean.TRUE.equals(request.getDepositPaid())
-                        ? DepositStatus.PAID
-                        : DepositStatus.UNPAID)
+                .depositStatus(DepositStatus.UNPAID)
                 .status(bookingStatus)
                 .discountAmount(BigDecimal.ZERO)
                 .totalAmount(BigDecimal.ZERO)
@@ -289,7 +309,7 @@ public class BookingService {
             // VAT base
             BigDecimal detailVatBase = detailBaseAmount;
 
-            if (financialChargeService.isTaxOnServiceCharge()) {
+            if (TAX_ON_SERVICE_CHARGE) {
                 detailVatBase = detailVatBase.add(detailServiceChargeAmount);
             }
 
@@ -318,9 +338,9 @@ public class BookingService {
                     .extraBedCount(extraBedCount)
                     .extraBedPrice(extraBedPrice)
                     .extraBedTotal(extraBedTotal)
-                    .serviceChargeRate(serviceChargeRatePercent)
+                    .serviceChargeRate(serviceChargeRate)
                     .serviceChargeAmount(detailServiceChargeAmount)
-                    .vatRate(vatRatePercent)
+                    .vatRate(vatRate)
                     .vatAmount(detailVatAmount)
                     .totalAmount(detailTotalWithVat);
 
@@ -339,8 +359,11 @@ public class BookingService {
             roomVatTotal = roomVatTotal.add(detailVatAmount);
         }
 
+        bookingDetailRepository.saveAll(bookingDetails);
+
         BigDecimal serviceSubtotal = createAdditionalServiceFolioItems(
                 savedBooking,
+                bookingDetails,
                 request,
                 currentStaff
         );
@@ -351,7 +374,7 @@ public class BookingService {
 
         BigDecimal serviceVatBase = serviceSubtotal;
 
-        if (financialChargeService.isTaxOnServiceCharge()) {
+        if (TAX_ON_SERVICE_CHARGE) {
             serviceVatBase = serviceVatBase.add(additionalServiceChargeTotal);
         }
 
@@ -370,9 +393,7 @@ public class BookingService {
                 .add(serviceChargeTotal)
                 .add(vatTotal);
 
-        BigDecimal depositAmount = grandTotal
-                .multiply(BigDecimal.valueOf(0.5))
-                .setScale(0, RoundingMode.HALF_UP);
+        BigDecimal depositAmount = BigDecimal.ZERO;
 
         savedBooking.setRoomSubtotal(roomSubtotalTotal);
         savedBooking.setServiceSubtotal(serviceSubtotal);
@@ -390,19 +411,10 @@ public class BookingService {
         savedBooking.setDepositAmount(depositAmount);
         savedBooking.setAmountCalculatedAt(Instant.now());
 
-        if (Boolean.TRUE.equals(request.getDepositPaid())) {
-            validateDepositRequest(request);
-            savedBooking.setDepositStatus(DepositStatus.PAID);
-        } else {
-            savedBooking.setDepositStatus(DepositStatus.UNPAID);
-        }
+        savedBooking.setDepositStatus(DepositStatus.UNPAID);
 
         bookingRepository.save(savedBooking);
-        bookingDetailRepository.saveAll(bookingDetails);
 
-        if(Boolean.TRUE.equals(request.getDepositPaid())){
-            createDepositPayment(savedBooking,depositAmount,request,currentStaff);
-        }
 
         if (bookingStatus == BookingStatus.CHECKED_IN) {
             roomRepository.saveAll(selectedRooms);
@@ -563,8 +575,12 @@ public class BookingService {
             throw new IllegalArgumentException("Vui lòng nhập số giấy tờ tùy thân.");
         }
 
-        if (request.getDateOfBirth() != null && request.getDateOfBirth().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Ngày sinh không được lớn hơn ngày hiện tại.");
+        if (request.getBirthYear() != null) {
+            int currentYear = LocalDate.now().getYear();
+
+            if (request.getBirthYear() < 1900 || request.getBirthYear() > currentYear) {
+                throw new IllegalArgumentException("Năm sinh không hợp lệ.");
+            }
         }
 
         validateBookingDates(request.getCheckInDate(), request.getCheckOutDate());
@@ -618,19 +634,16 @@ public class BookingService {
         }
 
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
-            Set<Long> uniqueServiceIds = new HashSet<>(request.getServiceIds());
-
-            if (uniqueServiceIds.size() != request.getServiceIds().size()) {
-                throw new IllegalArgumentException("Không được chọn trùng dịch vụ.");
+            if (request.getServiceRoomIds() == null
+                    || request.getServiceQuantities() == null
+                    || request.getServiceRoomIds().size() != request.getServiceIds().size()
+                    || request.getServiceQuantities().size() != request.getServiceIds().size()) {
+                throw new IllegalArgumentException("Thông tin dịch vụ theo phòng không hợp lệ.");
             }
 
-            if (request.getServiceQuantities() != null) {
-                for (Long serviceId : request.getServiceIds()) {
-                    Integer quantity = request.getServiceQuantities().get(serviceId);
-
-                    if (quantity == null || quantity < 1) {
-                        throw new IllegalArgumentException("Số lượng dịch vụ phải ít nhất là 1.");
-                    }
+            for (Integer quantity : request.getServiceQuantities()) {
+                if (quantity == null || quantity < 1) {
+                    throw new IllegalArgumentException("Số lượng dịch vụ phải ít nhất là 1.");
                 }
             }
         }
@@ -690,7 +703,11 @@ public class BookingService {
                 .phone(phone)
                 .email(email)
                 .gender(request.getGender())
-                .dateOfBirth(request.getDateOfBirth())
+                .dateOfBirth(
+                        request.getBirthYear() != null
+                                ? LocalDate.of(request.getBirthYear(), 1, 1)
+                                : null
+                )
                 .country(country)
                 .identityType(resolveIdentityType(country))
                 .identityNumber(identityNumber)
@@ -866,9 +883,20 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookingResponse> getConfirmedBookingsForCheckIn(String keyword, Pageable pageable) {
-        String searchKeyword = keyword == null ? "" : keyword.trim();
-        return bookingRepository.findConfirmedBookingsForCheckIn(searchKeyword, pageable);
+    public Page<BookingResponse> getConfirmedBookingsForCheckIn(
+            String keyword,
+            Long roomTypeId,
+            LocalDate checkInDate,
+            String status,
+            Pageable pageable
+    ) {
+        return bookingRepository.findConfirmedBookingsForCheckIn(
+                keyword == null ? "" : keyword.trim(),
+                roomTypeId,
+                checkInDate,
+                status == null || status.isBlank() ? "CONFIRMED" : status,
+                pageable
+        );
     }
 
     @Transactional
@@ -956,24 +984,31 @@ public class BookingService {
             }
 
             emailContent
-                    .append("Room Number: ")
+                    .append("Số phòng: ")
                     .append(detail.getRoom().getRoomNumber())
                     .append("\n")
-                    .append("Room Type: ")
-                    .append(detail.getVariant().getRoomType().getName())
-                    .append(" - ")
-                    .append(detail.getVariant().getVariantName())
+
+                    .append("Loại phòng: ")
+                    .append(detail.getVariant().getRoomType().getName());
+
+            if (detail.getVariant().getViewType() != null) {
+                emailContent
+                        .append(" - ")
+                        .append(detail.getVariant().getViewType());
+            }
+
+            emailContent
                     .append("\n")
-                    .append("Room Code: ")
+                    .append("Mã phòng: ")
                     .append(detail.getRoomCode())
                     .append("\n")
-                    .append("Check-in Date: ")
+                    .append("Ngày nhận phòng: ")
                     .append(detail.getCheckInDate())
                     .append("\n")
-                    .append("Check-out Date: ")
+                    .append("Ngày trả phòng: ")
                     .append(detail.getCheckOutDate())
                     .append("\n")
-                    .append("Expires At: ")
+                    .append("Có hiệu lực đến: ")
                     .append(detail.getRoomCodeExpiresAt())
                     .append("\n\n");
         }
@@ -1045,6 +1080,13 @@ public class BookingService {
         List<ViewBookingDetailResponse.ServiceLine> serviceLines = folioItems.stream()
                 .map(item -> ViewBookingDetailResponse.ServiceLine.builder()
                         .folioItemId(item.getId())
+                        .bookingDetailId(item.getBookingDetail() != null
+                                ? item.getBookingDetail().getId()
+                                : null)
+                        .roomNumber(item.getBookingDetail() != null
+                                && item.getBookingDetail().getRoom() != null
+                                ? item.getBookingDetail().getRoom().getRoomNumber()
+                                : "Chưa xác định")
                         .serviceName(item.getDescription())
                         .itemType(item.getItemType() != null ? item.getItemType().name() : "N/A")
                         .serviceStatus(getEffectiveServiceStatus(item).name())
@@ -1120,6 +1162,7 @@ public class BookingService {
                                         ? String.valueOf(detail.getVariant().getViewType())
                                         : null
                         )
+                        .variantId(detail.getVariant() != null ? detail.getVariant().getId() : null)
                         .pricePerNight(detail.getPricePerNight())
                         .numNights(detail.getNumNights())
                         .subtotal(detail.getSubtotal())
@@ -1154,6 +1197,13 @@ public class BookingService {
                 .bookingReference(booking.getBookingReference())
                 .bookingStatus(booking.getStatus())
                 .depositStatus(booking.getDepositStatus())
+                .cancelReason(booking.getCancelReason())
+                .cancelledAt(booking.getCancelledAt())
+                .cancelledByName(
+                        booking.getCancelledBy() != null
+                                ? booking.getCancelledBy().getFirstName() + " " + booking.getCancelledBy().getLastName()
+                                : "N/A"
+                )
 
                 .guestName(guestName)
                 .guestEmail(booking.getGuestEmail())
@@ -1210,59 +1260,76 @@ public class BookingService {
     }
 
     private BigDecimal createAdditionalServiceFolioItems(Booking booking,
+                                                         List<BookingDetail> bookingDetails,
                                                          BookingCreateRequest request,
                                                          User currentStaff) {
         if (request.getServiceIds() == null || request.getServiceIds().isEmpty()) {
             return BigDecimal.ZERO;
         }
 
+        if (request.getServiceRoomIds() == null
+                || request.getServiceQuantities() == null
+                || request.getServiceRoomIds().size() != request.getServiceIds().size()
+                || request.getServiceQuantities().size() != request.getServiceIds().size()) {
+            throw new IllegalArgumentException("Thông tin dịch vụ theo phòng không hợp lệ.");
+        }
+
         List<com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service> services =
                 serviceRepository.findAllById(request.getServiceIds());
 
-        if (services.size() != request.getServiceIds().size()) {
-            throw new IllegalArgumentException("Một hoặc nhiều dịch vụ đã chọn không tồn tại.");
-        }
+        Map<Long, com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service> serviceMap =
+                services.stream().collect(Collectors.toMap(
+                        com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service::getId,
+                        service -> service
+                ));
 
         BigDecimal serviceSubtotal = BigDecimal.ZERO;
         List<FolioItem> folioItems = new ArrayList<>();
 
-        BigDecimal serviceChargeRate = financialChargeService.getServiceChargeRate();
-        BigDecimal vatRate = financialChargeService.getVatRate();
-        BigDecimal serviceChargeRateDecimal = financialChargeService.toDecimalRate(serviceChargeRate);
-        BigDecimal vatRateDecimal = financialChargeService.toDecimalRate(vatRate);
+        for (int i = 0; i < request.getServiceIds().size(); i++) {
+            Long roomId = request.getServiceRoomIds().get(i);
+            Long serviceId = request.getServiceIds().get(i);
+            Integer quantity = request.getServiceQuantities().get(i);
 
-        for (com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service : services) {
-            if (Boolean.TRUE.equals(service.getIsDeleted())
+            if (quantity == null || quantity < 1) {
+                throw new IllegalArgumentException("Số lượng dịch vụ phải ít nhất là 1.");
+            }
+
+            BookingDetail detail = bookingDetails.stream()
+                    .filter(d -> d.getRoom() != null && d.getRoom().getId().equals(roomId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Dịch vụ không khớp với phòng đã chọn."));
+
+            com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service = serviceMap.get(serviceId);
+
+            if (service == null
+                    || Boolean.TRUE.equals(service.getIsDeleted())
                     || !Boolean.TRUE.equals(service.getIsAvailable())) {
-                throw new IllegalArgumentException("Dịch vụ " + service.getName() + " hiện không khả dụng.");
-            }
-
-            int quantity = 1;
-
-            if (request.getServiceQuantities() != null
-                    && request.getServiceQuantities().get(service.getId()) != null) {
-                quantity = request.getServiceQuantities().get(service.getId());
-            }
-
-            if (quantity < 1) {
-                throw new IllegalArgumentException("Số lượng dịch vụ " + service.getName() + " phải ít nhất là 1.");
+                throw new IllegalArgumentException("Dịch vụ không tồn tại hoặc không còn khả dụng.");
             }
 
             BigDecimal unitPrice = service.getPrice();
             BigDecimal baseAmount = unitPrice.multiply(BigDecimal.valueOf(quantity));
 
-            BigDecimal serviceChargeAmount = baseAmount
-                    .multiply(serviceChargeRateDecimal)
-                    .setScale(0, RoundingMode.HALF_UP);
+            String newServiceText = service.getName() + " x" + quantity
+                    + " - " + unitPrice.setScale(0, RoundingMode.HALF_UP) + " VND";
 
-            BigDecimal vatBase = baseAmount;
-
-            if (financialChargeService.isTaxOnServiceCharge()) {
-                vatBase = vatBase.add(serviceChargeAmount);
+            if (detail.getServiceSummary() == null || detail.getServiceSummary().isBlank()) {
+                detail.setServiceSummary(newServiceText);
+            } else {
+                detail.setServiceSummary(detail.getServiceSummary() + ", " + newServiceText);
             }
 
+            BigDecimal serviceChargeAmount = baseAmount
+                    .multiply(SERVICE_CHARGE_RATE)
+                    .setScale(0, RoundingMode.HALF_UP);
+
+            BigDecimal vatBase = TAX_ON_SERVICE_CHARGE
+                    ? baseAmount.add(serviceChargeAmount)
+                    : baseAmount;
+
             BigDecimal vatAmount = vatBase
-                    .multiply(vatRateDecimal)
+                    .multiply(VAT_RATE)
                     .setScale(0, RoundingMode.HALF_UP);
 
             BigDecimal totalAmount = baseAmount
@@ -1271,35 +1338,31 @@ public class BookingService {
 
             FolioItem item = FolioItem.builder()
                     .booking(booking)
+                    .bookingDetail(detail)
                     .service(service)
                     .itemType(resolveServiceFolioItemType(service))
                     .serviceStatus(FolioItemStatus.REQUESTED)
                     .description(service.getName())
                     .quantity(quantity)
                     .unitPrice(unitPrice)
-
                     .baseAmount(baseAmount)
-                    .serviceChargeRate(serviceChargeRate)
+                    .serviceChargeRate(SERVICE_CHARGE_RATE)
                     .serviceChargeAmount(serviceChargeAmount)
-                    .vatRate(vatRate)
+                    .vatRate(VAT_RATE)
                     .vatAmount(vatAmount)
                     .totalAmount(totalAmount)
                     .amount(totalAmount)
-
-                    .priceDisplayMode(financialChargeService.getPriceDisplayMode())
                     .postedBy(currentStaff)
                     .postedAt(Instant.now())
                     .isVoided(false)
                     .build();
 
             folioItems.add(item);
-
-            // serviceSubtotal vẫn là tiền gốc dịch vụ, chưa gồm phí và VAT
             serviceSubtotal = serviceSubtotal.add(baseAmount);
         }
 
         folioItemRepository.saveAll(folioItems);
-
+        bookingDetailRepository.saveAll(bookingDetails);
         return serviceSubtotal;
     }
     private FolioItemType resolveServiceFolioItemType(
@@ -1343,7 +1406,11 @@ public class BookingService {
                 .phoneNumber(booking.getGuestPhone())
                 .email(booking.getGuestEmail())
                 .gender(guest != null ? guest.getGender() : null)
-                .dateOfBirth(guest != null ? guest.getDateOfBirth() : null)
+                .birthYear(
+                        guest != null && guest.getDateOfBirth() != null
+                                ? guest.getDateOfBirth().getYear()
+                                : null
+                )
                 .countryId(guest != null && guest.getCountry() != null
                         ? guest.getCountry().getId()
                         : null)
@@ -1384,20 +1451,26 @@ public class BookingService {
 
         User guest = booking.getGuest();
 
-        if (guest != null) {
-            guest.setFirstName(firstName);
-            guest.setLastName(lastName);
-            guest.setPhone(phone);
-            guest.setEmail(email);
-            guest.setGender(request.getGender());
-            guest.setDateOfBirth(request.getDateOfBirth());
-            guest.setCountry(country);
-            guest.setIdentityNumber(identityNumber);
-            guest.setIdentityType(resolveIdentityType(country));
-
-            userRepository.save(guest);
+        if (guest == null) {
+            guest = new User();
+            booking.setGuest(guest);
         }
 
+        guest.setFirstName(firstName);
+        guest.setLastName(lastName);
+        guest.setPhone(phone);
+        guest.setEmail(email);
+        guest.setGender(request.getGender());
+        if (request.getBirthYear() != null) {
+            guest.setDateOfBirth(
+                    LocalDate.of(request.getBirthYear(), 1, 1)
+            );
+        }
+        guest.setCountry(country);
+        guest.setIdentityNumber(identityNumber);
+        guest.setIdentityType(resolveIdentityType(country));
+
+        userRepository.save(guest);
         bookingRepository.save(booking);
     }
 
@@ -1458,8 +1531,12 @@ public class BookingService {
             throw new IllegalArgumentException("Vui lòng nhập số giấy tờ tùy thân.");
         }
 
-        if (request.getDateOfBirth() != null && request.getDateOfBirth().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Ngày sinh không được lớn hơn ngày hiện tại.");
+        if (request.getBirthYear() != null) {
+            int currentYear = LocalDate.now().getYear();
+
+            if (request.getBirthYear() < 1900 || request.getBirthYear() > currentYear) {
+                throw new IllegalArgumentException("Năm sinh không hợp lệ.");
+            }
         }
 
         if (request.getNotes() != null && request.getNotes().length() > MAX_NOTES_LENGTH) {
@@ -1467,4 +1544,179 @@ public class BookingService {
         }
     }
 
+    @Transactional
+    public void cancelBooking(Long bookingId, String cancelReason) {
+        if (bookingId == null) {
+            throw new IllegalArgumentException("Thiếu mã đặt phòng.");
+        }
+
+        if (cancelReason == null || cancelReason.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập lý do hủy đặt phòng.");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (Boolean.TRUE.equals(booking.getIsDeleted())) {
+            throw new IllegalArgumentException("Đặt phòng này đã bị xóa.");
+        }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new IllegalArgumentException("Đặt phòng này đã bị hủy trước đó.");
+        }
+
+        if (booking.getStatus() == BookingStatus.CHECKED_IN
+                || booking.getStatus() == BookingStatus.CHECKED_OUT) {
+            throw new IllegalArgumentException("Không thể hủy đặt phòng đã nhận phòng hoặc đã trả phòng.");
+        }
+
+        User currentStaff = getCurrentStaffUser();
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setCancelReason(cancelReason.trim());
+        booking.setCancelledAt(Instant.now());
+        booking.setCancelledBy(currentStaff);
+
+        if (booking.getDepositStatus() == DepositStatus.PAID) {
+            booking.setDepositStatus(DepositStatus.FORFEITED);
+        }
+
+        bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void markNoShow(Long bookingId, String reason) {
+        if (bookingId == null) {
+            throw new IllegalArgumentException("Thiếu mã đặt phòng.");
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập lý do no-show.");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (Boolean.TRUE.equals(booking.getIsDeleted())) {
+            throw new IllegalArgumentException("Đặt phòng này đã bị xóa.");
+        }
+
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new IllegalArgumentException("Chỉ đặt phòng đã xác nhận mới có thể đánh dấu no-show.");
+        }
+
+        User currentStaff = getCurrentStaffUser();
+
+        booking.setStatus(BookingStatus.NO_SHOW);
+        booking.setCancelReason(reason.trim());
+        booking.setCancelledAt(Instant.now());
+        booking.setCancelledBy(currentStaff);
+
+        if (booking.getDepositStatus() == DepositStatus.PAID) {
+            booking.setDepositStatus(DepositStatus.FORFEITED);
+        }
+
+        bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void confirmOnlineBooking(Long bookingId,
+                                     List<Long> bookingDetailIds,
+                                     List<Long> roomIds) {
+        Booking booking = bookingRepository.findByIdAndIsDeletedFalse(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new IllegalStateException("Chỉ có thể xác nhận đặt phòng đang chờ xác nhận.");
+        }
+
+        if (booking.getGuestEmail() == null || booking.getGuestEmail().isBlank()) {
+            throw new IllegalStateException("Đặt phòng chưa có email khách, không thể gửi xác nhận.");
+        }
+
+        if (bookingDetailIds == null || roomIds == null || bookingDetailIds.size() != roomIds.size()) {
+            throw new IllegalArgumentException("Vui lòng phân phòng đầy đủ.");
+        }
+
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+
+        for (int i = 0; i < bookingDetailIds.size(); i++) {
+            Long detailId = bookingDetailIds.get(i);
+            Long roomId = roomIds.get(i);
+
+            BookingDetail detail = details.stream()
+                    .filter(d -> d.getId().equals(detailId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Chi tiết đặt phòng không hợp lệ."));
+
+            Room room = roomRepository.findById(roomId)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng đã chọn."));
+
+            if (Boolean.TRUE.equals(room.getIsDeleted())) {
+                throw new IllegalStateException("Phòng đã chọn đã bị xóa.");
+            }
+
+            if (room.getStatus() != RoomStatus.AVAILABLE) {
+                throw new IllegalStateException("Phòng " + room.getRoomNumber() + " không khả dụng.");
+            }
+
+            if (room.getVariant() == null || detail.getVariant() == null
+                    || !room.getVariant().getId().equals(detail.getVariant().getId())) {
+                throw new IllegalStateException(
+                        "Phòng " + room.getRoomNumber() + " không đúng hạng phòng khách đã đặt."
+                );
+            }
+
+            detail.setRoom(room);
+        }
+
+        Payment depositPayment = paymentRepository
+                .findFirstByBookingIdAndPaymentTypeAndStatus(
+                        bookingId,
+                        PaymentType.DEPOSIT,
+                        PaymentStatus.PENDING
+                )
+                .orElseThrow(() -> new IllegalStateException("Không tìm thấy giao dịch cọc đang chờ xác nhận."));
+
+        depositPayment.setStatus(PaymentStatus.SUCCESS);
+        depositPayment.setPaidAt(Instant.now());
+        depositPayment.setProcessedBy(getCurrentStaffUser());
+
+        booking.setDepositStatus(DepositStatus.PAID);
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        bookingDetailRepository.saveAll(details);
+        paymentRepository.save(depositPayment);
+        bookingRepository.save(booking);
+
+        mailService.sendBookingConfirmedEmail(booking, details);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, List<Room>> getAvailableRoomsForPendingBooking(Long bookingId) {
+        Booking booking = bookingRepository.findByIdAndIsDeletedFalse(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            return Collections.emptyMap();
+        }
+
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+
+        return details.stream()
+                .filter(detail -> detail.getVariant() != null)
+                .collect(Collectors.toMap(
+                        BookingDetail::getId,
+                        detail -> roomRepository.findAvailableRoomsByVariantId(detail.getVariant().getId())
+                ));
+    }
+    @Transactional(readOnly = true)
+    public List<Booking> getTodayConfirmedBookingsForReminder() {
+        return bookingRepository.findByStatusAndCheckInDateAndIsDeletedFalse(
+                BookingStatus.CONFIRMED,
+                LocalDate.now()
+        );
+    }
 }
