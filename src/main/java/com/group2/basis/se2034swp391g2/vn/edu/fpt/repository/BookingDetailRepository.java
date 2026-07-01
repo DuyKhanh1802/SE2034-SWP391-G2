@@ -55,14 +55,15 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
     List<RoomResponse> findAssignedRoomsByBookingId(@Param("bookingId") Long bookingId);
 
     @Query("""
-        SELECT bd
-        FROM BookingDetail bd
-        JOIN FETCH bd.booking b
-        JOIN FETCH bd.room r
-        JOIN FETCH bd.variant v
-        JOIN FETCH v.roomType rt
-        WHERE b.id = :bookingId
-        """)
+    SELECT bd
+    FROM BookingDetail bd
+    JOIN FETCH bd.booking b
+    LEFT JOIN FETCH bd.room r
+    JOIN FETCH bd.variant v
+    JOIN FETCH v.roomType rt
+    WHERE b.id = :bookingId
+    ORDER BY bd.id ASC
+    """)
     List<BookingDetail> findDetailsWithRoomsByBookingId(@Param("bookingId") Long bookingId);
 
     @Query("""

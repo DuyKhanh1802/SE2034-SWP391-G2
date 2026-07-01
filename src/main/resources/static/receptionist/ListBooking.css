@@ -417,7 +417,11 @@ body {
     pointer-events: none;
     opacity: 0.35;
 }
-
+.status-no-show {
+    background: #fff3cd;
+    color: #8a5a00;
+    border: 1px solid #f3d28b;
+}
 /* =========================
    DESKTOP SAFETY
 ========================= */
