@@ -39,7 +39,7 @@ public class FolioItem {
     private FolioItemType itemType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "service_status", nullable = false, length = 15)
+    @Column(name = "service_status", nullable = false, length = 25)
     private FolioItemStatus serviceStatus = FolioItemStatus.REQUESTED;
 
     @Column(name = "amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
