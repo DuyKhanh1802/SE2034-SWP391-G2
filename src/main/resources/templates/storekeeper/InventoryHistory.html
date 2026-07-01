@@ -69,7 +69,7 @@
                     <td>
                         <span class="movement-type"
                               th:classappend="${transaction.type.name() == 'IN' ? ' movement-in' : (transaction.type.name() == 'OUT' ? ' movement-out' : (transaction.type.name() == 'DISPOSAL' ? ' movement-disposal' : ' movement-adjustment'))}"
-                              th:text="${transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : (transaction.type.name() == 'DISPOSAL' ? 'Xuất hủy' : 'Điều chỉnh'))}"></span>
+                              th:text="${transaction.sourceType == 'RECEIPT_OPENING' ? 'Nhập tồn khởi tạo' : (transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : (transaction.type.name() == 'DISPOSAL' ? 'Xuất hủy' : 'Điều chỉnh')))}"></span>
                     </td>
                     <td><strong th:text="${@inventoryQuantityFormatter.format(transaction.quantity) + ' ' + transaction.item.unit}"></strong></td>
                     <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + transaction.item.unit : '—'}"></td>

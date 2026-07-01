@@ -8,6 +8,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeService;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.BookingServiceProjection;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.HomeServiceProjection;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.ServiceProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,53 +37,32 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
     """)
     List<Service> findAvailableByCategoryId(@Param("categoryId") Long categoryId);
 
-    @Query("SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeService(" +
-            " s.id, " +
-            " s.name, " +
-            " s.description, " +
-            " s.price, " +
-            " c.type, " +
-            " c.name, " +
-            " img.imageUrl" +
-            ") " +
-            " FROM Service s " +
-            " JOIN s.category c " +
-            " LEFT JOIN Image img " +
-            " ON img.entityType = :entityType " +
-            " AND img.entityId = s.id " +
-            " AND img.isPrimary = true " +
-            " WHERE s.isDeleted = false " +
-            " AND s.isAvailable = true " +
-            " AND c.isDeleted = false " +
-            " ORDER BY s.id DESC")
-    List<HomeService> findServiceForHome(@Param("entityType") ImageEntityType entityType,
-                                         Pageable pageable);
-
     @Query("""
-            SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.HomeService(
-                s.id,
-                s.name,
-                s.description,
-                s.price,
-                c.type,
-                c.name,
-                img.imageUrl
-            )
-            FROM Service s
-            JOIN s.category c
-            LEFT JOIN Image img
-                ON img.entityType = :entityType
-                AND img.entityId = s.id
-                AND img.isPrimary = true
-            WHERE s.isDeleted = false
-              AND s.isAvailable = true
-              AND c.isDeleted = false
-              AND c.type = :categoryType
-            ORDER BY s.id DESC
-            """)
-    List<HomeService> findServiceByCategoryType(@Param("categoryType") ServiceCategoryType serviceCategoryType,
-                                                @Param("entityType") ImageEntityType imageEntityType,
-                                                Pageable pageable);
+        SELECT 
+            s.id AS id,
+            s.name AS name,
+            s.description AS description,
+            s.price AS price,
+            c.type AS categoryType,
+            c.name AS categoryName,
+            img.imageUrl AS imageUrl
+        FROM Service s
+        JOIN s.category c
+        LEFT JOIN Image img
+            ON img.entityType = :entityType
+            AND img.entityId = s.id
+            AND img.isPrimary = true
+        WHERE s.isDeleted = false
+          AND s.isAvailable = true
+          AND c.isDeleted = false
+          AND c.type = :categoryType
+        ORDER BY s.id DESC
+        """)
+    List<HomeServiceProjection> findServiceByCategoryType(
+            @Param("categoryType") ServiceCategoryType serviceCategoryType,
+            @Param("entityType") ImageEntityType imageEntityType,
+            Pageable pageable
+    );
 
     @Query(
             value = """
@@ -290,4 +270,5 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
             @Param("priceFilter") String priceFilter,
             Pageable pageable
     );
+
 }

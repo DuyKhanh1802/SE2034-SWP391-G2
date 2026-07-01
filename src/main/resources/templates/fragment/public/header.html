@@ -50,14 +50,9 @@
                         <span>View profile</span>
                     </a>
 
-                    <a th:href="@{/guest/booking}" class="guest-profile-item">
+                    <a th:href="@{/guest/my-booking}" class="guest-profile-item">
                         <i class="bi bi-calendar3"></i>
                         <span>View booking</span>
-                    </a>
-
-                    <a th:href="@{/guest/folio}" class="guest-profile-item">
-                        <i class="bi bi-file-earmark-text"></i>
-                        <span>View folio</span>
                     </a>
 
                     <div class="guest-profile-divider"></div>
@@ -84,14 +79,13 @@
             <a th:href="@{/page/home}">Home</a>
             <a th:href="@{/page/overview}">Overview</a>
             <a th:href="@{/page/promotions}">Offers</a>
-            <a th:href="@{/page/room-types}">Room Type</a>
+            <a th:href="@{/page/rooms}">RoomTypeVariant</a>
             <a th:href="@{/page/services/dining}">Dining</a>
             <a th:href="@{/page/services/wellness}">Wellness</a>
-            <a th:href="@{/page/accommodation}">Accommodation</a>
         </nav>
 
         <div class="header-action">
-            <a class="btn-book" th:href="@{/booking}">ĐẶT PHÒNG</a>
+            <a class="btn-book" th:href="@{/page/rooms}">ĐẶT PHÒNG</a>
         </div>
     </div>
 

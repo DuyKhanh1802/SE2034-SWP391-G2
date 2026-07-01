@@ -18,6 +18,8 @@ public class GuestRoomSession implements Serializable {
     private Long guestId;
 
     private String roomNumber;
+    private String roomCode;
+
     private String guestName;
     private String guestEmail;
     private String bookingReference;
