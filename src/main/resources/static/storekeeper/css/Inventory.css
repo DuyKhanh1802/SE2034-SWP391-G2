@@ -211,7 +211,7 @@ a { text-decoration: none; }
 .inventory-items-table thead th { text-align: center; }
 .inventory-cell-center { text-align: center; }
 .item-code { font-family: monospace; font-weight: 600; color: #555; }
-.quantity { font-weight: 700; }
+.quantity { font-weight: 400; }
 .quantity.low { color: #c0392b; }
 .quantity.out { color: #991b1b; }
 

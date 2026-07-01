@@ -55,7 +55,6 @@
                     <th>Số lượng</th>
                     <th>Tồn sau biến động</th>
                     <th>Nguồn</th>
-                    <th>Nội dung</th>
                     <th>Người thực hiện</th>
                 </tr>
                 </thead>
@@ -74,12 +73,11 @@
                     <td><strong th:text="${@inventoryQuantityFormatter.format(transaction.quantity) + ' ' + transaction.item.unit}"></strong></td>
                     <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + transaction.item.unit : '—'}"></td>
                     <td th:text="${transaction.sourceLabel}"></td>
-                    <td th:text="${transaction.descriptionLabel}"></td>
                     <td th:text="${transaction.createdBy != null
                         ? ((transaction.createdBy.lastName ?: '') + ' ' + (transaction.createdBy.firstName ?: '')).trim()
                         : 'Hệ thống'}"></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="8" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td></tr>
+                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="7" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td></tr>
                 </tbody>
             </table>
         </div>
