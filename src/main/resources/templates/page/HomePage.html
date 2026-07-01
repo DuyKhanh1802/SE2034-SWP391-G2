@@ -197,14 +197,27 @@
         </div>
     </section>
 
-    <!-- WELLNESS - REVERSE LAYOUT -->
+    <!-- WELLNESS -->
     <section class="dining-section section-space wellness-reverse-section">
         <div class="container-fluid px-lg-5">
 
             <div class="row g-5 align-items-start">
 
-                <!-- 3 ảnh wellness bên trái -->
-                <div class="col-lg-9 order-2 order-lg-1">
+                <!-- chữ wellness bên trái, giống layout Dining -->
+                <div class="col-lg-3">
+                    <div class="side-heading wellness-side-heading">
+                        <p class="section-label">WELLNESS</p>
+                        <h2>Wellness Experiences</h2>
+                        <p>
+                            Tái tạo năng lượng với những dịch vụ chăm sóc sức khỏe, thư giãn và cân bằng
+                            dành riêng cho kỳ nghỉ của bạn tại V'Hotel.
+                        </p>
+                        <a th:href="@{/page/services/wellness}" class="outline-dark-btn">VIEW ALL</a>
+                    </div>
+                </div>
+
+                <!-- 3 ảnh wellness bên phải -->
+                <div class="col-lg-9">
                     <div class="row g-4">
 
                         <div class="col-lg-4 col-md-6"
@@ -235,19 +248,6 @@
                     </div>
                 </div>
 
-                <!-- chữ wellness bên phải -->
-                <div class="col-lg-3 order-1 order-lg-2">
-                    <div class="side-heading wellness-side-heading">
-                        <p class="section-label">WELLNESS</p>
-                        <h2>Wellness Experiences</h2>
-                        <p>
-                            Tái tạo năng lượng với những dịch vụ chăm sóc sức khỏe, thư giãn và cân bằng
-                            dành riêng cho kỳ nghỉ của bạn tại V'Hotel.
-                        </p>
-                        <a th:href="@{/page/services/wellness}" class="outline-dark-btn">VIEW ALL</a>
-                    </div>
-                </div>
-
             </div>
 
         </div>
@@ -256,48 +256,50 @@
     <!-- FEATURED OFFER -->
     <section class="featured-offer-section"
              th:if="${featuredPromotion != null}">
+        <div class="container-fluid px-lg-5">
 
-        <div class="featured-offer-media">
-            <img th:if="${featuredPromotion.imageUrl != null}"
-                 th:src="${featuredPromotion.imageUrl}"
-                 th:alt="${featuredPromotion.name}">
+            <div class="featured-offer-card">
 
-            <div th:if="${featuredPromotion.imageUrl == null}"
-                 class="featured-offer-placeholder">
-                <span>V'HOTEL OFFER</span>
-            </div>
-        </div>
+                <div class="featured-offer-media">
+                    <img th:if="${featuredPromotion.imageUrl != null}"
+                         th:src="${featuredPromotion.imageUrl}"
+                         th:alt="${featuredPromotion.name}">
 
-        <div class="featured-offer-overlay"></div>
-
-        <div class="featured-offer-shell">
-            <div class="featured-offer-content">
-                <p class="featured-offer-kicker">SPECIAL OFFER</p>
-
-                <h2 th:text="${featuredPromotion.name}">
-                    Ưu đãi mùa hè 2026
-                </h2>
-
-                <p class="featured-offer-desc"
-                   th:text="${featuredPromotion.description}">
-                    Giảm 200.000 VND cho khách đặt phòng online trong mùa hè.
-                </p>
-
-                <div class="featured-offer-code">
-                    <span>Mã ưu đãi</span>
-                    <strong th:text="${featuredPromotion.code}">VH-202606-ACD8</strong>
+                    <div th:if="${featuredPromotion.imageUrl == null}"
+                         class="featured-offer-placeholder">
+                        <span>V'HOTEL OFFER</span>
+                    </div>
                 </div>
 
-                <div class="featured-offer-actions">
-                    <a th:href="@{/page/promotions}">VIEW ALL</a>
+                <div class="featured-offer-content">
+                    <p class="featured-offer-kicker">SPECIAL OFFER</p>
 
-                    <a th:href="@{/page/rooms(promoCode=${featuredPromotion.code})}">
-                        BOOK NOW
-                    </a>
+                    <h2 th:text="${featuredPromotion.name}">
+                        Ưu đãi mùa hè 2026
+                    </h2>
+
+                    <p class="featured-offer-desc"
+                       th:text="${featuredPromotion.description}">
+                        Giảm 200.000 VND cho khách đặt phòng online trong mùa hè.
+                    </p>
+
+                    <div class="featured-offer-code">
+                        <span>Mã ưu đãi</span>
+                        <strong th:text="${featuredPromotion.code}">VH-202606-ACD8</strong>
+                    </div>
+
+                    <div class="featured-offer-actions">
+                        <a th:href="@{/page/promotions}">VIEW ALL</a>
+
+                        <a th:href="@{/page/rooms(promoCode=${featuredPromotion.code})}">
+                            BOOK NOW
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </div>
 
+            </div>
+
+        </div>
     </section>
 
 </main>
