@@ -321,7 +321,7 @@ public class CashTransactionService {
         CashTransactionCategory category = switch (payment.getPaymentType()) {
             case DEPOSIT -> CashTransactionCategory.DEPOSIT;
             case REFUND -> CashTransactionCategory.REFUND;
-            case BALANCE, FULL -> CashTransactionCategory.BOOKING_PAYMENT;
+            case BALANCE, FULL, INCIDENTAL -> CashTransactionCategory.BOOKING_PAYMENT;
         };
 
         CashTransaction transaction = CashTransaction.builder()
@@ -351,6 +351,7 @@ public class CashTransactionService {
             case BALANCE -> "Thu phần tiền còn lại cho booking " + bookingCode;
             case FULL -> "Thu toàn bộ tiền booking " + bookingCode;
             case REFUND -> "Hoàn tiền cho booking " + bookingCode;
+            case INCIDENTAL -> "Thu tiền phát sinh cho booking" + bookingCode;
         };
     }
 

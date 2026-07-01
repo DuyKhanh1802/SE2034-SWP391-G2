@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", function () {
     handleHeaderScroll();
     window.addEventListener("scroll", handleHeaderScroll);
 
+    // =========================
+    // ROOM / SERVICE SLIDER
+    // =========================
     const sliderButtons = document.querySelectorAll(".slider-btn, .room-hero-arrow");
 
     sliderButtons.forEach(function (button) {
@@ -70,6 +73,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 heroVideo.pause();
                 icon.className = "bi bi-play-fill";
             }
+        });
+    }
+
+    // =========================
+    // GUEST PROFILE DROPDOWN
+    // =========================
+    const guestProfile = document.getElementById("guestProfileDropdown");
+    const guestProfileBtn = document.getElementById("guestProfileBtn");
+
+    if (guestProfile && guestProfileBtn) {
+        guestProfileBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            guestProfile.classList.toggle("is-open");
+        });
+
+        guestProfile.addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+
+        document.addEventListener("click", function () {
+            guestProfile.classList.remove("is-open");
         });
     }
 });

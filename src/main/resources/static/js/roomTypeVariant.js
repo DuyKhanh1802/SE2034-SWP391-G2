@@ -732,12 +732,34 @@ document.addEventListener("DOMContentLoaded", function () {
         return Math.max(0, Math.round((outDate - inDate) / 86400000));
     }
 
-    function layTextKhach() {
-        const adultsInput = document.getElementById("adultsInput");
-        const childrenInput = document.getElementById("childrenInput");
+    function layTextKhachTheoPhong(roomIndex) {
+        const roomGuestsInput = document.getElementById("roomGuestsInput");
 
-        const adults = adultsInput ? parseInt(adultsInput.value) || 1 : 1;
-        const children = childrenInput ? parseInt(childrenInput.value) || 0 : 0;
+        let adults = 1;
+        let children = 0;
+
+        if (roomGuestsInput && roomGuestsInput.value) {
+            const rooms = roomGuestsInput.value.split("|");
+            const roomData = rooms[roomIndex - 1];
+
+            if (roomData) {
+                const parts = roomData.split("-");
+
+                adults = parseInt(parts[0]) || 1;
+                children = parseInt(parts[1]) || 0;
+            }
+        } else {
+            const roomBlocks = document.querySelectorAll(".guest-room-block");
+            const currentBlock = roomBlocks[roomIndex - 1];
+
+            if (currentBlock) {
+                const adultCount = currentBlock.querySelector(".adult-count");
+                const childCount = currentBlock.querySelector(".child-count");
+
+                adults = adultCount ? parseInt(adultCount.textContent) || 1 : 1;
+                children = childCount ? parseInt(childCount.textContent) || 0 : 0;
+            }
+        }
 
         let text = adults + " người lớn";
 
@@ -843,12 +865,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const nights = laySoDemHienTai();
         const safeNights = nights > 0 ? nights : 1;
         const payableNights = nights > 0 ? nights : 0;
-        const guestText = layTextKhach();
+
 
         let html = "";
 
         for (let i = 1; i <= totalRooms; i++) {
             const selectedRoom = danhSachPhongDaChon[i - 1];
+            const guestText = layTextKhachTheoPhong(i);
 
             if (selectedRoom) {
                 const roomTotal = selectedRoom.price * safeNights;

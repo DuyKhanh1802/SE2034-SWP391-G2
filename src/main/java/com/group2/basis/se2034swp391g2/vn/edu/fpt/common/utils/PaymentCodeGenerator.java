@@ -30,6 +30,7 @@ public final class PaymentCodeGenerator {
             case BALANCE -> "CL";
             case FULL -> "TT";
             case REFUND -> "HT";
+            case INCIDENTAL -> "PS";
         };
     }
 

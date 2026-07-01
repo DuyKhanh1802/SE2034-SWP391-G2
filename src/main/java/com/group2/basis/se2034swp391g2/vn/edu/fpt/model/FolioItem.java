@@ -80,6 +80,10 @@ public class FolioItem {
     @JoinColumn(name = "posted_by")
     private User postedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_detail_id")
+    private BookingDetail bookingDetail;
+
     @Column(name = "adjustment_reason", length = 300, columnDefinition = "NVARCHAR(300)")
     private String adjustmentReason;
 

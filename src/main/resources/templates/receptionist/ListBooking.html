@@ -62,6 +62,9 @@
                     <option value="CHECKED_OUT" th:selected="${status == 'CHECKED_OUT'}">Đã trả phòng</option>
                     <option value="PENDING" th:selected="${status == 'PENDING'}">Chờ xử lý</option>
                     <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">Đã hủy</option>
+                    <option value="NO_SHOW" th:selected="${status == 'NO_SHOW'}">
+                        Không đến
+                    </option>
                 </select>
             </div>
 
@@ -114,13 +117,15 @@
                     <td>
                             <span class="status-badge"
                                   th:classappend="${booking.status == 'CONFIRMED'} ? ' status-confirmed' :
-                                                  (${booking.status == 'CHECKED_IN'} ? ' status-checked-in' :
-                                                  (${booking.status == 'CHECKED_OUT'} ? ' status-checked-out' :
-                                                  (${booking.status == 'PENDING'} ? ' status-pending' : ' status-cancelled')))"
+                      (${booking.status == 'CHECKED_IN'} ? ' status-checked-in' :
+                      (${booking.status == 'CHECKED_OUT'} ? ' status-checked-out' :
+                      (${booking.status == 'PENDING'} ? ' status-pending' :
+                      (${booking.status == 'NO_SHOW'} ? ' status-no-show' : ' status-cancelled'))))"
                                   th:text="${booking.status == 'CONFIRMED' ? 'Đã xác nhận' :
-                                            (booking.status == 'CHECKED_IN' ? 'Đã nhận phòng' :
-                                            (booking.status == 'CHECKED_OUT' ? 'Đã trả phòng' :
-                                            (booking.status == 'PENDING' ? 'Chờ xử lý' : 'Đã hủy')))}">
+                (booking.status == 'CHECKED_IN' ? 'Đã nhận phòng' :
+                (booking.status == 'CHECKED_OUT' ? 'Đã trả phòng' :
+                (booking.status == 'PENDING' ? 'Chờ xử lý' :
+                (booking.status == 'NO_SHOW' ? 'Không đến' : 'Đã hủy'))))}">
                             </span>
                     </td>
 
@@ -188,7 +193,7 @@
                 </a>
 
                 <!-- Next -->
-                <<a th:href="@{/receptionist/bookings(
+                <a th:href="@{/receptionist/bookings(
         page=${currentPage + 1},
         keyword=${keyword},
         checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},

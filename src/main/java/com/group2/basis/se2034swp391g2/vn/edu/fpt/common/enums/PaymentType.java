@@ -4,7 +4,8 @@ public enum PaymentType {
     DEPOSIT("Thanh toán cọc"),
     BALANCE("Thanh toán phần còn lại"),
     FULL("Thanh toán toàn bộ"),
-    REFUND("Hoàn tiền");
+    REFUND("Hoàn tiền"),
+    INCIDENTAL("Thanh toán phát sinh");
 
     private final String label;
 

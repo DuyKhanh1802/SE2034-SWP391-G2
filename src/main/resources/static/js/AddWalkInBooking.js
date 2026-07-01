@@ -566,6 +566,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function validateField(field) {
         clearFieldError(field);
+        if (field.id === "countryId") {
+            let countryValue = field.value;
+
+            if (field.tomselect) {
+                countryValue = field.tomselect.getValue();
+            }
+
+            if (!countryValue) {
+                showFieldError(field, field.dataset.message || "Vui lòng chọn quốc gia của khách.");
+                return false;
+            }
+
+            return true;
+        }
 
         if (isBlank(field.value)) {
             showFieldError(field, field.dataset.message || "Vui lòng nhập thông tin này.");
@@ -638,10 +652,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const requiredFields = walkinForm.querySelectorAll(".required-field");
 
         requiredFields.forEach(function (field) {
+
+            // Bỏ qua input search do TomSelect tự tạo
+            if (field.closest(".ts-wrapper")) {
+                return;
+            }
+
             if (!validateField(field)) {
                 isValid = false;
             }
         });
+
+        // Validate riêng quốc gia
+        if (countrySelect && !validateField(countrySelect)) {
+            isValid = false;
+        }
 
         return isValid;
     }
@@ -714,6 +739,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let isValid = true;
 
         document.querySelectorAll(".service-row:not(.service-template)").forEach(function (row) {
+            const roomSelect = row.querySelector(".service-room-select");
             const select = row.querySelector(".service-select");
             const qtyInput = row.querySelector(".service-quantity");
 
@@ -722,6 +748,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const quantity = Number(qtyInput.value || 0);
+
+            if (select.value && (!roomSelect || !roomSelect.value)) {
+                showSummary("Vui lòng chọn phòng áp dụng cho từng dịch vụ.");
+                isValid = false;
+            }
 
             if (select.value && (quantity < 1 || Number.isNaN(quantity))) {
                 showSummary("Số lượng dịch vụ phải ít nhất là 1.");
@@ -745,10 +776,15 @@ document.addEventListener("DOMContentLoaded", function () {
         serviceHiddenInputs.innerHTML = "";
 
         document.querySelectorAll(".service-row:not(.service-template)").forEach(function (row) {
-            const select = row.querySelector(".service-select");
+            const roomSelect = row.querySelector(".service-room-select");
+            const serviceSelect = row.querySelector(".service-select");
             const qtyInput = row.querySelector(".service-quantity");
 
-            if (!select || !qtyInput || !select.value) {
+            if (!roomSelect || !serviceSelect || !qtyInput) {
+                return;
+            }
+
+            if (!roomSelect.value || !serviceSelect.value) {
                 return;
             }
 
@@ -758,19 +794,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            const serviceIdInput = document.createElement("input");
-            serviceIdInput.type = "hidden";
-            serviceIdInput.name = "serviceIds";
-            serviceIdInput.value = select.value;
-
-            const quantityHiddenInput = document.createElement("input");
-            quantityHiddenInput.type = "hidden";
-            quantityHiddenInput.name = "serviceQuantities[" + select.value + "]";
-            quantityHiddenInput.value = quantity;
-
-            serviceHiddenInputs.appendChild(serviceIdInput);
-            serviceHiddenInputs.appendChild(quantityHiddenInput);
+            serviceHiddenInputs.appendChild(createHiddenInput("serviceRoomIds", roomSelect.value));
+            serviceHiddenInputs.appendChild(createHiddenInput("serviceIds", serviceSelect.value));
+            serviceHiddenInputs.appendChild(createHiddenInput("serviceQuantities", quantity));
         });
+    }
+
+    function createHiddenInput(name, value) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        return input;
     }
     function createServiceRow(template) {
         if (!template) {
@@ -778,6 +813,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const row = template.cloneNode(true);
+        addRoomSelectToServiceRow(row);
         row.removeAttribute("id");
         row.classList.remove("service-template");
         row.style.display = "grid";
@@ -818,6 +854,45 @@ document.addEventListener("DOMContentLoaded", function () {
         updateRowPrice();
 
         return row;
+    }
+    function addRoomSelectToServiceRow(row) {
+        const firstServiceField = row.querySelector(".service-field");
+
+        if (!firstServiceField) {
+            return;
+        }
+
+        const roomField = document.createElement("div");
+        roomField.className = "service-field";
+
+        const label = document.createElement("label");
+        label.textContent = "Phòng áp dụng";
+
+        const select = document.createElement("select");
+        select.className = "service-room-select";
+
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "Chọn phòng";
+        select.appendChild(defaultOption);
+
+        document.querySelectorAll(".room-checkbox:checked").forEach(function (checkbox) {
+            const roomCard = checkbox.nextElementSibling;
+            const roomNumber = roomCard
+                ? roomCard.querySelector(".room-number").textContent.trim()
+                : checkbox.value;
+
+            const option = document.createElement("option");
+            option.value = checkbox.value;
+            option.textContent = "Phòng " + roomNumber;
+
+            select.appendChild(option);
+        });
+
+        roomField.appendChild(label);
+        roomField.appendChild(select);
+
+        firstServiceField.parentNode.insertBefore(roomField, firstServiceField);
     }
 
     function addServiceRow(type) {
@@ -868,6 +943,23 @@ document.addEventListener("DOMContentLoaded", function () {
             addServiceRow(target);
         });
     });
+    if (document.getElementById("countryId") && window.TomSelect) {
+        if (countrySelect.tomselect) {
+            countrySelect.tomselect.destroy();
+        }
+
+        new TomSelect("#countryId", {
+            create: false,
+            maxOptions: 300,
+            searchField: ["text"],
+            placeholder: "Tìm quốc gia...",
+            onChange: function (value) {
+                countrySelect.value = value;
+                updatePhoneCode();
+                clearFieldError(countrySelect);
+            }
+        });
+    }
     updatePhoneCode();
     toggleDepositFields();
     updateSummary();
