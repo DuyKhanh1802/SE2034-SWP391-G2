@@ -23,9 +23,6 @@ public class InventoryItem {
     @Column(name = "name", nullable = false, length = 150, columnDefinition = "NVARCHAR(150)")
     private String name;
 
-    @Column(name = "category", length = 100, columnDefinition = "NVARCHAR(100)")
-    private String legacyCategory;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_category_id")
     private InventoryCategory category;
@@ -90,7 +87,7 @@ public class InventoryItem {
         if (category != null && category.getName() != null) {
             return category.getName();
         }
-        return legacyCategory;
+        return "";
     }
 
     @Transient

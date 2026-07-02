@@ -371,7 +371,7 @@
                         <td>
                             <span class="service-status"
                                   th:classappend="${service.serviceStatus == 'COMPLETED'} ? ' service-status-completed' :
-                                      (${service.serviceStatus == 'CANCELLED'} ? ' service-status-cancelled' : ' service-status-requested')"
+                                      (${service.serviceStatus == 'CANCELLED' or service.serviceStatus == 'NOT_USED_NO_REFUND'} ? ' service-status-cancelled' : ' service-status-requested')"
                                   th:text="${service.serviceStatusLabel}">
                                 Chờ phục vụ
                             </span>
@@ -379,9 +379,7 @@
 
                         <td>
                             <div class="service-action-group" th:if="${service.serviceStatus == 'REQUESTED'
-                                and detail.bookingStatus.name() != 'CANCELLED'
-                                and detail.bookingStatus.name() != 'CHECKED_OUT'
-                                and detail.bookingStatus.name() != 'NO_SHOW'}">
+                                and detail.bookingStatus.name() == 'CHECKED_IN'}">
                                 <form method="post"
                                       th:action="@{/receptionist/bookings/view/{bookingId}/services/{folioItemId}/confirm(bookingId=${detail.bookingId},folioItemId=${service.folioItemId})}">
                                     <button type="submit" class="btn-detail primary service-action-btn">
@@ -389,16 +387,20 @@
                                     </button>
                                 </form>
                                 <form method="post"
-                                      th:action="@{/receptionist/bookings/view/{bookingId}/services/{folioItemId}/cancel(bookingId=${detail.bookingId},folioItemId=${service.folioItemId})}">
+                                      th:action="@{/receptionist/bookings/view/{bookingId}/services/{folioItemId}/not-used(bookingId=${detail.bookingId},folioItemId=${service.folioItemId})}">
                                     <button type="submit" class="btn-detail outline service-action-btn">
+                                        Không sử dụng
+                                    </button>
+                                </form>
+                                <form method="post"
+                                      th:action="@{/receptionist/bookings/view/{bookingId}/services/{folioItemId}/cancel(bookingId=${detail.bookingId},folioItemId=${service.folioItemId})}">
+                                    <button type="submit" class="btn-detail danger service-action-btn">
                                         Hủy
                                     </button>
                                 </form>
                             </div>
                             <span class="service-action-empty" th:unless="${service.serviceStatus == 'REQUESTED'
-                                and detail.bookingStatus.name() != 'CANCELLED'
-                                and detail.bookingStatus.name() != 'CHECKED_OUT'
-                                and detail.bookingStatus.name() != 'NO_SHOW'}">-</span>
+                                and detail.bookingStatus.name() == 'CHECKED_IN'}">-</span>
                         </td>
                     </tr>
                     </tbody>
