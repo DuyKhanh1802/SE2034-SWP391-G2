@@ -722,11 +722,7 @@ public class BookingService {
                 .phone(phone)
                 .email(email)
                 .gender(request.getGender())
-                .dateOfBirth(
-                        request.getBirthYear() != null
-                                ? LocalDate.of(request.getBirthYear(), 1, 1)
-                                : null
-                )
+                .birthYear(request.getBirthYear())
                 .country(country)
                 .identityType(resolveIdentityType(country))
                 .identityNumber(identityNumber)
@@ -1233,7 +1229,7 @@ public class BookingService {
                 .gender(guest != null && guest.getGender() != null
                         ? guest.getGender().getLabel()
                         : "N/A")
-                .dateOfBirth(guest != null ? guest.getDateOfBirth() : null)
+                .birthYear(guest != null ? guest.getBirthYear() : null)
                 .countryName(guest != null && guest.getCountry() != null ? guest.getCountry().getCountryName() : "N/A")
                 .identityType(guest != null && guest.getIdentityType() != null
                         ? guest.getIdentityType().getLabel()
@@ -1427,11 +1423,7 @@ public class BookingService {
                 .phoneNumber(booking.getGuestPhone())
                 .email(booking.getGuestEmail())
                 .gender(guest != null ? guest.getGender() : null)
-                .birthYear(
-                        guest != null && guest.getDateOfBirth() != null
-                                ? guest.getDateOfBirth().getYear()
-                                : null
-                )
+                .birthYear(guest != null ? guest.getBirthYear() : null)
                 .countryId(guest != null && guest.getCountry() != null
                         ? guest.getCountry().getId()
                         : null)
@@ -1482,11 +1474,7 @@ public class BookingService {
         guest.setPhone(phone);
         guest.setEmail(email);
         guest.setGender(request.getGender());
-        if (request.getBirthYear() != null) {
-            guest.setDateOfBirth(
-                    LocalDate.of(request.getBirthYear(), 1, 1)
-            );
-        }
+        guest.setBirthYear(request.getBirthYear());
         guest.setCountry(country);
         guest.setIdentityNumber(identityNumber);
         guest.setIdentityType(resolveIdentityType(country));
