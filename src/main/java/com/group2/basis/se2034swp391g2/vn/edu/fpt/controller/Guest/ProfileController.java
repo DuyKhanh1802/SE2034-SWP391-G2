@@ -64,15 +64,14 @@ public class ProfileController {
 
         profileForm.setGuest(profileService.isGuest(currentUser));
 
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("passwordForm", new ChangePasswordRequest());
+            addCommonAttributes(model, currentUser);
+            return "profile/EditProfile";
+        }
+
         try {
-            profileService.validateProfileBusinessRules(profileForm);
-
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("passwordForm", new ChangePasswordRequest());
-                addCommonAttributes(model, currentUser);
-                return "profile/EditProfile";
-            }
-
+            profileService.validateProfileBusinessRules(profileForm, currentUser.getId());
             profileService.updateProfile(currentUser.getId(), profileForm);
 
         } catch (ProfileValidationException ex) {
@@ -117,15 +116,14 @@ public class ProfileController {
             return "redirect:/profile/edit";
         }
 
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("profileForm", profileService.toProfileUpdateRequest(currentUser));
+            addCommonAttributes(model, currentUser);
+            return "profile/EditProfile";
+        }
+
         try {
             profileService.validateChangePasswordBusinessRules(passwordForm, currentUser);
-
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("profileForm", profileService.toProfileUpdateRequest(currentUser));
-                addCommonAttributes(model, currentUser);
-                return "profile/EditProfile";
-            }
-
             profileService.changePassword(currentUser.getId(), passwordForm);
 
         } catch (ProfileValidationException ex) {
@@ -151,10 +149,19 @@ public class ProfileController {
     private void addCommonAttributes(Model model, User currentUser) {
         boolean isGuest = profileService.isGuest(currentUser);
 
+        int currentYear = java.time.LocalDate.now().getYear();
+
+        java.util.List<Integer> birthYears =
+                java.util.stream.IntStream.rangeClosed(1900, currentYear - 18)
+                        .boxed()
+                        .sorted(java.util.Comparator.reverseOrder())
+                        .toList();
+
         model.addAttribute("isGuest", isGuest);
         model.addAttribute("isStaff", !isGuest);
         model.addAttribute("genders", Gender.values());
         model.addAttribute("countries", countryRepository.findAllByOrderByCountryNameAsc());
         model.addAttribute("currentUser", currentUser);
+        model.addAttribute("birthYears", birthYears);
     }
 }

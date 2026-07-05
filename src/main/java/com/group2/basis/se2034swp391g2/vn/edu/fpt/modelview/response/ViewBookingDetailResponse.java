@@ -26,7 +26,9 @@ public class ViewBookingDetailResponse {
     private String guestEmail;
     private String guestPhone;
     private String gender;
-    private LocalDate dateOfBirth;
+
+    private Integer birthYear;
+
     private String countryName;
     private String identityType;
     private String identityNumber;
@@ -76,6 +78,7 @@ public class ViewBookingDetailResponse {
         private Long bookingDetailId;
         private String roomNumber;
 
+        // Xóa birthYear ở đây vì năm sinh là thông tin guest, không phải thông tin room
         private String roomTypeName;
         private String variantName;
         private String viewType;

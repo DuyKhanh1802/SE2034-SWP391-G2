@@ -44,7 +44,9 @@ public class SpringSecurity {
                                 "/images/**",
                                 "/system_admin/**",
                                 "/hotel_admin/**",
-                                "/guest/**"
+                                "/guest/**",
+                                "/page/booking/send-email-otp",
+                                "/page/booking/verify-email-otp"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/profile/*.css").permitAll()

@@ -14,6 +14,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -30,35 +31,42 @@ public class AuthService {
         return countryRepository.findAllByOrderByCountryNameAsc();
     }
 
+    @Transactional
     public void register(RegisterRequest request) {
+
+        String email = request.getEmail() == null ? "" : request.getEmail().trim().toLowerCase();
+        String phone = request.getPhone() == null ? "" : request.getPhone().replaceAll("\\s+", "");
+
         if (!request.getPasswordHash().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Mật khẩu không hợp lệ");
+            throw new IllegalArgumentException("Mật khẩu xác nhận không khớp");
         }
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+
+        if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
             throw new IllegalArgumentException("Email đã tồn tại");
         }
-        if (userRepository.findByPhone(request.getPhone()).isPresent()) {
+
+        if (userRepository.findByPhone(phone).isPresent()) {
             throw new IllegalArgumentException("Số điện thoại đã được đăng ký");
         }
 
         Country country = countryRepository.findById(request.getCountryId())
                 .orElseThrow(() -> new IllegalArgumentException("Quốc gia không hợp lệ"));
 
+        Role guestRole = roleRepository.findByRoleName(RoleName.GUEST)
+                .orElseThrow(() -> new IllegalArgumentException("Vai trò GUEST không tồn tại"));
+
         User user = new User();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
+        user.setFirstName(request.getFirstName().trim());
+        user.setLastName(request.getLastName().trim());
+        user.setEmail(email);
+        user.setPhone(phone);
         user.setCountry(country);
         user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
         user.setApprovalStatus(ApprovalStatus.PENDING);
         user.setIsActive(true);
 
-        // Save user trước để có id
         User savedUser = userRepository.save(user);
 
-        // Tạo UserRole với id đầy đủ
-        Role guestRole = roleRepository.findByRoleName(RoleName.GUEST);
         UserRole userRole = new UserRole();
         userRole.setId(new UserRoleId(savedUser.getId(), guestRole.getId()));
         userRole.setUser(savedUser);

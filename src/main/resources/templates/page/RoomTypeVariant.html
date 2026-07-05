@@ -61,6 +61,10 @@
                th:value="${promoCode != null ? promoCode : ''}">
 
         <input type="hidden"
+               id="selectedVariantIdsFromRequest"
+               th:value="${variantIds != null ? variantIds : ''}">
+
+        <input type="hidden"
                id="promotionDiscountAmount"
                th:value="${promotionDiscountAmount != null ? promotionDiscountAmount : 0}">
 
@@ -112,7 +116,13 @@
                     </div>
                 </button>
             </div>
+            <div th:if="${errorMessage}" class="alert alert-danger">
+                <span th:text="${errorMessage}"></span>
+            </div>
 
+            <div th:if="${searchWarning}" class="alert alert-warning">
+                <span th:text="${searchWarning}"></span>
+            </div>
             <div class="booking-panel date-panel" id="datePanel">
                 <p class="date-error" id="dateError"></p>
 
@@ -419,11 +429,11 @@
 
                             <div class="room-links">
                                 <a th:href="@{/page/room-variants/{id}(
-                            id=${room.variantId},
-                            checkInDate=${checkInDate},
-                            checkOutDate=${checkOutDate}
-                       )}"
-                                   class="room-detail-link">
+            id=${room.variantId},
+            checkInDate=${checkInDate},
+            checkOutDate=${checkOutDate}
+       )}"
+                                   class="room-detail-link js-open-room-detail">
                                     Xem chi tiết
                                 </a>
                             </div>
@@ -433,7 +443,6 @@
                             <div class="rate-left">
                                 <h3>Giá linh hoạt</h3>
                                 <p>Chỉ bao gồm lưu trú</p>
-                                <a href="#">Xem chi tiết</a>
                             </div>
 
                             <div class="rate-right">

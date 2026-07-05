@@ -115,12 +115,25 @@
 
                     <div class="col-md-6">
                         <label class="form-label profile-label" for="phone">Số điện thoại</label>
-                        <input id="phone"
-                               type="tel"
-                               class="form-control profile-input"
-                               th:field="*{phone}"
-                               placeholder="+84 912 345 678"
-                               th:classappend="${#fields.hasErrors('phone')} ? ' is-invalid' : ''">
+
+                        <div class="input-group">
+        <span id="phoneCodeBadge" class="input-group-text">
+            <span>—</span>
+        </span>
+
+                            <input id="phone"
+                                   type="tel"
+                                   class="form-control profile-input"
+                                   th:field="*{phone}"
+                                   placeholder="Nhập số điện thoại"
+                                   th:classappend="${#fields.hasErrors('phone')} ? ' is-invalid' : ''">
+                        </div>
+
+                        <input type="hidden" id="phoneCode" th:field="*{phoneCode}">
+
+                        <small id="phoneHint" class="profile-hint">
+                            Chọn quốc tịch để hệ thống gợi ý mã vùng điện thoại.
+                        </small>
 
                         <div class="invalid-feedback d-block"
                              th:if="${#fields.hasErrors('phone')}"
@@ -149,16 +162,22 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label profile-label" for="dateOfBirth">Ngày tháng năm sinh</label>
-                        <input id="dateOfBirth"
-                               type="date"
-                               class="form-control profile-input"
-                               th:field="*{dateOfBirth}"
-                               th:classappend="${#fields.hasErrors('dateOfBirth')} ? ' is-invalid' : ''">
+                        <label class="form-label profile-label" for="birthYear">Năm sinh</label>
+                        <select id="birthYear"
+                                class="form-select profile-input"
+                                th:field="*{birthYear}"
+                                th:classappend="${#fields.hasErrors('birthYear')} ? ' is-invalid' : ''">
+                            <option value="">-- Chọn năm sinh --</option>
+                            <option th:each="year : ${birthYears}"
+                                    th:value="${year}"
+                                    th:text="${year}">
+                                2000
+                            </option>
+                        </select>
 
                         <div class="invalid-feedback d-block"
-                             th:if="${#fields.hasErrors('dateOfBirth')}"
-                             th:errors="*{dateOfBirth}">
+                             th:if="${#fields.hasErrors('birthYear')}"
+                             th:errors="*{birthYear}">
                         </div>
                     </div>
 
@@ -185,7 +204,7 @@
                             <option th:each="country : ${countries}"
                                     th:value="${country.id}"
                                     th:text="${country.countryName}"
-                                    th:attr="data-code=${country.countryCode}">
+                                    th:attr="data-code=${country.countryCode}, data-phone=${country.phoneCode}">
                                 Vietnam
                             </option>
                         </select>
@@ -311,27 +330,81 @@
     </section>
 
     <script>
-        const countrySelect = document.getElementById("countryId");
-        const identityTypePreview = document.getElementById("identityTypePreview");
+        /* 1. Thao tác ẩn/hiện mật khẩu */
+        function togglePwd(inputId, iconId) {
+            const el = document.getElementById(inputId);
+            const ic = document.getElementById(iconId);
 
-        function updateIdentityTypePreview() {
-            if (!countrySelect || !identityTypePreview) return;
+            if (!el || !ic) return;
 
-            const selectedOption = countrySelect.options[countrySelect.selectedIndex];
-            const countryCode = selectedOption ? selectedOption.getAttribute("data-code") : null;
+            const show = el.type === 'password';
+            el.type = show ? 'text' : 'password';
+            ic.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+        }
 
-            if (!countryCode) {
-                identityTypePreview.value = "Auto by country";
-                return;
+        /* 2. Logic chọn Country -> Tự động điền Phone Code + Identity Type */
+        function syncPhoneCode(sel) {
+            const opt = sel.options[sel.selectedIndex];
+
+            const countryCode = opt ? opt.getAttribute('data-code') : '';
+            const phoneCode = opt ? opt.getAttribute('data-phone') : '';
+
+            const badge = document.getElementById('phoneCodeBadge');
+            const hiddenInput = document.getElementById('phoneCode');
+            const phoneInput = document.getElementById('phone');
+            const phoneHint = document.getElementById('phoneHint');
+            const identityTypePreview = document.getElementById('identityTypePreview');
+
+            if (phoneCode) {
+                if (badge) badge.querySelector('span').textContent = phoneCode;
+                if (hiddenInput) hiddenInput.value = phoneCode;
+            } else {
+                if (badge) badge.querySelector('span').textContent = '—';
+                if (hiddenInput) hiddenInput.value = '';
             }
 
-            identityTypePreview.value = countryCode.toUpperCase() === "VN" ? "CCCD" : "PASSPORT";
+            if (identityTypePreview) {
+                if (!countryCode) {
+                    identityTypePreview.value = 'Auto by country';
+                } else {
+                    identityTypePreview.value =
+                        countryCode.toUpperCase() === 'VN' ? 'CCCD' : 'PASSPORT';
+                }
+            }
+
+            if (phoneInput && phoneHint) {
+                if (!countryCode) {
+                    phoneInput.placeholder = 'Chọn quốc tịch để xem định dạng số điện thoại';
+                    phoneHint.textContent = 'Chọn quốc tịch để hệ thống gợi ý mã vùng điện thoại.';
+                    return;
+                }
+
+                if (countryCode.toUpperCase() === 'VN') {
+                    phoneInput.placeholder = 'Ví dụ: 038227150742 hoặc +8438227150742';
+                    phoneHint.textContent = 'Số điện thoại Việt Nam có thể bắt đầu bằng 0 hoặc +84.';
+                } else {
+                    phoneInput.placeholder = phoneCode
+                        ? `Ví dụ: ${phoneCode}2025550123`
+                        : 'Ví dụ: +12025550123';
+
+                    phoneHint.textContent = phoneCode
+                        ? `Số điện thoại quốc tế nên bắt đầu bằng mã vùng ${phoneCode}.`
+                        : 'Số điện thoại quốc tế nên bắt đầu bằng mã vùng quốc gia.';
+                }
+            }
         }
 
-        if (countrySelect) {
-            countrySelect.addEventListener("change", updateIdentityTypePreview);
-            updateIdentityTypePreview();
-        }
+        /* 3. Tự động chạy khi load trang để giữ lại mã vùng nếu validation lỗi */
+        document.addEventListener("DOMContentLoaded", function () {
+            const countrySel = document.getElementById('countryId');
+
+            if (countrySel) {
+                syncPhoneCode(countrySel);
+                countrySel.addEventListener('change', function () {
+                    syncPhoneCode(this);
+                });
+            }
+        });
     </script>
 </main>
 

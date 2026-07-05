@@ -19,6 +19,11 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findByPhone(String phone);
     Optional<User> findByEmailAndIsDeletedFalse(String email);
 
+
+    boolean existsByPhoneAndIdNot(String phone, Long id);
+
+    boolean existsByIdentityNumberAndIdNot(String identityNumber, Long id);
+
     Optional<User> findByPhoneAndIsDeletedFalse(String phone);
 
     Optional<User> findByIdentityNumberAndIsDeletedFalse(String identityNumber);
@@ -38,4 +43,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             "Left join fetch u.country " +
             "Where u.id = :id")
     Optional<User> findUserWithRoleById(Long id);
+
+    Optional<User> findByEmailIgnoreCase(String email);
+
 }

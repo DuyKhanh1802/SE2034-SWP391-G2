@@ -343,11 +343,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (selectedServiceHiddenInputs) {
                     selectedServiceHiddenInputs.innerHTML = "";
                 }
+
+                sessionStorage.removeItem(STORAGE_KEY);
             } else {
                 buildHiddenInputs();
-            }
 
-            sessionStorage.removeItem(STORAGE_KEY);
+                /*
+                    Không xóa STORAGE_KEY ở đây.
+                    Giữ lại để nếu khách quay lại từ trang xác nhận,
+                    hệ thống vẫn khôi phục các dịch vụ đã chọn.
+                */
+                saveSelectedServices();
+            }
         });
     }
 

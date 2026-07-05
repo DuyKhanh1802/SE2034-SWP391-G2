@@ -34,11 +34,12 @@ public class ProfileUpdateRequest {
     )
     private String lastName;
 
+
+    private String phoneCode;
+
+
     @NotBlank(message = "Số điện thoại không được để trống")
-    @Pattern(
-            regexp = "^[0-9+\\-\\s]{8,20}$",
-            message = "Số điện thoại phải từ 8 đến 20 ký tự và chỉ chứa số, dấu +, dấu - hoặc khoảng trắng"
-    )
+    @Size(max = 30, message = "Số điện thoại không được vượt quá 30 ký tự")
     private String phone;
 
     private String email;
@@ -46,9 +47,8 @@ public class ProfileUpdateRequest {
     @NotNull(message = "Vui lòng chọn giới tính")
     private Gender gender;
 
-    @Past(message = "Ngày sinh phải là ngày trong quá khứ")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dateOfBirth;
+    @NotNull(message = "Năm sinh không được để trống")
+    private Integer birthYear;
 
     private Long countryId;
 

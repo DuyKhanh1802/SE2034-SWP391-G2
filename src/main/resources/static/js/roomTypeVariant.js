@@ -120,6 +120,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return Math.round((outDate - inDate) / 86400000);
     }
+    function moDatePanelVaBaoLoi(message) {
+        const dateButton = document.querySelector('.search-item[data-panel-target="datePanel"]');
+        const datePanelElement = document.getElementById("datePanel");
+        const bookingArea = document.querySelector(".booking-area");
+
+        dongTatCaBangChon();
+
+        if (dateButton) {
+            dateButton.classList.add("active");
+        }
+
+        if (datePanelElement) {
+            datePanelElement.classList.add("active");
+        }
+
+        if (dateError) {
+            dateError.textContent = message;
+        }
+
+        hienThiHaiThang();
+
+        if (bookingArea) {
+            window.scrollTo({
+                top: bookingArea.offsetTop - 20,
+                behavior: "smooth"
+            });
+        }
+    }
+
+    function kiemTraNgayTruocKhiChonPhong() {
+        const dem = soDem();
+
+        if (!ngayNhanPhong || !ngayTraPhong || dem <= 0) {
+            moDatePanelVaBaoLoi("Vui lòng chọn ngày lưu trú trước khi đặt phòng.");
+            return false;
+        }
+
+        if (dem > 30) {
+            moDatePanelVaBaoLoi("Thời gian lưu trú online tối đa là 30 đêm.");
+            return false;
+        }
+
+        return true;
+    }
 
     function capNhatTomTatNgay() {
         if (!dateSummary) return;
@@ -310,7 +354,6 @@ document.addEventListener("DOMContentLoaded", function () {
             hienThiHaiThang();
         });
     }
-
     const applyDateBtn = document.getElementById("applyDateBtn");
 
     if (applyDateBtn) {
@@ -320,6 +363,14 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!ngayNhanPhong || !ngayTraPhong || dem <= 0) {
                 if (dateError) {
                     dateError.textContent = "Vui lòng chọn ngày nhận phòng và ngày trả phòng hợp lệ.";
+                }
+
+                return;
+            }
+
+            if (dem > 30) {
+                if (dateError) {
+                    dateError.textContent = "Thời gian lưu trú online tối đa là 30 đêm.";
                 }
 
                 return;
@@ -845,6 +896,53 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function khoiPhucPhongTuVariantIdsRequestNeuCan() {
+        const selectedVariantIdsFromRequest = document.getElementById("selectedVariantIdsFromRequest");
+
+        if (!selectedVariantIdsFromRequest || !selectedVariantIdsFromRequest.value) {
+            return;
+        }
+
+        const daCoPhongTrongSession = danhSachPhongDaChon.some(function (room) {
+            return !!room;
+        });
+
+        if (daCoPhongTrongSession) {
+            return;
+        }
+
+        const ids = selectedVariantIdsFromRequest.value
+            .split(",")
+            .map(function (id) {
+                return id.trim();
+            })
+            .filter(function (id) {
+                return id !== "";
+            });
+
+        if (ids.length === 0) {
+            return;
+        }
+
+        const reserveButtons = Array.from(document.querySelectorAll(".reserve-btn"));
+
+        danhSachPhongDaChon = ids.map(function (variantId) {
+            const button = reserveButtons.find(function (btn) {
+                return String(btn.dataset.variantId) === String(variantId);
+            });
+
+            if (!button) {
+                return null;
+            }
+
+            return {
+                variantId: button.dataset.variantId,
+                variantName: button.dataset.variantName,
+                price: Number(button.dataset.price || 0)
+            };
+        });
+    }
+
     function capNhatYourTrip() {
         const tripRoomList = document.getElementById("tripRoomList");
 
@@ -1037,7 +1135,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.querySelectorAll(".reserve-btn").forEach(function (button) {
-        button.addEventListener("click", function () {
+        button.addEventListener("click", function (event) {
+            event.stopPropagation();
+
+            if (!kiemTraNgayTruocKhiChonPhong()) {
+                return;
+            }
             const totalRooms = layTongSoPhong();
 
             const variantId = this.dataset.variantId;
@@ -1089,6 +1192,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (continueToServiceForm) {
         continueToServiceForm.addEventListener("submit", function (event) {
+
+            if (!kiemTraNgayTruocKhiChonPhong()) {
+                event.preventDefault();
+                return;
+            }
+
             const totalRooms = layTongSoPhong();
 
             const selectedRooms = danhSachPhongDaChon
@@ -1142,7 +1251,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 continuePromoCodeInput.value = promoCodeHidden.value;
             }
 
-            sessionStorage.removeItem(TRIP_STORAGE_KEY);
+            // Quan trọng: lưu lại Your Trip trước khi sang trang Add Service
+            luuYourTripVaoSession();
+
+            // Chỉ xóa service cũ, KHÔNG xóa trip phòng đã chọn
             sessionStorage.removeItem("vhotel_selected_services_by_room");
         });
     }
@@ -1209,10 +1321,133 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     khoiPhucYourTripTuSession();
+    khoiPhucPhongTuVariantIdsRequestNeuCan();
 
     hienThiHaiThang();
     capNhatTomTatNgay();
     capNhatTomTatKhach();
     capNhatYourTrip();
-
 });
+
+//* FINAL FIX - YOUR TRIP ĐI THEO BẰNG TRANSFORM, KHÔNG VỠ LAYOUT */
+(function () {
+    const DESKTOP_BREAKPOINT = 1200;
+    const STICKY_TOP = 24;
+
+    let ticking = false;
+    let resizeObserver = null;
+    let lastShiftY = -1;
+
+    function resetTrip(trip) {
+        if (!trip) return;
+
+        trip.classList.remove("trip-is-fixed", "trip-is-bottom");
+        trip.style.left = "";
+        trip.style.right = "";
+        trip.style.top = "";
+        trip.style.bottom = "";
+        trip.style.width = "";
+        trip.style.position = "";
+        trip.style.setProperty("--trip-shift-y", "0px");
+
+        lastShiftY = -1;
+    }
+
+    function updateTripPosition() {
+        ticking = false;
+
+        const layout = document.querySelector(".booking-layout");
+        const trip = document.querySelector(".trip-summary");
+
+        if (!layout || !trip) return;
+
+        if (window.innerWidth <= DESKTOP_BREAKPOINT) {
+            resetTrip(trip);
+            return;
+        }
+
+        /*
+            Không dùng position: fixed.
+            Your trip vẫn nằm trong cột phải của grid,
+            chỉ được kéo xuống bằng transform nên không bị vỡ layout.
+        */
+        trip.classList.remove("trip-is-fixed", "trip-is-bottom");
+        trip.style.left = "";
+        trip.style.right = "";
+        trip.style.top = "";
+        trip.style.bottom = "";
+        trip.style.width = "";
+        trip.style.position = "";
+
+        const layoutTop = layout.getBoundingClientRect().top + window.scrollY;
+        const layoutHeight = layout.offsetHeight;
+        const tripHeight = trip.offsetHeight;
+
+        let shiftY = window.scrollY + STICKY_TOP - layoutTop;
+
+        const maxShiftY = Math.max(0, layoutHeight - tripHeight);
+
+        if (shiftY < 0) {
+            shiftY = 0;
+        }
+
+        if (shiftY > maxShiftY) {
+            shiftY = maxShiftY;
+        }
+
+        shiftY = Math.round(shiftY);
+
+        if (shiftY === lastShiftY) {
+            return;
+        }
+
+        lastShiftY = shiftY;
+        trip.style.setProperty("--trip-shift-y", shiftY + "px");
+    }
+
+    function requestUpdateTripPosition() {
+        if (ticking) return;
+
+        ticking = true;
+        window.requestAnimationFrame(updateTripPosition);
+    }
+
+    function observeSizeChange() {
+        const layout = document.querySelector(".booking-layout");
+
+        if (!window.ResizeObserver || !layout) return;
+
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+        }
+
+        resizeObserver = new ResizeObserver(requestUpdateTripPosition);
+
+        /*
+            Chỉ observe layout.
+            Không observe trip để tránh bị gọi lại liên tục gây giật.
+        */
+        resizeObserver.observe(layout);
+    }
+
+    window.addEventListener("scroll", requestUpdateTripPosition, { passive: true });
+
+    window.addEventListener("resize", function () {
+        lastShiftY = -1;
+        requestUpdateTripPosition();
+        observeSizeChange();
+    });
+
+    window.addEventListener("load", function () {
+        observeSizeChange();
+        requestUpdateTripPosition();
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        observeSizeChange();
+        requestUpdateTripPosition();
+    });
+
+    setTimeout(requestUpdateTripPosition, 100);
+    setTimeout(requestUpdateTripPosition, 400);
+})();

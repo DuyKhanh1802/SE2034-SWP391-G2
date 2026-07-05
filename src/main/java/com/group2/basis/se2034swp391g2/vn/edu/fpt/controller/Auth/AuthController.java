@@ -4,9 +4,11 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.RegisterRequ
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.AuthService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PasswordResetService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -31,20 +33,32 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(
-            @ModelAttribute("registerRequest") RegisterRequest request,
-            Model model,
-            RedirectAttributes redirectAttributes
-    ) {
+    public String register(@Valid @ModelAttribute("registerRequest") RegisterRequest request,
+                           BindingResult bindingResult,
+                           Model model) {
+
+        model.addAttribute("countries", authService.getAllCountries());
+
+        if (!request.getPasswordHash().equals(request.getConfirmPassword())) {
+            bindingResult.rejectValue(
+                    "confirmPassword",
+                    "password.mismatch",
+                    "Confirm password không khớp với password"
+            );
+        }
+
+        if (bindingResult.hasErrors()) {
+            return "auth/Register";
+        }
+
         try {
             authService.register(request);
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Đăng ký thành công. Tài khoản đang chờ Quản trị hệ thống phê duyệt.");
-            return "redirect:/auth/login";
+            model.addAttribute("successMessage", "Đăng ký tài khoản thành công");
+            model.addAttribute("registerRequest", new RegisterRequest());
+            return "auth/Login";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("countries", authService.getAllCountries());
-            return "auth/register";
+            return "auth/Register";
         }
     }
 
