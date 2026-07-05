@@ -1,13 +1,13 @@
 :root {
-    --page-bg: #f6f2eb;
-    --card-bg: #fffaf4;
-    --panel-bg: #f8f3ec;
+    --page-bg: #ffffff;
+    --card-bg: #ffffff;
+    --panel-bg: #ffffff;
     --white: #ffffff;
     --text-main: #171717;
     --text-soft: #655d55;
     --text-muted: #7a7066;
-    --border: #ded6ca;
-    --border-light: #eee4d7;
+    --border: #e2e2e2;
+    --border-light: #eeeeee;
     --accent: #d88927;
     --accent-dark: #c77b23;
     --heading-font: "Noto Serif Display", "Times New Roman", serif;
@@ -226,7 +226,7 @@ a {
 
 .room-tab.active {
     border-color: #111;
-    background: #f5efe6;
+    background: #f5f5f5;
 }
 
 .current-room-title {
@@ -356,7 +356,7 @@ a {
 }
 
 .service-dropdown-menu a:hover {
-    background: #f2eadf;
+    background: #f5f5f5;
 }
 
 .service-grid {
@@ -384,7 +384,7 @@ a {
 
 .service-image {
     height: 138px;
-    background: #eee5d9;
+    background: #f5f5f5;
 }
 
 .service-image img {
@@ -888,4 +888,3 @@ a {
     font-weight: 400;
     transform: translateY(-1px);
 }
-

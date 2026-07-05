@@ -4,7 +4,7 @@
 
 body {
     margin: 0;
-    background: #f5f2ec;
+    background: #ffffff;
     color: #101828;
     font-family: "Be Vietnam Pro", Arial, sans-serif;
 }
@@ -63,14 +63,14 @@ a {
     gap: 0;
     padding: 28px 30px;
     background: #ffffff;
-    border: 1px solid #e7e2d8;
+    border: 1px solid #e5e5e5;
     border-radius: 12px;
     box-shadow: 0 12px 38px rgba(16, 24, 40, 0.08);
 }
 
 .summary-column {
     padding-right: 28px;
-    border-right: 1px solid #e7e2d8;
+    border-right: 1px solid #e5e5e5;
 }
 
 .summary-column + .summary-column {
@@ -120,14 +120,14 @@ a {
     grid-template-columns: 1.2fr 1fr 1fr;
     margin-top: 22px;
     background: #ffffff;
-    border: 1px solid #e7e2d8;
+    border: 1px solid #e5e5e5;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
 }
 
 .stay-info-item {
     padding: 20px 28px;
-    border-right: 1px solid #e7e2d8;
+    border-right: 1px solid #e5e5e5;
 }
 
 .stay-info-item:last-child {
@@ -152,7 +152,7 @@ a {
     margin-top: 22px;
     padding: 18px;
     background: #ffffff;
-    border: 1px solid #e7e2d8;
+    border: 1px solid #e5e5e5;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
 }
@@ -161,7 +161,7 @@ a {
     height: 230px;
     border-radius: 8px;
     overflow: hidden;
-    background: #ede7dc;
+    background: #f5f5f5;
 }
 
 .room-image-box img {
@@ -223,7 +223,7 @@ a {
 
 .amenities-box {
     padding: 12px 0 12px 24px;
-    border-left: 1px solid #e7e2d8;
+    border-left: 1px solid #e5e5e5;
 }
 
 .amenities-box h3 {
@@ -254,17 +254,17 @@ a {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: #f8f6f2;
+    background: #f5f5f5;
     color: #111827;
     font-size: 18px;
-    border: 1px solid #e7e2d8;
+    border: 1px solid #e5e5e5;
 }
 
 .main-card {
     margin-top: 22px;
     padding: 22px;
     background: #ffffff;
-    border: 1px solid #e7e2d8;
+    border: 1px solid #e5e5e5;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
 }
@@ -374,7 +374,7 @@ a {
 
 .service-card {
     flex: 0 0 270px;
-    border: 1px solid #e7e2d8;
+    border: 1px solid #e5e5e5;
     border-radius: 10px;
     overflow: hidden;
     background: #ffffff;
@@ -382,7 +382,7 @@ a {
 
 .service-image {
     height: 135px;
-    background: #ede7dc;
+    background: #f5f5f5;
 }
 
 .service-image img {
@@ -451,7 +451,7 @@ table {
 
 th {
     padding: 13px 16px;
-    background: #f3f0ea;
+    background: #f5f5f5;
     color: #667085;
     text-align: left;
     font-size: 12px;
@@ -461,7 +461,7 @@ th {
 
 td {
     padding: 14px 16px;
-    border-bottom: 1px solid #eee8df;
+    border-bottom: 1px solid #eeeeee;
     font-size: 14px;
     white-space: nowrap;
 }
@@ -501,7 +501,7 @@ td {
     display: inline-flex;
     padding: 6px 12px;
     border-radius: 999px;
-    background: #f3f0ea;
+    background: #f5f5f5;
     color: #6b5b47;
     font-size: 12px;
     font-weight: 700;
@@ -549,7 +549,7 @@ td {
 .folio-box {
     padding: 22px;
     background: #ffffff;
-    border: 1px solid #e7e2d8;
+    border: 1px solid #e5e5e5;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
 }
@@ -637,7 +637,7 @@ td {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: #f3f0ea;
+    background: #f5f5f5;
     font-size: 26px;
 }
 
@@ -651,7 +651,7 @@ td {
 .modal-summary div {
     padding: 18px;
     border-radius: 10px;
-    background: #f8f6f2;
+    background: #f5f5f5;
 }
 
 .modal-summary span {
@@ -725,9 +725,9 @@ td {
     align-items: flex-start;
     gap: 14px;
     padding: 18px;
-    border: 1px solid #e7e2d8;
+    border: 1px solid #e5e5e5;
     border-radius: 12px;
-    background: #fbfaf7;
+    background: #ffffff;
 }
 
 .included-service-icon {

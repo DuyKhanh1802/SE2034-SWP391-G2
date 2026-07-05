@@ -227,6 +227,26 @@ public class OnlineBookingService {
 
     @Transactional
     public BookingCompleteResult completeOnlineBooking(BookingConfirmRequest request) {
+        return createPendingOnlineBooking(
+                request,
+                PaymentMethod.TRANSFER,
+                true
+        );
+    }
+
+    @Transactional
+    public BookingCompleteResult createPendingOnlineBookingForVnPay(BookingConfirmRequest request) {
+        return createPendingOnlineBooking(
+                request,
+                PaymentMethod.VNPAY,
+                false
+        );
+    }
+
+    @Transactional
+    private BookingCompleteResult createPendingOnlineBooking(BookingConfirmRequest request,
+                                                             PaymentMethod paymentMethod,
+                                                             boolean sendPendingPaymentEmail) {
         validateGuestInformation(request);
 
         if (!Boolean.TRUE.equals(request.getPaymentAcknowledged())) {
@@ -264,17 +284,10 @@ public class OnlineBookingService {
                 );
 
         if (promotionResult.isValid() && promotionResult.getPromotionId() != null) {
-            promotion = promotionRepository.findById(promotionResult.getPromotionId()).orElse(null);
-
-            if (promotion != null) {
-                Integer usageCount = promotion.getUsageCount();
-
-                if (usageCount == null) {
-                    usageCount = 0;
-                }
-
-                promotion.setUsageCount(usageCount + 1);
-            }
+            promotion = consumePromotionForBooking(
+                    promotionResult.getPromotionId(),
+                    request.getGuestEmail()
+            );
         }
 
         BigDecimal grandTotal = confirmView.getPriceSummary().getGrandTotal();
@@ -305,7 +318,7 @@ public class OnlineBookingService {
          * Online QR flow: yêu cầu khách chuyển tổng tiền.
          * Nếu sau này muốn chỉ cọc 50%, đổi thành grandTotal.multiply(BigDecimal.valueOf(0.5)).
          */
-        booking.setDepositAmount(grandTotal);
+        booking.setDepositAmount(BigDecimal.ZERO);
 
         booking.setStatus(BookingStatus.PENDING);
 
@@ -325,7 +338,7 @@ public class OnlineBookingService {
 
         payment.setBooking(savedBooking);
         payment.setAmount(savedBooking.getGrandTotal());
-        payment.setMethod(PaymentMethod.TRANSFER);
+        payment.setMethod(paymentMethod);
         payment.setPaymentType(PaymentType.DEPOSIT);
         payment.setStatus(PaymentStatus.PENDING);
         payment.setTransactionRef(savedBooking.getBookingReference());
@@ -393,19 +406,21 @@ public class OnlineBookingService {
         String guestName = savedBooking.getGuestFirstName() + " " + savedBooking.getGuestLastName();
         guestName = guestName.trim();
 
-        mailService.sendBookingPendingPaymentEmail(
-                savedBooking.getGuestEmail(),
-                guestName,
-                savedBooking.getBookingReference(),
-                String.valueOf(savedBooking.getCheckInDate()),
-                String.valueOf(savedBooking.getCheckOutDate()),
-                savedBooking.getTotalRooms(),
-                formatMoney(savedBooking.getGrandTotal()),
-                BANK_NAME,
-                BANK_ACCOUNT_NUMBER,
-                BANK_ACCOUNT_NAME,
-                savedBooking.getBookingReference()
-        );
+        if (sendPendingPaymentEmail) {
+            mailService.sendBookingPendingPaymentEmail(
+                    savedBooking.getGuestEmail(),
+                    guestName,
+                    savedBooking.getBookingReference(),
+                    String.valueOf(savedBooking.getCheckInDate()),
+                    String.valueOf(savedBooking.getCheckOutDate()),
+                    savedBooking.getTotalRooms(),
+                    formatMoney(savedBooking.getGrandTotal()),
+                    BANK_NAME,
+                    BANK_ACCOUNT_NUMBER,
+                    BANK_ACCOUNT_NAME,
+                    savedBooking.getBookingReference()
+            );
+        }
 
         BookingCompleteResult result = new BookingCompleteResult();
 
@@ -413,6 +428,89 @@ public class OnlineBookingService {
         result.setBookingReference(savedBooking.getBookingReference());
 
         return result;    }
+
+    @Transactional
+    public Booking confirmVnPayPaymentSuccess(String bookingReference,
+                                              String vnpTransactionNo) {
+
+        Booking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking theo mã giao dịch VNPay."));
+
+        if (booking.getDepositStatus() == DepositStatus.PAID) {
+            return booking;
+        }
+
+        BigDecimal paidAmount = booking.getGrandTotal();
+
+        if (paidAmount == null || paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            paidAmount = booking.getTotalAmount();
+        }
+
+        if (paidAmount == null || paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Số tiền thanh toán không hợp lệ.");
+        }
+
+        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setDepositStatus(DepositStatus.PAID);
+        booking.setDepositAmount(paidAmount);
+
+        bookingRepository.save(booking);
+
+        java.util.Optional<Payment> pendingPayment =
+                paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
+                        booking.getId(),
+                        PaymentType.DEPOSIT,
+                        PaymentStatus.PENDING
+                );
+
+        Payment payment = pendingPayment.orElseGet(Payment::new);
+
+        if (payment.getId() == null) {
+            payment.setBooking(booking);
+            payment.setPaymentType(PaymentType.DEPOSIT);
+            payment.setCreatedAt(Instant.now());
+        }
+
+        payment.setMethod(PaymentMethod.VNPAY);
+        payment.setAmount(paidAmount);
+        payment.setStatus(PaymentStatus.SUCCESS);
+
+        /*
+         * Để transactionRef = bookingReference vì mình dùng bookingReference làm vnp_TxnRef.
+         * vnpTransactionNo là mã bên VNPay, nếu muốn lưu riêng thì sau này thêm field vnp_transaction_no.
+         */
+        payment.setTransactionRef(booking.getBookingReference());
+        payment.setPaidAt(Instant.now());
+
+        paymentRepository.save(payment);
+
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(booking.getId());
+
+        mailService.sendBookingConfirmedEmail(booking, details);
+
+        return booking;
+    }
+
+    @Transactional
+    public void markVnPayPaymentFailed(String bookingReference) {
+        Booking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking theo mã giao dịch VNPay."));
+
+        if (booking.getDepositStatus() == DepositStatus.PAID) {
+            return;
+        }
+
+        releasePromotionUsage(booking);
+
+        booking.setPromotion(null);
+
+        booking.setStatus(BookingStatus.PENDING);
+        booking.setDepositStatus(DepositStatus.UNPAID);
+        booking.setDepositAmount(BigDecimal.ZERO);
+
+        bookingRepository.save(booking);
+    }
 
     private void createAddOnServiceFolioItems(
             Booking booking,
@@ -950,5 +1048,78 @@ public class OnlineBookingService {
                 + "?amount=" + safeAmount
                 + "&addInfo=" + encodedContent
                 + "&accountName=" + encodedAccountName;
+    }
+
+    private Promotion consumePromotionForBooking(Long promotionId, String guestEmail) {
+        if (promotionId == null) {
+            return null;
+        }
+
+        if (guestEmail == null || guestEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập email để sử dụng mã khuyến mãi.");
+        }
+
+        String normalizedEmail = guestEmail.trim().toLowerCase();
+
+        List<BookingStatus> usedStatuses = List.of(
+                BookingStatus.PENDING,
+                BookingStatus.CONFIRMED,
+                BookingStatus.CHECKED_IN
+        );
+
+        boolean alreadyUsed = bookingRepository.existsPromotionUsedByGuestEmail(
+                promotionId,
+                normalizedEmail,
+                usedStatuses
+        );
+
+        if (alreadyUsed) {
+            throw new IllegalArgumentException("Email này đã sử dụng mã khuyến mãi này trước đó.");
+        }
+
+        Promotion promotion = promotionRepository.findByIdForUpdate(promotionId)
+                .orElseThrow(() -> new IllegalArgumentException("Mã khuyến mãi không tồn tại."));
+
+        Integer usageCount = promotion.getUsageCount();
+
+        if (usageCount == null) {
+            usageCount = 0;
+        }
+
+
+        Integer maxUsage = promotion.getUsageLimit();
+
+        if (maxUsage != null && usageCount >= maxUsage) {
+            throw new IllegalArgumentException("Mã khuyến mãi đã hết lượt sử dụng.");
+        }
+
+        promotion.setUsageCount(usageCount + 1);
+
+        return promotionRepository.save(promotion);
+    }
+
+    private void releasePromotionUsage(Booking booking) {
+        if (booking == null || booking.getPromotion() == null) {
+            return;
+        }
+
+        Promotion promotion = promotionRepository.findByIdForUpdate(
+                booking.getPromotion().getId()
+        ).orElse(null);
+
+        if (promotion == null) {
+            return;
+        }
+
+        Integer usageCount = promotion.getUsageCount();
+
+        if (usageCount == null || usageCount <= 0) {
+            usageCount = 0;
+        } else {
+            usageCount = usageCount - 1;
+        }
+
+        promotion.setUsageCount(usageCount);
+        promotionRepository.save(promotion);
     }
 }

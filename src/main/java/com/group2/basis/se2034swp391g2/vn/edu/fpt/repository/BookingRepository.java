@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -272,5 +273,20 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
             LocalDate checkInDate,
             LocalDate checkOutDate
     );
+
+    @Query("""
+    SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END
+    FROM Booking b
+    WHERE b.promotion.id = :promotionId
+      AND LOWER(b.guestEmail) = LOWER(:guestEmail)
+      AND b.isDeleted = false
+      AND b.status IN :statuses
+""")
+    boolean existsPromotionUsedByGuestEmail(
+            @Param("promotionId") Long promotionId,
+            @Param("guestEmail") String guestEmail,
+            @Param("statuses") Collection<BookingStatus> statuses
+    );
+
 
 }
