@@ -2,7 +2,9 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.repository;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Promotion;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.PromotionProjection;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -125,4 +127,9 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             nativeQuery = true
     )
     Optional<PromotionProjection> findTopHomepagePromotion();
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Promotion p WHERE p.id = :id")
+    Optional<Promotion> findByIdForUpdate(@Param("id") Long id);
+
 }

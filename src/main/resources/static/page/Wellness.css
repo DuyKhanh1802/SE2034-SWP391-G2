@@ -3,8 +3,8 @@
 ========================= */
 
 .wellness-page {
-    --vh-bg: #f7f5ef;
-    --vh-bg-light: #fbfaf7;
+    --vh-bg: #ffffff;
+    --vh-bg-light: #ffffff;
     --vh-text: #111111;
     --vh-muted: #6f6a64;
     --vh-border: #d8d1c4;
@@ -36,7 +36,7 @@
 
     text-align: center;
     border-bottom: 1px solid var(--vh-border);
-    background: linear-gradient(180deg, #ffffff 0%, #fbfaf7 100%);
+    background: #ffffff;
 }
 
 .wellness-page .wellness-eyebrow {
@@ -190,7 +190,8 @@
     width: 100%;
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    background: #e8e1d7;
+    background: #ffffff;
+    border: 1px solid #e6e6e6;
 }
 
 .wellness-page .wellness-card-image img {
@@ -516,4 +517,3 @@
 .wellness-page .wellness-dropdown-menu a.active {
     color: var(--vh-gold);
 }
-

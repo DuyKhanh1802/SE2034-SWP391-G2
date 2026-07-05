@@ -1,17 +1,17 @@
 :root {
-    --guest-card: #fffaf3;
-    --guest-cream: #f6efe5;
+    --guest-card: #ffffff;
+    --guest-cream: #ffffff;
     --guest-gold: #b88945;
     --guest-gold-dark: #8b6532;
     --guest-charcoal: #1d1d1d;
     --guest-muted: #777;
-    --guest-border: #dfd1bd;
+    --guest-border: #e2e2e2;
     --guest-danger: #b42318;
 }
 
 .guest-profile-page {
     min-height: 100vh;
-    background: #f7f3ed;
+    background: #ffffff;
     padding: 70px 7vw 90px;
     font-family: "Manrope", sans-serif;
 }
@@ -30,7 +30,7 @@
     border-radius: 50%;
     flex-shrink: 0;
     background: #1d1d1d;
-    color: #fffaf3;
+    color: #ffffff;
     border: 3px solid rgba(184, 137, 69, 0.55);
     display: flex;
     align-items: center;
@@ -82,7 +82,7 @@
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
-    background: rgba(255, 250, 243, 0.78);
+    background: rgba(255, 255, 255, 0.78);
 }
 
 .guest-profile-badges span:last-child {
@@ -93,7 +93,7 @@
 .guest-profile-card {
     max-width: 1120px;
     margin: 0 auto;
-    background: rgba(255, 250, 243, 0.96);
+    background: rgba(255, 255, 255, 0.96);
     border: 1px solid var(--guest-border);
     padding: 44px 52px;
     box-shadow: 0 24px 65px rgba(56, 45, 33, 0.10);
@@ -188,19 +188,19 @@
 
 .guest-profile-btn-outline:hover {
     background: var(--guest-charcoal);
-    color: #fffaf3;
+    color: #ffffff;
 }
 
 .guest-profile-btn-danger {
     border: 1px solid var(--guest-danger);
-    color: #fffaf3;
+    color: #ffffff;
     background: var(--guest-danger);
 }
 
 .guest-profile-btn-danger:hover {
     background: #8f1c14;
     border-color: #8f1c14;
-    color: #fffaf3;
+    color: #ffffff;
 }
 
 @media (max-width: 900px) {

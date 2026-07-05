@@ -95,7 +95,7 @@
                 <p th:text="${errorMessage}">Có lỗi xảy ra.</p>
             </div>
 
-            <form th:action="@{/page/booking/complete}" method="post">
+            <form th:action="@{/page/booking/payment/vnpay}" method="post">
 
                 <!-- Hidden booking data -->
                 <input type="hidden" name="variantIds" th:value="${request.variantIds}">
@@ -184,7 +184,6 @@
 
                     </div>
                 </section>
-
                 <section class="form-section payment-section">
                     <h2>Xác nhận thanh toán</h2>
 
@@ -195,15 +194,15 @@
                             Vui lòng kiểm tra kỹ thông tin đặt phòng trước khi tiến hành thanh toán.
                             Việc thanh toán giúp bạn xác nhận giữ chỗ trong hệ thống và đảm bảo phòng được ưu tiên trong thời gian cao điểm.
                             Do số lượng phòng có giới hạn theo từng ngày, khách sạn khuyến nghị bạn chỉ thực hiện thanh toán khi đã chắc chắn với kế hoạch lưu trú của mình.
-                            Sau khi thanh toán thành công, đơn đặt phòng sẽ được xác nhận theo chính sách không hoàn tiền, nhằm đảm bảo tính cam kết giữa khách hàng và khách sạn.
+                            Sau khi thanh toán thành công, đơn đặt phòng sẽ được xác nhận theo chính sách không hoàn tiền.
                         </p>
 
                         <div class="payment-preview-row">
                             <span>Tổng thanh toán</span>
                             <strong>
-                <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.grandTotal, 0, 'COMMA', 0, 'POINT')}">
-                    0
-                </span>
+                    <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.grandTotal, 0, 'COMMA', 0, 'POINT')}">
+                        0
+                    </span>
                                 VND
                             </strong>
                         </div>
@@ -215,14 +214,14 @@
                                value="true"
                                required>
                         <span>
-            Tôi xác nhận thông tin đặt phòng là chính xác và muốn gửi yêu cầu đặt phòng.
-        </span>
+                Tôi xác nhận thông tin đặt phòng là chính xác và muốn gửi yêu cầu đặt phòng.
+            </span>
                     </label>
                 </section>
+
                 <button type="submit" class="confirm-btn" id="confirmBookingBtn" disabled>
                     Xác nhận đặt phòng
                 </button>
-
             </form>
         </div>
 

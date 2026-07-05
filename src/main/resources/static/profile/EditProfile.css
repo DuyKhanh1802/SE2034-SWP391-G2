@@ -1,11 +1,11 @@
 :root {
-    --profile-card: #fffaf3;
-    --profile-cream: #f6efe5;
+    --profile-card: #ffffff;
+    --profile-cream: #ffffff;
     --profile-gold: #b88945;
     --profile-gold-dark: #8b6532;
     --profile-charcoal: #1d1d1d;
     --profile-muted: #777;
-    --profile-border: #dfd1bd;
+    --profile-border: #e2e2e2;
     --profile-danger: #b42318;
 }
 
@@ -41,7 +41,7 @@
     align-items: center;
     justify-content: center;
     background: #1d1d1d;
-    color: #fffaf3;
+    color: #ffffff;
     border: 3px solid rgba(184, 137, 69, 0.55);
     font-size: 42px;
     font-weight: 700;
@@ -90,7 +90,7 @@
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
-    background: rgba(255, 250, 243, 0.78);
+    background: rgba(255, 255, 255, 0.78);
 }
 
 .profile-badges span:last-child {
@@ -100,14 +100,14 @@
 
 /* CARD */
 .profile-card {
-    background: rgba(255, 250, 243, 0.94);
+    background: rgba(255, 255, 255, 0.94);
     border: 1px solid var(--profile-border);
     padding: 46px 52px;
     box-shadow: 0 24px 65px rgba(56, 45, 33, 0.10);
 }
 
 .security-card {
-    background: rgba(247, 239, 226, 0.96);
+    background: rgba(255, 255, 255, 0.96);
 }
 
 .profile-card-heading {
@@ -211,14 +211,14 @@
 
 .profile-btn-primary {
     background: var(--profile-charcoal);
-    color: #fffaf3;
+    color: #ffffff;
     border: 1px solid var(--profile-charcoal);
 }
 
 .profile-btn-primary:hover {
     background: var(--profile-gold-dark);
     border-color: var(--profile-gold-dark);
-    color: #fffaf3;
+    color: #ffffff;
 }
 
 .profile-btn-outline {
@@ -229,7 +229,7 @@
 
 .profile-btn-outline:hover {
     background: var(--profile-charcoal);
-    color: #fffaf3;
+    color: #ffffff;
 }
 .profile-form-actions {
     display: flex;
@@ -248,14 +248,3 @@
     line-height: 1;
 }
 
-@media (max-width: 768px) {
-    .profile-form-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .profile-form-actions .profile-btn-outline,
-    .profile-form-actions .profile-btn-primary {
-        width: 100%;
-    }
-}
