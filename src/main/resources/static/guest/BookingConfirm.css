@@ -66,10 +66,10 @@ select {
    CONFIRM PAGE
 ========================= */
 .confirm-page {
+    position: relative;
     min-height: 100vh;
     padding-bottom: 60px;
 }
-
 .confirm-header {
     text-align: center;
     padding: 42px 24px;
@@ -114,6 +114,33 @@ select {
 .confirm-right {
     padding-left: 26px;
     min-width: 0;
+}
+.confirm-back-step {
+    position: absolute;
+    top: 130px;
+    left: max(28px, calc((100vw - 1380px) / 2 + 4px));
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #192765;
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    z-index: 21;
+    transition: 0.2s ease;
+}
+
+.confirm-back-step:hover {
+    color: #000;
+}
+
+.confirm-back-icon {
+    font-size: 23px;
+    line-height: 1;
+    font-weight: 400;
+    transform: translateY(-1px);
 }
 
 /* =========================
@@ -722,134 +749,245 @@ select {
     color: #fff;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 1200px) {
-    .confirm-container {
-        width: min(1000px, calc(100% - 48px));
-        grid-template-columns: 1fr;
-        gap: 42px;
-    }
 
-    .confirm-left {
-        padding-right: 0;
-        border-right: none;
-    }
 
-    .confirm-right {
-        padding-left: 0;
-    }
-
-    .summary-card {
-        position: static;
-        max-width: 100%;
-    }
-
-    .confirm-header h1 {
-        font-size: 44px;
-    }
+.send-otp-btn {
+    border: 1px solid #111;
+    background: #111;
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
-@media (max-width: 760px) {
-    .booking-close-btn {
-        top: 48px;
-        right: 18px;
-    }
+.send-otp-btn:hover {
+    background: #333;
+}
 
-    .brand-name {
-        font-size: 22px;
-        letter-spacing: 6px;
-        margin-bottom: 28px;
-    }
+.send-otp-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
 
-    .confirm-header {
-        padding: 34px 18px;
-    }
+.email-verify-message {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #8f2f1d;
+}
 
-    .confirm-header p {
-        font-size: 11px;
-        letter-spacing: 3px;
-    }
+.email-verify-message.success {
+    color: #236b3b;
+}
 
-    .confirm-header h1 {
-        font-size: 34px;
-    }
+.confirm-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
-    .confirm-container {
-        width: calc(100% - 32px);
-    }
+.otp-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 999;
+}
 
-    .form-grid {
-        grid-template-columns: 1fr;
-        gap: 28px;
-    }
+.otp-modal.is-open {
+    display: block;
+}
 
-    .room-summary {
-        grid-template-columns: 1fr;
-        width: 100%;
-    }
+.otp-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.46);
+}
 
-    .room-image-box {
-        width: 100%;
-        height: 170px;
-    }
+.otp-modal-card {
+    position: relative;
+    width: min(430px, calc(100% - 32px));
+    margin: 12vh auto 0;
+    padding: 32px 30px;
+    background: #fffaf2;
+    border: 1px solid #ddd7cd;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+    z-index: 2;
+}
 
-    .room-info {
-        width: 100%;
-        max-width: 100%;
-    }
+.otp-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    border: none;
+    background: transparent;
+    color: #111;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+}
 
-    .price-line,
-    .addon-line {
-        grid-template-columns: 1fr;
-        gap: 4px;
-    }
+.otp-modal-card h2 {
+    margin: 0 0 12px;
+    font-family: "Noto Serif Display", "Times New Roman", serif;
+    font-size: 30px;
+    font-weight: 500;
+}
 
-    .price-line strong,
-    .addon-line strong {
-        text-align: left;
-    }
+.otp-modal-card p {
+    margin: 0 0 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #5f5b52;
+}
 
-    .success-page {
-        padding: 42px 18px;
-        align-items: flex-start;
-    }
+.otp-modal-card input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #c8c3b8;
+    background: transparent;
+    padding: 12px 0;
+    font-size: 22px;
+    letter-spacing: 8px;
+    text-align: center;
+    outline: none;
+}
 
-    .success-card {
-        padding: 42px 24px;
-    }
+.otp-modal-card input:focus {
+    border-bottom-color: #111;
+}
 
-    .success-card h1 {
-        font-size: 32px;
-    }
+.otp-message {
+    min-height: 20px;
+    margin: 12px 0 0 !important;
+    font-size: 13px !important;
+    color: #8f2f1d !important;
+}
 
-    .success-reference strong {
-        font-size: 22px;
-    }
+.otp-message.success {
+    color: #236b3b !important;
+}
 
-    .success-payment-layout {
-        grid-template-columns: 1fr;
-    }
+.otp-confirm-btn {
+    width: 100%;
+    margin-top: 18px;
+    border: none;
+    background: #111;
+    color: #fff;
+    padding: 13px 18px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 800;
+    cursor: pointer;
+}
 
-    .success-qr-box {
-        width: 100%;
-        max-width: 260px;
-        height: 260px;
-        margin: 0 auto;
-    }
+.otp-confirm-btn:hover {
+    background: #333;
+}
 
-    .success-bank-row {
-        flex-direction: column;
-        gap: 4px;
-    }
+.otp-resend-btn {
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid #111;
+    background: transparent;
+    color: #111;
+    padding: 12px 18px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 800;
+    cursor: pointer;
+}
 
-    .success-bank-row strong {
-        text-align: left;
-    }
+.otp-resend-btn:hover {
+    background: #111;
+    color: #fff;
+}
+.otp-countdown-box {
+    margin: 14px 0 18px;
+    padding: 12px 14px;
+    border: 1px solid #ddd7cd;
+    background: #f7f1e7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #5f5b52;
+}
 
-    .payment-preview-row {
-        flex-direction: column;
-        gap: 6px;
-    }
+.otp-countdown-box strong {
+    color: #111;
+    font-size: 15px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.otp-countdown-box.is-done {
+    background: #eef7f0;
+    border-color: #b9d8bf;
+    color: #236b3b;
+}
+
+.otp-resend-btn:disabled,
+.otp-confirm-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* FIX EMAIL OTP ALIGNMENT */
+.email-label-row {
+    position: relative;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.email-label-row label {
+    display: block;
+    margin-bottom: 0;
+}
+
+.email-label-row .send-otp-btn {
+    position: absolute;
+    right: 0;
+    top: -8px;
+    height: 38px;
+    min-width: 116px;
+    border: none;
+    background: #111;
+    color: #fff;
+    padding: 0 18px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.email-label-row .send-otp-btn:hover {
+    background: #333;
+}
+
+.email-label-row .send-otp-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+#guestEmailInput {
+    width: 100%;
+}
+
+.email-verify-message {
+    margin: 9px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #8f2f1d;
+}
+
+.email-verify-message.success {
+    color: #236b3b;
 }

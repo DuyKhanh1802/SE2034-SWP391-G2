@@ -896,6 +896,53 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function khoiPhucPhongTuVariantIdsRequestNeuCan() {
+        const selectedVariantIdsFromRequest = document.getElementById("selectedVariantIdsFromRequest");
+
+        if (!selectedVariantIdsFromRequest || !selectedVariantIdsFromRequest.value) {
+            return;
+        }
+
+        const daCoPhongTrongSession = danhSachPhongDaChon.some(function (room) {
+            return !!room;
+        });
+
+        if (daCoPhongTrongSession) {
+            return;
+        }
+
+        const ids = selectedVariantIdsFromRequest.value
+            .split(",")
+            .map(function (id) {
+                return id.trim();
+            })
+            .filter(function (id) {
+                return id !== "";
+            });
+
+        if (ids.length === 0) {
+            return;
+        }
+
+        const reserveButtons = Array.from(document.querySelectorAll(".reserve-btn"));
+
+        danhSachPhongDaChon = ids.map(function (variantId) {
+            const button = reserveButtons.find(function (btn) {
+                return String(btn.dataset.variantId) === String(variantId);
+            });
+
+            if (!button) {
+                return null;
+            }
+
+            return {
+                variantId: button.dataset.variantId,
+                variantName: button.dataset.variantName,
+                price: Number(button.dataset.price || 0)
+            };
+        });
+    }
+
     function capNhatYourTrip() {
         const tripRoomList = document.getElementById("tripRoomList");
 
@@ -1204,7 +1251,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 continuePromoCodeInput.value = promoCodeHidden.value;
             }
 
-            sessionStorage.removeItem(TRIP_STORAGE_KEY);
+            // Quan trọng: lưu lại Your Trip trước khi sang trang Add Service
+            luuYourTripVaoSession();
+
+            // Chỉ xóa service cũ, KHÔNG xóa trip phòng đã chọn
             sessionStorage.removeItem("vhotel_selected_services_by_room");
         });
     }
@@ -1271,6 +1321,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     khoiPhucYourTripTuSession();
+    khoiPhucPhongTuVariantIdsRequestNeuCan();
 
     hienThiHaiThang();
     capNhatTomTatNgay();

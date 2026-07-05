@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import java.util.Arrays;
+import java.util.Collections;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -55,6 +56,8 @@ public class RoomTypeVariantController {
 
             @RequestParam(name = "promoCode", required = false) String promoCode,
 
+            @RequestParam(name = "variantIds", required = false) String variantIds,
+
             Model model
     ) {
         RoomSearchCriteria criteria = roomTypeVariantService.normalizeSearchCriteria(
@@ -81,6 +84,16 @@ public class RoomTypeVariantController {
                 ? promotionResult.getDiscountAmount()
                 : BigDecimal.ZERO;
 
+        List<Long> selectedVariantIds = Collections.emptyList();
+
+        if (variantIds != null && !variantIds.isBlank()) {
+            selectedVariantIds = Arrays.stream(variantIds.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank())
+                    .map(Long::valueOf)
+                    .toList();
+        }
+
         model.addAttribute("roomTypes", roomTypes);
         model.addAttribute("roomOptions", roomTypeVariants);
 
@@ -100,6 +113,9 @@ public class RoomTypeVariantController {
         model.addAttribute("promotionDiscountAmount", promotionDiscountAmount);
         model.addAttribute("promotionMessage", promotionResult.getMessage());
         model.addAttribute("promotionValid", promotionResult.isValid());
+
+        model.addAttribute("variantIds", variantIds);
+        model.addAttribute("selectedVariantIds", selectedVariantIds);
 
         model.addAttribute("searchWarning", criteria.getWarningMessage());
 

@@ -61,6 +61,10 @@
                th:value="${promoCode != null ? promoCode : ''}">
 
         <input type="hidden"
+               id="selectedVariantIdsFromRequest"
+               th:value="${variantIds != null ? variantIds : ''}">
+
+        <input type="hidden"
                id="promotionDiscountAmount"
                th:value="${promotionDiscountAmount != null ? promotionDiscountAmount : 0}">
 
