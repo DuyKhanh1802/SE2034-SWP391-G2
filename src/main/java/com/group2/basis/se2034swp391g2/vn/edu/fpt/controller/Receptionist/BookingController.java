@@ -354,27 +354,19 @@ public class BookingController {
                                        @RequestParam BigDecimal amount,
                                        RedirectAttributes redirectAttributes) {
         try {
-            if (paymentType != PaymentType.DEPOSIT && paymentType != PaymentType.FULL) {
-                throw new IllegalArgumentException("Màn chi tiết đặt phòng chỉ cho phép thu cọc hoặc thu full trước.");
+            if (paymentType != PaymentType.FULL) {
+                throw new IllegalArgumentException("Màn chi tiết đặt phòng chỉ cho phép thu toàn bộ số tiền còn lại.");
             }
 
-            Booking booking = bookingService.getBookingEntityById(bookingId);
-            User currentStaff = bookingService.getCurrentStaffUser();
-
-            paymentService.createPayment(
-                    booking,
+            bookingService.collectBookingPayment(
+                    bookingId,
                     paymentType,
                     method,
-                    amount,
-                    currentStaff
+                    amount
             );
 
-            if (paymentType == PaymentType.DEPOSIT) {
-                bookingService.markDepositPaid(bookingId);
-            }
-
             redirectAttributes.addFlashAttribute("successMessage", "Lưu thanh toán thành công.");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
