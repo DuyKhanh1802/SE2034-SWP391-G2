@@ -46,6 +46,8 @@ public class BookingCreateRequest {
     
     private String action;
 
+    private String promoCode;
+
     private Boolean depositPaid;
 
     private BigDecimal depositAmount;

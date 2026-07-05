@@ -210,7 +210,7 @@
 
                     <div>
                         <span>Năm sinh</span>
-                        <strong th:text="${detail.dateOfBirth != null ? #temporals.format(detail.dateOfBirth, 'yyyy') : 'N/A'}">
+                        <strong th:text="${detail.birthYear != null ? detail.birthYear : 'N/A'}">
                             N/A
                         </strong>
                     </div>
@@ -447,7 +447,9 @@
                             class="btn-detail outline"
                             data-bs-toggle="modal"
                             data-bs-target="#fullPaymentModal"
-                            th:if="${detail.bookingStatus.name() == 'CONFIRMED'}">
+                            th:if="${detail.bookingStatus.name() == 'CONFIRMED'
+                            and detail.remainingEstimate != null
+                            and detail.remainingEstimate > 0}">
                         <i class="bi bi-credit-card"></i>
                         THU TOÀN BỘ
                     </button>
@@ -543,6 +545,35 @@
                         </strong>
                     </div>
 
+                    <div class="price-row"
+                         th:if="${detail.discountAmount != null and detail.discountAmount > 0}">
+                        <span>Tạm tính trước giảm</span>
+                        <strong th:text="${#numbers.formatDecimal(detail.totalBeforeDiscount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div class="price-row promotion-row"
+                         th:if="${detail.promotionCode != null and detail.discountAmount != null and detail.discountAmount > 0}">
+    <span>
+        Mã ưu đãi
+        <small th:text="${detail.promotionCode + ' - ' + detail.promotionName}">
+            PROMO - Promotion Name
+        </small>
+    </span>
+
+                        <strong class="discount-text"
+                                th:text="'- ' + ${#numbers.formatDecimal(detail.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            - 0 VND
+                        </strong>
+                    </div>
+
+                    <div class="price-row no-promotion-row"
+                         th:if="${detail.promotionCode == null or detail.discountAmount == null or detail.discountAmount <= 0}">
+                        <span>Mã ưu đãi</span>
+                        <strong>Không áp dụng</strong>
+                    </div>
+
                     <div class="price-row">
                         <span>Tổng thanh toán</span>
                         <strong th:text="${#numbers.formatDecimal(detail.grandTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
@@ -595,10 +626,10 @@
 
                 <!-- CONFIRMED -->
                 <a th:if="${detail.bookingStatus.name() == 'CONFIRMED'
-           and detail.gender != 'N/A'
-           and detail.dateOfBirth != null
-           and detail.identityType != 'N/A'
-           and detail.identityNumber != 'N/A'}"
+                        and detail.gender != 'N/A'
+                        and detail.birthYear != null
+                        and detail.identityType != 'N/A'
+                        and detail.identityNumber != 'N/A'}"
                    th:href="@{/receptionist/bookings/{id}/check-in(id=${detail.bookingId})}"
                    class="btn-detail primary">
                     <i class="bi bi-box-arrow-in-right"></i>
@@ -606,10 +637,10 @@
                 </a>
 
                 <button th:if="${detail.bookingStatus.name() == 'CONFIRMED'
-                and (detail.gender == 'N/A'
-                or detail.dateOfBirth == null
-                or detail.identityType == 'N/A'
-                or detail.identityNumber == 'N/A')}"
+                        and (detail.gender == 'N/A'
+                        or detail.birthYear == null
+                        or detail.identityType == 'N/A'
+                        or detail.identityNumber == 'N/A')}"
                         type="button"
                         class="btn-detail primary"
                         disabled>
@@ -710,6 +741,9 @@
                                    name="amount"
                                    class="form-control"
                                    th:value="${detail.remainingEstimate}"
+                                   min="1"
+                                   step="1000"
+                                   th:max="${detail.remainingEstimate}"
                                    required>
                         </div>
 
