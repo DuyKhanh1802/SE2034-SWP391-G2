@@ -47,7 +47,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const wellnessServiceTemplate = document.getElementById("wellnessServiceTemplate");
 
     const serviceHiddenInputs = document.getElementById("serviceHiddenInputs");
-
+    const promoCodeSelect = document.getElementById("promoCode");
+    const promotionPreview = document.getElementById("promotionPreview");
+    const discountRow = document.getElementById("discountRow");
+    const discountAmountElement = document.getElementById("discountAmount");
     document.querySelectorAll(".required-field").forEach(function (field) {
         field.addEventListener("input", function () {
             clearFieldError(field);
@@ -58,11 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    if (depositMethodInput) {
-        depositMethodInput.addEventListener("change", function () {
-            clearFieldError(depositMethodInput);
-        });
-    }
+
     function formatVnd(amount) {
         return new Intl.NumberFormat("vi-VN").format(amount) + " VND";
     }
@@ -185,27 +184,59 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const baseAmount = roomTotal + extraBedTotal + serviceSubtotal;
 
-        const serviceCharge = Math.round(serviceSubtotal * serviceChargeRate);
+        const serviceCharge = Math.round(baseAmount * serviceChargeRate);
 
         const vatBase = isTaxOnServiceCharge()
             ? baseAmount + serviceCharge
             : baseAmount;
 
         const tax = Math.round(vatBase * vatRate);
+        const totalBeforeDiscount = baseAmount + serviceCharge + tax;
+        const discount = getPromotionDiscount(totalBeforeDiscount);
 
-        const total = baseAmount + serviceCharge + tax;
-        const suggestedDeposit = Math.round(total * 0.5);
+        const total = Math.max(totalBeforeDiscount - discount, 0);
 
-        let deposit = 0;
+        function getPromotionDiscount(totalBeforeDiscount) {
+            if (!promoCodeSelect || !promoCodeSelect.value) {
+                if (promotionPreview) {
+                    promotionPreview.textContent = "Chưa áp dụng mã ưu đãi.";
+                }
+                return 0;
+            }
 
-        if (depositPaidCheckbox && depositPaidCheckbox.checked && depositAmountInput) {
-            deposit = suggestedDeposit;
-            depositAmountInput.value = suggestedDeposit;
-        } else if (depositAmountInput) {
-            depositAmountInput.value = "";
+            const selectedOption = promoCodeSelect.options[promoCodeSelect.selectedIndex];
+            let discount = Number(selectedOption ? selectedOption.getAttribute("data-discount") || 0 : 0);
+
+            if (Number.isNaN(discount) || discount < 0) {
+                discount = 0;
+            }
+
+            if (discount > totalBeforeDiscount) {
+                discount = totalBeforeDiscount;
+            }
+
+            if (promotionPreview) {
+                promotionPreview.textContent = discount > 0
+                    ? "Đã chọn mã " + promoCodeSelect.value + ", giảm " + formatVnd(discount) + "."
+                    : "Mã ưu đãi không có giá trị giảm hợp lệ.";
+            }
+
+            return Math.round(discount);
         }
 
-        const remaining = total - deposit;
+
+
+        if (discountRow && discountAmountElement) {
+            if (discount > 0) {
+                discountRow.style.display = "flex";
+                discountAmountElement.textContent = "- " + formatVnd(discount);
+            } else {
+                discountRow.style.display = "none";
+                discountAmountElement.textContent = "- 0 VND";
+            }
+        }
+
+
 
         if (nightLabel) {
             nightLabel.textContent = nights > 0
@@ -233,13 +264,11 @@ document.addEventListener("DOMContentLoaded", function () {
             totalPrice.textContent = formatVnd(total);
         }
 
-        if (depositPreview) {
-            depositPreview.textContent = formatVnd(deposit);
+        if (remainingAmount) {
+            remainingAmount.textContent = formatVnd(total);
         }
 
-        if (remainingAmount) {
-            remainingAmount.textContent = formatVnd(remaining);
-        }
+
     }
     function getCurrentChildAgeValues() {
         const currentInputs = document.querySelectorAll(".child-age-input");
@@ -342,27 +371,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function toggleDepositFields() {
-        if (!depositPaidCheckbox || !depositFields) {
-            return;
-        }
 
-        if (depositPaidCheckbox.checked) {
-            depositFields.style.display = "grid";
-        } else {
-            depositFields.style.display = "none";
-
-            if (depositAmountInput) {
-                depositAmountInput.value = "";
-            }
-
-            if (depositMethodInput) {
-                depositMethodInput.value = "";
-            }
-        }
-
-        updateSummary();
-    }
 
     function updatePhoneCode() {
         if (!countrySelect || !phoneCodeInput) {
@@ -409,7 +418,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (checkInInput) {
         checkInInput.addEventListener("change", updateSummary);
     }
-
+    if (promoCodeSelect) {
+        promoCodeSelect.addEventListener("change", updateSummary);
+    }
     if (checkOutInput) {
         checkOutInput.addEventListener("change", updateSummary);
     }
@@ -422,13 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
         phoneNumberOnlyInput.addEventListener("input", updateFullPhoneNumber);
     }
 
-    if (depositPaidCheckbox) {
-        depositPaidCheckbox.addEventListener("change", toggleDepositFields);
-    }
 
-    if (depositAmountInput) {
-        depositAmountInput.addEventListener("input", updateSummary);
-    }
 
     if (walkinForm) {
         walkinForm.addEventListener("submit", function (event) {
@@ -467,9 +472,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 isValid = false;
             }
 
-            if (!validateDeposit()) {
-                isValid = false;
-            }
+
 
             if (!validateAdditionalServices()) {
                 isValid = false;
@@ -676,19 +679,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (selectedRooms.length === 0) {
             showSummary("Vui lòng chọn ít nhất một phòng trước khi tạo đặt phòng.");
-            return false;
-        }
-
-        return true;
-    }
-
-    function validateDeposit() {
-        if (!depositPaidCheckbox || !depositPaidCheckbox.checked) {
-            return true;
-        }
-
-        if (!depositMethodInput || isBlank(depositMethodInput.value)) {
-            showFieldError(depositMethodInput, "Vui lòng chọn phương thức thanh toán tiền đặt cọc.");
             return false;
         }
 
@@ -961,7 +951,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     updatePhoneCode();
-    toggleDepositFields();
     updateSummary();
     renderChildAgeInputs();
 

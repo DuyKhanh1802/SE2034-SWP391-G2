@@ -13,7 +13,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
-
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
 import java.math.BigDecimal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -34,16 +34,17 @@ public class BookingController {
     private final PaymentService paymentService;
     private final CountryRepository countryRepository;
     private final ServiceRepository serviceRepository;
-
+    private final PromotionService promotionService;
     public BookingController(BookingService bookingService,
                              CountryRepository countryRepository,
+                             PromotionService promotionService,
                              ServiceRepository serviceRepository,
 
                              PaymentService paymentService) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
         this.serviceRepository = serviceRepository;
-
+        this.promotionService = promotionService;
         this.paymentService = paymentService;
     }
 
@@ -143,7 +144,7 @@ public class BookingController {
         model.addAttribute("countries", countryRepository.findAll());
         model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
         model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
-
+        model.addAttribute("activePromotions", promotionService.getListPromotion());
         model.addAttribute("vatRate", new BigDecimal("8"));
         model.addAttribute("serviceChargeRate", new BigDecimal("5"));
         model.addAttribute("taxOnServiceCharge", true);

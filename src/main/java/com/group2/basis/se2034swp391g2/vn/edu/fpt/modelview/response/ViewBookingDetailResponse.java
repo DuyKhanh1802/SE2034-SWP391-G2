@@ -54,6 +54,11 @@ public class ViewBookingDetailResponse {
     private Instant cancelledAt;
     private String cancelledByName;
 
+    private String promotionCode;
+    private String promotionName;
+    private BigDecimal discountAmount;
+    private BigDecimal totalBeforeDiscount;
+
     @Builder.Default
     private List<RoomLine> rooms = new ArrayList<>();
 

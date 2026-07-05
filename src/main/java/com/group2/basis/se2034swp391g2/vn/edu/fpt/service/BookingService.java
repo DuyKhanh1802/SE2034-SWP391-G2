@@ -37,7 +37,8 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ServiceCategoryTy
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
-
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Promotion;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
 
 
 import java.math.RoundingMode;
@@ -84,7 +85,8 @@ public class BookingService {
     private final ServiceRepository serviceRepository;
     private final FolioItemRepository folioItemRepository;
     private final InventoryManagementService inventoryManagementService;
-
+    private final PromotionRepository promotionRepository;
+    private final PromotionService promotionService;
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
@@ -96,7 +98,8 @@ public class BookingService {
                           ServiceRepository serviceRepository,
                           FolioItemRepository folioItemRepository,
                           InventoryManagementService inventoryManagementService,
-
+                          PromotionRepository promotionRepository,
+                          PromotionService promotionService,
                           PaymentService paymentService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
@@ -109,7 +112,8 @@ public class BookingService {
         this.serviceRepository = serviceRepository;
         this.folioItemRepository = folioItemRepository;
         this.inventoryManagementService = inventoryManagementService;
-
+        this.promotionRepository = promotionRepository;
+        this.promotionService = promotionService;
         this.paymentService = paymentService;
     }
 
@@ -385,30 +389,58 @@ public class BookingService {
         BigDecimal vatTotal = roomVatTotal
                 .add(serviceVatTotal);
 
-        BigDecimal grandTotal = roomSubtotalTotal
+        BigDecimal totalBeforeDiscount = roomSubtotalTotal
                 .add(serviceSubtotal)
                 .add(serviceChargeTotal)
                 .add(vatTotal);
 
-        BigDecimal depositAmount = BigDecimal.ZERO;
+        Promotion promotion = null;
+        BigDecimal discountAmount = BigDecimal.ZERO;
 
+        if (request.getPromoCode() != null && !request.getPromoCode().trim().isEmpty()) {
+            PromotionApplyResponse promotionResult = promotionService.applyPromotionCode(
+                    request.getPromoCode(),
+                    totalBeforeDiscount
+            );
+
+            if (!promotionResult.isValid()) {
+                throw new IllegalArgumentException(promotionResult.getMessage());
+            }
+
+            discountAmount = promotionResult.getDiscountAmount() == null
+                    ? BigDecimal.ZERO
+                    : promotionResult.getDiscountAmount().setScale(0, RoundingMode.HALF_UP);
+
+            if (discountAmount.compareTo(totalBeforeDiscount) > 0) {
+                discountAmount = totalBeforeDiscount;
+            }
+
+            promotion = promotionRepository.findById(promotionResult.getPromotionId())
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy mã ưu đãi đã chọn."));
+
+            int usageCount = promotion.getUsageCount() == null ? 0 : promotion.getUsageCount();
+            promotion.setUsageCount(usageCount + 1);
+            promotionRepository.save(promotion);
+        }
+
+        BigDecimal grandTotal = totalBeforeDiscount.subtract(discountAmount);
+
+        if (grandTotal.compareTo(BigDecimal.ZERO) < 0) {
+            grandTotal = BigDecimal.ZERO;
+        }
+
+
+        savedBooking.setPromotion(promotion);
+        savedBooking.setDiscountAmount(discountAmount);
         savedBooking.setRoomSubtotal(roomSubtotalTotal);
         savedBooking.setServiceSubtotal(serviceSubtotal);
         savedBooking.setServiceChargeTotal(serviceChargeTotal);
         savedBooking.setVatTotal(vatTotal);
         savedBooking.setTotalAmount(grandTotal);
         savedBooking.setGrandTotal(grandTotal);
-
-/*
- Nếu màn List Booking đang hiển thị totalAmount,
- nên set totalAmount = grandTotal để người dùng thấy tổng cuối cùng.
-*/
-        savedBooking.setTotalAmount(grandTotal);
-        savedBooking.setGrandTotal(grandTotal);
-        savedBooking.setDepositAmount(depositAmount);
-        savedBooking.setAmountCalculatedAt(Instant.now());
-
+        savedBooking.setDepositAmount(BigDecimal.ZERO);
         savedBooking.setDepositStatus(DepositStatus.UNPAID);
+        savedBooking.setAmountCalculatedAt(Instant.now());
 
         bookingRepository.save(savedBooking);
 
@@ -1147,6 +1179,23 @@ public class BookingService {
                 ? BigDecimal.ZERO
                 : booking.getServiceChargeTotal();
 
+        BigDecimal discountAmount = booking.getDiscountAmount() == null
+                ? BigDecimal.ZERO
+                : booking.getDiscountAmount();
+
+        BigDecimal totalBeforeDiscount = roomTotal
+                .add(serviceSubtotal)
+                .add(serviceChargeTotal)
+                .add(vatTotal);
+
+        String promotionCode = booking.getPromotion() != null
+                ? booking.getPromotion().getCode()
+                : null;
+
+        String promotionName = booking.getPromotion() != null
+                ? booking.getPromotion().getName()
+                : null;
+
         BigDecimal depositPaid = payments.stream()
                 .filter(payment -> payment.getPaymentType() == PaymentType.DEPOSIT)
                 .filter(payment -> payment.getStatus() == PaymentStatus.SUCCESS)
@@ -1247,7 +1296,10 @@ public class BookingService {
                 .children(booking.getNumChildren())
                 .specialRequests(booking.getSpecialRequests())
                 .createdAt(booking.getCreatedAt())
-
+                .promotionCode(promotionCode)
+                .promotionName(promotionName)
+                .discountAmount(discountAmount)
+                .totalBeforeDiscount(totalBeforeDiscount)
                 .roomTotal(roomTotal)
                 .vatTotal(vatTotal)
                 .grandTotal(grandTotal)

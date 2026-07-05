@@ -543,6 +543,35 @@
                         </strong>
                     </div>
 
+                    <div class="price-row"
+                         th:if="${detail.discountAmount != null and detail.discountAmount > 0}">
+                        <span>Tạm tính trước giảm</span>
+                        <strong th:text="${#numbers.formatDecimal(detail.totalBeforeDiscount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
+                        </strong>
+                    </div>
+
+                    <div class="price-row promotion-row"
+                         th:if="${detail.promotionCode != null and detail.discountAmount != null and detail.discountAmount > 0}">
+    <span>
+        Mã ưu đãi
+        <small th:text="${detail.promotionCode + ' - ' + detail.promotionName}">
+            PROMO - Promotion Name
+        </small>
+    </span>
+
+                        <strong class="discount-text"
+                                th:text="'- ' + ${#numbers.formatDecimal(detail.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            - 0 VND
+                        </strong>
+                    </div>
+
+                    <div class="price-row no-promotion-row"
+                         th:if="${detail.promotionCode == null or detail.discountAmount == null or detail.discountAmount <= 0}">
+                        <span>Mã ưu đãi</span>
+                        <strong>Không áp dụng</strong>
+                    </div>
+
                     <div class="price-row">
                         <span>Tổng thanh toán</span>
                         <strong th:text="${#numbers.formatDecimal(detail.grandTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">

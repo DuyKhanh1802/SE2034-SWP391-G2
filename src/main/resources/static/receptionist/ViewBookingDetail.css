@@ -735,3 +735,23 @@
 .payment-summary-grid > div {
     min-width: 220px;
 }
+.promotion-row {
+    align-items: flex-start;
+}
+
+.promotion-row small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.discount-text {
+    color: #dc2626;
+}
+
+.no-promotion-row strong {
+    color: #6b7280;
+    font-weight: 600;
+}
