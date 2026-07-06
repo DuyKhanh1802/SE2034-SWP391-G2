@@ -126,7 +126,12 @@ public class SpringSecurity {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
-
+                .rememberMe(remember -> remember
+                        .rememberMeParameter("remember-me")
+                .rememberMeCookieName("VHOTEL_REMEMBER_ME")
+                                .key("vhotel-remember-me-secret-key")
+                                .tokenValiditySeconds(7 * 24 * 60 * 60)
+                )
                 /*
                  * Bỏ CSRF cho API upload ảnh khuyến mãi.
                  */
