@@ -10,8 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet">
 
-    <link rel="stylesheet" th:href="@{/guest/BookingServices.css}">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
+    <link rel="stylesheet" th:href="@{/guest/BookingServices.css}">
 </head>
 
 <body>
@@ -52,6 +54,13 @@
 
     <main class="service-content">
 
+        <div class="booking-error-box" th:if="${errorMessage != null}">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span th:text="${errorMessage}">
+                Có lỗi xảy ra trong quá trình chọn dịch vụ.
+            </span>
+        </div>
+
         <div class="service-layout">
 
             <section class="service-main">
@@ -66,7 +75,7 @@
                     </div>
 
                     <div class="room-tabs"
-                         th:attr="data-room-count=${#lists.size(selectedRooms)}">
+                         th:attr="data-room-count=${selectedRooms != null ? #lists.size(selectedRooms) : 0}">
                         <button type="button"
                                 class="room-tab active"
                                 th:each="room, iter : ${selectedRooms}"
@@ -82,7 +91,7 @@
                         <div>
                             <h3 id="currentRoomTitle">Phòng 1</h3>
                             <p id="currentRoomName"
-                               th:text="${selectedRooms != null and !#lists.isEmpty(selectedRooms) ? selectedRooms[0].variantName : ''}">
+                               th:text="${selectedRooms != null and !#lists.isEmpty(selectedRooms) ? selectedRooms[0].variantName : 'Chưa có phòng được chọn'}">
                                 Phòng Deluxe hướng vườn
                             </p>
                         </div>
@@ -153,13 +162,13 @@
                         <div class="service-actions">
 
                             <div class="service-dropdown">
-                            <span>
-                                Sắp xếp:
-                                <b th:text="${selectedSort == 'priceAsc' ? 'Giá thấp đến cao' :
-                                             (selectedSort == 'priceDesc' ? 'Giá cao đến thấp' : 'Đề xuất')}">
-                                    Đề xuất
-                                </b>
-                            </span>
+                                <span>
+                                    Sắp xếp:
+                                    <b th:text="${selectedSort == 'priceAsc' ? 'Giá thấp đến cao' :
+                                                 (selectedSort == 'priceDesc' ? 'Giá cao đến thấp' : 'Đề xuất')}">
+                                        Đề xuất
+                                    </b>
+                                </span>
 
                                 <div class="service-dropdown-menu">
                                     <a th:href="@{/page/booking/services(variantIds=${variantIds}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount}, roomGuests=${roomGuests}, promoCode=${promoCode}, category=${selectedCategory}, sort='recommended', priceFilter=${selectedPriceFilter}, page=0, size=${servicePage.size})}">
@@ -175,14 +184,14 @@
                             </div>
 
                             <div class="service-dropdown">
-                            <span>
-                                Mức giá:
-                                <b th:text="${selectedPriceFilter == 'UNDER_200' ? 'Dưới 200.000' :
-                                             (selectedPriceFilter == 'FROM_200_TO_500' ? '200.000 - 500.000' :
-                                             (selectedPriceFilter == 'OVER_500' ? 'Trên 500.000' : 'Tất cả'))}">
-                                    Tất cả
-                                </b>
-                            </span>
+                                <span>
+                                    Mức giá:
+                                    <b th:text="${selectedPriceFilter == 'UNDER_200' ? 'Dưới 200.000' :
+                                                 (selectedPriceFilter == 'FROM_200_TO_500' ? '200.000 - 500.000' :
+                                                 (selectedPriceFilter == 'OVER_500' ? 'Trên 500.000' : 'Tất cả'))}">
+                                        Tất cả
+                                    </b>
+                                </span>
 
                                 <div class="service-dropdown-menu">
                                     <a th:href="@{/page/booking/services(variantIds=${variantIds}, checkInDate=${checkInDate}, checkOutDate=${checkOutDate}, adults=${adults}, children=${children}, roomCount=${roomCount}, roomGuests=${roomGuests}, promoCode=${promoCode}, category=${selectedCategory}, sort=${selectedSort}, priceFilter='ALL', page=0, size=${servicePage.size})}">
@@ -204,8 +213,12 @@
                     </section>
 
                     <div class="service-empty" th:if="${services == null or #lists.isEmpty(services)}">
-                        <h3>Không có dịch vụ phù hợp</h3>
-                        <p>Vui lòng thử chọn bộ lọc khác.</p>
+                        <h3 th:text="${errorMessage != null ? 'Không thể hiển thị dịch vụ' : 'Không có dịch vụ phù hợp'}">
+                            Không có dịch vụ phù hợp
+                        </h3>
+                        <p th:text="${errorMessage != null ? 'Vui lòng kiểm tra lại thông tin đặt phòng hoặc quay lại chọn phòng.' : 'Vui lòng thử chọn bộ lọc khác.'}">
+                            Vui lòng thử chọn bộ lọc khác.
+                        </p>
                     </div>
 
                     <div class="service-grid" th:if="${services != null and !#lists.isEmpty(services)}">
@@ -229,10 +242,10 @@
                             </div>
 
                             <div class="service-body">
-                            <span class="service-category"
-                                  th:text="${service.categoryName == 'DINING' ? 'Ăn uống' : (service.categoryName == 'WELLNESS' ? 'Chăm sóc sức khỏe' : (service.categoryName != null ? service.categoryName : 'Dịch vụ'))}">
-                                Ăn uống
-                            </span>
+                                <span class="service-category"
+                                      th:text="${service.categoryName == 'DINING' ? 'Ăn uống' : (service.categoryName == 'WELLNESS' ? 'Chăm sóc sức khỏe' : (service.categoryName != null ? service.categoryName : 'Dịch vụ'))}">
+                                    Ăn uống
+                                </span>
 
                                 <h3 th:text="${service.name}">Bữa tối buffet</h3>
 
@@ -244,8 +257,8 @@
                                     <strong>
                                         <small>VND</small>
                                         <span th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT')}">
-                                        350,000
-                                    </span>
+                                            350,000
+                                        </span>
                                     </strong>
 
                                     <div class="quantity-control">
@@ -257,8 +270,8 @@
 
                                         <span class="qty-value"
                                               th:id="'serviceQty-' + ${service.serviceId}">
-                                        0
-                                    </span>
+                                            0
+                                        </span>
 
                                         <button type="button"
                                                 class="qty-btn plus-service"
@@ -272,7 +285,7 @@
 
                     </div>
 
-                    <div class="pagination-box" th:if="${servicePage.totalPages > 1}">
+                    <div class="pagination-box" th:if="${servicePage != null and servicePage.totalPages > 1}">
 
                         <a class="page-btn"
                            th:if="${servicePage.hasPrevious()}"
@@ -377,8 +390,8 @@
                             <div class="trip-room-title">
                                 <strong th:text="${'Phòng ' + (iter.index + 1)}">Phòng 1</strong>
                                 <span th:text="${'~ ' + #numbers.formatDecimal(room.pricePerNight * nights, 0, 'COMMA', 0, 'POINT') + ' VND'}">
-                                ~ 2,000,000 VND
-                            </span>
+                                    ~ 2,000,000 VND
+                                </span>
                             </div>
 
                             <p th:text="${room.variantName}">Phòng Deluxe hướng vườn</p>
@@ -461,13 +474,17 @@
 
                         <div id="selectedServiceHiddenInputs"></div>
 
-                        <button type="submit" class="continue-btn" id="continueWithServiceBtn">
+                        <button type="submit"
+                                class="continue-btn"
+                                id="continueWithServiceBtn"
+                                th:disabled="${errorMessage != null}">
                             Tiếp tục
                         </button>
 
                     </form>
 
                     <a class="skip-link"
+                       th:if="${errorMessage == null}"
                        th:href="@{/page/booking/confirm(
                         variantIds=${variantIds},
                         checkInDate=${checkInDate},

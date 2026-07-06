@@ -768,3 +768,27 @@ td {
     font-weight: 600;
     font-size: 14px;
 }
+
+.guest-alert {
+    max-width: 1180px;
+    margin: 0 auto 18px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.guest-alert-error {
+    background: #fff2f2;
+    border: 1px solid #efb4b4;
+    color: #9f1d1d;
+}
+
+.guest-alert-success {
+    background: #f1fff5;
+    border: 1px solid #a9ddb8;
+    color: #146c2e;
+}
