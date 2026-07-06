@@ -565,3 +565,135 @@ input::placeholder { color: #c8c4bc; font-weight: 300; }
     transform: scaleX(1);
     transform-origin: left;
 }
+
+/* =========================================================
+   REGISTER EMAIL OTP VERIFICATION PAGE
+   Dùng cho: auth/verify-register-otp.html
+   Dán cuối file: static/auth/register.css
+   ========================================================= */
+
+.otp-wrap {
+    max-width: 430px;
+}
+
+.otp-icon {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    border: 1px solid rgba(176, 141, 87, .45);
+    background: #fffaf1;
+    color: var(--gold);
+    box-shadow: 0 18px 40px rgba(26, 23, 19, .08);
+}
+
+.otp-icon i {
+    font-size: 34px;
+    line-height: 1;
+}
+
+.otp-heading {
+    margin-bottom: 12px;
+}
+
+.otp-sub {
+    margin-bottom: 22px;
+}
+
+.otp-email-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border: 1px solid #eadfcb;
+    background: #fffaf1;
+    color: var(--ink-mid);
+    font-size: 13px;
+    font-weight: 400;
+    word-break: break-word;
+}
+
+.otp-email-box i {
+    color: var(--gold);
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.otp-form {
+    margin-top: 6px;
+}
+
+.otp-input {
+    text-align: center;
+    font-size: 28px !important;
+    letter-spacing: 12px;
+    font-weight: 600;
+    padding: 0 0 14px !important;
+}
+
+.otp-input::placeholder {
+    color: #d5cfc3;
+    letter-spacing: 10px;
+    font-weight: 300;
+}
+
+.otp-submit {
+    margin-top: 10px;
+}
+
+.resend-form {
+    margin-top: 16px;
+}
+
+.resend-btn {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--gold);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 12px 10px;
+    transition: color .25s ease, background .25s ease;
+}
+
+.resend-btn i {
+    margin-right: 6px;
+}
+
+.resend-btn:hover {
+    color: var(--ink);
+    background: #fffaf1;
+}
+
+.otp-note {
+    display: grid;
+    gap: 12px;
+    margin: 22px 0 0;
+}
+
+.otp-note-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    color: var(--ink-light);
+    font-size: 12.5px;
+    line-height: 1.6;
+    font-weight: 300;
+}
+
+.otp-note-item i {
+    color: var(--gold);
+    font-size: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
