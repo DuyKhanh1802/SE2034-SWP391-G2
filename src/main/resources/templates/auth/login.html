@@ -45,31 +45,39 @@
 
             <div class="h-rule"></div>
 
-            <div th:if="${param.error != null and param.error[0] == 'credentials'}" class="alert alert-danger">
-                <i class="bi bi-exclamation-circle-fill"></i>
-                <span>Email hoặc mật khẩu không chính xác.</span>
-            </div>
-            <div th:if="${param.error != null and param.error[0] == 'pending'}" class="alert alert-warning">
-                <i class="bi bi-hourglass-split"></i>
-                <span>Tài khoản chưa được Quản trị hệ thống phê duyệt.</span>
-            </div>
-            <div th:if="${param.error != null and param.error[0] == 'inactive'}" class="alert alert-danger">
-                <i class="bi bi-person-lock"></i>
-                <span>Tài khoản đã bị vô hiệu hóa.</span>
-            </div>
-            <div th:if="${param.logout}" class="alert alert-success">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>Đăng xuất thành công.</span>
-            </div>
-            <div th:if="${successMessage}" class="alert alert-success">
-                <i class="bi bi-check-circle-fill"></i>
-                <span th:text="${successMessage}">Thao tác thành công.</span>
-            </div>
-            <div th:if="${param.registered}" class="alert alert-success">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>Đăng ký thành công! Vui lòng đăng nhập.</span>
-            </div>
+            <div class="login-alert-slot">
 
+                <div th:if="${param.error != null and param.error[0] == 'credentials'}" class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <span>Email hoặc mật khẩu không chính xác.</span>
+                </div>
+
+                <div th:if="${param.error != null and param.error[0] == 'pending'}" class="alert alert-warning">
+                    <i class="bi bi-hourglass-split"></i>
+                    <span>Tài khoản chưa được Quản trị hệ thống phê duyệt.</span>
+                </div>
+
+                <div th:if="${param.error != null and param.error[0] == 'inactive'}" class="alert alert-danger">
+                    <i class="bi bi-person-lock"></i>
+                    <span>Tài khoản đã bị vô hiệu hóa.</span>
+                </div>
+
+                <div th:if="${param.logout}" class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Đăng xuất thành công.</span>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span th:text="${successMessage}">Thao tác thành công.</span>
+                </div>
+
+                <div th:if="${param.registered}" class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Đăng ký thành công! Vui lòng đăng nhập.</span>
+                </div>
+
+            </div>
             <form th:action="@{/auth/login}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 

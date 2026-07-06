@@ -29,6 +29,10 @@
     --danger-dark:   #842029;
     --danger-bg:     #fdecef;
     --danger-soft:   #f5c2c7;
+
+    --warning:       #d39e00;
+    --warning-dark:  #856404;
+    --warning-bg:    #fff8e1;
 }
 
 html, body {
@@ -175,7 +179,7 @@ html, body {
 .panel-right {
     background: var(--cream);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     padding: 40px 72px;
     position: relative;
@@ -194,6 +198,7 @@ html, body {
 .form-wrap {
     width: 100%;
     max-width: 420px;
+    padding: 10px 0 34px;
     animation: fadeUp .7s .1s both;
 }
 
@@ -529,7 +534,10 @@ input::placeholder { color: #c8c4bc; font-weight: 300; }
 @media (max-width: 1024px) {
     .shell { grid-template-columns: 1fr !important; }
     .panel-left { display: none; }
-    .panel-right { padding: 48px 36px; }
+    .panel-right {
+        align-items: flex-start;
+        padding: 42px 36px;
+    }
     .form-heading { font-size: 46px; }
 }
 
@@ -733,3 +741,100 @@ input::placeholder { color: #c8c4bc; font-weight: 300; }
     flex-shrink: 0;
 }
 
+/* =========================================================
+   AUTH PAGES - FIX TOP BADGE / ALERT LAYOUT
+   ========================================================= */
+
+/* Không căn giữa theo chiều dọc nữa.
+   Khi form dài hoặc có alert, badge chữ vàng ở phía trên sẽ không bị cắt mất. */
+.panel-right {
+    align-items: flex-start;
+}
+
+/* Tạo khoảng thở phía trên form nhưng vẫn giữ được badge trong màn hình. */
+.form-wrap {
+    padding-top: 10px;
+    padding-bottom: 34px;
+}
+
+/* Dùng cho Login.html khi đã bọc alert bằng .login-alert-slot */
+.login-alert-slot {
+    min-height: 46px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.login-alert-slot .alert {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Dùng cho Register.html khi đã bọc successMessage/errorMessage bằng .register-alert-slot */
+.register-alert-slot {
+    min-height: 46px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.register-alert-slot .alert {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Khi phía dưới h-rule là alert slot thì giảm margin để không bị hở quá xa */
+.h-rule:has(+ .login-alert-slot),
+.h-rule:has(+ .register-alert-slot) {
+    margin-bottom: 14px;
+}
+
+.alert-warning {
+    border-left-color: var(--warning);
+    background: var(--warning-bg);
+    color: var(--warning-dark);
+}
+
+.alert-warning i {
+    color: var(--warning);
+}
+
+@media (max-width: 1024px) {
+    .panel-right {
+        align-items: flex-start;
+        padding: 42px 36px;
+    }
+
+    .form-wrap {
+        padding-top: 0;
+        padding-bottom: 32px;
+    }
+
+    .login-alert-slot,
+    .register-alert-slot {
+        min-height: 48px;
+        margin-bottom: 14px;
+    }
+}
+
+@media (max-width: 520px) {
+    .field-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .panel-right {
+        padding: 34px 22px;
+    }
+
+    .form-heading {
+        font-size: 38px;
+    }
+
+    .login-alert-slot,
+    .register-alert-slot {
+        min-height: 54px;
+    }
+}
