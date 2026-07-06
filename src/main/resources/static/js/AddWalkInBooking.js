@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const phoneCodeInput = document.getElementById("phoneCode");
     const phoneNumberOnlyInput = document.getElementById("phoneNumberOnly");
     const phoneNumberHiddenInput = document.getElementById("phoneNumber");
+    const passportExpiryGroup = document.getElementById("passportExpiryGroup");
+    const passportExpiryDateInput = document.getElementById("passportExpiryDate");
 
     const depositPaidCheckbox = document.getElementById("depositPaid");
     const depositFields = document.getElementById("depositFields");
@@ -51,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const promotionPreview = document.getElementById("promotionPreview");
     const discountRow = document.getElementById("discountRow");
     const discountAmountElement = document.getElementById("discountAmount");
+    let firstValidationMessage = "";
     document.querySelectorAll(".required-field").forEach(function (field) {
         field.addEventListener("input", function () {
             clearFieldError(field);
@@ -371,18 +374,98 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function normalizeVietnameseText(value) {
+        if (!value) {
+            return "";
+        }
 
+        return value
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d");
+    }
 
-    function updatePhoneCode() {
-        if (!countrySelect || !phoneCodeInput) {
+    function isVietnamCountry(countryName) {
+        const normalized = normalizeVietnameseText(countryName);
+
+        return normalized === "vietnam"
+            || normalized === "viet nam"
+            || normalized === "vn";
+    }
+
+    function getSelectedCountryOption() {
+        if (!countrySelect) {
+            return null;
+        }
+
+        const selectedValue = countrySelect.tomselect
+            ? countrySelect.tomselect.getValue()
+            : countrySelect.value;
+
+        if (!selectedValue) {
+            return null;
+        }
+
+        return Array.from(countrySelect.options).find(function (option) {
+            return option.value === selectedValue;
+        }) || null;
+    }
+
+    function getSelectedCountryName() {
+        const selectedOption = getSelectedCountryOption();
+
+        if (!selectedOption) {
+            return "";
+        }
+
+        return selectedOption.getAttribute("data-country-name")
+            || selectedOption.textContent
+            || "";
+    }
+
+    function shouldRequirePassportExpiry() {
+        const countryName = getSelectedCountryName();
+
+        if (!countryName) {
+            return false;
+        }
+
+        return !isVietnamCountry(countryName);
+    }
+
+    function togglePassportExpiry() {
+        if (!passportExpiryGroup || !passportExpiryDateInput) {
             return;
         }
 
-        const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+        const required = shouldRequirePassportExpiry();
+
+        passportExpiryGroup.style.display = required ? "block" : "none";
+        passportExpiryDateInput.required = required;
+
+        if (required) {
+            passportExpiryDateInput.classList.add("required-field");
+        } else {
+            passportExpiryDateInput.classList.remove("required-field");
+            passportExpiryDateInput.value = "";
+            clearFieldError(passportExpiryDateInput);
+        }
+    }
+
+    function updatePhoneCode() {
+        if (!countrySelect || !phoneCodeInput) {
+            togglePassportExpiry();
+            return;
+        }
+
+        const selectedOption = getSelectedCountryOption();
         const phoneCode = selectedOption ? selectedOption.getAttribute("data-phone-code") : "";
 
         phoneCodeInput.value = phoneCode || "";
         updateFullPhoneNumber();
+        togglePassportExpiry();
     }
 
     function updateFullPhoneNumber() {
@@ -426,7 +509,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (countrySelect) {
-        countrySelect.addEventListener("change", updatePhoneCode);
+        countrySelect.addEventListener("change", function () {
+            updatePhoneCode();
+            togglePassportExpiry();
+        });
     }
 
     if (phoneNumberOnlyInput) {
@@ -485,7 +571,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!isValid) {
                 event.preventDefault();
 
-                showSummary("Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.");
+                showSummary(firstValidationMessage || "Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.");
 
                 const firstError = walkinForm.querySelector(".form-group-line.has-error");
 
@@ -506,9 +592,18 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        if (!firstValidationMessage && message) {
+            firstValidationMessage = message;
+        }
+
+        const finalMessage =
+            firstValidationMessage ||
+            message ||
+            "Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.";
+
         const text = errorSummary.querySelector("span");
         if (text) {
-            text.textContent = message || "Vui lòng kiểm tra lại các thông tin còn thiếu hoặc chưa đúng.";
+            text.textContent = finalMessage;
         }
 
         errorSummary.classList.add("show");
@@ -527,11 +622,17 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        const finalMessage = message || field.dataset.message || "Vui lòng nhập thông tin này.";
+
+        if (!firstValidationMessage) {
+            firstValidationMessage = finalMessage;
+        }
+
         wrapper.classList.add("has-error");
 
         const error = wrapper.querySelector(".field-error");
         if (error) {
-            error.textContent = message || "Vui lòng nhập thông tin này.";
+            error.textContent = finalMessage;
         }
     }
 
@@ -551,6 +652,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function clearAllErrors() {
+        firstValidationMessage = "";
         document.querySelectorAll(".form-group-line.has-error").forEach(function (wrapper) {
             wrapper.classList.remove("has-error");
 
@@ -649,6 +751,86 @@ document.addEventListener("DOMContentLoaded", function () {
         return isValid;
     }
 
+    function validatePassportExpiryDate() {
+        if (!passportExpiryDateInput) {
+            return true;
+        }
+
+        if (!shouldRequirePassportExpiry()) {
+            clearFieldError(passportExpiryDateInput);
+            return true;
+        }
+
+        clearFieldError(passportExpiryDateInput);
+
+        if (isBlank(passportExpiryDateInput.value)) {
+            showFieldError(passportExpiryDateInput, "Vui lòng nhập ngày hết hạn hộ chiếu.");
+            return false;
+        }
+
+        const expiryDate = new Date(passportExpiryDateInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (expiryDate < today) {
+            showFieldError(passportExpiryDateInput, "Hộ chiếu đã hết hạn.");
+            return false;
+        }
+
+        if (checkOutInput && checkOutInput.value) {
+            const checkOutDate = new Date(checkOutInput.value);
+            checkOutDate.setHours(0, 0, 0, 0);
+
+            if (expiryDate < checkOutDate) {
+                showFieldError(passportExpiryDateInput, "Hộ chiếu phải còn hạn đến hết ngày trả phòng.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function validatePassportExpiryDate() {
+        if (!passportExpiryDateInput) {
+            return true;
+        }
+
+        if (!shouldRequirePassportExpiry()) {
+            clearFieldError(passportExpiryDateInput);
+            return true;
+        }
+
+        clearFieldError(passportExpiryDateInput);
+
+        if (isBlank(passportExpiryDateInput.value)) {
+            showFieldError(passportExpiryDateInput, "Vui lòng nhập ngày hết hạn hộ chiếu.");
+            return false;
+        }
+
+        const expiryDate = new Date(passportExpiryDateInput.value);
+        expiryDate.setHours(0, 0, 0, 0);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (expiryDate < today) {
+            showFieldError(passportExpiryDateInput, "Hộ chiếu đã hết hạn.");
+            return false;
+        }
+
+        if (checkOutInput && checkOutInput.value) {
+            const checkOutDate = new Date(checkOutInput.value);
+            checkOutDate.setHours(0, 0, 0, 0);
+
+            if (expiryDate < checkOutDate) {
+                showFieldError(passportExpiryDateInput, "Hộ chiếu phải còn hạn đến hết ngày trả phòng.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function validateGuestInfo() {
         let isValid = true;
 
@@ -668,6 +850,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Validate riêng quốc gia
         if (countrySelect && !validateField(countrySelect)) {
+            isValid = false;
+        }
+
+        // Validate riêng ngày hết hạn hộ chiếu
+        if (!validatePassportExpiryDate()) {
             isValid = false;
         }
 
@@ -946,11 +1133,13 @@ document.addEventListener("DOMContentLoaded", function () {
             onChange: function (value) {
                 countrySelect.value = value;
                 updatePhoneCode();
+                togglePassportExpiry();
                 clearFieldError(countrySelect);
             }
         });
     }
     updatePhoneCode();
+    togglePassportExpiry();
     updateSummary();
     renderChildAgeInputs();
 

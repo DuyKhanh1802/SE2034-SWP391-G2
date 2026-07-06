@@ -419,6 +419,17 @@ public class BookingService {
             promotion = promotionRepository.findById(promotionResult.getPromotionId())
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy mã ưu đãi đã chọn."));
 
+            if (guest != null && guest.getId() != null) {
+                boolean alreadyUsed = bookingRepository.existsUsedPromotionByGuest(
+                        guest.getId(),
+                        promotion.getId()
+                );
+
+                if (alreadyUsed) {
+                    throw new IllegalArgumentException("Khách hàng này đã sử dụng mã ưu đãi này trước đó.");
+                }
+            }
+
             int usageCount = promotion.getUsageCount() == null ? 0 : promotion.getUsageCount();
             promotion.setUsageCount(usageCount + 1);
             promotionRepository.save(promotion);
@@ -717,6 +728,12 @@ public class BookingService {
 
         validateBookingDates(request.getCheckInDate(), request.getCheckOutDate());
 
+        validatePassportExpiryDate(
+                request.getCountryId(),
+                request.getPassportExpiryDate(),
+                request.getCheckOutDate()
+        );
+
         if (request.getAdults() == null || request.getAdults() < 1) {
             throw new IllegalArgumentException("Số người lớn phải ít nhất là 1.");
         }
@@ -825,6 +842,8 @@ public class BookingService {
         Country country = countryRepository.findById(request.getCountryId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quốc gia đã chọn."));
 
+        IdentityType identityType = resolveIdentityType(country);
+
         User guest = User.builder()
                 .userType(UserType.GUEST)
                 .approvalStatus(ApprovalStatus.APPROVED)
@@ -835,8 +854,11 @@ public class BookingService {
                 .gender(request.getGender())
                 .birthYear(request.getBirthYear())
                 .country(country)
-                .identityType(resolveIdentityType(country))
+                .identityType(identityType)
                 .identityNumber(identityNumber)
+                .passportExpiryDate(identityType == IdentityType.PASSPORT
+                        ? request.getPassportExpiryDate()
+                        : null)
                 .isActive(true)
                 .isDeleted(false)
                 .totalStays(0)
@@ -1364,6 +1386,7 @@ public class BookingService {
                         ? guest.getIdentityType().getLabel()
                         : "N/A")
                 .identityNumber(guest != null ? guest.getIdentityNumber() : "N/A")
+                .passportExpiryDate(guest != null ? guest.getPassportExpiryDate() : null)
 
                 .checkInDate(booking.getCheckInDate())
                 .checkOutDate(booking.getCheckOutDate())
@@ -1560,6 +1583,7 @@ public class BookingService {
                         ? guest.getCountry().getId()
                         : null)
                 .identityNumber(guest != null ? guest.getIdentityNumber() : null)
+                .passportExpiryDate(guest != null ? guest.getPassportExpiryDate() : null)
                 .notes(booking.getSpecialRequests())
                 .build();
     }
@@ -1570,14 +1594,15 @@ public class BookingService {
             throw new IllegalArgumentException("Thiếu mã đặt phòng.");
         }
 
-        validateUpdateBookingRequest(request);
-
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+
+        validateUpdateBookingRequest(request, booking.getCheckOutDate());
 
         if (Boolean.TRUE.equals(booking.getIsDeleted())) {
             throw new IllegalArgumentException("Đặt phòng này đã bị xóa.");
         }
+
         if (booking.getStatus() == BookingStatus.CANCELLED
                 || booking.getStatus() == BookingStatus.NO_SHOW
                 || booking.getStatus() == BookingStatus.CHECKED_OUT) {
@@ -1613,14 +1638,19 @@ public class BookingService {
         guest.setGender(request.getGender());
         guest.setBirthYear(request.getBirthYear());
         guest.setCountry(country);
+        IdentityType identityType = resolveIdentityType(country);
+
         guest.setIdentityNumber(identityNumber);
-        guest.setIdentityType(resolveIdentityType(country));
+        guest.setIdentityType(identityType);
+        guest.setPassportExpiryDate(identityType == IdentityType.PASSPORT
+                ? request.getPassportExpiryDate()
+                : null);
 
         userRepository.save(guest);
         bookingRepository.save(booking);
     }
 
-    private void validateUpdateBookingRequest(BookingUpdateRequest request) {
+    private void validateUpdateBookingRequest(BookingUpdateRequest request, LocalDate checkOutDate) {
         if (request == null) {
             throw new IllegalArgumentException("Thông tin chỉnh sửa không được để trống.");
         }
@@ -1672,6 +1702,12 @@ public class BookingService {
         if (request.getCountryId() == null) {
             throw new IllegalArgumentException("Vui lòng chọn quốc gia của khách.");
         }
+
+        validatePassportExpiryDate(
+                request.getCountryId(),
+                request.getPassportExpiryDate(),
+                checkOutDate
+        );
 
         if (request.getGender() == null) {
             throw new IllegalArgumentException("Vui lòng chọn giới tính của khách.");
@@ -1931,5 +1967,34 @@ public class BookingService {
                 BookingStatus.CONFIRMED,
                 LocalDate.now()
         );
+    }
+
+    private void validatePassportExpiryDate(Long countryId,
+                                            LocalDate passportExpiryDate,
+                                            LocalDate checkOutDate) {
+        if (countryId == null) {
+            return;
+        }
+
+        Country country = countryRepository.findById(countryId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quốc gia đã chọn."));
+
+        IdentityType identityType = resolveIdentityType(country);
+
+        if (identityType != IdentityType.PASSPORT) {
+            return;
+        }
+
+        if (passportExpiryDate == null) {
+            throw new IllegalArgumentException("Vui lòng nhập ngày hết hạn hộ chiếu.");
+        }
+
+        if (passportExpiryDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Hộ chiếu đã hết hạn.");
+        }
+
+        if (checkOutDate != null && passportExpiryDate.isBefore(checkOutDate)) {
+            throw new IllegalArgumentException("Hộ chiếu phải còn hạn đến hết ngày trả phòng.");
+        }
     }
 }

@@ -1292,3 +1292,20 @@ body {
 .discount-row span:last-child {
     font-weight: 800;
 }
+.form-group-line.has-error input,
+.form-group-line.has-error select,
+.form-group-line.has-error textarea {
+    border-color: #b91c1c !important;
+}
+
+.field-error {
+    display: none;
+    margin-top: 6px;
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.form-group-line.has-error .field-error {
+    display: block;
+}

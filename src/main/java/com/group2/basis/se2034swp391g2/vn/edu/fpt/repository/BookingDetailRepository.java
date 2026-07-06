@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,6 +86,21 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
 
 
     Optional<BookingDetail> findByRoomCode(String roomCode);
+
+    @Query("""
+    select count(bd) > 0
+    from BookingDetail bd
+    join bd.booking b
+    where bd.room.id = :roomId
+      and b.isDeleted = false
+      and b.status in (
+          com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED,
+          com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CHECKED_IN
+      )
+      and bd.checkOutDate > :today
+""")
+    boolean existsActiveOrFutureBookingByRoomId(@Param("roomId") Long roomId,
+                                                @Param("today") LocalDate today);
 }
 
 

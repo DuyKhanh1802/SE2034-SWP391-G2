@@ -221,6 +221,13 @@
                             CCCD - 001203012345
                         </strong>
                     </div>
+
+                    <div th:if="${detail.passportExpiryDate != null}">
+                        <span>Ngày hết hạn hộ chiếu</span>
+                        <strong th:text="${#temporals.format(detail.passportExpiryDate, 'dd/MM/yyyy')}">
+                            31/12/2030
+                        </strong>
+                    </div>
                 </div>
             </div>
 

@@ -351,6 +351,19 @@
                                 <small class="field-error"></small>
                             </div>
 
+                            <div class="form-group-line passport-expiry-group" id="passportExpiryGroup">
+                                <label>Ngày hết hạn hộ chiếu</label>
+
+                                <input type="date"
+                                       th:field="*{passportExpiryDate}"
+                                       id="passportExpiryDate"
+                                       data-message="Vui lòng nhập ngày hết hạn hộ chiếu.">
+
+                                <small>Bắt buộc với khách sử dụng hộ chiếu.</small>
+
+                                <div class="field-error"></div>
+                            </div>
+
                             <div class="form-group-line form-group-wide">
                                 <label>GHI CHÚ THÊM</label>
                                 <textarea th:field="*{notes}"
