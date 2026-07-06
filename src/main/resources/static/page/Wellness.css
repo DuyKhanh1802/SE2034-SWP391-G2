@@ -517,3 +517,50 @@
 .wellness-page .wellness-dropdown-menu a.active {
     color: var(--vh-gold);
 }
+
+/* =========================
+   CHỈ THU NHỎ PHẦN WELLNESS
+   Giữ nguyên intro, video, filter và các phần khác
+========================= */
+
+.wellness-page .wellness-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 38px 28px;
+    max-width: 1320px;
+    margin: 0 auto;
+}
+
+.wellness-page .wellness-card-image {
+    aspect-ratio: 4 / 3.25;
+}
+
+.wellness-page .wellness-card-content {
+    padding-top: 18px;
+}
+
+.wellness-page .wellness-card-content h3 {
+    font-size: 15px;
+    letter-spacing: 1.4px;
+    line-height: 1.35;
+}
+
+.wellness-page .wellness-card-description {
+    margin-top: 10px;
+    min-height: 46px;
+    font-size: 13.5px;
+    line-height: 1.65;
+}
+
+.wellness-page .wellness-card-bottom {
+    margin-top: 16px;
+}
+
+.wellness-page .wellness-price-label {
+    font-size: 10px;
+    letter-spacing: 1.3px;
+}
+
+.wellness-page .wellness-price {
+    font-size: 14px;
+}
+

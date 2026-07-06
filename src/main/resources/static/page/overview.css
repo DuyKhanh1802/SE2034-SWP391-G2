@@ -1,0 +1,431 @@
+:root {
+    --overview-bg: #fff;
+    --overview-text: #090909;
+    --overview-muted: #6f6a61;
+    --overview-gold: #8a6a2e;
+    --overview-border: #d8cfbb;
+
+    --overview-heading-font: "EB Garamond", "Noto Serif Display", "Times New Roman", serif;
+    --overview-body-font: "Manrope", "Be Vietnam Pro", "Segoe UI", Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #fff;
+    color: var(--overview-text);
+    font-family: var(--overview-body-font);
+}
+
+.overview-page {
+    width: 100%;
+    background: #fff;
+    color: var(--overview-text);
+    overflow: hidden;
+}
+
+/* HERO */
+
+/* HERO */
+
+.overview-hero {
+    position: relative;
+    width: 100%;
+    height: 900px;
+    min-height: 900px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.overview-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+    transform: none;
+}
+
+.overview-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.38);
+    z-index: 1;
+}
+
+.overview-hero-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 40px;
+    text-align: center;
+    color: #fff;
+}
+
+.overview-hero-content h1 {
+    margin: 12px 0 18px;
+    max-width: 1500px;
+    font-family: var(--overview-heading-font);
+    font-size: clamp(64px, 7.8vw, 150px);
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: 1px;
+    line-height: 0.95;
+}
+
+.overview-hero-content p {
+    margin: 0;
+}
+
+.overview-eyebrow {
+    font-family: var(--overview-body-font);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+}
+
+.overview-hero-content p:last-child {
+    font-family: var(--overview-body-font);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+}
+
+/* INTRO */
+
+.overview-intro {
+    padding: 100px 24px 110px;
+    text-align: center;
+    background: #fff;
+}
+
+.overview-small-title {
+    margin: 0;
+    font-family: var(--overview-heading-font);
+    font-size: clamp(26px, 3vw, 38px);
+    font-style: italic;
+    font-weight: 500;
+    color: var(--overview-text);
+}
+
+.overview-small-title.left {
+    text-align: left;
+}
+
+.overview-line {
+    display: block;
+    width: 54px;
+    height: 1px;
+    margin: 28px auto 34px;
+    background: var(--overview-border);
+}
+
+.overview-intro-text {
+    max-width: 680px;
+    margin: 0 auto;
+    font-family: var(--overview-heading-font);
+    font-size: 18px;
+    line-height: 1.75;
+    color: #242424;
+}
+
+/* COMMON SECTION */
+
+.overview-section {
+    background: #fff;
+    padding: 110px 5vw;
+}
+
+.overview-section-heading {
+    margin-bottom: 70px;
+    text-align: center;
+}
+
+.overview-section-heading h2 {
+    margin: 0 0 16px;
+    font-family: var(--overview-heading-font);
+    font-size: clamp(30px, 4vw, 48px);
+    font-style: italic;
+    font-weight: 500;
+}
+
+.overview-section-heading p {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--overview-muted);
+}
+
+/* SUITES */
+
+.overview-suites {
+    padding-top: 90px;
+    padding-bottom: 120px;
+}
+
+.overview-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 64px;
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.overview-feature-card {
+    text-align: center;
+}
+
+.overview-feature-card h3 {
+    margin: 0 0 18px;
+    font-family: var(--overview-heading-font);
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.overview-feature-card p {
+    margin: 0 auto;
+    max-width: 330px;
+    font-family: var(--overview-heading-font);
+    font-size: 16px;
+    line-height: 1.65;
+    color: #2f2f2f;
+}
+
+/* AMENITIES */
+
+.overview-amenities {
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    align-items: center;
+    gap: 90px;
+    min-height: 720px;
+}
+
+.overview-amenities-content {
+    max-width: 560px;
+}
+
+.overview-amenity-list {
+    margin-top: 58px;
+}
+
+.overview-amenity-item + .overview-amenity-item {
+    margin-top: 42px;
+}
+
+.overview-amenity-item h3 {
+    margin: 0 0 12px;
+    font-family: var(--overview-heading-font);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--overview-gold);
+}
+
+.overview-amenity-item p {
+    margin: 0;
+    font-family: var(--overview-heading-font);
+    font-size: 16px;
+    line-height: 1.65;
+    color: #2f2f2f;
+}
+
+.overview-amenities-image {
+    width: 100%;
+    height: 560px;
+    overflow: hidden;
+    background: #f5f2ec;
+}
+
+.overview-amenities-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* LIFE GALLERY */
+
+.overview-life {
+    padding-top: 70px;
+    padding-bottom: 130px;
+}
+
+.overview-gallery {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 18px;
+    margin-top: 50px;
+}
+
+.overview-gallery img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.overview-gallery-large,
+.overview-gallery-side div,
+.overview-gallery-side img {
+    overflow: hidden;
+}
+
+.overview-gallery-large {
+    height: 540px;
+}
+
+.overview-gallery-side {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 18px;
+    height: 540px;
+}
+
+.overview-gallery-large:hover img,
+.overview-gallery-side img:hover {
+    transform: scale(1.04);
+}
+
+/* QUOTE */
+
+.overview-quote {
+    padding: 110px 24px 120px;
+    background: #fff;
+    text-align: center;
+}
+
+.overview-quote-mark {
+    margin-bottom: 22px;
+    font-family: var(--overview-heading-font);
+    font-size: 58px;
+    line-height: 1;
+    color: var(--overview-gold);
+}
+
+.overview-quote p {
+    max-width: 900px;
+    margin: 0 auto;
+    font-family: var(--overview-heading-font);
+    font-size: clamp(28px, 4vw, 46px);
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1.28;
+    color: var(--overview-text);
+}
+
+.overview-quote span {
+    display: block;
+    margin-top: 36px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--overview-gold);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 992px) {
+    .overview-hero {
+        height: 520px;
+    }
+
+    .overview-feature-grid {
+        grid-template-columns: 1fr;
+        gap: 48px;
+    }
+
+    .overview-amenities {
+        grid-template-columns: 1fr;
+        gap: 60px;
+    }
+
+    .overview-amenities-content {
+        max-width: 100%;
+    }
+
+    .overview-amenities-image {
+        height: 460px;
+    }
+
+    .overview-gallery {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-gallery-large,
+    .overview-gallery-side {
+        height: auto;
+    }
+
+    .overview-gallery-large {
+        aspect-ratio: 16 / 9;
+    }
+
+    .overview-gallery-side {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
+    }
+
+    .overview-gallery-side img {
+        aspect-ratio: 4 / 3;
+    }
+}
+
+@media (max-width: 576px) {
+    .overview-hero {
+        height: 460px;
+    }
+
+    .overview-hero-content h1 {
+        font-size: 40px;
+    }
+
+    .overview-hero-content p:last-child {
+        font-size: 11px;
+        letter-spacing: 2px;
+    }
+
+    .overview-intro,
+    .overview-section,
+    .overview-quote {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .overview-intro {
+        padding-top: 75px;
+        padding-bottom: 80px;
+    }
+
+    .overview-section {
+        padding-top: 80px;
+        padding-bottom: 90px;
+    }
+
+    .overview-intro-text,
+    .overview-feature-card p,
+    .overview-amenity-item p {
+        font-size: 15px;
+    }
+
+    .overview-gallery-side {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-amenities-image {
+        height: 360px;
+    }
+}

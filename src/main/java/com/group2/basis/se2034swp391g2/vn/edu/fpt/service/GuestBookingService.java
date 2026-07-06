@@ -185,6 +185,8 @@ public class GuestBookingService {
 
         Booking booking = detail.getBooking();
 
+        validateCanModifyService(booking);
+
         if (booking == null || Boolean.TRUE.equals(booking.getIsDeleted())) {
             throw new IllegalArgumentException("Booking không hợp lệ");
         }
@@ -259,11 +261,41 @@ public class GuestBookingService {
     }
 
     private FolioItem getValidGuestServiceItem(Long bookingDetailId, Long folioItemId) {
-        return folioItemRepository
-                .findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(folioItemId, bookingDetailId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ đã chọn"));
+        if (bookingDetailId == null || bookingDetailId <= 0) {
+            throw new IllegalArgumentException("Phiên phòng không hợp lệ.");
+        }
+
+        if (folioItemId == null || folioItemId <= 0) {
+            throw new IllegalArgumentException("Dịch vụ đã chọn không hợp lệ.");
+        }
+
+        FolioItem item = folioItemRepository
+                .findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(
+                        folioItemId,
+                        bookingDetailId
+                )
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ đã chọn."));
+
+        Booking booking = item.getBooking();
+
+        if (booking == null && item.getBookingDetail() != null) {
+            booking = item.getBookingDetail().getBooking();
+        }
+
+        validateCanModifyService(booking);
+
+        return item;
     }
 
+    private void validateCanModifyService(Booking booking) {
+        if (booking == null || Boolean.TRUE.equals(booking.getIsDeleted())) {
+            throw new IllegalArgumentException("Booking không hợp lệ.");
+        }
+
+        if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+            throw new IllegalArgumentException("Chỉ có thể thêm hoặc chỉnh sửa dịch vụ trong thời gian đang lưu trú.");
+        }
+    }
     private void recalculateFolioItem(FolioItem item) {
         BigDecimal unitPrice = zeroIfNull(item.getUnitPrice());
         int quantity = item.getQuantity() == null ? 1 : item.getQuantity();
@@ -579,4 +611,7 @@ public class GuestBookingService {
 
         return payment.getPaymentType().getLabel() + methodLabel;
     }
+
+
+
 }

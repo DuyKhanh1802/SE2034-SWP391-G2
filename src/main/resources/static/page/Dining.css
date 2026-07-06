@@ -674,3 +674,51 @@
 .dining-page .dining-dropdown-menu a.active {
     color: var(--vh-gold);
 }
+
+
+/* =========================
+   CHỈ THU NHỎ PHẦN ĐỒ ĂN
+========================= */
+
+.dining-page .dining-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 38px 28px;
+    max-width: 1320px;
+    margin: 0 auto;
+}
+
+.dining-page .dining-card-image {
+    aspect-ratio: 4 / 3.25;
+}
+
+.dining-page .dining-card-content {
+    padding-top: 18px;
+}
+
+.dining-page .dining-card-content h3 {
+    font-size: 15px;
+    letter-spacing: 1.4px;
+    line-height: 1.35;
+}
+
+.dining-page .dining-card-description {
+    margin-top: 10px;
+    min-height: 46px;
+    font-size: 13.5px;
+    line-height: 1.65;
+}
+
+.dining-page .dining-card-bottom {
+    margin-top: 16px;
+}
+
+.dining-page .dining-price-label {
+    font-size: 10px;
+    letter-spacing: 1.3px;
+}
+
+.dining-page .dining-price {
+    font-size: 14px;
+}
+
+

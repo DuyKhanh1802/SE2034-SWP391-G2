@@ -888,3 +888,28 @@ a {
     font-weight: 400;
     transform: translateY(-1px);
 }
+
+.booking-error-box {
+    max-width: 1180px;
+    margin: 0 auto 22px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: #fff4f4;
+    border: 1px solid #f0b8b8;
+    color: #9f1d1d;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.booking-error-box i {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.continue-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}

@@ -22,6 +22,16 @@
         <p>Thông tin đặt phòng và các dịch vụ trong thời gian lưu trú của bạn.</p>
     </header>
 
+    <div th:if="${errorMessage}" class="guest-alert guest-alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+    </div>
+
+    <div th:if="${successMessage}" class="guest-alert guest-alert-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <span th:text="${successMessage}">Thao tác thành công.</span>
+    </div>
+
     <!-- BOOKING SUMMARY -->
     <section class="booking-summary-card">
         <div class="summary-column">
