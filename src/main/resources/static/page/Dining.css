@@ -3,8 +3,8 @@
 ========================= */
 
 .dining-page {
-    --vh-bg: #f7f5ef;
-    --vh-bg-light: #fbfaf7;
+    --vh-bg: #ffffff;
+    --vh-bg-light: #ffffff;
     --vh-text: #111111;
     --vh-muted: #6f6a64;
     --vh-border: #d8d1c4;
@@ -36,7 +36,7 @@
 
     text-align: center;
     border-bottom: 1px solid var(--vh-border);
-    background: linear-gradient(180deg, #ffffff 0%, #fbfaf7 100%);
+    background: #ffffff;
 }
 
 .dining-page .dining-eyebrow {
@@ -191,7 +191,8 @@
     width: 100%;
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    background: #e8e1d7;
+    background: #ffffff;
+    border: 1px solid #e6e6e6;
 }
 
 .dining-page .dining-card-image img {
@@ -673,3 +674,51 @@
 .dining-page .dining-dropdown-menu a.active {
     color: var(--vh-gold);
 }
+
+
+/* =========================
+   CHỈ THU NHỎ PHẦN ĐỒ ĂN
+========================= */
+
+.dining-page .dining-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 38px 28px;
+    max-width: 1320px;
+    margin: 0 auto;
+}
+
+.dining-page .dining-card-image {
+    aspect-ratio: 4 / 3.25;
+}
+
+.dining-page .dining-card-content {
+    padding-top: 18px;
+}
+
+.dining-page .dining-card-content h3 {
+    font-size: 15px;
+    letter-spacing: 1.4px;
+    line-height: 1.35;
+}
+
+.dining-page .dining-card-description {
+    margin-top: 10px;
+    min-height: 46px;
+    font-size: 13.5px;
+    line-height: 1.65;
+}
+
+.dining-page .dining-card-bottom {
+    margin-top: 16px;
+}
+
+.dining-page .dining-price-label {
+    font-size: 10px;
+    letter-spacing: 1.3px;
+}
+
+.dining-page .dining-price {
+    font-size: 14px;
+}
+
+

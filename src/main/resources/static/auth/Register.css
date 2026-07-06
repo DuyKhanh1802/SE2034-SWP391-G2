@@ -5,6 +5,3 @@
     padding: 30px 72px; /* Tăng khoảng trống thở khi cuộn form dài */
 }
 
-@media (max-width: 1024px) {
-    .panel-right { padding: 36px 24px; }
-}

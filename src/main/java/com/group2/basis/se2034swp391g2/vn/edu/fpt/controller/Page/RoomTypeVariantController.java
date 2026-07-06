@@ -86,12 +86,24 @@ public class RoomTypeVariantController {
 
         List<Long> selectedVariantIds = Collections.emptyList();
 
-        if (variantIds != null && !variantIds.isBlank()) {
-            selectedVariantIds = Arrays.stream(variantIds.split(","))
-                    .map(String::trim)
-                    .filter(s -> !s.isBlank())
-                    .map(Long::valueOf)
-                    .toList();
+        try {
+            if (variantIds != null && !variantIds.isBlank()) {
+                selectedVariantIds = Arrays.stream(variantIds.split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isBlank())
+                        .map(Long::valueOf)
+                        .filter(id -> id > 0)
+                        .toList();
+
+                if (selectedVariantIds.isEmpty()) {
+                    variantIds = "";
+                    model.addAttribute("errorMessage", "Danh sách phòng đã chọn không hợp lệ.");
+                }
+            }
+        } catch (NumberFormatException ex) {
+            selectedVariantIds = Collections.emptyList();
+            variantIds = "";
+            model.addAttribute("errorMessage", "Danh sách phòng đã chọn không hợp lệ.");
         }
 
         model.addAttribute("roomTypes", roomTypes);

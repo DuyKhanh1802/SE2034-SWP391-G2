@@ -8,6 +8,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <link rel="stylesheet" th:href="@{/guest/BookingConfirm.css}">
 </head>
@@ -18,103 +20,97 @@
     CAM KẾT GIÁ TỐT NHẤT
 </div>
 
-<main class="success-page">
+<main class="vnpay-success-page">
 
-    <section class="success-card">
+    <section class="vnpay-success-card">
 
-        <div class="success-icon">
-            ✓
+        <div class="success-glow"></div>
+
+        <div class="success-check-circle">
+            <span>✓</span>
         </div>
 
         <p class="success-label">
-            BOOKING REQUEST RECEIVED
+            PAYMENT SUCCESSFUL
         </p>
 
         <h1>
-            Yêu cầu đặt phòng đã được tiếp nhận
+            Thanh toán thành công
         </h1>
 
         <p class="success-desc">
             Cảm ơn quý khách đã lựa chọn V'Hotel Hanoi.
-            Booking của quý khách đã được lưu và đang chờ xác nhận thanh toán.
+            Giao dịch qua VNPAY đã được ghi nhận thành công và yêu cầu đặt phòng của quý khách đã được tiếp nhận.
         </p>
 
-        <div class="success-reference">
+        <div class="booking-reference-box">
             <span>Mã đặt phòng</span>
-
             <strong th:text="${successView.bookingReference}">
                 BK-2606241234
             </strong>
         </div>
 
-        <div class="success-payment-layout">
+        <div class="success-info-grid">
 
-            <div class="success-qr-box">
-                <img th:if="${successView.qrImageUrl != null and !#strings.isEmpty(successView.qrImageUrl)}"
-                     th:src="${successView.qrImageUrl}"
-                     alt="QR chuyển khoản">
-
-                <div class="qr-fallback"
-                     th:if="${successView.qrImageUrl == null or #strings.isEmpty(successView.qrImageUrl)}">
-                    QR not available
+            <div class="success-info-item">
+                <div class="info-icon">
+                    <i class="fa-solid fa-hotel"></i>
                 </div>
+                <span>Khách sạn</span>
+                <strong>V'Hotel Hanoi</strong>
             </div>
 
-            <div class="success-bank-info">
-
-                <div class="success-bank-row">
-                    <span>Ngân hàng</span>
-                    <strong th:text="${successView.bankName}">
-                        Vietcombank
-                    </strong>
+            <div class="success-info-item">
+                <div class="info-icon">
+                    <i class="fa-solid fa-credit-card"></i>
                 </div>
+                <span>Phương thức</span>
+                <strong>VNPAY</strong>
+            </div>
 
-                <div class="success-bank-row">
-                    <span>Số tài khoản</span>
-                    <strong th:text="${successView.accountNumber}">
-                        0123456789
-                    </strong>
+            <div class="success-info-item">
+                <div class="info-icon">
+                    <i class="fa-solid fa-money-bill-wave"></i>
                 </div>
-
-                <div class="success-bank-row">
-                    <span>Chủ tài khoản</span>
-                    <strong th:text="${successView.accountName}">
-                        VHOTEL HANOI
-                    </strong>
-                </div>
-
-                <div class="success-bank-row highlight">
-                    <span>Số tiền</span>
-                    <strong>
-                        <span th:text="${#numbers.formatDecimal(successView.amount, 0, 'COMMA', 0, 'POINT')}">
-                            0
-                        </span>
-                        VND
-                    </strong>
-                </div>
-
-                <div class="transfer-content-box">
-                    <span>Nội dung chuyển khoản</span>
-
-                    <strong id="transferCode"
-                            th:text="${successView.transferContent}">
-                        BK-2606241234
-                    </strong>
-
-                    <button type="button"
-                            class="copy-code-btn"
-                            onclick="copyTransferCode()">
-                        Copy mã
-                    </button>
-                </div>
-
+                <span>Số tiền đã thanh toán</span>
+                <strong>
+            <span th:text="${#numbers.formatDecimal(successView.amount, 0, 'COMMA', 0, 'POINT')}">
+                0
+            </span>
+                    VND
+                </strong>
             </div>
 
         </div>
+        <div class="success-status-box">
+            <div class="status-line active">
+                <span class="status-dot"></span>
+                <div>
+                    <strong>Thanh toán đã hoàn tất</strong>
+                    <p>Hệ thống đã ghi nhận giao dịch thanh toán qua VNPAY.</p>
+                </div>
+            </div>
+
+            <div class="status-line active">
+                <span class="status-dot"></span>
+                <div>
+                    <strong>Booking đã được lưu</strong>
+                    <p>Thông tin đặt phòng của quý khách đã được lưu vào hệ thống.</p>
+                </div>
+            </div>
+
+            <div class="status-line">
+                <span class="status-dot"></span>
+                <div>
+                    <strong>Vui lòng kiểm tra email</strong>
+                    <p>Khách sạn sẽ gửi thông tin đặt phòng và hướng dẫn tiếp theo qua email của quý khách.</p>
+                </div>
+            </div>
+        </div>
 
         <p class="success-note">
-            Quý khách vui lòng quét QR hoặc chuyển khoản thủ công với đúng nội dung trên.
-            Sau khi khách sạn xác nhận thanh toán, booking sẽ được chuyển sang trạng thái đã xác nhận.
+            Quý khách vui lòng lưu lại mã đặt phòng để sử dụng khi cần tra cứu,
+            liên hệ khách sạn hoặc làm thủ tục nhận phòng.
         </p>
 
         <div class="success-actions">
@@ -130,22 +126,6 @@
     </section>
 
 </main>
-
-<script>
-    function copyTransferCode() {
-        const codeElement = document.getElementById("transferCode");
-
-        if (!codeElement) {
-            return;
-        }
-
-        const code = codeElement.innerText.trim();
-
-        navigator.clipboard.writeText(code).then(function () {
-            alert("Đã copy nội dung chuyển khoản: " + code);
-        });
-    }
-</script>
 
 </body>
 </html>

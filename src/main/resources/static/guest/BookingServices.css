@@ -1,13 +1,13 @@
 :root {
-    --page-bg: #f6f2eb;
-    --card-bg: #fffaf4;
-    --panel-bg: #f8f3ec;
+    --page-bg: #ffffff;
+    --card-bg: #ffffff;
+    --panel-bg: #ffffff;
     --white: #ffffff;
     --text-main: #171717;
     --text-soft: #655d55;
     --text-muted: #7a7066;
-    --border: #ded6ca;
-    --border-light: #eee4d7;
+    --border: #e2e2e2;
+    --border-light: #eeeeee;
     --accent: #d88927;
     --accent-dark: #c77b23;
     --heading-font: "Noto Serif Display", "Times New Roman", serif;
@@ -226,7 +226,7 @@ a {
 
 .room-tab.active {
     border-color: #111;
-    background: #f5efe6;
+    background: #f5f5f5;
 }
 
 .current-room-title {
@@ -356,7 +356,7 @@ a {
 }
 
 .service-dropdown-menu a:hover {
-    background: #f2eadf;
+    background: #f5f5f5;
 }
 
 .service-grid {
@@ -384,7 +384,7 @@ a {
 
 .service-image {
     height: 138px;
-    background: #eee5d9;
+    background: #f5f5f5;
 }
 
 .service-image img {
@@ -889,3 +889,27 @@ a {
     transform: translateY(-1px);
 }
 
+.booking-error-box {
+    max-width: 1180px;
+    margin: 0 auto 22px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: #fff4f4;
+    border: 1px solid #f0b8b8;
+    color: #9f1d1d;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.booking-error-box i {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.continue-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
