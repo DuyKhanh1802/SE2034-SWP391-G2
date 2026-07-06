@@ -60,6 +60,7 @@ public class ViewBookingDetailResponse {
     private String promotionName;
     private BigDecimal discountAmount;
     private BigDecimal totalBeforeDiscount;
+    private LocalDate passportExpiryDate;
 
     @Builder.Default
     private List<RoomLine> rooms = new ArrayList<>();

@@ -60,4 +60,5 @@ public class BookingCreateRequest {
     private List<Long> serviceIds;
     private List<Integer> serviceQuantities;
     private List<Integer> childAges;
+    private LocalDate passportExpiryDate;
 }

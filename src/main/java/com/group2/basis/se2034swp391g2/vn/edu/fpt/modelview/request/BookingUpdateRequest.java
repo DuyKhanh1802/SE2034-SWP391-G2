@@ -22,4 +22,5 @@ public class BookingUpdateRequest {
     private String identityNumber;
     private String notes;
     private Integer birthYear;
+    private LocalDate passportExpiryDate;
 }

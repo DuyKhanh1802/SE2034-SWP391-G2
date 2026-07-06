@@ -178,6 +178,17 @@
                             <label>Số giấy tờ</label>
                             <input type="text" th:field="*{identityNumber}" required>
                         </div>
+
+                        <div class="form-group passport-expiry-group" id="passportExpiryGroup">
+                            <label>Ngày hết hạn hộ chiếu</label>
+                            <input type="date"
+                                   th:field="*{passportExpiryDate}"
+                                   id="passportExpiryDate"
+                                   class="form-control">
+                            <small class="form-text">
+                                Bắt buộc với khách sử dụng hộ chiếu.
+                            </small>
+                        </div>
                     </div>
                 </div>
 

@@ -273,6 +273,23 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
             LocalDate checkInDate,
             LocalDate checkOutDate
     );
+    @Query("""
+    select count(b) > 0
+    from Booking b
+    where b.guest.id = :guestId
+      and b.promotion.id = :promotionId
+      and b.isDeleted = false
+      and b.status in (
+          com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.PENDING,
+          com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED,
+          com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CHECKED_IN,
+          com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CHECKED_OUT
+      )
+""")
+    boolean existsUsedPromotionByGuest(
+            @Param("guestId") Long guestId,
+            @Param("promotionId") Long promotionId
+    );
 
     @Query("""
     SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END

@@ -4,6 +4,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomStatusBoardResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -115,4 +116,38 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 """)
     List<Room> findAvailableRoomsByVariantId(@Param("variantId") Long variantId);
 
+    @Query("""
+    select new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomStatusBoardResponse(
+        r.id,
+        r.roomNumber,
+        r.floor,
+        r.status,
+        rt.name,
+        v.variantName,
+        r.note
+    )
+    from Room r
+    join r.variant v
+    join v.roomType rt
+    where r.isDeleted = false
+      and (:floor is null or r.floor = :floor)
+      and (:roomTypeName is null or lower(rt.name) like lower(concat('%', :roomTypeName, '%')))
+      and (:status is null or r.status = :status)
+      and (:keyword = '' or lower(r.roomNumber) like lower(concat('%', :keyword, '%')))
+    order by r.floor asc, r.roomNumber asc
+""")
+    List<RoomStatusBoardResponse> searchRoomStatusBoard(
+            @Param("floor") Integer floor,
+            @Param("roomTypeName") String roomTypeName,
+            @Param("status") RoomStatus status,
+            @Param("keyword") String keyword
+    );
+
+    @Query("""
+    select distinct r.floor
+    from Room r
+    where r.isDeleted = false
+    order by r.floor asc
+""")
+    List<Integer> findDistinctFloors();
 }

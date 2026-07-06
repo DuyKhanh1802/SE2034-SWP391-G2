@@ -117,6 +117,10 @@
           th:href="@{/receptionist/AddWalkInBooking.css}">
 
     <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/rooms')}"
+          th:href="@{/receptionist/ListRoomStatus.css}">
+
+    <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/profile')}"
           th:href="@{/profile/EditProfile.css}">
 </head>

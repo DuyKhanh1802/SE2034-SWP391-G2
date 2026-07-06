@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+
+<body>
+<main layout:fragment="content">
+
+    <section class="room-status-page">
+
+        <div class="page-title">
+            <h1>Bảng trạng thái phòng</h1>
+            <p>Theo dõi và cập nhật trạng thái vận hành phòng.</p>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <form method="get"
+              th:action="@{/receptionist/rooms}"
+              class="room-status-filter">
+
+            <div>
+                <label>Tầng</label>
+                <select name="floor">
+                    <option value="">Tất cả tầng</option>
+                    <option th:each="floor : ${floors}"
+                            th:value="${floor}"
+                            th:selected="${selectedFloor != null and selectedFloor == floor}"
+                            th:text="'Tầng ' + ${floor}">
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label>Hạng phòng</label>
+                <select name="roomTypeName">
+                    <option value="">Tất cả hạng phòng</option>
+                    <option value="STANDARD" th:selected="${selectedRoomTypeName == 'STANDARD'}">Standard</option>
+                    <option value="SUPERIOR" th:selected="${selectedRoomTypeName == 'SUPERIOR'}">Superior</option>
+                    <option value="DELUXE" th:selected="${selectedRoomTypeName == 'DELUXE'}">Deluxe</option>
+                    <option value="EXECUTIVE" th:selected="${selectedRoomTypeName == 'EXECUTIVE'}">Executive</option>
+                    <option value="FAMILY" th:selected="${selectedRoomTypeName == 'FAMILY'}">Family</option>
+                    <option value="SUITE" th:selected="${selectedRoomTypeName == 'SUITE'}">Suite</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Trạng thái</label>
+                <select name="status">
+                    <option value="">Tất cả trạng thái</option>
+                    <option th:each="status : ${roomStatuses}"
+                            th:value="${status}"
+                            th:selected="${selectedStatus != null and selectedStatus == status}"
+                            th:text="${status.name() == 'AVAILABLE'
+                                ? 'Trống'
+                                : (status.name() == 'OCCUPIED'
+                                    ? 'Đang có khách'
+                                    : 'Bảo trì')}">
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label>Số phòng</label>
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       placeholder="Tìm theo số phòng">
+            </div>
+
+            <button type="submit">Lọc</button>
+        </form>
+
+        <div class="status-legend">
+            <span class="legend-item available">Trống</span>
+            <span class="legend-item occupied">Đang có khách</span>
+            <span class="legend-item maintenance">Bảo trì</span>
+        </div>
+
+        <div th:if="${roomsByFloor == null or #maps.isEmpty(roomsByFloor)}" class="empty-rooms">
+            Không tìm thấy phòng phù hợp.
+        </div>
+
+        <div th:each="floorEntry : ${roomsByFloor}" class="floor-section">
+
+            <div class="floor-header">
+                <h2 th:text="'Tầng ' + ${floorEntry.key}">Tầng 1</h2>
+                <span th:text="${#lists.size(floorEntry.value)} + ' phòng'">0 phòng</span>
+            </div>
+
+            <div class="room-status-grid">
+
+                <div th:each="room : ${floorEntry.value}"
+                     class="room-status-card"
+                     th:classappend="${room.status.name() == 'AVAILABLE'} ? ' room-available' :
+                     (${room.status.name() == 'OCCUPIED'} ? ' room-occupied' : ' room-maintenance')">
+
+                    <div class="room-card-top">
+                        <span class="room-number" th:text="${room.roomNumber}">101</span>
+
+                        <span class="room-status"
+                              th:text="${room.status.name() == 'AVAILABLE'
+                                ? 'Trống'
+                                : (room.status.name() == 'OCCUPIED'
+                                    ? 'Đang có khách'
+                                    : 'Bảo trì')}">
+                            Trống
+                        </span>
+                    </div>
+
+                    <div class="room-card-body">
+                        <strong th:text="${room.roomTypeName}">
+                            Standard Room
+                        </strong>
+
+                        <span class="room-variant"
+                              th:if="${room.variantName != null and !#strings.isEmpty(room.variantName)}"
+                              th:with="cleanVariant=${#strings.replace(room.variantName, room.roomTypeName + ' - ', '')}"
+                              th:text="${#strings.replace(cleanVariant, 'hướng', 'Hướng')}">
+                                    Hướng hồ bơi
+                        </span>
+
+                        <p class="room-note"
+                           th:if="${room.status.name() == 'MAINTENANCE'
+              and room.note != null
+              and !#strings.isEmpty(room.note)}"
+                           th:text="${room.note}">
+                            Ghi chú bảo trì
+                        </p>
+                    </div>
+
+                    <button type="button"
+                            th:if="${room.status.name() != 'OCCUPIED'}"
+                            class="btn-edit-status"
+                            data-bs-toggle="modal"
+                            th:data-bs-target="'#editStatusModal' + ${room.roomId}">
+                        Cập nhật trạng thái
+                    </button>
+
+                    <span th:if="${room.status.name() == 'OCCUPIED'}"
+                          class="locked-status">
+                        Đang có khách
+                    </span>
+                </div>
+
+                <div th:each="room : ${floorEntry.value}"
+                     th:if="${room.status.name() != 'OCCUPIED'}"
+                     class="modal fade"
+                     th:id="'editStatusModal' + ${room.roomId}"
+                     tabindex="-1"
+                     aria-hidden="true">
+
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form class="modal-content"
+                              th:action="@{/receptionist/rooms/{roomId}/status(roomId=${room.roomId})}"
+                              method="post">
+
+                            <input type="hidden"
+                                   th:if="${_csrf != null}"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    Cập nhật trạng thái phòng
+                                    <span th:text="${room.roomNumber}">101</span>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body">
+
+                                <div class="mb-3">
+                                    <label class="form-label">Trạng thái hiện tại</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           th:value="${room.status.name() == 'AVAILABLE'
+                                                ? 'Trống'
+                                                : (room.status.name() == 'OCCUPIED'
+                                                    ? 'Đang có khách'
+                                                    : 'Bảo trì')}"
+                                           readonly>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Trạng thái mới</label>
+
+                                    <select name="newStatus" class="form-select" required>
+                                        <option th:if="${room.status.name() == 'AVAILABLE'}"
+                                                value="MAINTENANCE">
+                                            Bảo trì
+                                        </option>
+
+                                        <option th:if="${room.status.name() == 'MAINTENANCE'}"
+                                                value="AVAILABLE">
+                                            Trống / Sẵn sàng bán
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Ghi chú / lý do</label>
+                                    <textarea name="note"
+                                              class="form-control"
+                                              rows="3"
+                                              maxlength="300"
+                                              th:required="${room.status.name() == 'AVAILABLE'}"
+                                              th:placeholder="${room.status.name() == 'AVAILABLE'
+                                              ? 'Nhập lý do bảo trì, ví dụ: Lỗi điều hòa...'
+                                              : 'Ghi chú sau bảo trì nếu có...'}"></textarea>
+                                </div>
+
+                                <div class="alert alert-warning mb-0"
+                                     th:if="${room.status.name() == 'AVAILABLE'}">
+                                    Chỉ có thể đưa phòng trống vào bảo trì nếu phòng không có booking hiện tại hoặc tương lai.
+                                </div>
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-dark">Xác nhận</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+</main>
+</body>
+</html>
