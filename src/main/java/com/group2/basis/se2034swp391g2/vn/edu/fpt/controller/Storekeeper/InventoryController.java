@@ -59,17 +59,17 @@ public class InventoryController {
         model.addAttribute("hasPrevious", itemPage.hasPrevious());
         model.addAttribute("hasNext", itemPage.hasNext());
         model.addAttribute("lowStockCount", inventoryManagementService.countLowStockItems());
+        List<String> lowStockItemCodes = inventoryManagementService.getLowStockItems()
+                .stream()
+                .map(InventoryItem::getCode)
+                .toList();
+        model.addAttribute("lowStockItemCodes", lowStockItemCodes);
+        model.addAttribute("lowStockItemCodesText", formatLimitedItemCodes(lowStockItemCodes));
         List<String> expiringSoonItemCodes = inventoryManagementService.getExpiringSoonItemCodes();
         model.addAttribute("expiringSoonItemCodes", expiringSoonItemCodes);
-        model.addAttribute("expiringSoonItemCodesText", String.join(", ", expiringSoonItemCodes));
-        try {
-            model.addAttribute("inventoryVatRate", inventoryManagementService.getInventoryVatRate());
-            model.addAttribute("financialChargeConfigured", true);
-        } catch (IllegalStateException e) {
-            model.addAttribute("inventoryVatRate", BigDecimal.ZERO);
-            model.addAttribute("financialChargeConfigured", false);
-            model.addAttribute("configurationError", e.getMessage());
-        }
+        model.addAttribute("expiringSoonItemCodesText", formatLimitedItemCodes(expiringSoonItemCodes));
+        model.addAttribute("inventoryVatRate", inventoryManagementService.getInventoryVatRate());
+        model.addAttribute("financialChargeConfigured", true);
         model.addAttribute("today", LocalDate.now());
         return "storekeeper/InventoryList";
     }
@@ -140,6 +140,22 @@ public class InventoryController {
         return "redirect:/storekeeper/inventory";
     }
 
+    @PostMapping("/storekeeper/inventory/receipts/import")
+    public String importInventoryReceipts(@RequestParam("file") MultipartFile file,
+                                          Authentication authentication,
+                                          HttpSession session,
+                                          RedirectAttributes redirectAttributes) {
+        try {
+            InventoryManagementService.ReceiptImportResult result =
+                    inventoryManagementService.importReceiptsFromExcel(file, resolveCurrentUser(authentication, session));
+            redirectAttributes.addFlashAttribute("successMessage",
+                    formatReceiptImportSuccessMessage(result));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/storekeeper/inventory";
+    }
+
     @PostMapping("/storekeeper/inventory/receipts")
     public String createInventoryReceipt(@RequestParam Long itemId,
                                          @RequestParam BigDecimal quantity,
@@ -160,7 +176,7 @@ public class InventoryController {
                     itemId, quantity, unitCost, supplier, note, receiptDate, batchCode, expiryDate,
                     paymentMethod,
                     resolveCurrentUser(authentication, session));
-            redirectAttributes.addFlashAttribute("successMessage", "Da lap phieu nhap hang va ghi nhan chi quy.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã lập phiếu nhập hàng và ghi nhận chi quỹ.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -168,11 +184,25 @@ public class InventoryController {
     }
 
     private String formatImportSuccessMessage(InventoryManagementService.InventoryImportResult result) {
-        NumberFormat currencyFormatter = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
         return "Đã import " + result.importedCount()
                 + " hàng hóa. Bỏ qua " + result.skippedCount()
-                + " hàng hóa đã tồn tại. Tổng giá trị tồn khởi tạo: "
-                + currencyFormatter.format(result.totalOpeningCost()) + " VND.";
+                + " hàng hóa đã tồn tại.";
+    }
+
+    private String formatLimitedItemCodes(List<String> itemCodes) {
+        if (itemCodes == null || itemCodes.isEmpty()) {
+            return "";
+        }
+        int visibleCount = Math.min(itemCodes.size(), 5);
+        String text = String.join(", ", itemCodes.subList(0, visibleCount));
+        return itemCodes.size() > visibleCount ? text + ", ..." : text;
+    }
+
+    private String formatReceiptImportSuccessMessage(InventoryManagementService.ReceiptImportResult result) {
+        NumberFormat currencyFormatter = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
+        return "Đã import " + result.importedCount()
+                + " lô hàng nhập. Tổng tiền sau VAT: "
+                + currencyFormatter.format(result.totalCost()) + " VND.";
     }
 
     @GetMapping("/storekeeper/inventory/items/options")

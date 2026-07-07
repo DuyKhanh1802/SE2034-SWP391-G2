@@ -10,17 +10,17 @@ import lombok.Setter;
 @Setter
 public class ChangePasswordRequest {
 
-    @NotBlank(message = "Vui lòng nhập mật khẩu hiện tại")
+    @NotBlank(message = "Mật khẩu hiện tại không được để trống")
     private String currentPassword;
 
-    @NotBlank(message = "Vui lòng nhập mật khẩu mới")
-    @Size(min = 6, max = 50, message = "Mật khẩu mới phải từ 6 đến 50 ký tự")
+    @NotBlank(message = "Mật khẩu mới không được để trống")
+    @Size(min = 8, max = 50, message = "Mật khẩu mới phải từ 8 đến 50 ký tự")
     @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,50}$",
-            message = "Mật khẩu mới phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 chữ số và 1 ký tự đặc biệt"
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$",
+            message = "Mật khẩu mới phải có chữ hoa, chữ thường, số và ký tự đặc biệt"
     )
     private String newPassword;
 
-    @NotBlank(message = "Vui lòng xác nhận mật khẩu mới")
+    @NotBlank(message = "Xác nhận mật khẩu không được để trống")
     private String confirmPassword;
 }

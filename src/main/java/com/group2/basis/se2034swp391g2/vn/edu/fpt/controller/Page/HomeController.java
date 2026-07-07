@@ -55,4 +55,8 @@ public class HomeController{
 
         return "page/HomePage";
     }
+    @GetMapping("/overview")
+    public String overview(){
+        return "/page/overview";
+    }
 }

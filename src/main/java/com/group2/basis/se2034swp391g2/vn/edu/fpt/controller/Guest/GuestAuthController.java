@@ -108,7 +108,7 @@ public class GuestAuthController {
         session.setAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION, guestSession);
 
 
-        return "redirect:/page/home";
+        return "redirect:/guest/my-booking";
     }
 
     @GetMapping("/logout")

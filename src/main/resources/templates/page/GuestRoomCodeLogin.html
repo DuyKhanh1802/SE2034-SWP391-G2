@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V'Hotel Hanoi | Room Code Login</title>
+    <title>V'Hotel Hanoi | Đăng Nhập Bằng Mã Phòng</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
     <link rel="stylesheet" th:href="@{/auth/auth-base.css}">
     <link rel="stylesheet" th:href="@{/auth/Login.css}">
 </head>
@@ -16,26 +18,25 @@
 
     <div class="panel-left">
         <img th:src="'https://i.pinimg.com/736x/4b/17/01/4b1701adbebca62f9771777df839a384.jpg'"
-             alt="V'Hotel Hanoi lobby">
+             alt="Sảnh V'Hotel Hanoi">
 
         <div class="left-content">
             <div class="wordmark">
                 <div class="wordmark-line"></div>
-                <div class="wordmark-text">Est. 2018 &middot; Hanoi, Vietnam</div>
+                <div class="wordmark-text">Thành lập 2018 &middot; Hà Nội, Việt Nam</div>
             </div>
 
             <div class="brand-block">
-                <div class="brand-eyebrow">Luxury Boutique Collection</div>
+                <div class="brand-eyebrow">Bộ Sưu Tập Boutique Sang Trọng</div>
                 <div class="brand-name">
                     V'HOTEL
                     <span>Hanoi</span>
                 </div>
                 <div class="brand-rule"></div>
-                <div class="brand-tagline">Guest Room Access</div>
+                <div class="brand-tagline">Truy Cập Phòng Khách</div>
             </div>
         </div>
 
-        <div class="ribbon">ROOM CODE ACCESS</div>
     </div>
 
     <div class="panel-right">
@@ -43,14 +44,14 @@
 
             <div class="badge">
                 <div class="badge-dot"></div>
-                <div class="badge-text">Guest Access</div>
+                <div class="badge-text">Dành Cho Khách</div>
             </div>
 
-            <h1 class="form-heading">Room<br><em>Login.</em></h1>
+            <h1 class="form-heading">Đăng Nhập<br><em>Bằng Phòng.</em></h1>
 
             <p class="form-sub">
-                Enter your email and room code<br>
-                to access your stay information.
+                Nhập email và mã phòng của bạn<br>
+                để xem thông tin lưu trú.
             </p>
 
             <div class="h-rule"></div>
@@ -69,17 +70,17 @@
                        th:value="${_csrf.token}"/>
 
                 <div class="field">
-                    <label for="email">Email Address</label>
+                    <label for="email">Địa Chỉ Email</label>
                     <input type="email"
                            id="email"
                            name="email"
                            th:value="${email}"
-                           placeholder="name@example.com"
+                           placeholder="ten@vidu.com"
                            required>
                 </div>
 
                 <div class="field">
-                    <label for="roomCode">Room Code</label>
+                    <label for="roomCode">Mã Phòng</label>
                     <input type="text"
                            id="roomCode"
                            name="roomCode"
@@ -91,19 +92,19 @@
                 </div>
 
                 <button type="submit" class="btn-primary">
-                    <span>ACCESS ROOM</span>
+                    <span>TRUY CẬP PHÒNG</span>
                 </button>
             </form>
 
-            <div class="or-row">OR</div>
+            <div class="or-row">HOẶC</div>
 
             <a th:href="@{/auth/login}" class="btn-ghost room-code-link">
-                BACK TO SIGN IN
+                QUAY LẠI ĐĂNG NHẬP
             </a>
 
             <div class="foot-note">
-                Back to V'Hotel Hanoi?
-                <a th:href="@{/home}">Go to homepage</a>
+                Quay lại V'Hotel Hanoi?
+                <a th:href="@{/home}">Về trang chủ</a>
             </div>
 
         </div>

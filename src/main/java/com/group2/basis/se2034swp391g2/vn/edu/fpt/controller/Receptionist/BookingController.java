@@ -13,7 +13,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
-
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
 import java.math.BigDecimal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -34,16 +34,17 @@ public class BookingController {
     private final PaymentService paymentService;
     private final CountryRepository countryRepository;
     private final ServiceRepository serviceRepository;
-
+    private final PromotionService promotionService;
     public BookingController(BookingService bookingService,
                              CountryRepository countryRepository,
+                             PromotionService promotionService,
                              ServiceRepository serviceRepository,
 
                              PaymentService paymentService) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
         this.serviceRepository = serviceRepository;
-
+        this.promotionService = promotionService;
         this.paymentService = paymentService;
     }
 
@@ -143,7 +144,7 @@ public class BookingController {
         model.addAttribute("countries", countryRepository.findAll());
         model.addAttribute("diningServices", serviceRepository.findAvailableByCategoryId(1L));
         model.addAttribute("wellnessServices", serviceRepository.findAvailableByCategoryId(2L));
-
+        model.addAttribute("activePromotions", promotionService.getListPromotion());
         model.addAttribute("vatRate", new BigDecimal("8"));
         model.addAttribute("serviceChargeRate", new BigDecimal("5"));
         model.addAttribute("taxOnServiceCharge", true);
@@ -265,6 +266,45 @@ public class BookingController {
         return "receptionist/ViewBookingDetail";
     }
 
+    @PostMapping("/view/{bookingId}/services/{folioItemId}/confirm")
+    public String confirmServiceServed(@PathVariable Long bookingId,
+                                       @PathVariable Long folioItemId,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.confirmServiceServed(bookingId, folioItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xác nhận phục vụ dịch vụ và ghi nhận tiêu hao kho.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    @PostMapping("/view/{bookingId}/services/{folioItemId}/cancel")
+    public String cancelRequestedService(@PathVariable Long bookingId,
+                                         @PathVariable Long folioItemId,
+                                         RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.cancelRequestedService(bookingId, folioItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy dịch vụ chờ phục vụ.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    @PostMapping("/view/{bookingId}/services/{folioItemId}/not-used")
+    public String markServiceNotUsedNoRefund(@PathVariable Long bookingId,
+                                             @PathVariable Long folioItemId,
+                                             RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.markServiceNotUsedNoRefund(bookingId, folioItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã ghi nhận dịch vụ không sử dụng và không hoàn tiền.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
     @GetMapping("/edit/{bookingId}")
     public String showEditBookingForm(@PathVariable Long bookingId,
                                       Model model,
@@ -314,27 +354,19 @@ public class BookingController {
                                        @RequestParam BigDecimal amount,
                                        RedirectAttributes redirectAttributes) {
         try {
-            if (paymentType != PaymentType.DEPOSIT && paymentType != PaymentType.FULL) {
-                throw new IllegalArgumentException("Màn chi tiết đặt phòng chỉ cho phép thu cọc hoặc thu full trước.");
+            if (paymentType != PaymentType.FULL) {
+                throw new IllegalArgumentException("Màn chi tiết đặt phòng chỉ cho phép thu toàn bộ số tiền còn lại.");
             }
 
-            Booking booking = bookingService.getBookingEntityById(bookingId);
-            User currentStaff = bookingService.getCurrentStaffUser();
-
-            paymentService.createPayment(
-                    booking,
+            bookingService.collectBookingPayment(
+                    bookingId,
                     paymentType,
                     method,
-                    amount,
-                    currentStaff
+                    amount
             );
 
-            if (paymentType == PaymentType.DEPOSIT) {
-                bookingService.markDepositPaid(bookingId);
-            }
-
             redirectAttributes.addFlashAttribute("successMessage", "Lưu thanh toán thành công.");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 

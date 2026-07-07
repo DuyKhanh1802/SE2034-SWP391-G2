@@ -75,9 +75,8 @@ public class User {
     @Column(name = "passport_expiry_date")
     private LocalDate passportExpiryDate;
 
-    @Column(name = "date_of_birth")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dateOfBirth;
+    @Column(name = "birth_year")
+    private Integer birthYear;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 10, columnDefinition = "NVARCHAR(10)")

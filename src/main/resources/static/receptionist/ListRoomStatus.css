@@ -1,0 +1,572 @@
+/* ================================
+   ROOM STATUS BOARD
+================================ */
+
+.room-status-page {
+    min-height: calc(100vh - 72px);
+    padding: 36px 42px 56px;
+    background: #ffffff;
+    color: #111827;
+}
+
+/* PAGE TITLE */
+.room-status-page .page-title {
+    margin-bottom: 28px;
+}
+
+.room-status-page .page-title h1 {
+    margin: 0;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 44px;
+    line-height: 1.05;
+    font-weight: 600;
+    color: #111827;
+}
+
+.room-status-page .page-title p {
+    margin: 8px 0 0;
+    color: #6b7280;
+    font-size: 15px;
+}
+
+/* ================================
+   FILTER BAR
+================================ */
+
+.room-status-filter {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.25fr 120px;
+    gap: 16px;
+    align-items: end;
+    padding: 18px;
+    margin-bottom: 18px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+/* Vì HTML hiện tại của bạn dùng div thường, không có class filter-item */
+.room-status-filter > div label {
+    display: block;
+    margin-bottom: 7px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.room-status-filter select,
+.room-status-filter input {
+    width: 100%;
+    height: 42px;
+    padding: 0 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #111827;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.18s ease;
+}
+
+.room-status-filter select:focus,
+.room-status-filter input:focus {
+    border-color: #111827;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
+}
+
+.room-status-filter button {
+    height: 42px;
+    border: none;
+    border-radius: 12px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.room-status-filter button:hover {
+    background: #000000;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+}
+
+/* ================================
+   STATUS LEGEND
+================================ */
+
+.status-legend {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0 34px;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    border: 1px solid transparent;
+}
+
+.legend-item::before {
+    content: "";
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+    border-radius: 999px;
+}
+
+.legend-item.available {
+    color: #15803d;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.legend-item.available::before {
+    background: #22c55e;
+}
+
+.legend-item.occupied {
+    color: #1d4ed8;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.legend-item.occupied::before {
+    background: #3b82f6;
+}
+
+.legend-item.maintenance {
+    color: #dc2626;
+    background: #fff1f2;
+    border-color: #fecdd3;
+}
+
+.legend-item.maintenance::before {
+    background: #ef4444;
+}
+
+/* ================================
+   FLOOR HEADER
+================================ */
+
+.floor-section {
+    margin-top: 38px;
+}
+
+.floor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.floor-header h2 {
+    margin: 0;
+    font-family: "Cormorant Garamond", serif;
+    color: #111827;
+    font-size: 36px;
+    font-weight: 600;
+}
+
+/* Units pill */
+.floor-header span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 78px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ================================
+   ROOM GRID
+================================ */
+
+.room-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
+    gap: 18px;
+}
+
+.room-status-card {
+    position: relative;
+    min-height: 176px;
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    transition: all 0.18s ease;
+}
+
+.room-status-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+}
+
+.room-status-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.11);
+}
+
+/* Status colors */
+.room-available {
+    background: linear-gradient(180deg, #ffffff 0%, #f7fff9 100%);
+    border-color: #bbf7d0;
+}
+
+.room-available::before {
+    background: #22c55e;
+}
+
+.room-occupied {
+    background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+    border-color: #bfdbfe;
+}
+
+.room-occupied::before {
+    background: #3b82f6;
+}
+
+.room-maintenance {
+    background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
+    border-color: #fecdd3;
+}
+
+.room-maintenance::before {
+    background: #ef4444;
+}
+
+/* CARD TOP */
+.room-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.room-number {
+    font-size: 14px;
+    font-weight: 900;
+    color: #111827;
+}
+
+/* Status badge trong card */
+.room-status {
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid currentColor;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.room-available .room-status {
+    color: #15803d;
+}
+
+.room-occupied .room-status {
+    color: #1d4ed8;
+}
+
+.room-maintenance .room-status {
+    color: #dc2626;
+}
+
+/* CARD BODY */
+.room-card-body {
+    margin-top: 20px;
+    margin-bottom: 12px;
+}
+
+.room-card-body strong {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    min-height: 48px;
+    overflow: hidden;
+    color: #111827;
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 850;
+}
+
+.room-card-body p {
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* ACTION BUTTON */
+.btn-edit-status {
+    width: 100%;
+    height: 36px;
+    border: 1px solid #111827;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.btn-edit-status:hover {
+    background: #111827;
+    color: #ffffff;
+}
+
+/* OCCUPIED chip */
+.locked-status {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.locked-status::before {
+    content: "\F47A";
+    font-family: "bootstrap-icons";
+    font-size: 12px;
+}
+
+/* EMPTY STATE */
+.empty-rooms {
+    padding: 28px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    text-align: center;
+}
+
+/* ALERT */
+.room-status-page .alert {
+    margin-bottom: 18px;
+    border-radius: 14px;
+}
+
+/* ================================
+   MODAL
+================================ */
+
+.room-status-page .modal-content {
+    border-radius: 18px;
+    border: none;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+}
+
+.room-status-page .modal-header {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.room-status-page .modal-title {
+    font-weight: 850;
+}
+
+.room-status-page .form-label {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.room-status-page .form-control,
+.room-status-page .form-select {
+    border-radius: 12px;
+    min-height: 42px;
+    border-color: #d1d5db;
+}
+
+.room-status-page textarea.form-control {
+    min-height: 96px;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1200px) {
+    .room-status-filter {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .room-status-filter button {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .room-status-page {
+        padding: 24px 18px;
+    }
+
+    .room-status-page .page-title h1 {
+        font-size: 34px;
+    }
+
+    .room-status-filter {
+        grid-template-columns: 1fr;
+    }
+
+    .room-status-filter button {
+        grid-column: auto;
+    }
+
+    .status-legend {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .floor-header h2 {
+        font-size: 30px;
+    }
+
+    .room-status-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* OCCUPIED = YELLOW THEME */
+
+.legend-item.occupied {
+    color: #b45309;
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.legend-item.occupied::before {
+    background: #f59e0b;
+}
+
+.room-occupied {
+    background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
+    border-color: #fcd34d;
+}
+
+.room-occupied::before {
+    background: #f59e0b;
+}
+
+.room-occupied .room-status {
+    color: #b45309;
+}
+
+.locked-status {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.locked-status::before {
+    color: #b45309;
+}
+.room-variant {
+    display: block;
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.room-note {
+    margin-top: 10px;
+}
+.room-variant {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    margin-top: 18px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.04);
+    color: #1f2937;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+/* OCCUPIED - softer amber theme */
+
+.legend-item.occupied {
+    color: #92400e;
+    background: #fffbeb;
+    border-color: #fdecc8;
+}
+
+.legend-item.occupied::before {
+    background: #d97706;
+}
+
+/* Card đang có khách: nền dịu hơn */
+.room-occupied {
+    background: linear-gradient(180deg, #ffffff 0%, #fffaf0 100%);
+    border-color: #ead7b0;
+}
+
+/* Thanh trái vàng trầm, không quá chói */
+.room-occupied::before {
+    background: #d89b2b;
+}
+
+/* Badge trạng thái trên góc phải */
+.room-occupied .room-status {
+    color: #92400e;
+    background: #fffaf0;
+    border-color: #d6a650;
+}
+
+/* Chip đang có khách phía dưới */
+.locked-status {
+    background: #fff3d6;
+    color: #8a4b0f;
+}
+
+.locked-status::before {
+    color: #8a4b0f;
+}

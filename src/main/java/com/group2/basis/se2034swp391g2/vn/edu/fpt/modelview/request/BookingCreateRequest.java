@@ -46,6 +46,8 @@ public class BookingCreateRequest {
     
     private String action;
 
+    private String promoCode;
+
     private Boolean depositPaid;
 
     private BigDecimal depositAmount;
@@ -58,4 +60,5 @@ public class BookingCreateRequest {
     private List<Long> serviceIds;
     private List<Integer> serviceQuantities;
     private List<Integer> childAges;
+    private LocalDate passportExpiryDate;
 }

@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet">
 
-
     <link rel="stylesheet" th:href="@{/page/RoomTypeVariantDetail.css}">
 </head>
 
@@ -20,6 +19,7 @@
 <main class="room-detail-page"
       id="roomDetailPage"
       th:data-image-urls="${room.imageUrls}">
+
     <button type="button" class="close-btn" id="closeDetailBtn" aria-label="Đóng">
         ×
     </button>
@@ -27,17 +27,20 @@
     <section class="room-hero-section">
 
         <h1 class="room-title" th:text="${room.variantName}">
-            Phòng King Hướng Cảng
+            Standard Room - hướng thành phố
         </h1>
 
         <p class="room-short-desc" th:text="${room.description}">
-            Tầm nhìn tuyệt đẹp ra bến cảng và không gian sang trọng rộng rãi tạo nên sự khác biệt cho căn phòng.
+            Phòng Standard Room có hướng nhìn hướng thành phố, diện tích 25 m², phù hợp cho tối đa 2 khách.
         </p>
 
         <div class="room-image-slider"
              th:if="${room.primaryImageUrl != null and !#strings.isEmpty(room.primaryImageUrl)}">
 
-            <button type="button" class="slider-arrow slider-prev" id="prevImageBtn">
+            <button type="button"
+                    class="slider-arrow slider-prev"
+                    id="prevImageBtn"
+                    aria-label="Ảnh trước">
                 ‹
             </button>
 
@@ -46,7 +49,10 @@
                  th:src="${room.primaryImageUrl}"
                  alt="Hình ảnh phòng">
 
-            <button type="button" class="slider-arrow slider-next" id="nextImageBtn">
+            <button type="button"
+                    class="slider-arrow slider-next"
+                    id="nextImageBtn"
+                    aria-label="Ảnh tiếp theo">
                 ›
             </button>
 
@@ -73,21 +79,21 @@
         <div class="info-item">
             <span class="info-label">DIỆN TÍCH</span>
             <span class="info-value">
-                <span th:text="${room.roomSize}">53</span> m²
+                <span th:text="${room.roomSize}">25</span> m²
             </span>
         </div>
 
         <div class="info-item">
-            <span class="info-label bed-label">LOẠI<br>GIƯỜNG</span>
+            <span class="info-label">LOẠI GIƯỜNG</span>
             <span class="info-value" th:text="${room.bedSummary}">
-                1 Giường đôi lớn (King)
+                1 giường đôi lớn
             </span>
         </div>
 
         <div class="info-item">
             <span class="info-label">SỐ KHÁCH</span>
-            <span class="info-value" th:text="${room.capacity}">
-                3
+            <span class="info-value" th:text="${room.capacity} + ' khách'">
+                2 khách
             </span>
         </div>
 
@@ -98,7 +104,7 @@
         <ul class="view-list">
             <li>
                 <strong>TẦM NHÌN:</strong>
-                <span th:text="${room.viewType}">Hướng cảng</span>
+                <span th:text="${room.viewType}">Hướng thành phố</span>
             </li>
         </ul>
 
@@ -117,7 +123,7 @@
             <p>
                 <span>VỊ TRÍ:</span>
                 <span th:if="${room.minFloor != null and room.maxFloor != null}">
-                    Tầng <span th:text="${room.minFloor}">24</span>-<span th:text="${room.maxFloor}">40</span>
+                    Tầng <span th:text="${room.minFloor}">2</span>-<span th:text="${room.maxFloor}">5</span>
                 </span>
                 <span th:if="${room.minFloor == null or room.maxFloor == null}">
                     Đang cập nhật
@@ -153,7 +159,7 @@
 
             <p>
                 <span>SỨC CHỨA TỐI ĐA:</span>
-                <span th:text="${room.capacity} + ' khách'">3 khách</span>
+                <span th:text="${room.capacity} + ' khách'">2 khách</span>
             </p>
 
             <p th:if="${room.availableRooms != null}">
@@ -169,27 +175,27 @@
 
         <h2 class="section-title">DỊCH VỤ & TIỆN NGHI</h2>
 
-        <div class="amenity-block"
-             th:if="${room.amenitySummary != null and !#strings.isEmpty(room.amenitySummary)}">
+        <div class="amenity-grid"
+             th:if="${(room.amenitySummary != null and !#strings.isEmpty(room.amenitySummary))
+                or (room.serviceSummary != null and !#strings.isEmpty(room.serviceSummary))}">
 
-            <ul class="amenity-list">
-                <li th:each="amenity : ${#strings.arraySplit(room.amenitySummary, '|')}"
-                    th:text="${amenity}">
-                    Wi-Fi miễn phí
-                </li>
-            </ul>
+            <th:block th:if="${room.amenitySummary != null and !#strings.isEmpty(room.amenitySummary)}">
+                <div class="amenity-item"
+                     th:each="amenity : ${#strings.arraySplit(room.amenitySummary, '|')}"
+                     th:if="${amenity != null and !#strings.isEmpty(#strings.trim(amenity))}">
+                    <span class="amenity-dot"></span>
+                    <span th:text="${#strings.trim(amenity)}">Wi-Fi miễn phí</span>
+                </div>
+            </th:block>
 
-        </div>
-
-        <div class="amenity-block"
-             th:if="${room.serviceSummary != null and !#strings.isEmpty(room.serviceSummary)}">
-
-            <ul class="amenity-list">
-                <li th:each="service : ${#strings.arraySplit(room.serviceSummary, '|')}"
-                    th:text="${service}">
-                    Dịch vụ ăn uống tại phòng 24 giờ
-                </li>
-            </ul>
+            <th:block th:if="${room.serviceSummary != null and !#strings.isEmpty(room.serviceSummary)}">
+                <div class="amenity-item"
+                     th:each="service : ${#strings.arraySplit(room.serviceSummary, '|')}"
+                     th:if="${service != null and !#strings.isEmpty(#strings.trim(service))}">
+                    <span class="amenity-dot"></span>
+                    <span th:text="${#strings.trim(service)}">Dịch vụ dọn phòng hằng ngày</span>
+                </div>
+            </th:block>
 
         </div>
 
@@ -201,9 +207,10 @@
 
     </section>
 
-    <script th:src="@{/js/RoomTypeVariantDetail.js}"></script>
-
 </main>
+
+<script th:src="@{/js/RoomTypeVariantDetail.js}"></script>
 <script th:src="@{/js/guest-header.js}"></script>
+
 </body>
 </html>

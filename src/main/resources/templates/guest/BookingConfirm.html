@@ -9,10 +9,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Noto+Serif+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet">
 
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}">
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}">
+
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/guest/BookingConfirm.css}">
 </head>
 
+<div class="otp-modal" id="bookingOtpModal">
+    <div class="otp-modal-backdrop"></div>
+
+    <div class="otp-modal-card">
+        <button type="button" class="otp-close-btn" id="closeBookingOtpModal">×</button>
+
+        <h2>Xác thực email</h2>
+
+        <p>
+            Mã OTP đã được gửi đến email của quý khách.
+            Vui lòng nhập mã gồm 6 chữ số để tiếp tục đặt phòng.
+        </p>
+
+
+        <div class="otp-countdown-box" id="otpCountdownBox">
+            <span>Mã OTP sẽ tự động được gửi lại sau</span>
+            <strong id="otpCountdownText">30s</strong>
+        </div>
+        <input type="text"
+               id="bookingOtpInput"
+               maxlength="6"
+               placeholder="Nhập mã OTP">
+
+        <p class="otp-message" id="bookingOtpMessage"></p>
+
+        <button type="button" class="otp-confirm-btn" id="verifyBookingOtpBtn">
+            Xác thực OTP
+        </button>
+
+        <button type="button" class="otp-resend-btn" id="resendBookingOtpBtn">
+            Gửi lại mã OTP
+        </button>
+    </div>
+</div>
+
+<script th:src="@{/js/bookingConfirmOtp.js}"></script>
 <body>
 
 <div class="booking-top-bar">
@@ -20,6 +59,21 @@
 </div>
 
 <main class="confirm-page">
+    <a class="confirm-back-step"
+       th:href="@{/page/booking/services(
+            variantIds=${request.variantIds},
+            checkInDate=${request.checkInDate},
+            checkOutDate=${request.checkOutDate},
+            adults=${request.adults},
+            children=${request.children},
+            roomCount=${request.roomCount},
+            roomGuests=${request.roomGuests},
+            promoCode=${request.promoCode}
+       )}">
+        <span class="confirm-back-icon">‹</span>
+        <span>Dịch vụ bổ sung</span>
+    </a>
+
 
     <a th:href="@{/page/rooms}" class="booking-close-btn">
         <span></span>
@@ -41,7 +95,7 @@
                 <p th:text="${errorMessage}">Có lỗi xảy ra.</p>
             </div>
 
-            <form th:action="@{/page/booking/complete}" method="post">
+            <form th:action="@{/page/booking/payment/vnpay}" method="post">
 
                 <!-- Hidden booking data -->
                 <input type="hidden" name="variantIds" th:value="${request.variantIds}">
@@ -99,11 +153,26 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Email <b>*</b></label>
+                            <div class="email-label-row">
+                                <label>Email <b>*</b></label>
+
+                                <button type="button"
+                                        class="send-otp-btn"
+                                        id="sendBookingOtpBtn">
+                                    Gửi OTP
+                                </button>
+                            </div>
+
                             <input type="email"
+                                   id="guestEmailInput"
                                    name="guestEmail"
                                    th:value="${request.guestEmail}"
+                                   placeholder="example@gmail.com"
                                    required>
+
+                            <p class="email-verify-message" id="emailVerifyMessage">
+                                Vui lòng xác thực email trước khi xác nhận đặt phòng.
+                            </p>
                         </div>
 
                         <div class="form-group full">
@@ -115,24 +184,25 @@
 
                     </div>
                 </section>
-
                 <section class="form-section payment-section">
-                    <h2>Payment After Confirmation</h2>
+                    <h2>Xác nhận thanh toán</h2>
 
                     <div class="payment-after-confirm-box">
                         <strong>Thanh toán sau khi xác nhận đặt phòng</strong>
 
                         <p>
-                            Vui lòng kiểm tra lại thông tin đặt phòng, thông tin khách và tổng thanh toán.
-                            Sau khi bấm <b>Confirm Booking</b>, hệ thống sẽ lưu booking và hiển thị mã QR chuyển khoản.
+                            Vui lòng kiểm tra kỹ thông tin đặt phòng trước khi tiến hành thanh toán.
+                            Việc thanh toán giúp bạn xác nhận giữ chỗ trong hệ thống và đảm bảo phòng được ưu tiên trong thời gian cao điểm.
+                            Do số lượng phòng có giới hạn theo từng ngày, khách sạn khuyến nghị bạn chỉ thực hiện thanh toán khi đã chắc chắn với kế hoạch lưu trú của mình.
+                            Sau khi thanh toán thành công, đơn đặt phòng sẽ được xác nhận theo chính sách không hoàn tiền.
                         </p>
 
                         <div class="payment-preview-row">
                             <span>Tổng thanh toán</span>
                             <strong>
-                <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.grandTotal, 0, 'COMMA', 0, 'POINT')}">
-                    0
-                </span>
+                    <span th:text="${#numbers.formatDecimal(confirmView.priceSummary.grandTotal, 0, 'COMMA', 0, 'POINT')}">
+                        0
+                    </span>
                                 VND
                             </strong>
                         </div>
@@ -144,15 +214,14 @@
                                value="true"
                                required>
                         <span>
-            Tôi xác nhận thông tin đặt phòng là chính xác và muốn gửi yêu cầu đặt phòng.
-        </span>
+                Tôi xác nhận thông tin đặt phòng là chính xác và muốn gửi yêu cầu đặt phòng.
+            </span>
                     </label>
                 </section>
 
-                <button type="submit" class="confirm-btn">
+                <button type="submit" class="confirm-btn" id="confirmBookingBtn" disabled>
                     Xác nhận đặt phòng
                 </button>
-
             </form>
         </div>
 

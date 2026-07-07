@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kết quả thanh toán</title>
+</head>
+<body>
+
+<h2 th:text="${success} ? 'Thanh toán thành công' : 'Thanh toán thất bại'"></h2>
+
+<p th:text="${message}"></p>
+
+<p>
+    Mã giao dịch:
+    <span th:text="${txnRef}"></span>
+</p>
+
+<p th:if="${transactionNo != null}">
+    Mã giao dịch VNPay:
+    <span th:text="${transactionNo}"></span>
+</p>
+
+<a th:href="@{/page/home}">Về trang chủ</a>
+
+</body>
+</html>
