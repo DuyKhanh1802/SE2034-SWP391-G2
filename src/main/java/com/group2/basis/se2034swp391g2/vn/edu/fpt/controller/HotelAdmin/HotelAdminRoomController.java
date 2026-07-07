@@ -127,29 +127,30 @@ public class HotelAdminRoomController {
     }
 
     @GetMapping("/hotel-admin/list-room/add")
-    public String showAddRoomForm(Model model,
+    public String showAddRoomForm(@RequestParam(required = false) String roomNumber,
+                                  Model model,
                                   Authentication authentication,
                                   HttpSession session,
                                   HttpServletRequest request) {
 
         addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
-        model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
-        model.addAttribute("viewTypes", ViewType.values());
-        model.addAttribute("roomStatuses", RoomStatus.values());
+        try {
+            addAddRoomFormData(model, roomNumber);
+        } catch (IllegalArgumentException e) {
+            addAddRoomFormData(model, null);
+            model.addAttribute("roomNumber", roomNumber);
+            model.addAttribute("errorMessage", e.getMessage());
+        }
 
         return "hotel_admin/AddRoom";
     }
 
     @PostMapping("/hotel-admin/list-room/add")
-    public String addRoom(@RequestParam String roomNumber,
-                          @RequestParam Long variantId,
-                          @RequestParam(required = false) Integer floor,
-                          @RequestParam RoomStatus status,
+    public String addRoom(@RequestParam(required = false) String roomNumber,
+                          @RequestParam(required = false) Long variantId,
+                          @RequestParam(required = false) RoomStatus status,
                           @RequestParam(required = false) String note,
-                          @RequestParam(required = false) List<String> imageUrls,
-                          @RequestParam(defaultValue = "0") Integer primaryImageIndex,
                           Model model,
                           RedirectAttributes redirectAttributes,
                           Authentication authentication,
@@ -157,15 +158,7 @@ public class HotelAdminRoomController {
                           HttpServletRequest request) {
 
         try {
-            roomService.createRoom(
-                    roomNumber,
-                    variantId,
-                    floor,
-                    status,
-                    note,
-                    imageUrls,
-                    primaryImageIndex
-            );
+            roomService.createRoom(roomNumber, variantId, status, note);
 
             redirectAttributes.addFlashAttribute("successMessage", "Thêm phòng thành công!");
 
@@ -174,20 +167,35 @@ public class HotelAdminRoomController {
         } catch (IllegalArgumentException e) {
             addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
-            model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
-            model.addAttribute("viewTypes", ViewType.values());
-            model.addAttribute("roomStatuses", RoomStatus.values());
+            try {
+                addAddRoomFormData(model, roomNumber);
+            } catch (IllegalArgumentException ignored) {
+                addAddRoomFormData(model, null);
+            }
 
+            model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("roomNumber", roomNumber);
             model.addAttribute("selectedVariantId", variantId);
-            model.addAttribute("floor", floor);
             model.addAttribute("selectedStatus", status);
             model.addAttribute("note", note);
 
             return "hotel_admin/AddRoom";
         }
+    }
+
+    private void addAddRoomFormData(Model model, String roomNumber) {
+        model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
+        model.addAttribute("roomStatuses", roomService.getInitialRoomStatusesForAddRoom());
+
+        if (roomNumber == null || roomNumber.trim().isEmpty()) {
+            model.addAttribute("roomTypeVariants", List.of());
+            return;
+        }
+
+        model.addAttribute("roomNumber", roomNumber);
+        model.addAttribute("floor", roomService.getFloorForDisplay(roomNumber));
+        model.addAttribute("roomTypeName", roomService.getRoomTypeNameForDisplay(roomNumber));
+        model.addAttribute("roomTypeVariants", roomService.getRoomTypeVariantsByRoomNumber(roomNumber));
     }
 
     @PostMapping("/hotel-admin/room-images/upload")

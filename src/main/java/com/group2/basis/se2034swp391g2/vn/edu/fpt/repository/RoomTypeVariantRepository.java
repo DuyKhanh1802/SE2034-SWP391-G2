@@ -16,6 +16,14 @@ import java.util.Optional;
 
 public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant, Long> {
 
+    @Query("""
+    SELECT v
+    FROM RoomTypeVariant v
+    JOIN FETCH v.roomType rt
+    WHERE v.isDeleted = false
+      AND rt.isDeleted = false
+    ORDER BY rt.name ASC, v.variantName ASC
+    """)
     List<RoomTypeVariant> findByIsDeletedFalseOrderByRoomType_NameAscVariantNameAsc();
 
     @Query(value = """

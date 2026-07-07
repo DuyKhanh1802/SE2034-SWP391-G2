@@ -8,7 +8,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Image;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariant;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomNumberOption;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingDetailRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ImageRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomRepository;
@@ -24,13 +23,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
 public class RoomService {
 
     private static final int TOTAL_FLOORS = 6;
-    private static final int ROOMS_PER_FLOOR = 4;
+    private static final int ROOMS_PER_FLOOR = 16;
+    private static final int MAX_NOTE_LENGTH = 500;
+
     private static final int DEFAULT_PAGE_SIZE = 10;
     private static final int MAX_PAGE_SIZE = 50;
 
@@ -112,23 +114,76 @@ public class RoomService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
     }
 
-    public List<RoomNumberOption> getAvailableRoomNumberOptions() {
+    public List<RoomStatus> getInitialRoomStatusesForAddRoom() {
+        return List.of(
+                RoomStatus.AVAILABLE,
+                RoomStatus.MAINTENANCE
+        );
+    }
+
+    public List<Map<String, Object>> getAvailableRoomNumberOptions() {
         Set<String> existingRoomNumbers = new HashSet<>(roomRepository.findExistingRoomNumbers());
 
-        List<RoomNumberOption> options = new ArrayList<>();
+        List<Map<String, Object>> options = new ArrayList<>();
 
         for (int floor = 1; floor <= TOTAL_FLOORS; floor++) {
             for (int roomIndex = 1; roomIndex <= ROOMS_PER_FLOOR; roomIndex++) {
-
                 String roomNumber = floor + String.format("%02d", roomIndex);
 
                 if (!existingRoomNumbers.contains(roomNumber)) {
-                    options.add(new RoomNumberOption(roomNumber, floor));
+                    options.add(Map.of(
+                            "roomNumber", roomNumber,
+                            "floor", floor,
+                            "roomTypeName", getRoomTypeNameByFloor(floor)
+                    ));
                 }
             }
         }
 
         return options;
+    }
+
+    public Integer getFloorForDisplay(String roomNumber) {
+        String normalizedRoomNumber = normalizeRoomNumber(roomNumber);
+        validateRoomNumberInHotelRange(normalizedRoomNumber);
+
+        return getFloorFromRoomNumber(normalizedRoomNumber);
+    }
+
+    public String getRoomTypeNameForDisplay(String roomNumber) {
+        Integer floor = getFloorForDisplay(roomNumber);
+
+        return getRoomTypeNameByFloor(floor);
+    }
+
+    public List<RoomTypeVariant> getRoomTypeVariantsByRoomNumber(String roomNumber) {
+        String roomTypeName = getRoomTypeNameForDisplay(roomNumber);
+
+        return getRoomTypeVariantsByRoomTypeName(roomTypeName);
+    }
+
+    public List<RoomTypeVariant> getRoomTypeVariantsByRoomTypeName(String roomTypeName) {
+        if (roomTypeName == null || roomTypeName.trim().isEmpty()) {
+            return List.of();
+        }
+
+        String normalizedRoomTypeName = roomTypeName.trim();
+
+        return getAllRoomTypeVariants()
+                .stream()
+                .filter(variant -> variant.getRoomType() != null)
+                .filter(variant -> variant.getRoomType().getName() != null)
+                .filter(variant -> variant.getRoomType().getName().equalsIgnoreCase(normalizedRoomTypeName))
+                .toList();
+    }
+
+    @Transactional
+    public void createRoom(String roomNumber,
+                           Long variantId,
+                           RoomStatus status,
+                           String note) {
+
+        createRoomInternal(roomNumber, variantId, status, note);
     }
 
     @Transactional
@@ -140,57 +195,47 @@ public class RoomService {
                            List<String> imageUrls,
                            Integer primaryImageIndex) {
 
-        if (roomNumber == null || roomNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("Số phòng không được để trống!");
-        }
-
-        roomNumber = roomNumber.trim();
-
-        if (!isValidRoomNumber(roomNumber)) {
-            throw new IllegalArgumentException("Số phòng không hợp lệ!");
-        }
-
-        floor = getFloorFromRoomNumber(roomNumber);
-
-        if (roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
-            throw new IllegalArgumentException("Số phòng đã tồn tại!");
-        }
-
-        if (variantId == null) {
-            throw new IllegalArgumentException("Vui lòng chọn hạng phòng!");
-        }
-
-        RoomTypeVariant variant = roomTypeVariantRepository.findById(variantId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng!"));
-
-        if (Boolean.TRUE.equals(variant.getIsDeleted())) {
-            throw new IllegalArgumentException("Hạng phòng này đã bị xóa!");
-        }
-
-        if (status == null) {
-            status = RoomStatus.AVAILABLE;
-        }
-
-        Room room = new Room();
-        room.setRoomNumber(roomNumber);
-        room.setVariant(variant);
-        room.setFloor(floor);
-        room.setStatus(status);
-        room.setNote(normalizeNote(note));
-        room.setIsDeleted(false);
-
-        Room savedRoom;
-
-        try {
-            savedRoom = roomRepository.saveAndFlush(room);
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("Số phòng đã tồn tại!");
-        }
+        Room savedRoom = createRoomInternal(roomNumber, variantId, status, note);
 
         try {
             saveRoomImages(savedRoom.getId(), imageUrls, primaryImageIndex);
         } catch (DataIntegrityViolationException e) {
             throw new IllegalArgumentException("Lưu ảnh phòng thất bại. Vui lòng kiểm tra lại dữ liệu ảnh.");
+        }
+    }
+
+    private Room createRoomInternal(String roomNumber,
+                                    Long variantId,
+                                    RoomStatus status,
+                                    String note) {
+
+        String normalizedRoomNumber = normalizeRoomNumber(roomNumber);
+
+        validateRoomNumberInHotelRange(normalizedRoomNumber);
+        validateRoomNumberNotExists(normalizedRoomNumber);
+
+        int floor = getFloorFromRoomNumber(normalizedRoomNumber);
+        String expectedRoomTypeName = getRoomTypeNameByFloor(floor);
+
+        RoomTypeVariant variant = validateAndGetRoomTypeVariant(variantId);
+        validateVariantMatchesRoomType(variant, expectedRoomTypeName);
+
+        validateInitialRoomStatus(status);
+
+        String normalizedNote = validateAndNormalizeNote(note, status);
+
+        Room room = new Room();
+        room.setRoomNumber(normalizedRoomNumber);
+        room.setVariant(variant);
+        room.setFloor(floor);
+        room.setStatus(status);
+        room.setNote(normalizedNote);
+        room.setIsDeleted(false);
+
+        try {
+            return roomRepository.saveAndFlush(room);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Số phòng này đã tồn tại trong hệ thống.");
         }
     }
 
@@ -209,16 +254,20 @@ public class RoomService {
             throw new IllegalArgumentException("Số phòng không được để trống!");
         }
 
-        roomNumber = roomNumber.trim();
+        String normalizedRoomNumber = roomNumber.trim();
 
-        if (!isValidRoomNumber(roomNumber)) {
+        if (!isValidRoomNumber(normalizedRoomNumber)) {
             throw new IllegalArgumentException("Số phòng không hợp lệ!");
         }
 
-        floor = getFloorFromRoomNumber(roomNumber);
+        Integer calculatedFloor = getFloorFromRoomNumber(normalizedRoomNumber);
 
-        if (!room.getRoomNumber().equalsIgnoreCase(roomNumber)
-                && roomRepository.existsByRoomNumberAndIsDeletedFalse(roomNumber)) {
+        boolean roomNumberExists = roomRepository.findExistingRoomNumbers()
+                .stream()
+                .anyMatch(existingRoomNumber -> existingRoomNumber != null
+                        && existingRoomNumber.equalsIgnoreCase(normalizedRoomNumber));
+
+        if (!room.getRoomNumber().equalsIgnoreCase(normalizedRoomNumber) && roomNumberExists) {
             throw new IllegalArgumentException("Số phòng đã tồn tại!");
         }
 
@@ -237,9 +286,9 @@ public class RoomService {
             status = RoomStatus.AVAILABLE;
         }
 
-        room.setRoomNumber(roomNumber);
+        room.setRoomNumber(normalizedRoomNumber);
         room.setVariant(variant);
-        room.setFloor(floor);
+        room.setFloor(calculatedFloor);
         room.setStatus(status);
         room.setNote(normalizeNote(note));
 
@@ -260,6 +309,130 @@ public class RoomService {
         }
 
         roomRepository.save(room);
+    }
+
+    private String normalizeRoomNumber(String roomNumber) {
+        if (roomNumber == null || roomNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn số phòng hợp lệ.");
+        }
+
+        String value = roomNumber.trim();
+
+        if (!value.matches("\\d+")) {
+            throw new IllegalArgumentException("Vui lòng chọn số phòng hợp lệ.");
+        }
+
+        return value;
+    }
+
+    private void validateRoomNumberInHotelRange(String roomNumber) {
+        if (!isValidRoomNumber(roomNumber)) {
+            throw new IllegalArgumentException("Số phòng không nằm trong phạm vi hợp lệ của khách sạn.");
+        }
+    }
+
+    private void validateRoomNumberNotExists(String roomNumber) {
+        boolean exists = roomRepository.findExistingRoomNumbers()
+                .stream()
+                .anyMatch(existingRoomNumber -> existingRoomNumber != null
+                        && existingRoomNumber.equalsIgnoreCase(roomNumber));
+
+        if (exists) {
+            throw new IllegalArgumentException("Số phòng này đã tồn tại trong hệ thống.");
+        }
+    }
+
+    private RoomTypeVariant validateAndGetRoomTypeVariant(Long variantId) {
+        if (variantId == null) {
+            throw new IllegalArgumentException("Vui lòng chọn loại phòng chi tiết.");
+        }
+
+        RoomTypeVariant variant = roomTypeVariantRepository.findById(variantId)
+                .orElseThrow(() -> new IllegalArgumentException("Vui lòng chọn loại phòng chi tiết."));
+
+        if (Boolean.TRUE.equals(variant.getIsDeleted())) {
+            throw new IllegalArgumentException("Loại phòng chi tiết không còn hoạt động.");
+        }
+
+        if (variant.getRoomType() == null || Boolean.TRUE.equals(variant.getRoomType().getIsDeleted())) {
+            throw new IllegalArgumentException("Loại phòng chi tiết không còn hoạt động.");
+        }
+
+        return variant;
+    }
+
+    private void validateVariantMatchesRoomType(RoomTypeVariant variant, String expectedRoomTypeName) {
+        String actualRoomTypeName = variant.getRoomType().getName();
+
+        if (actualRoomTypeName == null
+                || !actualRoomTypeName.trim().equalsIgnoreCase(expectedRoomTypeName)) {
+            throw new IllegalArgumentException("Loại phòng chi tiết không phù hợp với hạng phòng của tầng đã chọn.");
+        }
+    }
+
+    private void validateInitialRoomStatus(RoomStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Vui lòng chọn trạng thái phòng.");
+        }
+
+        if (status != RoomStatus.AVAILABLE && status != RoomStatus.MAINTENANCE) {
+            throw new IllegalArgumentException("Trạng thái ban đầu của phòng chỉ có thể là AVAILABLE hoặc MAINTENANCE.");
+        }
+    }
+
+    private String validateAndNormalizeNote(String note, RoomStatus status) {
+        String value = normalizeNote(note);
+
+        if (value != null && value.length() > MAX_NOTE_LENGTH) {
+            throw new IllegalArgumentException("Số ký tự đã vượt quá giới hạn cho phép.");
+        }
+
+        if (status == RoomStatus.MAINTENANCE && (value == null || value.isBlank())) {
+            throw new IllegalArgumentException("Vui lòng nhập lý do bảo trì.");
+        }
+
+        return value;
+    }
+
+    private String getRoomTypeNameByFloor(int floor) {
+        return switch (floor) {
+            case 1 -> "Standard Room";
+            case 2 -> "Superior Room";
+            case 3 -> "Deluxe Room";
+            case 4 -> "Executive Room";
+            case 5 -> "Family Room";
+            case 6 -> "Suite Room";
+            default -> throw new IllegalArgumentException("Tầng phải nằm trong phạm vi từ 1 đến 6.");
+        };
+    }
+
+    private boolean isValidRoomNumber(String roomNumber) {
+        if (roomNumber == null || !roomNumber.matches("\\d{3}")) {
+            return false;
+        }
+
+        int number = Integer.parseInt(roomNumber);
+        int floor = number / 100;
+        int roomIndex = number % 100;
+
+        return floor >= 1
+                && floor <= TOTAL_FLOORS
+                && roomIndex >= 1
+                && roomIndex <= ROOMS_PER_FLOOR;
+    }
+
+    private Integer getFloorFromRoomNumber(String roomNumber) {
+        int number = Integer.parseInt(roomNumber);
+
+        return number / 100;
+    }
+
+    private String normalizeNote(String note) {
+        if (note == null || note.trim().isEmpty()) {
+            return null;
+        }
+
+        return note.trim();
     }
 
     private void validateCanDeactivate(Room room) {
@@ -305,32 +478,6 @@ public class RoomService {
         }
 
         return Math.min(size, MAX_PAGE_SIZE);
-    }
-
-    private boolean isValidRoomNumber(String roomNumber) {
-        if (roomNumber == null || !roomNumber.matches("\\d{3}")) {
-            return false;
-        }
-
-        int floor = Integer.parseInt(roomNumber.substring(0, 1));
-        int roomIndex = Integer.parseInt(roomNumber.substring(1));
-
-        return floor >= 1
-                && floor <= TOTAL_FLOORS
-                && roomIndex >= 1
-                && roomIndex <= ROOMS_PER_FLOOR;
-    }
-
-    private Integer getFloorFromRoomNumber(String roomNumber) {
-        return Integer.parseInt(roomNumber.substring(0, 1));
-    }
-
-    private String normalizeNote(String note) {
-        if (note == null || note.trim().isEmpty()) {
-            return null;
-        }
-
-        return note.trim();
     }
 
     private void saveRoomImages(Long roomId,

@@ -11,18 +11,24 @@
     <section class="welcome-section room-page-title">
         <h1>Thêm phòng</h1>
         <p>
-            Tạo phòng mới bằng cách nhập số phòng, tầng,
-            chọn hạng phòng, trạng thái và ghi chú phòng.
+            Tạo phòng vật lý mới cho khách sạn. Số phòng được chọn từ danh sách hợp lệ.
+            Tầng và hạng phòng sẽ được hệ thống tự xác định theo số phòng.
         </p>
     </section>
 
-    <!-- ERROR MESSAGE FROM SERVER -->
+    <!-- ERROR MESSAGE -->
     <div th:if="${errorMessage}" class="error-toast">
         <i class="fa-solid fa-circle-exclamation"></i>
-        <span th:text="${errorMessage}">Số phòng đã tồn tại!</span>
+        <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
     </div>
 
-    <!-- FORM -->
+    <!-- SUCCESS MESSAGE -->
+    <div th:if="${successMessage}" class="success-toast">
+        <i class="fa-solid fa-circle-check"></i>
+        <span th:text="${successMessage}">Thêm phòng thành công.</span>
+    </div>
+
+    <!-- FORM CARD -->
     <section class="room-form-card">
 
         <div class="form-heading">
@@ -30,91 +36,125 @@
             <h3>Thông tin phòng</h3>
         </div>
 
+        <!-- FORM 1: CHỌN SỐ PHÒNG -->
         <form th:action="@{/hotel-admin/list-room/add}"
-              method="post"
-              id="addRoomForm"
-              class="needs-validation"
-              novalidate>
+              method="get"
+              class="mb-4">
 
             <div class="row g-4">
 
-                <!-- SỐ PHÒNG -->
                 <div class="col-md-6">
-                    <label class="form-label">Số phòng</label>
+                    <label class="form-label">Số phòng <span class="text-danger">*</span></label>
 
-                    <input type="text"
-                           name="roomNumber"
-                           id="roomNumberInput"
-                           class="form-control room-input"
-                           placeholder="Ví dụ: 101"
-                           th:value="${roomNumber}"
-                           required>
-
-                    <div class="invalid-feedback" id="roomNumberFeedback">
-                        Vui lòng nhập số phòng.
-                    </div>
-                </div>
-
-                <!-- HẠNG PHÒNG -->
-                <div class="col-md-6">
-                    <label class="form-label">Hạng phòng</label>
-
-                    <select name="variantId"
+                    <select name="roomNumber"
                             class="form-select room-input"
                             required>
-                        <option value="">Chọn hạng phòng</option>
+                        <option value="">Chọn số phòng</option>
 
-                        <option th:each="variant : ${roomTypeVariants}"
-                                th:value="${variant.id}"
-                                th:text="${variant.variantName}"
-                                th:selected="${variant.id == selectedVariantId}">
-                            Standard Room - City View
+                        <option th:each="option : ${roomNumberOptions}"
+                                th:value="${option['roomNumber']}"
+                                th:text="${option['roomNumber']}"
+                                th:selected="${roomNumber != null and roomNumber == option['roomNumber']}">
+                            101
                         </option>
                     </select>
 
-                    <div class="invalid-feedback">
-                        Vui lòng chọn hạng phòng.
+                    <div class="form-text">
+                        Chỉ hiển thị các số phòng còn trống trong phạm vi khách sạn.
                     </div>
                 </div>
+
+                <div class="col-md-6 d-flex align-items-start flex-column justify-content-end">
+                    <button type="submit" class="save-room-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        Xác nhận số phòng
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+        <hr class="my-4">
+
+        <!-- FORM 2: LƯU PHÒNG -->
+        <form th:action="@{/hotel-admin/list-room/add}"
+              method="post"
+              id="addRoomForm">
+
+            <input type="hidden" name="roomNumber" th:value="${roomNumber}">
+
+            <div class="row g-4">
 
                 <!-- TẦNG -->
                 <div class="col-md-6">
                     <label class="form-label">Tầng</label>
 
                     <input type="text"
-                           name="floor"
-                           id="floorInput"
                            class="form-control room-input"
-                           placeholder="Ví dụ: 1"
+                           placeholder="Hệ thống tự xác định theo số phòng"
                            th:value="${floor}"
-                           required>
+                           readonly>
+                </div>
 
-                    <div class="invalid-feedback" id="floorFeedback">
-                        Vui lòng nhập tầng.
+                <!-- HẠNG PHÒNG -->
+                <div class="col-md-6">
+                    <label class="form-label">Hạng phòng</label>
+
+                    <input type="text"
+                           class="form-control room-input"
+                           placeholder="Hệ thống tự xác định theo tầng"
+                           th:value="${roomTypeName}"
+                           readonly>
+                </div>
+
+                <!-- LOẠI PHÒNG CHI TIẾT -->
+                <div class="col-md-6">
+                    <label class="form-label">Loại phòng chi tiết <span class="text-danger">*</span></label>
+
+                    <select name="variantId"
+                            class="form-select room-input"
+                            required
+                            th:disabled="${roomTypeName == null}">
+                        <option value="">Chọn loại phòng chi tiết</option>
+
+                        <option th:each="variant : ${roomTypeVariants}"
+                                th:value="${variant.id}"
+                                th:selected="${selectedVariantId != null and selectedVariantId == variant.id}"
+                                th:text="${variant.variantName}">
+                            Standard Room - hướng biển
+                        </option>
+                    </select>
+
+                    <div class="form-text" th:if="${roomTypeName == null}">
+                        Vui lòng chọn và xác nhận số phòng trước.
+                    </div>
+
+                    <div class="form-text" th:if="${roomTypeName != null}">
+                        Chỉ hiển thị loại phòng chi tiết phù hợp với hạng phòng đã xác định.
                     </div>
                 </div>
 
                 <!-- TRẠNG THÁI -->
                 <div class="col-md-6">
-                    <label class="form-label">Trạng thái</label>
+                    <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
 
                     <select name="status"
                             class="form-select room-input"
-                            required>
+                            required
+                            th:disabled="${roomTypeName == null}">
                         <option value="">Chọn trạng thái</option>
 
                         <option th:each="status : ${roomStatuses}"
                                 th:value="${status}"
-                                th:selected="${status == selectedStatus}"
+                                th:selected="${selectedStatus != null and selectedStatus == status}"
                                 th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
-                                         (status.name() == 'OCCUPIED' ? 'Đang sử dụng' :
-                                         (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status))}">
+                                         (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status)}">
                             Còn trống
                         </option>
                     </select>
 
-                    <div class="invalid-feedback">
-                        Vui lòng chọn trạng thái phòng.
+                    <div class="form-text">
+                        Trạng thái ban đầu chỉ được là Còn trống hoặc Bảo trì.
                     </div>
                 </div>
 
@@ -127,10 +167,11 @@
                               rows="3"
                               maxlength="500"
                               placeholder="Ví dụ: Phòng gần thang máy, phòng cần kiểm tra điều hòa..."
-                              th:text="${note}"></textarea>
+                              th:text="${note}"
+                              th:disabled="${roomTypeName == null}"></textarea>
 
                     <div class="form-text">
-                        Tối đa 500 ký tự.
+                        Tối đa 500 ký tự. Nếu trạng thái là Bảo trì, bắt buộc nhập lý do bảo trì.
                     </div>
                 </div>
 
@@ -141,7 +182,9 @@
                     Hủy
                 </a>
 
-                <button type="submit" class="save-room-btn">
+                <button type="submit"
+                        class="save-room-btn"
+                        th:disabled="${roomTypeName == null}">
                     <i class="fa-solid fa-check"></i>
                     Lưu phòng
                 </button>
@@ -150,136 +193,6 @@
         </form>
 
     </section>
-
-    <script>
-        // Ẩn thông báo lỗi server sau 3 giây
-        setTimeout(function () {
-            const toast = document.querySelector('.error-toast');
-            if (toast) {
-                toast.style.display = 'none';
-            }
-        }, 3000);
-
-        const form = document.getElementById('addRoomForm');
-
-        const roomNumberInput = document.getElementById('roomNumberInput');
-        const roomNumberFeedback = document.getElementById('roomNumberFeedback');
-
-        const floorInput = document.getElementById('floorInput');
-        const floorFeedback = document.getElementById('floorFeedback');
-
-        function clearValidation(input) {
-            input.setCustomValidity('');
-            input.classList.remove('is-invalid');
-            input.classList.remove('is-valid');
-        }
-
-        function validateRoomNumberOnSubmit() {
-            const value = roomNumberInput.value.trim();
-
-            clearValidation(roomNumberInput);
-
-            if (value === '') {
-                roomNumberInput.setCustomValidity('Vui lòng nhập số phòng.');
-                roomNumberFeedback.textContent = 'Vui lòng nhập số phòng.';
-                roomNumberInput.classList.add('is-invalid');
-                return false;
-            }
-
-            if (!/^[0-9]+$/.test(value)) {
-                roomNumberInput.setCustomValidity('Số phòng không được chứa chữ.');
-                roomNumberFeedback.textContent = 'Số phòng không được chứa chữ.';
-                roomNumberInput.classList.add('is-invalid');
-                return false;
-            }
-
-            if (value.length > 5) {
-                roomNumberInput.setCustomValidity('Số phòng không được vượt quá 5 chữ số.');
-                roomNumberFeedback.textContent = 'Số phòng không được vượt quá 5 chữ số.';
-                roomNumberInput.classList.add('is-invalid');
-                return false;
-            }
-
-            roomNumberInput.setCustomValidity('');
-            roomNumberInput.classList.remove('is-invalid');
-            roomNumberInput.classList.add('is-valid');
-            return true;
-        }
-
-        function validateFloorOnSubmit() {
-            const value = floorInput.value.trim();
-
-            clearValidation(floorInput);
-
-            if (value === '') {
-                floorInput.setCustomValidity('Vui lòng nhập tầng.');
-                floorFeedback.textContent = 'Vui lòng nhập tầng.';
-                floorInput.classList.add('is-invalid');
-                return false;
-            }
-
-            if (!/^[0-9]+$/.test(value)) {
-                floorInput.setCustomValidity('Tầng không được chứa chữ.');
-                floorFeedback.textContent = 'Tầng không được chứa chữ.';
-                floorInput.classList.add('is-invalid');
-                return false;
-            }
-
-            if (value === '0') {
-                floorInput.setCustomValidity('Tầng không được bằng 0.');
-                floorFeedback.textContent = 'Tầng không được bằng 0.';
-                floorInput.classList.add('is-invalid');
-                return false;
-            }
-
-            if (/^0[0-9]+$/.test(value)) {
-                floorInput.setCustomValidity('Tầng không được bắt đầu bằng số 0.');
-                floorFeedback.textContent = 'Tầng không được bắt đầu bằng số 0.';
-                floorInput.classList.add('is-invalid');
-                return false;
-            }
-
-            if (Number(value) > 99) {
-                floorInput.setCustomValidity('Tầng phải từ 1 đến 99.');
-                floorFeedback.textContent = 'Tầng phải từ 1 đến 99.';
-                floorInput.classList.add('is-invalid');
-                return false;
-            }
-
-            floorInput.setCustomValidity('');
-            floorInput.classList.remove('is-invalid');
-            floorInput.classList.add('is-valid');
-            return true;
-        }
-
-        // Khi đang nhập lại thì ẩn lỗi cũ.
-        // Lỗi chỉ hiện khi bấm Lưu phòng.
-        if (roomNumberInput) {
-            roomNumberInput.addEventListener('input', function () {
-                clearValidation(roomNumberInput);
-                roomNumberFeedback.textContent = 'Vui lòng nhập số phòng.';
-            });
-        }
-
-        if (floorInput) {
-            floorInput.addEventListener('input', function () {
-                clearValidation(floorInput);
-                floorFeedback.textContent = 'Vui lòng nhập tầng.';
-            });
-        }
-
-        form.addEventListener('submit', function (event) {
-            const isRoomNumberValid = validateRoomNumberOnSubmit();
-            const isFloorValid = validateFloorOnSubmit();
-
-            form.classList.add('was-validated');
-
-            if (!form.checkValidity() || !isRoomNumberValid || !isFloorValid) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-        });
-    </script>
 
 </main>
 </body>

@@ -98,10 +98,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     );
 
     @Query("""
-        SELECT r.roomNumber
-        FROM Room r
-        WHERE r.isDeleted = false
-        """)
+    SELECT DISTINCT r.roomNumber
+    FROM Room r
+    WHERE r.roomNumber IS NOT NULL
+    ORDER BY r.roomNumber ASC
+    """)
     List<String> findExistingRoomNumbers();
 
     @Query("""
