@@ -216,21 +216,14 @@ public class HotelAdminRoomController {
                                    HttpServletRequest request) {
 
         addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
-
-        model.addAttribute("room", roomService.getRoomById(id));
-        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
-        model.addAttribute("viewTypes", ViewType.values());
-        model.addAttribute("roomStatuses", RoomStatus.values());
+        addEditRoomFormData(model, id, null, null);
 
         return "hotel_admin/EditRoom";
     }
 
     @PostMapping("/hotel-admin/rooms/edit/{id}")
     public String updateRoom(@PathVariable Long id,
-                             @RequestParam String roomNumber,
-                             @RequestParam Long variantId,
-                             @RequestParam(required = false) Integer floor,
-                             @RequestParam RoomStatus status,
+                             @RequestParam(required = false) String status,
                              @RequestParam(required = false) String note,
                              Model model,
                              RedirectAttributes redirectAttributes,
@@ -239,30 +232,32 @@ public class HotelAdminRoomController {
                              HttpServletRequest request) {
 
         try {
-            roomService.updateRoom(
-                    id,
-                    roomNumber,
-                    variantId,
-                    floor,
-                    status,
-                    note
-            );
+            roomService.updateRoomOperationalInfo(id, status, note);
 
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phòng thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phòng thành công.");
 
             return "redirect:/hotel-admin/list-room";
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
+            addEditRoomFormData(model, id, status, note);
 
             model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("room", roomService.getRoomById(id));
-            model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
-            model.addAttribute("viewTypes", ViewType.values());
-            model.addAttribute("roomStatuses", RoomStatus.values());
 
             return "hotel_admin/EditRoom";
         }
+    }
+
+    private void addEditRoomFormData(Model model,
+                                     Long id,
+                                     String selectedStatus,
+                                     String selectedNote) {
+        Room room = roomService.getRoomById(id);
+
+        model.addAttribute("room", room);
+        model.addAttribute("editableRoomStatuses", roomService.getEditableRoomStatuses());
+        model.addAttribute("selectedStatus", selectedStatus);
+        model.addAttribute("selectedNote", selectedNote);
     }
 
     @PostMapping("/hotel-admin/rooms/toggle-operating/{id}")
@@ -282,10 +277,17 @@ public class HotelAdminRoomController {
     public String deleteRoom(@PathVariable Long id,
                              RedirectAttributes redirectAttributes) {
 
-        roomService.deleteRoom(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Xóa phòng thành công!");
+        try {
+            roomService.deleteRoom(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa phòng thành công.");
 
-        return "redirect:/hotel-admin/list-room";
+            return "redirect:/hotel-admin/list-room";
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+
+            return "redirect:/hotel-admin/rooms/edit/" + id;
+        }
     }
 
     @GetMapping("/hotel-admin/rooms/view/{id}")
