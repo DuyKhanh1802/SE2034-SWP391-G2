@@ -11,12 +11,12 @@
     <section class="welcome-section room-page-title">
         <h1>Thêm phòng</h1>
         <p>
-            Tạo phòng mới bằng cách chọn hạng phòng,
-            số phòng, tầng, trạng thái và ghi chú phòng.
+            Tạo phòng mới bằng cách nhập số phòng, tầng,
+            chọn hạng phòng, trạng thái và ghi chú phòng.
         </p>
     </section>
 
-    <!-- ERROR MESSAGE -->
+    <!-- ERROR MESSAGE FROM SERVER -->
     <div th:if="${errorMessage}" class="error-toast">
         <i class="fa-solid fa-circle-exclamation"></i>
         <span th:text="${errorMessage}">Số phòng đã tồn tại!</span>
@@ -30,16 +30,36 @@
             <h3>Thông tin phòng</h3>
         </div>
 
-        <form th:action="@{/hotel-admin/list-room/add}" method="post">
+        <form th:action="@{/hotel-admin/list-room/add}"
+              method="post"
+              id="addRoomForm"
+              class="needs-validation"
+              novalidate>
 
             <div class="row g-4">
+
+                <!-- SỐ PHÒNG -->
+                <div class="col-md-6">
+                    <label class="form-label">Số phòng</label>
+
+                    <input type="text"
+                           name="roomNumber"
+                           id="roomNumberInput"
+                           class="form-control room-input"
+                           placeholder="Ví dụ: 101"
+                           th:value="${roomNumber}"
+                           required>
+
+                    <div class="invalid-feedback" id="roomNumberFeedback">
+                        Vui lòng nhập số phòng.
+                    </div>
+                </div>
 
                 <!-- HẠNG PHÒNG -->
                 <div class="col-md-6">
                     <label class="form-label">Hạng phòng</label>
 
                     <select name="variantId"
-                            id="variantSelect"
                             class="form-select room-input"
                             required>
                         <option value="">Chọn hạng phòng</option>
@@ -51,40 +71,27 @@
                             Standard Room - City View
                         </option>
                     </select>
-                </div>
 
-                <!-- SỐ PHÒNG -->
-                <div class="col-md-6">
-                    <label class="form-label">Số phòng</label>
-
-                    <select name="roomNumber"
-                            id="roomNumberSelect"
-                            class="form-select room-input"
-                            required>
-                        <option value="">Chọn số phòng</option>
-
-                        <option th:each="option : ${roomNumberOptions}"
-                                th:value="${option.roomNumber}"
-                                th:text="${option.roomNumber}"
-                                th:attr="data-floor=${option.floor}"
-                                th:selected="${option.roomNumber == roomNumber}">
-                            101
-                        </option>
-                    </select>
+                    <div class="invalid-feedback">
+                        Vui lòng chọn hạng phòng.
+                    </div>
                 </div>
 
                 <!-- TẦNG -->
                 <div class="col-md-6">
                     <label class="form-label">Tầng</label>
 
-                    <input type="number"
+                    <input type="text"
                            name="floor"
                            id="floorInput"
                            class="form-control room-input"
-                           placeholder="Tầng sẽ tự hiển thị"
+                           placeholder="Ví dụ: 1"
                            th:value="${floor}"
-                           readonly
                            required>
+
+                    <div class="invalid-feedback" id="floorFeedback">
+                        Vui lòng nhập tầng.
+                    </div>
                 </div>
 
                 <!-- TRẠNG THÁI -->
@@ -105,6 +112,10 @@
                             Còn trống
                         </option>
                     </select>
+
+                    <div class="invalid-feedback">
+                        Vui lòng chọn trạng thái phòng.
+                    </div>
                 </div>
 
                 <!-- GHI CHÚ -->
@@ -117,6 +128,10 @@
                               maxlength="500"
                               placeholder="Ví dụ: Phòng gần thang máy, phòng cần kiểm tra điều hòa..."
                               th:text="${note}"></textarea>
+
+                    <div class="form-text">
+                        Tối đa 500 ký tự.
+                    </div>
                 </div>
 
             </div>
@@ -137,6 +152,7 @@
     </section>
 
     <script>
+        // Ẩn thông báo lỗi server sau 3 giây
         setTimeout(function () {
             const toast = document.querySelector('.error-toast');
             if (toast) {
@@ -144,23 +160,125 @@
             }
         }, 3000);
 
-        const roomNumberSelect = document.getElementById('roomNumberSelect');
+        const form = document.getElementById('addRoomForm');
+
+        const roomNumberInput = document.getElementById('roomNumberInput');
+        const roomNumberFeedback = document.getElementById('roomNumberFeedback');
+
         const floorInput = document.getElementById('floorInput');
+        const floorFeedback = document.getElementById('floorFeedback');
 
-        function updateFloorByRoomNumber() {
-            const selectedOption = roomNumberSelect.options[roomNumberSelect.selectedIndex];
-
-            if (!selectedOption || !selectedOption.value) {
-                floorInput.value = '';
-                return;
-            }
-
-            floorInput.value = selectedOption.getAttribute('data-floor');
+        function clearValidation(input) {
+            input.setCustomValidity('');
+            input.classList.remove('is-invalid');
+            input.classList.remove('is-valid');
         }
 
-        roomNumberSelect.addEventListener('change', updateFloorByRoomNumber);
+        function validateRoomNumberOnSubmit() {
+            const value = roomNumberInput.value.trim();
 
-        updateFloorByRoomNumber();
+            clearValidation(roomNumberInput);
+
+            if (value === '') {
+                roomNumberInput.setCustomValidity('Vui lòng nhập số phòng.');
+                roomNumberFeedback.textContent = 'Vui lòng nhập số phòng.';
+                roomNumberInput.classList.add('is-invalid');
+                return false;
+            }
+
+            if (!/^[0-9]+$/.test(value)) {
+                roomNumberInput.setCustomValidity('Số phòng không được chứa chữ.');
+                roomNumberFeedback.textContent = 'Số phòng không được chứa chữ.';
+                roomNumberInput.classList.add('is-invalid');
+                return false;
+            }
+
+            if (value.length > 5) {
+                roomNumberInput.setCustomValidity('Số phòng không được vượt quá 5 chữ số.');
+                roomNumberFeedback.textContent = 'Số phòng không được vượt quá 5 chữ số.';
+                roomNumberInput.classList.add('is-invalid');
+                return false;
+            }
+
+            roomNumberInput.setCustomValidity('');
+            roomNumberInput.classList.remove('is-invalid');
+            roomNumberInput.classList.add('is-valid');
+            return true;
+        }
+
+        function validateFloorOnSubmit() {
+            const value = floorInput.value.trim();
+
+            clearValidation(floorInput);
+
+            if (value === '') {
+                floorInput.setCustomValidity('Vui lòng nhập tầng.');
+                floorFeedback.textContent = 'Vui lòng nhập tầng.';
+                floorInput.classList.add('is-invalid');
+                return false;
+            }
+
+            if (!/^[0-9]+$/.test(value)) {
+                floorInput.setCustomValidity('Tầng không được chứa chữ.');
+                floorFeedback.textContent = 'Tầng không được chứa chữ.';
+                floorInput.classList.add('is-invalid');
+                return false;
+            }
+
+            if (value === '0') {
+                floorInput.setCustomValidity('Tầng không được bằng 0.');
+                floorFeedback.textContent = 'Tầng không được bằng 0.';
+                floorInput.classList.add('is-invalid');
+                return false;
+            }
+
+            if (/^0[0-9]+$/.test(value)) {
+                floorInput.setCustomValidity('Tầng không được bắt đầu bằng số 0.');
+                floorFeedback.textContent = 'Tầng không được bắt đầu bằng số 0.';
+                floorInput.classList.add('is-invalid');
+                return false;
+            }
+
+            if (Number(value) > 99) {
+                floorInput.setCustomValidity('Tầng phải từ 1 đến 99.');
+                floorFeedback.textContent = 'Tầng phải từ 1 đến 99.';
+                floorInput.classList.add('is-invalid');
+                return false;
+            }
+
+            floorInput.setCustomValidity('');
+            floorInput.classList.remove('is-invalid');
+            floorInput.classList.add('is-valid');
+            return true;
+        }
+
+        // Khi đang nhập lại thì ẩn lỗi cũ.
+        // Lỗi chỉ hiện khi bấm Lưu phòng.
+        if (roomNumberInput) {
+            roomNumberInput.addEventListener('input', function () {
+                clearValidation(roomNumberInput);
+                roomNumberFeedback.textContent = 'Vui lòng nhập số phòng.';
+            });
+        }
+
+        if (floorInput) {
+            floorInput.addEventListener('input', function () {
+                clearValidation(floorInput);
+                floorFeedback.textContent = 'Vui lòng nhập tầng.';
+            });
+        }
+
+        form.addEventListener('submit', function (event) {
+            const isRoomNumberValid = validateRoomNumberOnSubmit();
+            const isFloorValid = validateFloorOnSubmit();
+
+            form.classList.add('was-validated');
+
+            if (!form.checkValidity() || !isRoomNumberValid || !isFloorValid) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
     </script>
 
 </main>

@@ -1,18 +1,22 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ImageEntityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Image;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariant;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomNumberOption;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingDetailRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ImageRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomTypeVariantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,20 +31,25 @@ public class RoomService {
 
     private static final int TOTAL_FLOORS = 6;
     private static final int ROOMS_PER_FLOOR = 4;
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 50;
 
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
     private final RoomTypeVariantRepository roomTypeVariantRepository;
     private final ImageRepository imageRepository;
+    private final BookingDetailRepository bookingDetailRepository;
 
     public RoomService(RoomRepository roomRepository,
                        RoomTypeRepository roomTypeRepository,
                        RoomTypeVariantRepository roomTypeVariantRepository,
-                       ImageRepository imageRepository) {
+                       ImageRepository imageRepository,
+                       BookingDetailRepository bookingDetailRepository) {
         this.roomRepository = roomRepository;
         this.roomTypeRepository = roomTypeRepository;
         this.roomTypeVariantRepository = roomTypeVariantRepository;
         this.imageRepository = imageRepository;
+        this.bookingDetailRepository = bookingDetailRepository;
     }
 
     public List<Room> getAllRooms() {
@@ -57,6 +66,45 @@ public class RoomService {
 
     public Page<Room> getRoomsPage(Pageable pageable) {
         return roomRepository.findByIsDeletedFalse(pageable);
+    }
+
+    public Page<Room> searchRoomsForAdmin(String keyword,
+                                          String roomType,
+                                          Integer floor,
+                                          ViewType viewType,
+                                          RoomStatus status,
+                                          String operatingStatus,
+                                          Integer page,
+                                          Integer size) {
+
+        int validPage = normalizePage(page);
+        int validSize = normalizeSize(size);
+
+        Pageable pageable = PageRequest.of(validPage, validSize);
+
+        return roomRepository.searchForAdmin(
+                keyword,
+                roomType,
+                floor,
+                viewType,
+                status,
+                operatingStatus,
+                pageable
+        );
+    }
+
+    public List<Integer> getRoomFloors() {
+        List<Integer> floors = new ArrayList<>();
+
+        for (int floor = 1; floor <= TOTAL_FLOORS; floor++) {
+            floors.add(floor);
+        }
+
+        return floors;
+    }
+
+    public List<String> getRoomTypeNamesForAdminFilter() {
+        return roomRepository.findDistinctRoomTypeNamesForAdmin();
     }
 
     public Room getRoomById(Long id) {
@@ -108,10 +156,14 @@ public class RoomService {
             throw new IllegalArgumentException("Số phòng đã tồn tại!");
         }
 
+        if (variantId == null) {
+            throw new IllegalArgumentException("Vui lòng chọn hạng phòng!");
+        }
+
         RoomTypeVariant variant = roomTypeVariantRepository.findById(variantId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng!"));
 
-        if (variant.getIsDeleted()) {
+        if (Boolean.TRUE.equals(variant.getIsDeleted())) {
             throw new IllegalArgumentException("Hạng phòng này đã bị xóa!");
         }
 
@@ -170,10 +222,14 @@ public class RoomService {
             throw new IllegalArgumentException("Số phòng đã tồn tại!");
         }
 
+        if (variantId == null) {
+            throw new IllegalArgumentException("Vui lòng chọn hạng phòng!");
+        }
+
         RoomTypeVariant variant = roomTypeVariantRepository.findById(variantId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng!"));
 
-        if (variant.getIsDeleted()) {
+        if (Boolean.TRUE.equals(variant.getIsDeleted())) {
             throw new IllegalArgumentException("Hạng phòng này đã bị xóa!");
         }
 
@@ -188,6 +244,67 @@ public class RoomService {
         room.setNote(normalizeNote(note));
 
         roomRepository.save(room);
+    }
+
+    @Transactional
+    public void toggleRoomOperatingStatus(Long id) {
+        Room room = roomRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng!"));
+
+        if (room.getStatus() == RoomStatus.MAINTENANCE) {
+            validateCanActivate(room);
+            room.setStatus(RoomStatus.AVAILABLE);
+        } else {
+            validateCanDeactivate(room);
+            room.setStatus(RoomStatus.MAINTENANCE);
+        }
+
+        roomRepository.save(room);
+    }
+
+    private void validateCanDeactivate(Room room) {
+        if (room.getStatus() == RoomStatus.OCCUPIED) {
+            throw new IllegalStateException("Không thể tạm ngưng phòng vì phòng đang có khách hoặc đang liên kết với booking đang hoạt động.");
+        }
+
+        List<BookingStatus> blockingStatuses = List.of(
+                BookingStatus.PENDING,
+                BookingStatus.CONFIRMED,
+                BookingStatus.CHECKED_IN
+        );
+
+        boolean hasActiveOrUpcomingBooking = bookingDetailRepository
+                .existsActiveOrUpcomingBookingByRoomId(room.getId(), blockingStatuses);
+
+        if (hasActiveOrUpcomingBooking) {
+            throw new IllegalStateException("Không thể tạm ngưng phòng vì phòng đang có khách hoặc đang liên kết với booking đang hoạt động.");
+        }
+    }
+
+    private void validateCanActivate(Room room) {
+        if (Boolean.TRUE.equals(room.getIsDeleted())) {
+            throw new IllegalStateException("Không thể bật phòng vì phòng đã bị xóa mềm.");
+        }
+
+        if (room.getVariant() == null || Boolean.TRUE.equals(room.getVariant().getIsDeleted())) {
+            throw new IllegalStateException("Không thể bật phòng vì hạng phòng của phòng này đang không hoạt động.");
+        }
+    }
+
+    private int normalizePage(Integer page) {
+        if (page == null || page < 0) {
+            return 0;
+        }
+
+        return page;
+    }
+
+    private int normalizeSize(Integer size) {
+        if (size == null || size <= 0) {
+            return DEFAULT_PAGE_SIZE;
+        }
+
+        return Math.min(size, MAX_PAGE_SIZE);
     }
 
     private boolean isValidRoomNumber(String roomNumber) {
