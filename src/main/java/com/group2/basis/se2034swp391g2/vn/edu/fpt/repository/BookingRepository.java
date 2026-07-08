@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -305,5 +305,29 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
             @Param("statuses") Collection<BookingStatus> statuses
     );
 
+    long countByStatusAndCheckInDateAndIsDeletedFalse(
+            BookingStatus status,
+            LocalDate checkInDate
+    );
 
+    long countByStatusAndCheckOutDateAndIsDeletedFalse(
+            BookingStatus status,
+            LocalDate checkOutDate
+    );
+
+    @Query("""
+    SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView$PendingBookingRow(
+        b.id,
+        b.bookingReference,
+        CONCAT(b.guestLastName, ' ', b.guestFirstName),
+        b.checkInDate,
+        b.checkOutDate,
+        CAST(b.status AS string)
+    )
+    FROM Booking b
+    WHERE b.isDeleted = false
+      AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.PENDING
+    ORDER BY b.createdAt DESC, b.id DESC
+""")
+    List<ReceptionistDashboardView.PendingBookingRow> findRecentPendingBookings(Pageable pageable);
 }

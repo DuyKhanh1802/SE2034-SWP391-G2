@@ -251,6 +251,7 @@
                         <th>Thành tiền</th>
                         <th>RoomCode</th>
                         <th>Hết hạn</th>
+                        <th th:if="${detail.bookingStatus.name() == 'CHECKED_IN'}">Thao tác</th>
                     </tr>
                     </thead>
 
@@ -321,12 +322,193 @@
                                       : '-'}">
                             -
                         </td>
+
+                        <td th:if="${detail.bookingStatus.name() == 'CHECKED_IN'}">
+                            <button type="button"
+                                    class="btn-detail outline room-move-btn"
+                                    data-bs-toggle="modal"
+                                    th:data-bs-target="${'#roomMoveModal-' + room.bookingDetailId}"
+                                    th:disabled="${roomMoveOptionsByDetail[room.bookingDetailId] == null or #lists.isEmpty(roomMoveOptionsByDetail[room.bookingDetailId])}">
+                                <i class="bi bi-arrow-left-right"></i>
+                                Đổi phòng
+                            </button>
+                        </td>
                     </tr>
 
                     <tr th:if="${detail.rooms == null or #lists.isEmpty(detail.rooms)}">
-                        <td colspan="7" class="empty-row">
+                        <td th:colspan="${detail.bookingStatus.name() == 'CHECKED_IN' ? 9 : 8}" class="empty-row">
                             Chưa có phòng trong đặt phòng này.
                         </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ROOM MOVE MODALS -->
+        <div th:if="${detail.bookingStatus.name() == 'CHECKED_IN'}"
+             th:each="room : ${detail.rooms}"
+             class="modal fade"
+             th:id="${'roomMoveModal-' + room.bookingDetailId}"
+             tabindex="-1"
+             aria-hidden="true">
+
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <form class="modal-content room-move-modal"
+                      th:action="@{/receptionist/bookings/view/{bookingId}/room-move(bookingId=${detail.bookingId})}"
+                      method="post">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Hỗ trợ đổi phòng</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="bookingDetailId" th:value="${room.bookingDetailId}">
+
+                        <div class="room-move-current-box">
+                            <div>
+                                <span>Phòng hiện tại</span>
+                                <strong th:text="${'Phòng ' + room.roomNumber}">Phòng 101</strong>
+                            </div>
+
+                            <div>
+                                <span>Hạng phòng hiện tại</span>
+                                <strong th:text="${room.variantName != null ? room.variantName : room.roomTypeName}">
+                                    Deluxe
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Giá hiện tại</span>
+                                <strong th:text="${#numbers.formatDecimal(room.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND/đêm'">
+                                    0 VND/đêm
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info room-move-note">
+                            Cùng hạng/cùng giá sẽ không phát sinh tiền.
+                            Nếu khách chọn phòng giá cao hơn, hệ thống sẽ ghi phụ thu vào folio với loại
+                            <strong>ROOM_CHARGE</strong>; chưa tạo payment ở bước đổi phòng.
+                        </div>
+
+                        <div class="room-move-form-grid">
+                            <div class="mb-3">
+                                <label class="form-label">Phòng mới</label>
+                                <select name="newRoomId" class="form-select" required>
+                                    <option value="">Chọn phòng mới</option>
+                                    <option th:each="option : ${roomMoveOptionsByDetail[room.bookingDetailId]}"
+                                            th:value="${option.roomId}"
+                                            th:text="${'Phòng ' + option.roomNumber
+                                        + ' • Tầng ' + option.floor
+                                        + ' • ' + option.variantName
+                                        + ' • ' + #numbers.formatDecimal(option.pricePerNight, 0, 'COMMA', 0, 'POINT') + ' VND/đêm'
+                                        + (option.upgrade ? ' • Phụ thu +' + #numbers.formatDecimal(option.priceDifferencePerNight, 0, 'COMMA', 0, 'POINT') + ' VND/đêm' : ' • Không phụ thu')}">
+                                        Phòng 201
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Lý do đổi phòng</label>
+                                <select name="reasonType" class="form-select" required>
+                                    <option value="">Chọn lý do</option>
+                                    <option th:each="reason : ${roomMoveReasons}"
+                                            th:value="${reason.name()}"
+                                            th:text="${reason.label}">
+                                        Khách yêu cầu
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Chính sách phí</label>
+                                <select name="feePolicy" class="form-select" required>
+                                    <option th:each="policy : ${roomMoveFeePolicies}"
+                                            th:value="${policy.name()}"
+                                            th:text="${policy.label}">
+                                        Không phát sinh phí
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Trạng thái phòng cũ sau khi đổi</label>
+                                <select name="oldRoomStatusAfterMove" class="form-select" required>
+                                    <option th:each="status : ${roomMoveOldRoomStatuses}"
+                                            th:value="${status.name()}"
+                                            th:text="${status.name() == 'AVAILABLE' ? 'Available - Có thể bán lại' : 'Maintenance - Cần bảo trì'}">
+                                        Available
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label">Ghi chú chi tiết</label>
+                            <textarea name="reasonNote"
+                                      class="form-control"
+                                      rows="4"
+                                      maxlength="500"
+                                      required
+                                      placeholder="Ví dụ: Khách báo điều hòa phòng cũ không lạnh, chuyển sang phòng 603."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-dark">Xác nhận đổi phòng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ROOM MOVE HISTORY -->
+        <div class="detail-card" th:if="${roomMoveHistory != null and !#lists.isEmpty(roomMoveHistory)}">
+            <div class="detail-card-title">
+                <h2>Lịch sử đổi phòng</h2>
+            </div>
+
+            <div class="room-detail-table room-move-history-table">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Chuyển phòng</th>
+                        <th>Lý do</th>
+                        <th>Chính sách phí</th>
+                        <th>Phí phát sinh</th>
+                        <th>Trạng thái phòng cũ</th>
+                        <th>Người xử lý</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="move : ${roomMoveHistory}">
+                        <td th:text="${move.movedAt != null ? #temporals.format(move.movedAt, 'dd/MM/yyyy HH:mm') : '-'}">
+                            06/07/2026 21:00
+                        </td>
+
+                        <td>
+                            <strong th:text="${move.oldRoomNumber + ' -> ' + move.newRoomNumber}">
+                                502 -> 603
+                            </strong>
+                        </td>
+
+                        <td th:text="${move.reasonLabel}">Khách yêu cầu</td>
+
+                        <td th:text="${move.feePolicyLabel}">Không phát sinh phí</td>
+
+                        <td th:text="${#numbers.formatDecimal(move.extraChargeAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                            0 VND
+                        </td>
+
+                        <td th:text="${move.oldRoomStatusAfterMove != null ? move.oldRoomStatusAfterMove.name() : '-'}">
+                            AVAILABLE
+                        </td>
+
+                        <td th:text="${move.movedByName}">Receptionist</td>
                     </tr>
                     </tbody>
                 </table>
@@ -336,7 +518,7 @@
         <!-- ADDITIONAL SERVICES -->
         <div class="detail-card" th:if="${detail.services != null and !#lists.isEmpty(detail.services)}">
             <div class="detail-card-title">
-                <h2>Dịch vụ đã thêm</h2>
+                <h2>Dịch vụ / khoản phát sinh</h2>
             </div>
 
             <div class="room-detail-table service-detail-table">

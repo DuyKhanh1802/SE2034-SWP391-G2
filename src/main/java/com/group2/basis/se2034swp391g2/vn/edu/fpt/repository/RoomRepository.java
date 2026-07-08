@@ -6,12 +6,13 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomStatusBoardResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.projection.GuestRoomVariantProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -223,4 +224,70 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         ORDER BY rt.name ASC
         """)
     List<String> findDistinctRoomTypeNamesForAdmin();
+
+    @Query("""
+        SELECT r
+        FROM Room r
+        JOIN FETCH r.variant v
+        JOIN FETCH v.roomType rt
+        WHERE r.isDeleted = false
+          AND r.id <> :currentRoomId
+          AND r.status = :roomStatus
+          AND NOT EXISTS (
+              SELECT bd.id
+              FROM BookingDetail bd
+              JOIN bd.booking b
+              WHERE bd.room = r
+                AND b.id <> :bookingId
+                AND b.isDeleted = false
+                AND b.status IN :blockingStatuses
+                AND bd.checkInDate < :checkOutDate
+                AND bd.checkOutDate > :checkInDate
+          )
+        ORDER BY r.floor ASC, r.roomNumber ASC
+    """)
+    List<Room> findAvailableRoomsForRoomMove(
+            @Param("bookingId") Long bookingId,
+            @Param("currentRoomId") Long currentRoomId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate,
+            @Param("roomStatus") RoomStatus roomStatus,
+            @Param("blockingStatuses") List<BookingStatus> blockingStatuses
+    );
+
+    @Query("""
+        SELECT COUNT(bd) > 0
+        FROM BookingDetail bd
+        JOIN bd.booking b
+        WHERE bd.room.id = :roomId
+          AND b.id <> :bookingId
+          AND b.isDeleted = false
+          AND b.status IN :blockingStatuses
+          AND bd.checkInDate < :checkOutDate
+          AND bd.checkOutDate > :checkInDate
+    """)
+    boolean existsRoomMoveBlockingBooking(
+            @Param("roomId") Long roomId,
+            @Param("bookingId") Long bookingId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate,
+            @Param("blockingStatuses") List<BookingStatus> blockingStatuses
+    );
+
+    @Query("""
+    SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView$RoomRow(
+        r.id,
+        r.roomNumber,
+        rt.name,
+        v.variantName,
+        r.floor,
+        CAST(r.status AS string)
+    )
+    FROM Room r
+    JOIN r.variant v
+    JOIN v.roomType rt
+    WHERE r.isDeleted = false
+    ORDER BY r.floor ASC, r.roomNumber ASC
+""")
+    List<ReceptionistDashboardView.RoomRow> findDashboardRoomRows(Pageable pageable);
 }

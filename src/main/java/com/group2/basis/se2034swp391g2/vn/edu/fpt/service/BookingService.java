@@ -1240,7 +1240,10 @@ public class BookingService {
                         .serviceName(item.getDescription())
                         .itemType(item.getItemType() != null ? item.getItemType().name() : "N/A")
                         .serviceStatus(serviceStatus.name())
-                        .serviceStatusLabel(serviceStatus.getLabel())
+                            .serviceStatusLabel(item.getService() == null
+                                    && item.getItemType() == FolioItemType.ROOM_CHARGE
+                                    ? "Đã ghi nhận"
+                                    : serviceStatus.getLabel())
                         .quantity(item.getQuantity())
                         .unitPrice(item.getUnitPrice())
                         .amount(item.getAmount())

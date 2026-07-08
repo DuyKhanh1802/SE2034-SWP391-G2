@@ -6,6 +6,8 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomRespons
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView;
+import org.springframework.data.domain.Pageable;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 
 import java.time.Instant;
@@ -116,6 +118,72 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
     """)
     boolean existsActiveOrUpcomingBookingByRoomId(@Param("roomId") Long roomId,
                                                   @Param("blockingStatuses") Collection<BookingStatus> blockingStatuses);
+
+    @Query("""
+    SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView$CheckInRow(
+        b.id,
+        b.bookingReference,
+        CONCAT(b.guestLastName, ' ', b.guestFirstName),
+        b.guestPhone,
+        CONCAT(
+            v.variantName,
+            CASE
+                WHEN r.roomNumber IS NULL THEN ' - Chưa phân phòng'
+                ELSE CONCAT(' - ', r.roomNumber)
+            END
+        ),
+        b.checkInDate,
+        b.checkOutDate,
+        b.numAdults,
+        b.numChildren,
+        CAST(b.depositStatus AS string)
+    )
+    FROM BookingDetail bd
+    JOIN bd.booking b
+    JOIN bd.variant v
+    LEFT JOIN bd.room r
+    WHERE b.isDeleted = false
+      AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CONFIRMED
+      AND b.checkInDate = :today
+    ORDER BY b.checkInDate ASC, b.id DESC
+""")
+    List<ReceptionistDashboardView.CheckInRow> findTodayCheckInRows(
+            @Param("today") LocalDate today,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView$CheckOutRow(
+        b.id,
+        r.roomNumber,
+        CONCAT(b.guestLastName, ' ', b.guestFirstName),
+        b.checkOutDate,
+        b.totalAmount,
+        COALESCE((
+            SELECT SUM(p.amount)
+            FROM Payment p
+            WHERE p.booking = b
+              AND CAST(p.status AS string) = 'SUCCESS'
+        ), 0),
+        b.totalAmount - COALESCE((
+            SELECT SUM(p.amount)
+            FROM Payment p
+            WHERE p.booking = b
+              AND CAST(p.status AS string) = 'SUCCESS'
+        ), 0)
+    )
+    FROM BookingDetail bd
+    JOIN bd.booking b
+    JOIN bd.room r
+    WHERE b.isDeleted = false
+      AND b.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CHECKED_IN
+      AND b.checkOutDate = :today
+    ORDER BY r.roomNumber ASC
+""")
+    List<ReceptionistDashboardView.CheckOutRow> findTodayCheckOutRows(
+            @Param("today") LocalDate today,
+            Pageable pageable
+    );
 }
 
 
