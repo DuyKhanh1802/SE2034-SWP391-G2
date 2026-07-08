@@ -150,4 +150,53 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     order by r.floor asc
 """)
     List<Integer> findDistinctFloors();
+
+    @Query("""
+        SELECT r
+        FROM Room r
+        JOIN FETCH r.variant v
+        JOIN FETCH v.roomType rt
+        WHERE r.isDeleted = false
+          AND r.id <> :currentRoomId
+          AND r.status = :roomStatus
+          AND NOT EXISTS (
+              SELECT bd.id
+              FROM BookingDetail bd
+              JOIN bd.booking b
+              WHERE bd.room = r
+                AND b.id <> :bookingId
+                AND b.isDeleted = false
+                AND b.status IN :blockingStatuses
+                AND bd.checkInDate < :checkOutDate
+                AND bd.checkOutDate > :checkInDate
+          )
+        ORDER BY r.floor ASC, r.roomNumber ASC
+    """)
+    List<Room> findAvailableRoomsForRoomMove(
+            @Param("bookingId") Long bookingId,
+            @Param("currentRoomId") Long currentRoomId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate,
+            @Param("roomStatus") RoomStatus roomStatus,
+            @Param("blockingStatuses") List<BookingStatus> blockingStatuses
+    );
+
+    @Query("""
+        SELECT COUNT(bd) > 0
+        FROM BookingDetail bd
+        JOIN bd.booking b
+        WHERE bd.room.id = :roomId
+          AND b.id <> :bookingId
+          AND b.isDeleted = false
+          AND b.status IN :blockingStatuses
+          AND bd.checkInDate < :checkOutDate
+          AND bd.checkOutDate > :checkInDate
+    """)
+    boolean existsRoomMoveBlockingBooking(
+            @Param("roomId") Long roomId,
+            @Param("bookingId") Long bookingId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate,
+            @Param("blockingStatuses") List<BookingStatus> blockingStatuses
+    );
 }

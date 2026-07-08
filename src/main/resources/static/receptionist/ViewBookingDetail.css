@@ -755,3 +755,69 @@
     color: #6b7280;
     font-weight: 600;
 }
+
+/* ROOM MOVE */
+.room-move-btn {
+    min-height: 34px;
+    padding: 7px 12px;
+    font-size: 10px;
+    letter-spacing: .5px;
+}
+
+.room-move-btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.room-move-modal .modal-title {
+    font-weight: 900;
+    letter-spacing: .5px;
+}
+
+.room-move-current-box {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.room-move-current-box div {
+    padding: 14px 16px;
+    border: 1px solid #e3ded8;
+    border-radius: 14px;
+    background: #fbfaf8;
+}
+
+.room-move-current-box span {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #7a6a58;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.room-move-current-box strong {
+    color: #111;
+    font-size: 14px;
+}
+
+.room-move-note {
+    border-radius: 14px;
+    font-size: 13px;
+}
+
+.room-move-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+@media (max-width: 900px) {
+    .room-move-current-box,
+    .room-move-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

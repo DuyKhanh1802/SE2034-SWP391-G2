@@ -14,6 +14,11 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomMoveFeePolicy;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomMoveReason;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.RoomMoveRequest;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomMoveService;
 import java.math.BigDecimal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -35,17 +40,19 @@ public class BookingController {
     private final CountryRepository countryRepository;
     private final ServiceRepository serviceRepository;
     private final PromotionService promotionService;
+    private final RoomMoveService roomMoveService;
     public BookingController(BookingService bookingService,
                              CountryRepository countryRepository,
                              PromotionService promotionService,
                              ServiceRepository serviceRepository,
-
+                             RoomMoveService roomMoveService,
                              PaymentService paymentService) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
         this.serviceRepository = serviceRepository;
         this.promotionService = promotionService;
         this.paymentService = paymentService;
+        this.roomMoveService = roomMoveService;
     }
 
     @GetMapping
@@ -262,8 +269,33 @@ public class BookingController {
                 "availableRoomsByDetail",
                 bookingService.getAvailableRoomsForPendingBooking(bookingId)
         );
-
+        model.addAttribute(
+                "roomMoveOptionsByDetail",
+                roomMoveService.getAvailableRoomsByDetail(bookingId)
+        );
+        model.addAttribute("roomMoveHistory", roomMoveService.getRoomMoveHistory(bookingId));
+        model.addAttribute("roomMoveReasons", RoomMoveReason.values());
+        model.addAttribute("roomMoveFeePolicies", RoomMoveFeePolicy.values());
+        model.addAttribute("roomMoveOldRoomStatuses", List.of(RoomStatus.AVAILABLE, RoomStatus.MAINTENANCE));
         return "receptionist/ViewBookingDetail";
+    }
+
+    @PostMapping("/view/{bookingId}/room-move")
+    public String moveRoom(@PathVariable Long bookingId,
+                           @ModelAttribute RoomMoveRequest request,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            request.setBookingId(bookingId);
+            roomMoveService.moveRoom(request);
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Đổi phòng thành công. Nếu có phụ thu nâng hạng, khoản phí đã được ghi nhận vào folio."
+            );
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/receptionist/bookings/view/" + bookingId;
     }
 
     @PostMapping("/view/{bookingId}/services/{folioItemId}/confirm")
