@@ -258,17 +258,27 @@
                     <tbody>
                     <tr th:each="room : ${detail.rooms}">
                         <td>
-                            <select th:if="${detail.bookingStatus.name() == 'PENDING'}"
+                            <select th:if="${detail.bookingStatus.name() == 'PENDING'
+                                    and availableRoomsByDetail[room.bookingDetailId] != null
+                                    and !#lists.isEmpty(availableRoomsByDetail[room.bookingDetailId])}"
                                     name="roomIds"
-                                    required
+
                                     class="form-select"
                                     form="confirmBookingForm">
                                 <option value="">Chọn phòng</option>
                                 <option th:each="availableRoom : ${availableRoomsByDetail[room.bookingDetailId]}"
                                         th:value="${availableRoom.id}"
-                                        th:text="'Phòng ' + ${availableRoom.roomNumber}">
+                                        th:text="${'Phòng ' + availableRoom.roomNumber + ' - Tầng ' + availableRoom.floor}">
+                                    Phòng 101 - Tầng 1
                                 </option>
                             </select>
+
+                            <div th:if="${detail.bookingStatus.name() == 'PENDING'
+                                and (availableRoomsByDetail[room.bookingDetailId] == null
+                                or #lists.isEmpty(availableRoomsByDetail[room.bookingDetailId]))}"
+                                 class="no-room-warning">
+                                Không còn phòng trống phù hợp
+                            </div>
 
                             <span th:unless="${detail.bookingStatus.name() == 'PENDING'}"
                                   th:text="${room.roomNumber}">
@@ -804,6 +814,10 @@
 
             <div class="action-right">
                 <!-- PENDING -->
+                <p th:if="${detail.bookingStatus.name() == 'PENDING'}"
+                   class="confirm-room-note">
+                    Chọn phòng phù hợp cho từng hạng phòng trước khi bấm xác nhận.
+                </p>
                 <button th:if="${detail.bookingStatus.name() == 'PENDING'}"
                         type="submit"
                         form="confirmBookingForm"

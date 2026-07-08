@@ -449,8 +449,8 @@ public class BookingController {
 
     @PostMapping("/{bookingId}/confirm")
     public String confirmBooking(@PathVariable Long bookingId,
-                                 @RequestParam List<Long> bookingDetailIds,
-                                 @RequestParam List<Long> roomIds,
+                                 @RequestParam(required = false) List<Long> bookingDetailIds,
+                                 @RequestParam(required = false) List<String> roomIds,
                                  RedirectAttributes redirectAttributes) {
         try {
             bookingService.confirmOnlineBooking(bookingId, bookingDetailIds, roomIds);
@@ -465,4 +465,6 @@ public class BookingController {
 
         return "redirect:/receptionist/bookings/view/" + bookingId;
     }
+
+
 }

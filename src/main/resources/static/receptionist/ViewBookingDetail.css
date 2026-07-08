@@ -820,4 +820,21 @@
         grid-template-columns: 1fr;
     }
 }
+.no-room-warning {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #fff1f2;
+    color: #dc2626;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.confirm-room-note {
+    margin: 0 12px 0 0;
+    color: #7a6f66;
+    font-size: 13px;
+    font-weight: 600;
+}
 
