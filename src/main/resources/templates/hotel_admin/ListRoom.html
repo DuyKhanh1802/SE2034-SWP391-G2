@@ -45,7 +45,6 @@
 
             <div class="room-filter-grid">
 
-                <!-- SEARCH SỐ PHÒNG -->
                 <div class="filter-item">
                     <label for="keyword">Số phòng</label>
                     <input id="keyword"
@@ -57,12 +56,10 @@
                            th:value="${keyword}">
                 </div>
 
-                <!-- HẠNG PHÒNG -->
                 <div class="filter-item">
                     <label for="roomType">Hạng phòng</label>
                     <select id="roomType" name="roomType">
                         <option value="">Tất cả</option>
-
                         <option th:each="name : ${roomTypeNames}"
                                 th:value="${#strings.toUpperCase(name)}"
                                 th:text="${name}"
@@ -72,12 +69,10 @@
                     </select>
                 </div>
 
-                <!-- TẦNG -->
                 <div class="filter-item">
                     <label for="floor">Tầng</label>
                     <select id="floor" name="floor">
                         <option value="">Tất cả</option>
-
                         <option th:each="f : ${floors}"
                                 th:value="${f}"
                                 th:text="${f}"
@@ -87,12 +82,10 @@
                     </select>
                 </div>
 
-                <!-- HƯỚNG NHÌN -->
                 <div class="filter-item">
                     <label for="viewType">Hướng nhìn</label>
                     <select id="viewType" name="viewType">
                         <option value="">Tất cả</option>
-
                         <option th:each="vt : ${viewTypes}"
                                 th:value="${vt.name()}"
                                 th:selected="${viewType != null and viewType == vt.name()}"
@@ -106,12 +99,10 @@
                     </select>
                 </div>
 
-                <!-- TRẠNG THÁI PHÒNG -->
                 <div class="filter-item">
                     <label for="status">Trạng thái</label>
                     <select id="status" name="status">
                         <option value="">Tất cả</option>
-
                         <option th:each="st : ${roomStatuses}"
                                 th:value="${st.name()}"
                                 th:selected="${status != null and status == st.name()}"
@@ -124,7 +115,6 @@
                     </select>
                 </div>
 
-                <!-- TRẠNG THÁI HOẠT ĐỘNG -->
                 <div class="filter-item">
                     <label for="operatingStatus">Hoạt động</label>
                     <select id="operatingStatus" name="operatingStatus">
@@ -140,7 +130,6 @@
                     </select>
                 </div>
 
-                <!-- Mỗi trang mặc định 5 phòng -->
                 <input type="hidden" name="size" th:value="${pageSize != null ? pageSize : 5}">
 
                 <div class="filter-actions">
@@ -162,6 +151,19 @@
     <section class="room-table-card">
 
         <table class="table room-table align-middle">
+            <colgroup>
+                <col class="col-stt">
+                <col class="col-room-number">
+                <col class="col-room-type">
+                <col class="col-price">
+                <col class="col-capacity">
+                <col class="col-floor">
+                <col class="col-view">
+                <col class="col-status">
+                <col class="col-operating">
+                <col class="col-actions">
+            </colgroup>
+
             <thead>
             <tr>
                 <th>STT</th>
@@ -185,20 +187,20 @@
                     101
                 </td>
 
-                <!-- Không nối roomType.name + variantName để tránh Standard Room - Standard Room -->
                 <td class="room-type-cell" th:text="${room.variant.variantName}">
                     Standard Room
                 </td>
 
-                <td th:text="${#numbers.formatDecimal(room.variant.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                <td class="room-price-cell"
+                    th:text="${#numbers.formatDecimal(room.variant.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                     1,000,000 VND
                 </td>
 
-                <td th:text="${room.variant.maxAdults + room.variant.maxChildren}">
+                <td class="text-center" th:text="${room.variant.maxAdults + room.variant.maxChildren}">
                     2
                 </td>
 
-                <td th:text="${room.floor}">
+                <td class="text-center" th:text="${room.floor}">
                     1
                 </td>
 
@@ -249,33 +251,35 @@
                     </span>
                 </td>
 
-                <td class="room-actions">
-                    <a th:href="@{/hotel-admin/rooms/view/{id}(id=${room.id})}"
-                       class="room-icon-btn"
-                       title="Xem chi tiết">
-                        <i class="fa-regular fa-eye"></i>
-                    </a>
+                <td class="room-actions-cell">
+                    <div class="room-action-buttons">
+                        <a th:href="@{/hotel-admin/rooms/view/{id}(id=${room.id})}"
+                           class="room-icon-btn"
+                           title="Xem chi tiết">
+                            <i class="fa-regular fa-eye"></i>
+                        </a>
 
-                    <a th:href="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}"
-                       class="room-icon-btn"
-                       title="Chỉnh sửa">
-                        <i class="fa-regular fa-pen-to-square"></i>
-                    </a>
+                        <a th:href="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}"
+                           class="room-icon-btn"
+                           title="Chỉnh sửa">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </a>
 
-                    <form th:action="@{/hotel-admin/rooms/toggle-operating/{id}(id=${room.id})}"
-                          method="post"
-                          class="d-inline toggle-operating-form"
-                          th:attr="data-message=${room.status.name() == 'MAINTENANCE'
-                                ? 'Bạn có chắc chắn muốn bật hoạt động phòng này không?'
-                                : 'Bạn có chắc chắn muốn tạm ngưng phòng này không?'}">
+                        <form th:action="@{/hotel-admin/rooms/toggle-operating/{id}(id=${room.id})}"
+                              method="post"
+                              class="toggle-operating-form"
+                              th:attr="data-message=${room.status.name() == 'MAINTENANCE'
+                                    ? 'Bạn có chắc chắn muốn bật hoạt động phòng này không?'
+                                    : 'Bạn có chắc chắn muốn tạm ngưng phòng này không?'}">
 
-                        <button type="submit"
-                                class="room-icon-btn toggle-operating-btn"
-                                th:classappend="${room.status.name() == 'MAINTENANCE'} ? ' toggle-off' : ' toggle-on'"
-                                th:title="${room.status.name() == 'MAINTENANCE'} ? 'Bật hoạt động' : 'Tạm ngưng phòng'">
-                            <i th:class="${room.status.name() == 'MAINTENANCE'} ? 'fa-solid fa-toggle-off' : 'fa-solid fa-toggle-on'"></i>
-                        </button>
-                    </form>
+                            <button type="submit"
+                                    class="room-icon-btn toggle-operating-btn"
+                                    th:classappend="${room.status.name() == 'MAINTENANCE'} ? ' toggle-off' : ' toggle-on'"
+                                    th:title="${room.status.name() == 'MAINTENANCE'} ? 'Bật hoạt động' : 'Tạm ngưng phòng'">
+                                <i th:class="${room.status.name() == 'MAINTENANCE'} ? 'fa-solid fa-toggle-off' : 'fa-solid fa-toggle-on'"></i>
+                            </button>
+                        </form>
+                    </div>
                 </td>
             </tr>
 
