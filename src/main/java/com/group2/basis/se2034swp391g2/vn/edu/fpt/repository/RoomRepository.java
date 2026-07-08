@@ -160,7 +160,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                 WHERE r.isDeleted = false
                   AND (:keyword IS NULL OR r.roomNumber LIKE CONCAT('%', :keyword, '%'))
                   AND (:roomType IS NULL OR UPPER(rt.name) LIKE CONCAT('%', :roomType, '%'))
-                  AND (:floor IS NULL OR r.floor = :floor)
+                                                          AND (:variantId IS NULL OR v.id = :variantId)
+                                                          AND (:floor IS NULL OR r.floor = :floor)
                   AND (:viewType IS NULL OR v.viewType = :viewType)
                   AND (:status IS NULL OR r.status = :status)
                   AND (
@@ -184,7 +185,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                 WHERE r.isDeleted = false
                   AND (:keyword IS NULL OR r.roomNumber LIKE CONCAT('%', :keyword, '%'))
                   AND (:roomType IS NULL OR UPPER(rt.name) LIKE CONCAT('%', :roomType, '%'))
-                  AND (:floor IS NULL OR r.floor = :floor)
+                                                              AND (:variantId IS NULL OR v.id = :variantId)
+                                                              AND (:floor IS NULL OR r.floor = :floor)
                   AND (:viewType IS NULL OR v.viewType = :viewType)
                   AND (:status IS NULL OR r.status = :status)
                   AND (
@@ -203,6 +205,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> searchForAdmin(
             @Param("keyword") String keyword,
             @Param("roomType") String roomType,
+            @Param("variantId") Long variantId,
             @Param("floor") Integer floor,
             @Param("viewType") ViewType viewType,
             @Param("status") RoomStatus status,

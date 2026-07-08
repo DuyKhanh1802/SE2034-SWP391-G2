@@ -36,17 +36,20 @@
             <h3>Thông tin phòng</h3>
         </div>
 
-        <!-- FORM 1: CHỌN SỐ PHÒNG -->
         <form th:action="@{/hotel-admin/list-room/add}"
-              method="get"
-              class="mb-4">
+              method="post"
+              id="addRoomForm">
 
             <div class="row g-4">
 
+                <!-- SỐ PHÒNG -->
                 <div class="col-md-6">
-                    <label class="form-label">Số phòng <span class="text-danger">*</span></label>
+                    <label class="form-label">
+                        Số phòng <span class="text-danger">*</span>
+                    </label>
 
                     <select name="roomNumber"
+                            id="roomNumber"
                             class="form-select room-input"
                             required>
                         <option value="">Chọn số phòng</option>
@@ -54,7 +57,9 @@
                         <option th:each="option : ${roomNumberOptions}"
                                 th:value="${option['roomNumber']}"
                                 th:text="${option['roomNumber']}"
-                                th:selected="${roomNumber != null and roomNumber == option['roomNumber']}">
+                                th:selected="${roomNumber != null and roomNumber == option['roomNumber']}"
+                                th:attr="data-floor=${option['floor']},
+                                         data-room-type=${option['roomTypeName']}">
                             101
                         </option>
                     </select>
@@ -64,32 +69,12 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 d-flex align-items-start flex-column justify-content-end">
-                    <button type="submit" class="save-room-btn">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        Xác nhận số phòng
-                    </button>
-                </div>
-
-            </div>
-        </form>
-
-        <hr class="my-4">
-
-        <!-- FORM 2: LƯU PHÒNG -->
-        <form th:action="@{/hotel-admin/list-room/add}"
-              method="post"
-              id="addRoomForm">
-
-            <input type="hidden" name="roomNumber" th:value="${roomNumber}">
-
-            <div class="row g-4">
-
                 <!-- TẦNG -->
                 <div class="col-md-6">
                     <label class="form-label">Tầng</label>
 
                     <input type="text"
+                           id="floorDisplay"
                            class="form-control room-input"
                            placeholder="Hệ thống tự xác định theo số phòng"
                            th:value="${floor}"
@@ -101,6 +86,7 @@
                     <label class="form-label">Hạng phòng</label>
 
                     <input type="text"
+                           id="roomTypeDisplay"
                            class="form-control room-input"
                            placeholder="Hệ thống tự xác định theo tầng"
                            th:value="${roomTypeName}"
@@ -109,39 +95,40 @@
 
                 <!-- LOẠI PHÒNG CHI TIẾT -->
                 <div class="col-md-6">
-                    <label class="form-label">Loại phòng chi tiết <span class="text-danger">*</span></label>
+                    <label class="form-label">
+                        Loại phòng chi tiết <span class="text-danger">*</span>
+                    </label>
 
                     <select name="variantId"
+                            id="variantId"
                             class="form-select room-input"
-                            required
-                            th:disabled="${roomTypeName == null}">
+                            required>
                         <option value="">Chọn loại phòng chi tiết</option>
 
                         <option th:each="variant : ${roomTypeVariants}"
                                 th:value="${variant.id}"
                                 th:selected="${selectedVariantId != null and selectedVariantId == variant.id}"
-                                th:text="${variant.variantName}">
+                                th:text="${variant.variantName}"
+                                th:attr="data-room-type=${variant.roomType != null ? variant.roomType.name : ''}">
                             Standard Room - hướng biển
                         </option>
                     </select>
 
-                    <div class="form-text" th:if="${roomTypeName == null}">
-                        Vui lòng chọn và xác nhận số phòng trước.
-                    </div>
-
-                    <div class="form-text" th:if="${roomTypeName != null}">
+                    <div class="form-text">
                         Chỉ hiển thị loại phòng chi tiết phù hợp với hạng phòng đã xác định.
                     </div>
                 </div>
 
                 <!-- TRẠNG THÁI -->
                 <div class="col-md-6">
-                    <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                    <label class="form-label">
+                        Trạng thái <span class="text-danger">*</span>
+                    </label>
 
                     <select name="status"
+                            id="status"
                             class="form-select room-input"
-                            required
-                            th:disabled="${roomTypeName == null}">
+                            required>
                         <option value="">Chọn trạng thái</option>
 
                         <option th:each="status : ${roomStatuses}"
@@ -163,12 +150,12 @@
                     <label class="form-label">Ghi chú</label>
 
                     <textarea name="note"
+                              id="note"
                               class="form-control room-input"
                               rows="3"
                               maxlength="500"
                               placeholder="Ví dụ: Phòng gần thang máy, phòng cần kiểm tra điều hòa..."
-                              th:text="${note}"
-                              th:disabled="${roomTypeName == null}"></textarea>
+                              th:text="${note}"></textarea>
 
                     <div class="form-text">
                         Tối đa 500 ký tự. Nếu trạng thái là Bảo trì, bắt buộc nhập lý do bảo trì.
@@ -183,8 +170,8 @@
                 </a>
 
                 <button type="submit"
-                        class="save-room-btn"
-                        th:disabled="${roomTypeName == null}">
+                        id="saveRoomButton"
+                        class="save-room-btn">
                     <i class="fa-solid fa-check"></i>
                     Lưu phòng
                 </button>
@@ -193,6 +180,8 @@
         </form>
 
     </section>
+
+    <script th:src="@{/js/AddRoom.js}"></script>
 
 </main>
 </body>

@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariant;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CloudinaryService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
@@ -21,12 +22,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @Controller
 public class HotelAdminRoomController {
+
+    private static final int DEFAULT_ROOM_PAGE_SIZE = 5;
+    private static final int MAX_ROOM_PAGE_SIZE = 20;
 
     private final RoomService roomService;
     private final CloudinaryService cloudinaryService;
@@ -55,6 +58,7 @@ public class HotelAdminRoomController {
     @GetMapping("/hotel-admin/list-room")
     public String listRooms(@RequestParam(required = false) String keyword,
                             @RequestParam(required = false) String roomType,
+                            @RequestParam(required = false) Long variantId,
                             @RequestParam(required = false) Integer floor,
                             @RequestParam(required = false) String viewType,
                             @RequestParam(required = false) String status,
@@ -78,6 +82,7 @@ public class HotelAdminRoomController {
         }
 
         String validRoomType = normalizeRoomType(roomType);
+        Long validVariantId = normalizeVariantId(variantId);
         Integer validFloor = normalizeFloor(floor);
         ViewType validViewType = normalizeViewType(viewType);
         RoomStatus validStatus = normalizeRoomStatus(status);
@@ -89,6 +94,7 @@ public class HotelAdminRoomController {
         Page<Room> roomPage = roomService.searchRoomsForAdmin(
                 validKeyword,
                 validRoomType,
+                validVariantId,
                 validFloor,
                 validViewType,
                 validStatus,
@@ -98,7 +104,7 @@ public class HotelAdminRoomController {
         );
 
         if (roomPage.isEmpty() && localErrorMessage == null) {
-            localErrorMessage = "Không tìm thấy phòng phù hợp với từ khóa tìm kiếm.";
+            localErrorMessage = "Không tìm thấy phòng phù hợp.";
         }
 
         model.addAttribute("rooms", roomPage.getContent());
@@ -109,12 +115,14 @@ public class HotelAdminRoomController {
 
         model.addAttribute("keyword", validKeyword);
         model.addAttribute("roomType", validRoomType);
+        model.addAttribute("variantId", validVariantId);
         model.addAttribute("floor", validFloor);
         model.addAttribute("viewType", validViewType == null ? null : validViewType.name());
         model.addAttribute("status", validStatus == null ? null : validStatus.name());
         model.addAttribute("operatingStatus", validOperatingStatus);
 
         model.addAttribute("roomTypeNames", roomService.getRoomTypeNamesForAdminFilter());
+        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
         model.addAttribute("floors", roomService.getRoomFloors());
         model.addAttribute("viewTypes", ViewType.values());
         model.addAttribute("roomStatuses", RoomStatus.values());
@@ -186,16 +194,17 @@ public class HotelAdminRoomController {
     private void addAddRoomFormData(Model model, String roomNumber) {
         model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
         model.addAttribute("roomStatuses", roomService.getInitialRoomStatusesForAddRoom());
+        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
 
         if (roomNumber == null || roomNumber.trim().isEmpty()) {
-            model.addAttribute("roomTypeVariants", List.of());
             return;
         }
 
-        model.addAttribute("roomNumber", roomNumber);
-        model.addAttribute("floor", roomService.getFloorForDisplay(roomNumber));
-        model.addAttribute("roomTypeName", roomService.getRoomTypeNameForDisplay(roomNumber));
-        model.addAttribute("roomTypeVariants", roomService.getRoomTypeVariantsByRoomNumber(roomNumber));
+        String normalizedRoomNumber = roomNumber.trim();
+
+        model.addAttribute("roomNumber", normalizedRoomNumber);
+        model.addAttribute("floor", roomService.getFloorForDisplay(normalizedRoomNumber));
+        model.addAttribute("roomTypeName", roomService.getRoomTypeNameForDisplay(normalizedRoomNumber));
     }
 
     @PostMapping("/hotel-admin/room-images/upload")
@@ -293,16 +302,44 @@ public class HotelAdminRoomController {
     @GetMapping("/hotel-admin/rooms/view/{id}")
     public String viewRoomDetail(@PathVariable Long id,
                                  Model model,
+                                 RedirectAttributes redirectAttributes,
                                  Authentication authentication,
                                  HttpSession session,
                                  HttpServletRequest request) {
 
         addLayoutData(model, authentication, session, request, "Chi tiết phòng");
 
-        model.addAttribute("room", roomService.getRoomById(id));
-        model.addAttribute("roomImages", roomService.getRoomImages(id));
+        try {
+            Room room = roomService.getRoomById(id);
 
-        return "hotel_admin/ViewRoomDetail";
+            if (room.getVariant() == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Phòng chưa được gắn loại phòng chi tiết.");
+                return "redirect:/hotel-admin/list-room";
+            }
+
+            RoomTypeVariant variant = room.getVariant();
+
+            if (Boolean.TRUE.equals(variant.getIsDeleted())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Loại phòng chi tiết của phòng này đã bị xóa hoặc không còn khả dụng.");
+                return "redirect:/hotel-admin/list-room";
+            }
+
+            if (variant.getRoomType() == null || Boolean.TRUE.equals(variant.getRoomType().getIsDeleted())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Hạng phòng của phòng này đã bị xóa hoặc không còn khả dụng.");
+                return "redirect:/hotel-admin/list-room";
+            }
+
+            model.addAttribute("room", room);
+            model.addAttribute("variant", variant);
+            model.addAttribute("roomType", variant.getRoomType());
+            model.addAttribute("roomImages", roomService.getRoomTypeVariantImages(variant.getId()));
+
+            return "hotel_admin/ViewRoomDetail";
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/hotel-admin/list-room";
+        }
     }
 
     private String normalizeKeyword(String keyword) {
@@ -338,11 +375,24 @@ public class HotelAdminRoomController {
             return null;
         }
 
-        boolean existsInDatabase = roomService.getRoomTypeNamesForAdminFilter()
+        return roomService.getRoomTypeNamesForAdminFilter()
                 .stream()
-                .anyMatch(name -> name != null && name.equalsIgnoreCase(value));
+                .filter(name -> name != null && name.equalsIgnoreCase(value))
+                .findFirst()
+                .map(String::toUpperCase)
+                .orElse(null);
+    }
 
-        return existsInDatabase ? value.toUpperCase() : null;
+    private Long normalizeVariantId(Long variantId) {
+        if (variantId == null || variantId <= 0) {
+            return null;
+        }
+
+        boolean exists = roomService.getAllRoomTypeVariants()
+                .stream()
+                .anyMatch(variant -> variant.getId() != null && variant.getId().equals(variantId));
+
+        return exists ? variantId : null;
     }
 
     private Integer normalizeFloor(Integer floor) {
@@ -398,9 +448,9 @@ public class HotelAdminRoomController {
 
     private int normalizeSize(Integer size) {
         if (size == null || size <= 0) {
-            return 10;
+            return DEFAULT_ROOM_PAGE_SIZE;
         }
 
-        return Math.min(size, 50);
+        return Math.min(size, MAX_ROOM_PAGE_SIZE);
     }
 }

@@ -33,8 +33,8 @@ public class RoomService {
     private static final int ROOMS_PER_FLOOR = 16;
     private static final int MAX_NOTE_LENGTH = 500;
 
-    private static final int DEFAULT_PAGE_SIZE = 10;
-    private static final int MAX_PAGE_SIZE = 50;
+    private static final int DEFAULT_PAGE_SIZE = 5;
+    private static final int MAX_PAGE_SIZE = 20;
 
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
@@ -72,6 +72,7 @@ public class RoomService {
 
     public Page<Room> searchRoomsForAdmin(String keyword,
                                           String roomType,
+                                          Long variantId,
                                           Integer floor,
                                           ViewType viewType,
                                           RoomStatus status,
@@ -87,6 +88,7 @@ public class RoomService {
         return roomRepository.searchForAdmin(
                 keyword,
                 roomType,
+                variantId,
                 floor,
                 viewType,
                 status,
@@ -322,10 +324,29 @@ public class RoomService {
         roomRepository.save(room);
     }
 
+    /*
+     * Giữ lại method cũ vì có thể các màn khác vẫn đang dùng ảnh theo phòng vật lý.
+     * Riêng View Room Details của Room Management mới sẽ dùng ảnh theo RoomTypeVariant.
+     */
     public List<Image> getRoomImages(Long roomId) {
+        if (roomId == null || roomId <= 0) {
+            return List.of();
+        }
+
         return imageRepository.findByEntityTypeAndEntityIdOrderBySortOrderAsc(
                 ImageEntityType.ROOM,
                 roomId
+        );
+    }
+
+    public List<Image> getRoomTypeVariantImages(Long variantId) {
+        if (variantId == null || variantId <= 0) {
+            return List.of();
+        }
+
+        return imageRepository.findByEntityTypeAndEntityIdOrderBySortOrderAsc(
+                ImageEntityType.ROOM_TYPE_VARIANT,
+                variantId
         );
     }
 
