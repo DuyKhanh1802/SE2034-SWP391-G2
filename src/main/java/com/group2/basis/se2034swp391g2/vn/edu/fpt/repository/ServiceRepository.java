@@ -18,12 +18,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 
+
 import java.util.List;
 
 @Repository
 
 public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service, Long> {
     List<com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service> findByIsDeletedFalseAndIsAvailableTrueOrderByNameAsc();
+    boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
+
+    boolean existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(String name, Long id);
 
     @Query("""
         SELECT s
@@ -270,5 +274,22 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
             @Param("priceFilter") String priceFilter,
             Pageable pageable
     );
+    @Query("""
+    SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END
+    FROM Service s
+    WHERE s.isDeleted = false
+      AND LOWER(TRIM(s.name)) = LOWER(:name)
+""")
+    boolean existsActiveByNormalizedName(@Param("name") String name);
+
+    @Query("""
+    SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END
+    FROM Service s
+    WHERE s.isDeleted = false
+      AND s.id <> :serviceId
+      AND LOWER(TRIM(s.name)) = LOWER(:name)
+""")
+    boolean existsActiveByNormalizedNameAndIdNot(@Param("name") String name,
+                                                 @Param("serviceId") Long serviceId);
 
 }

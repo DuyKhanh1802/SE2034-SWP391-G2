@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -99,6 +100,7 @@ public class HotelAdminServiceController {
 
     @PostMapping("/add")
     public String createService(@ModelAttribute("serviceRequest") ServiceRequest serviceRequest,
+                                BindingResult bindingResult,
                                 Model model,
                                 Authentication authentication,
                                 HttpSession session,
@@ -106,6 +108,10 @@ public class HotelAdminServiceController {
                                 RedirectAttributes redirectAttributes) {
 
         try {
+            if (bindingResult.hasErrors()) {
+                throw new IllegalArgumentException(resolveServiceBindingErrorMessage(bindingResult));
+            }
+
             serviceManagementService.createService(serviceRequest);
 
             redirectAttributes.addFlashAttribute(
@@ -117,6 +123,10 @@ public class HotelAdminServiceController {
 
         } catch (Exception e) {
             addLayoutData(model, authentication, session, request, "Thêm dịch vụ");
+
+            if (serviceRequest.getIsAvailable() == null) {
+                serviceRequest.setIsAvailable(true);
+            }
 
             model.addAttribute("serviceRequest", serviceRequest);
             model.addAttribute("categories", serviceManagementService.getServiceCategories());
@@ -175,6 +185,7 @@ public class HotelAdminServiceController {
     @PostMapping("/edit/{id}")
     public String updateService(@PathVariable Long id,
                                 @ModelAttribute("serviceRequest") ServiceRequest serviceRequest,
+                                BindingResult bindingResult,
                                 Model model,
                                 Authentication authentication,
                                 HttpSession session,
@@ -182,6 +193,10 @@ public class HotelAdminServiceController {
                                 RedirectAttributes redirectAttributes) {
 
         try {
+            if (bindingResult.hasErrors()) {
+                throw new IllegalArgumentException(resolveServiceBindingErrorMessage(bindingResult));
+            }
+
             serviceManagementService.updateService(id, serviceRequest);
 
             redirectAttributes.addFlashAttribute(
@@ -270,5 +285,21 @@ public class HotelAdminServiceController {
         redirectAttributes.addAttribute("availability", availability);
 
         return "redirect:/hotel-admin/services";
+    }
+
+    private String resolveServiceBindingErrorMessage(BindingResult bindingResult) {
+        if (bindingResult.hasFieldErrors("price")) {
+            return "Vui lòng nhập giá dịch vụ.";
+        }
+
+        if (bindingResult.hasFieldErrors("categoryId")) {
+            return "Loại dịch vụ không tồn tại.";
+        }
+
+        if (bindingResult.hasFieldErrors("isAvailable")) {
+            return "Trạng thái dịch vụ không hợp lệ.";
+        }
+
+        return "Dữ liệu dịch vụ không hợp lệ.";
     }
 }

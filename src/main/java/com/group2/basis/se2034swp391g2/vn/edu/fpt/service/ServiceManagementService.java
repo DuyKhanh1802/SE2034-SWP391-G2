@@ -11,12 +11,34 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @org.springframework.stereotype.Service
 public class ServiceManagementService {
+
+    private static final int MAX_SERVICE_NAME_LENGTH = 200;
+    private static final int MAX_SERVICE_DESCRIPTION_LENGTH = 500;
+    private static final BigDecimal MAX_SERVICE_PRICE = new BigDecimal("100000000");
+    private static final long MAX_SERVICE_IMAGE_SIZE = 5L * 1024L * 1024L;
+
+    private static final Set<String> ALLOWED_SERVICE_IMAGE_CONTENT_TYPES = Set.of(
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp"
+    );
+
+    private static final Set<String> ALLOWED_SERVICE_IMAGE_EXTENSIONS = Set.of(
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp"
+    );
 
     private final ServiceRepository serviceRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
@@ -55,18 +77,18 @@ public class ServiceManagementService {
 
     @Transactional
     public void createService(ServiceRequest request) {
-        validateServiceRequest(request);
+        validateServiceRequest(request, null);
 
         ServiceCategory category = getValidCategory(request.getCategoryId());
 
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
                 new com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service();
 
-        service.setName(request.getName().trim());
-        service.setDescription(normalizeText(request.getDescription()));
+        service.setName(request.getName());
+        service.setDescription(request.getDescription());
         service.setPrice(request.getPrice());
         service.setCategory(category);
-        service.setIsAvailable(Boolean.TRUE.equals(request.getIsAvailable()));
+        service.setIsAvailable(request.getIsAvailable());
         service.setIsDeleted(false);
 
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service savedService =
@@ -100,6 +122,7 @@ public class ServiceManagementService {
 
         return request;
     }
+
     @Transactional(readOnly = true)
     public ServiceResponse getServiceDetail(Long serviceId) {
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
@@ -135,18 +158,18 @@ public class ServiceManagementService {
 
     @Transactional
     public void updateService(Long serviceId, ServiceRequest request) {
-        validateServiceRequest(request);
+        validateServiceRequest(request, serviceId);
 
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
                 getValidService(serviceId);
 
         ServiceCategory category = getValidCategory(request.getCategoryId());
 
-        service.setName(request.getName().trim());
-        service.setDescription(normalizeText(request.getDescription()));
+        service.setName(request.getName());
+        service.setDescription(request.getDescription());
         service.setPrice(request.getPrice());
         service.setCategory(category);
-        service.setIsAvailable(Boolean.TRUE.equals(request.getIsAvailable()));
+        service.setIsAvailable(request.getIsAvailable());
 
         serviceRepository.save(service);
 
@@ -163,6 +186,7 @@ public class ServiceManagementService {
 
         serviceRepository.save(service);
     }
+
     @Transactional
     public void deleteService(Long serviceId) {
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
@@ -177,32 +201,38 @@ public class ServiceManagementService {
     private com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service getValidService(Long serviceId) {
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
                 serviceRepository.findById(serviceId)
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ"));
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ."));
 
         if (Boolean.TRUE.equals(service.getIsDeleted())) {
-            throw new IllegalArgumentException("Dịch vụ đã bị xóa");
+            throw new IllegalArgumentException("Dịch vụ đã bị xóa.");
         }
 
         return service;
     }
 
     private ServiceCategory getValidCategory(Long categoryId) {
+        if (categoryId == null) {
+            throw new IllegalArgumentException("Vui lòng chọn loại dịch vụ.");
+        }
+
         ServiceCategory category = serviceCategoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Loại dịch vụ không tồn tại"));
+                .orElseThrow(() -> new IllegalArgumentException("Loại dịch vụ không tồn tại."));
 
         if (Boolean.TRUE.equals(category.getIsDeleted())) {
-            throw new IllegalArgumentException("Loại dịch vụ đã bị xóa");
+            throw new IllegalArgumentException("Loại dịch vụ đã bị xóa.");
         }
 
         return category;
     }
 
     private void saveServiceImageIfPresent(Long serviceId, ServiceRequest request) {
-        if (request.getImageFile() == null || request.getImageFile().isEmpty()) {
+        MultipartFile imageFile = request.getImageFile();
+
+        if (imageFile == null || imageFile.isEmpty()) {
             return;
         }
 
-        String imageUrl = cloudinaryService.uploadServiceImage(request.getImageFile());
+        String imageUrl = uploadServiceImageSafely(imageFile);
 
         Image image = new Image();
         image.setEntityType(ImageEntityType.SERVICE);
@@ -215,11 +245,13 @@ public class ServiceManagementService {
     }
 
     private void updateServiceImageIfPresent(Long serviceId, ServiceRequest request) {
-        if (request.getImageFile() == null || request.getImageFile().isEmpty()) {
+        MultipartFile imageFile = request.getImageFile();
+
+        if (imageFile == null || imageFile.isEmpty()) {
             return;
         }
 
-        String imageUrl = cloudinaryService.uploadServiceImage(request.getImageFile());
+        String imageUrl = uploadServiceImageSafely(imageFile);
 
         Image image = imageRepository
                 .findFirstByEntityTypeAndEntityIdAndIsPrimaryTrueOrderBySortOrderAsc(
@@ -237,30 +269,134 @@ public class ServiceManagementService {
         imageRepository.save(image);
     }
 
-    private void validateServiceRequest(ServiceRequest request) {
+    private String uploadServiceImageSafely(MultipartFile imageFile) {
+        try {
+            return cloudinaryService.uploadServiceImage(imageFile);
+        } catch (Exception e) {
+            throw new IllegalStateException("Tải ảnh lên Cloudinary thất bại.", e);
+        }
+    }
+
+    private void validateServiceRequest(ServiceRequest request, Long editingServiceId) {
         if (request == null) {
-            throw new IllegalArgumentException("Dữ liệu dịch vụ không hợp lệ");
+            throw new IllegalArgumentException("Dữ liệu dịch vụ không hợp lệ.");
         }
 
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Tên dịch vụ không được để trống");
+        String normalizedName = normalizeRequiredText(request.getName());
+
+        if (normalizedName == null) {
+            throw new IllegalArgumentException("Vui lòng nhập tên dịch vụ.");
         }
 
-        if (request.getName().trim().length() > 200) {
-            throw new IllegalArgumentException("Tên dịch vụ không được vượt quá 200 ký tự");
+        if (normalizedName.length() > MAX_SERVICE_NAME_LENGTH) {
+            throw new IllegalArgumentException("Tên dịch vụ không được vượt quá 200 ký tự.");
         }
+
+        boolean duplicatedName = editingServiceId == null
+                ? serviceRepository.existsActiveByNormalizedName(normalizedName)
+                : serviceRepository.existsActiveByNormalizedNameAndIdNot(normalizedName, editingServiceId);
+
+        if (duplicatedName) {
+            throw new IllegalArgumentException("Tên dịch vụ đã tồn tại.");
+        }
+
+        request.setName(normalizedName);
 
         if (request.getCategoryId() == null) {
-            throw new IllegalArgumentException("Vui lòng chọn loại dịch vụ");
+            throw new IllegalArgumentException("Vui lòng chọn loại dịch vụ.");
         }
 
         if (request.getPrice() == null) {
-            throw new IllegalArgumentException("Giá dịch vụ không được để trống");
+            throw new IllegalArgumentException("Vui lòng nhập giá dịch vụ.");
         }
 
-        if (request.getPrice().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Giá dịch vụ không được nhỏ hơn 0");
+        if (request.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Giá dịch vụ phải lớn hơn 0.");
         }
+
+        if (request.getPrice().compareTo(MAX_SERVICE_PRICE) > 0) {
+            throw new IllegalArgumentException("Giá dịch vụ không được vượt quá 100,000,000 VND.");
+        }
+
+        if (!isWholeNumber(request.getPrice())) {
+            throw new IllegalArgumentException("Giá dịch vụ phải là số nguyên VND.");
+        }
+
+        request.setPrice(request.getPrice().setScale(0));
+
+        String normalizedDescription = normalizeOptionalText(request.getDescription());
+
+        if (normalizedDescription != null && normalizedDescription.length() > MAX_SERVICE_DESCRIPTION_LENGTH) {
+            throw new IllegalArgumentException("Mô tả dịch vụ không được vượt quá 500 ký tự.");
+        }
+
+        request.setDescription(normalizedDescription);
+
+        if (request.getIsAvailable() == null) {
+            request.setIsAvailable(true);
+        }
+
+        validateServiceImageIfPresent(request.getImageFile());
+    }
+
+    private void validateServiceImageIfPresent(MultipartFile imageFile) {
+        if (imageFile == null || imageFile.isEmpty()) {
+            return;
+        }
+
+        if (imageFile.getSize() > MAX_SERVICE_IMAGE_SIZE) {
+            throw new IllegalArgumentException("Kích thước ảnh không được vượt quá 5MB.");
+        }
+
+        String contentType = imageFile.getContentType();
+        String normalizedContentType = contentType == null
+                ? ""
+                : contentType.toLowerCase(Locale.ROOT).trim();
+
+        String originalFilename = imageFile.getOriginalFilename();
+        String normalizedFilename = originalFilename == null
+                ? ""
+                : originalFilename.toLowerCase(Locale.ROOT).trim();
+
+        boolean allowedContentType = ALLOWED_SERVICE_IMAGE_CONTENT_TYPES.contains(normalizedContentType);
+        boolean allowedExtension = ALLOWED_SERVICE_IMAGE_EXTENSIONS.stream()
+                .anyMatch(normalizedFilename::endsWith);
+
+        if (!allowedContentType || !allowedExtension) {
+            throw new IllegalArgumentException("File tải lên phải là ảnh JPG, JPEG, PNG hoặc WEBP.");
+        }
+    }
+
+    private boolean isWholeNumber(BigDecimal value) {
+        return value.stripTrailingZeros().scale() <= 0;
+    }
+
+    private String normalizeRequiredText(String text) {
+        if (text == null) {
+            return null;
+        }
+
+        String normalizedText = text.trim();
+
+        if (normalizedText.isEmpty()) {
+            return null;
+        }
+
+        return normalizedText;
+    }
+
+    private String normalizeOptionalText(String text) {
+        if (text == null) {
+            return null;
+        }
+
+        String normalizedText = text.trim();
+
+        if (normalizedText.isEmpty()) {
+            return null;
+        }
+
+        return normalizedText;
     }
 
     private String normalizeKeyword(String keyword) {
@@ -269,14 +405,6 @@ public class ServiceManagementService {
         }
 
         return keyword.trim();
-    }
-
-    private String normalizeText(String text) {
-        if (text == null || text.trim().isEmpty()) {
-            return null;
-        }
-
-        return text.trim();
     }
 
     private Boolean parseAvailability(String availability) {
