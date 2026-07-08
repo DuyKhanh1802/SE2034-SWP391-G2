@@ -1846,7 +1846,7 @@ public class BookingService {
     @Transactional
     public void confirmOnlineBooking(Long bookingId,
                                      List<Long> bookingDetailIds,
-                                     List<Long> roomIds) {
+                                     List<String> roomIds) {
         Booking booking = bookingRepository.findByIdAndIsDeletedFalse(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
 
@@ -1858,12 +1858,38 @@ public class BookingService {
             throw new IllegalStateException("Đặt phòng chưa có email khách, không thể gửi xác nhận.");
         }
 
-        if (bookingDetailIds == null || roomIds == null || bookingDetailIds.size() != roomIds.size()) {
-            throw new IllegalArgumentException("Vui lòng phân phòng đầy đủ.");
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+
+        if (details.isEmpty()) {
+            throw new IllegalStateException("Đặt phòng này chưa có chi tiết phòng.");
         }
 
-        if (bookingDetailIds.isEmpty()) {
-            throw new IllegalArgumentException("Danh sách chi tiết đặt phòng không được để trống.");
+        if (bookingDetailIds == null || bookingDetailIds.isEmpty()
+                || roomIds == null || roomIds.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng phân phòng cho tất cả phòng đã đặt trước khi xác nhận.");
+        }
+
+        if (bookingDetailIds.size() != details.size()
+                || roomIds.size() != details.size()) {
+            throw new IllegalArgumentException("Vui lòng phân phòng đầy đủ cho tất cả phòng đã đặt.");
+        }
+
+        boolean hasBlankRoom = roomIds.stream()
+                .anyMatch(roomId -> roomId == null || roomId.isBlank());
+
+        if (hasBlankRoom) {
+            throw new IllegalArgumentException("Vui lòng phân phòng cho tất cả phòng đã đặt trước khi xác nhận.");
+        }
+
+        List<Long> parsedRoomIds;
+
+        try {
+            parsedRoomIds = roomIds.stream()
+                    .map(Long::valueOf)
+                    .toList();
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Dữ liệu phòng được chọn không hợp lệ.");
         }
 
         Set<Long> uniqueDetailIds = new HashSet<>(bookingDetailIds);
@@ -1872,38 +1898,51 @@ public class BookingService {
             throw new IllegalArgumentException("Không được gửi trùng chi tiết đặt phòng.");
         }
 
-        Set<Long> uniqueRoomIds = new HashSet<>(roomIds);
+        Set<Long> uniqueRoomIds = new HashSet<>(parsedRoomIds);
 
-        if (uniqueRoomIds.size() != roomIds.size()) {
+        if (uniqueRoomIds.size() != parsedRoomIds.size()) {
             throw new IllegalArgumentException("Không được phân trùng một phòng cho nhiều chi tiết đặt phòng.");
         }
 
+        Set<Long> actualDetailIds = details.stream()
+                .map(BookingDetail::getId)
+                .collect(Collectors.toSet());
+
+        for (Long detailId : bookingDetailIds) {
+            if (!actualDetailIds.contains(detailId)) {
+                throw new IllegalArgumentException("Chi tiết đặt phòng không thuộc booking này.");
+            }
+        }
+
         List<Room> availableRooms = roomRepository.findAvailableRoomsByIds(
-                roomIds,
+                parsedRoomIds,
                 booking.getCheckInDate(),
                 booking.getCheckOutDate(),
                 RoomStatus.AVAILABLE,
                 List.of(BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN)
         );
 
-        if (availableRooms.size() != roomIds.size()) {
+        if (availableRooms.size() != parsedRoomIds.size()) {
             throw new IllegalArgumentException("Một hoặc nhiều phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn lại phòng.");
         }
 
-        List<BookingDetail> details =
-                bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+        Map<Long, Room> availableRoomMap = availableRooms.stream()
+                .collect(Collectors.toMap(Room::getId, room -> room));
 
         for (int i = 0; i < bookingDetailIds.size(); i++) {
             Long detailId = bookingDetailIds.get(i);
-            Long roomId = roomIds.get(i);
+            Long roomId = parsedRoomIds.get(i);
 
             BookingDetail detail = details.stream()
                     .filter(d -> d.getId().equals(detailId))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Chi tiết đặt phòng không hợp lệ."));
 
-            Room room = roomRepository.findById(roomId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng đã chọn."));
+            Room room = availableRoomMap.get(roomId);
+
+            if (room == null) {
+                throw new IllegalArgumentException("Phòng đã chọn không còn khả dụng.");
+            }
 
             if (Boolean.TRUE.equals(room.getIsDeleted())) {
                 throw new IllegalStateException("Phòng đã chọn đã bị xóa.");
@@ -1921,6 +1960,13 @@ public class BookingService {
             }
 
             detail.setRoom(room);
+        }
+
+        boolean hasUnassignedRoom = details.stream()
+                .anyMatch(detail -> detail.getRoom() == null);
+
+        if (hasUnassignedRoom) {
+            throw new IllegalStateException("Vui lòng phân phòng cho tất cả phòng đã đặt trước khi xác nhận.");
         }
 
         Payment depositPayment = paymentRepository
