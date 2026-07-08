@@ -5,140 +5,218 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-<!-- PAGE TITLE -->
-        <section class="welcome-section room-page-title">
-            <h1>Chỉnh sửa phòng</h1>
-            <p>
-                Cập nhật số phòng, hạng phòng, tầng, hướng nhìn và trạng thái hiện tại của phòng.
-            </p>
-        </section>
 
-        <!-- ERROR MESSAGE -->
-        <div th:if="${errorMessage}" class="error-toast">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}">Có lỗi xảy ra!</span>
+    <!-- PAGE TITLE -->
+    <section class="welcome-section room-page-title">
+        <h1>Chỉnh sửa phòng</h1>
+        <p>
+            Cập nhật trạng thái vận hành và ghi chú của phòng vật lý.
+            Các thông tin cố định như số phòng, tầng, hạng phòng, loại phòng chi tiết và hướng nhìn chỉ được xem.
+        </p>
+    </section>
+
+    <!-- ERROR MESSAGE -->
+    <div th:if="${errorMessage}" class="error-toast room-toast">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span th:text="${errorMessage}">Có lỗi xảy ra!</span>
+    </div>
+
+    <!-- SUCCESS MESSAGE -->
+    <div th:if="${successMessage}" class="success-toast room-toast">
+        <i class="fa-solid fa-circle-check"></i>
+        <span th:text="${successMessage}">Thao tác thành công!</span>
+    </div>
+
+    <!-- EDIT FORM -->
+    <section class="room-form-card">
+
+        <div class="form-heading">
+            <span>QUẢN LÝ PHÒNG</span>
+            <h3>Thông tin phòng</h3>
         </div>
 
-        <!-- EDIT FORM -->
-        <section class="room-form-card">
+        <form id="editRoomForm"
+              th:action="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}"
+              method="post">
 
-            <div class="form-heading">
-                <span>QUẢN LÝ PHÒNG</span>
-                <h3>Thông tin phòng</h3>
-            </div>
+            <div class="row g-4">
 
-            <form th:action="@{/hotel-admin/rooms/edit/{id}(id=${room.id})}" method="post">
-
-                <div class="row g-4">
-
-                    <!-- ROOM NUMBER -->
-                    <div class="col-md-6">
-                        <label class="form-label">Số phòng</label>
-                        <input type="text"
-                               name="roomNumber"
-                               class="form-control room-input"
-                               th:value="${roomNumber != null ? roomNumber : room.roomNumber}"
-                               placeholder="Nhập số phòng"
-                               required>
-                    </div>
-
-                    <!-- ROOM TYPE -->
-                    <div class="col-md-6">
-                        <label class="form-label">Hạng phòng</label>
-
-                        <select name="variantId" class="form-select room-input" required>
-                            <option value="">-- Chọn hạng phòng --</option>
-
-                            <option th:each="variant : ${roomTypeVariants}"
-                                    th:value="${variant.id}"
-                                    th:text="${variant.roomType.name + ' - ' + variant.variantName}"
-                                    th:selected="${selectedVariantId != null
-                                                 ? selectedVariantId == variant.id
-                                                 : (room.variant != null and room.variant.id == variant.id)}">
-                                DELUXE
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- FLOOR -->
-                    <div class="col-md-6">
-                        <label class="form-label">Tầng</label>
-                        <input type="number"
-                               name="floor"
-                               class="form-control room-input"
-                               th:value="${floor != null ? floor : room.floor}"
-                               placeholder="Nhập tầng"
-                               min="1"
-                               required>
-                    </div>
-
-                    <!-- VIEW TYPE -->
-                    <div class="col-md-6">
-                        <label class="form-label">Hướng nhìn</label>
-
-                        <select name="viewType" class="form-select room-input" required>
-                            <option value="">-- Chọn hướng nhìn --</option>
-
-                            <option th:each="view : ${viewTypes}"
-                                    th:value="${view}"
-                                    th:selected="${selectedViewType != null
-                                                 ? selectedViewType == view
-                                                 : (room.viewType != null and room.viewType == view)}"
-                                    th:text="${view.name() == 'SEA' ? 'Hướng biển' :
-                                             (view.name() == 'CITY' ? 'Hướng thành phố' :
-                                             (view.name() == 'POOL' ? 'Hướng hồ bơi' :
-                                             (view.name() == 'GARDEN' ? 'Hướng vườn' : view)))}">
-                                Hướng thành phố
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- STATUS -->
-                    <div class="col-md-6">
-                        <label class="form-label">Trạng thái</label>
-
-                        <select name="status" class="form-select room-input" required>
-                            <option value="">-- Chọn trạng thái --</option>
-
-                            <option th:each="status : ${roomStatuses}"
-                                    th:value="${status}"
-                                    th:selected="${selectedStatus != null
-                                                 ? selectedStatus == status
-                                                 : (room.status != null and room.status == status)}"
-                                    th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
-                                             (status.name() == 'OCCUPIED' ? 'Đang sử dụng' :
-                                             (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status))}">
-                                Còn trống
-                            </option>
-                        </select>
-                    </div>
-
+                <!-- ROOM NUMBER -->
+                <div class="col-md-6">
+                    <label class="form-label">Số phòng</label>
+                    <input type="text"
+                           class="form-control room-input"
+                           th:value="${room.roomNumber}"
+                           readonly>
                 </div>
 
-                <!-- ACTION BUTTONS -->
-                <div class="form-actions">
-                    <a th:href="@{/hotel-admin/list-room}" class="cancel-btn">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        Quay lại
-                    </a>
+                <!-- FLOOR -->
+                <div class="col-md-6">
+                    <label class="form-label">Tầng</label>
+                    <input type="text"
+                           class="form-control room-input"
+                           th:value="${room.floor}"
+                           readonly>
+                </div>
+
+                <!-- ROOM TYPE -->
+                <div class="col-md-6">
+                    <label class="form-label">Hạng phòng</label>
+                    <input type="text"
+                           class="form-control room-input"
+                           th:value="${room.variant != null and room.variant.roomType != null
+                                      ? room.variant.roomType.name
+                                      : 'Không có'}"
+                           readonly>
+                </div>
+
+                <!-- ROOM TYPE VARIANT -->
+                <div class="col-md-6">
+                    <label class="form-label">Loại phòng chi tiết</label>
+                    <input type="text"
+                           class="form-control room-input"
+                           th:value="${room.variant != null
+                                      ? room.variant.variantName
+                                      : 'Không có'}"
+                           readonly>
+                </div>
+
+                <!-- VIEW TYPE -->
+                <div class="col-md-6">
+                    <label class="form-label">Hướng nhìn</label>
+                    <input type="text"
+                           class="form-control room-input"
+                           th:value="${room.variant == null or room.variant.viewType == null
+                                      ? 'Không có'
+                                      : (room.variant.viewType.name() == 'SEA'
+                                            ? 'Hướng biển'
+                                            : (room.variant.viewType.name() == 'CITY'
+                                                ? 'Hướng thành phố'
+                                                : (room.variant.viewType.name() == 'POOL'
+                                                    ? 'Hướng hồ bơi'
+                                                    : (room.variant.viewType.name() == 'GARDEN'
+                                                        ? 'Hướng vườn'
+                                                        : room.variant.viewType.name()))))}"
+                           readonly>
+                </div>
+
+                <!-- STATUS -->
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Trạng thái <span class="text-danger">*</span>
+                    </label>
+
+                    <select id="roomStatus"
+                            name="status"
+                            class="form-select room-input"
+                            required>
+                        <option value="">-- Chọn trạng thái --</option>
+
+                        <option th:each="status : ${editableRoomStatuses}"
+                                th:value="${status.name()}"
+                                th:selected="${selectedStatus != null
+                                             ? selectedStatus == status.name()
+                                             : (room.status != null and room.status == status)}"
+                                th:text="${status.name() == 'AVAILABLE'
+                                         ? 'Còn trống'
+                                         : (status.name() == 'MAINTENANCE'
+                                            ? 'Bảo trì'
+                                            : status.name())}">
+                            Còn trống
+                        </option>
+                    </select>
+
+                    <div class="form-text">
+                        Chỉ được cập nhật trạng thái Còn trống hoặc Bảo trì.
+                    </div>
+                </div>
+
+                <!-- NOTE -->
+                <div class="col-md-12">
+                    <label class="form-label">Ghi chú</label>
+
+                    <textarea id="roomNote"
+                              name="note"
+                              class="form-control room-input"
+                              rows="4"
+                              maxlength="500"
+                              placeholder="Nhập ghi chú vận hành hoặc lý do bảo trì..."
+                              th:text="${selectedNote != null ? selectedNote : room.note}"></textarea>
+
+                    <div class="form-text">
+                        Tối đa 500 ký tự. Nếu trạng thái là Bảo trì, bắt buộc nhập lý do bảo trì.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="form-actions form-actions-between">
+                <a th:href="@{/hotel-admin/list-room}" class="cancel-btn">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Quay lại
+                </a>
+
+                <div class="form-actions-right">
+                    <button type="button"
+                            id="openDeleteRoomModal"
+                            class="delete-room-edit-btn">
+                        <i class="fa-solid fa-trash-can"></i>
+                        Xóa phòng
+                    </button>
 
                     <button type="submit" class="save-room-btn">
                         <i class="fa-solid fa-floppy-disk"></i>
                         Lưu thay đổi
                     </button>
                 </div>
+            </div>
 
-            </form>
+        </form>
 
-        </section>
-<script>
-    setTimeout(function () {
-        const toast = document.querySelector('.error-toast');
-        if (toast) {
-            toast.style.display = 'none';
-        }
-    }, 3000);
-</script>
+    </section>
+
+    <!-- DELETE CONFIRM MODAL -->
+    <div id="deleteRoomModal" class="room-confirm-modal">
+        <div class="room-confirm-dialog">
+
+            <div class="room-confirm-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+
+            <h3>Xác nhận xóa phòng</h3>
+
+            <p>
+                Bạn có chắc chắn muốn xóa phòng này không?<br>
+                Phòng bị xóa sẽ không hiển thị trong danh sách phòng.
+                Số phòng này cũng không thể được tạo mới lại trực tiếp.
+            </p>
+
+            <div class="room-confirm-actions">
+                <button type="button"
+                        id="closeDeleteRoomModal"
+                        class="cancel-btn">
+                    Hủy
+                </button>
+
+                <form th:action="@{/hotel-admin/rooms/delete/{id}(id=${room.id})}" method="post">
+                    <button type="submit" class="delete-room-confirm-btn">
+                        <i class="fa-solid fa-trash-can"></i>
+                        Xác nhận xóa
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="clientToast" class="client-toast">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="clientToastMessage">Có lỗi xảy ra!</span>
+    </div>
+
+    <script th:src="@{/js/editRoom.js}"></script>
+
 </main>
 </body>
 </html>

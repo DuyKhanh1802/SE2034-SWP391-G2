@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariant;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CloudinaryService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
@@ -10,8 +11,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,11 +22,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 public class HotelAdminRoomController {
+
+    private static final int DEFAULT_ROOM_PAGE_SIZE = 5;
+    private static final int MAX_ROOM_PAGE_SIZE = 20;
 
     private final RoomService roomService;
     private final CloudinaryService cloudinaryService;
@@ -54,7 +56,15 @@ public class HotelAdminRoomController {
     }
 
     @GetMapping("/hotel-admin/list-room")
-    public String listRooms(@RequestParam(defaultValue = "0") int page,
+    public String listRooms(@RequestParam(required = false) String keyword,
+                            @RequestParam(required = false) String roomType,
+                            @RequestParam(required = false) Long variantId,
+                            @RequestParam(required = false) Integer floor,
+                            @RequestParam(required = false) String viewType,
+                            @RequestParam(required = false) String status,
+                            @RequestParam(required = false) String operatingStatus,
+                            @RequestParam(defaultValue = "0") Integer page,
+                            @RequestParam(defaultValue = "5") Integer size,
                             Model model,
                             Authentication authentication,
                             HttpSession session,
@@ -62,43 +72,93 @@ public class HotelAdminRoomController {
 
         addLayoutData(model, authentication, session, request, "Danh sách phòng");
 
-        int pageSize = 5;
-        Pageable pageable = PageRequest.of(page, pageSize);
-        Page<Room> roomPage = roomService.getRoomsPage(pageable);
+        String validKeyword = null;
+        String localErrorMessage = null;
+
+        try {
+            validKeyword = normalizeKeyword(keyword);
+        } catch (IllegalArgumentException e) {
+            localErrorMessage = e.getMessage();
+        }
+
+        String validRoomType = normalizeRoomType(roomType);
+        Long validVariantId = normalizeVariantId(variantId);
+        Integer validFloor = normalizeFloor(floor);
+        ViewType validViewType = normalizeViewType(viewType);
+        RoomStatus validStatus = normalizeRoomStatus(status);
+        String validOperatingStatus = normalizeOperatingStatus(operatingStatus);
+
+        int validPage = normalizePage(page);
+        int validSize = normalizeSize(size);
+
+        Page<Room> roomPage = roomService.searchRoomsForAdmin(
+                validKeyword,
+                validRoomType,
+                validVariantId,
+                validFloor,
+                validViewType,
+                validStatus,
+                validOperatingStatus,
+                validPage,
+                validSize
+        );
+
+        if (roomPage.isEmpty() && localErrorMessage == null) {
+            localErrorMessage = "Không tìm thấy phòng phù hợp.";
+        }
 
         model.addAttribute("rooms", roomPage.getContent());
-        model.addAttribute("currentPage", page);
+        model.addAttribute("currentPage", validPage);
         model.addAttribute("totalPages", roomPage.getTotalPages());
         model.addAttribute("totalItems", roomPage.getTotalElements());
-        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("pageSize", validSize);
+
+        model.addAttribute("keyword", validKeyword);
+        model.addAttribute("roomType", validRoomType);
+        model.addAttribute("variantId", validVariantId);
+        model.addAttribute("floor", validFloor);
+        model.addAttribute("viewType", validViewType == null ? null : validViewType.name());
+        model.addAttribute("status", validStatus == null ? null : validStatus.name());
+        model.addAttribute("operatingStatus", validOperatingStatus);
+
+        model.addAttribute("roomTypeNames", roomService.getRoomTypeNamesForAdminFilter());
+        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
+        model.addAttribute("floors", roomService.getRoomFloors());
+        model.addAttribute("viewTypes", ViewType.values());
+        model.addAttribute("roomStatuses", RoomStatus.values());
+
+        if (localErrorMessage != null) {
+            model.addAttribute("errorMessage", localErrorMessage);
+        }
 
         return "hotel_admin/ListRoom";
     }
 
     @GetMapping("/hotel-admin/list-room/add")
-    public String showAddRoomForm(Model model,
+    public String showAddRoomForm(@RequestParam(required = false) String roomNumber,
+                                  Model model,
                                   Authentication authentication,
                                   HttpSession session,
                                   HttpServletRequest request) {
 
         addLayoutData(model, authentication, session, request, "Thêm phòng");
 
-        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
-        model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
-        model.addAttribute("viewTypes", ViewType.values());
-        model.addAttribute("roomStatuses", RoomStatus.values());
+        try {
+            addAddRoomFormData(model, roomNumber);
+        } catch (IllegalArgumentException e) {
+            addAddRoomFormData(model, null);
+            model.addAttribute("roomNumber", roomNumber);
+            model.addAttribute("errorMessage", e.getMessage());
+        }
 
         return "hotel_admin/AddRoom";
     }
 
     @PostMapping("/hotel-admin/list-room/add")
-    public String addRoom(@RequestParam String roomNumber,
-                          @RequestParam Long variantId,
-                          @RequestParam(required = false) Integer floor,
-                          @RequestParam RoomStatus status,
+    public String addRoom(@RequestParam(required = false) String roomNumber,
+                          @RequestParam(required = false) Long variantId,
+                          @RequestParam(required = false) RoomStatus status,
                           @RequestParam(required = false) String note,
-                          @RequestParam(required = false) List<String> imageUrls,
-                          @RequestParam(defaultValue = "0") Integer primaryImageIndex,
                           Model model,
                           RedirectAttributes redirectAttributes,
                           Authentication authentication,
@@ -106,15 +166,7 @@ public class HotelAdminRoomController {
                           HttpServletRequest request) {
 
         try {
-            roomService.createRoom(
-                    roomNumber,
-                    variantId,
-                    floor,
-                    status,
-                    note,
-                    imageUrls,
-                    primaryImageIndex
-            );
+            roomService.createRoom(roomNumber, variantId, status, note);
 
             redirectAttributes.addFlashAttribute("successMessage", "Thêm phòng thành công!");
 
@@ -123,21 +175,36 @@ public class HotelAdminRoomController {
         } catch (IllegalArgumentException e) {
             addLayoutData(model, authentication, session, request, "Thêm phòng");
 
+            try {
+                addAddRoomFormData(model, roomNumber);
+            } catch (IllegalArgumentException ignored) {
+                addAddRoomFormData(model, null);
+            }
+
             model.addAttribute("errorMessage", e.getMessage());
-
-            model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
-            model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
-            model.addAttribute("viewTypes", ViewType.values());
-            model.addAttribute("roomStatuses", RoomStatus.values());
-
             model.addAttribute("roomNumber", roomNumber);
             model.addAttribute("selectedVariantId", variantId);
-            model.addAttribute("floor", floor);
             model.addAttribute("selectedStatus", status);
             model.addAttribute("note", note);
 
             return "hotel_admin/AddRoom";
         }
+    }
+
+    private void addAddRoomFormData(Model model, String roomNumber) {
+        model.addAttribute("roomNumberOptions", roomService.getAvailableRoomNumberOptions());
+        model.addAttribute("roomStatuses", roomService.getInitialRoomStatusesForAddRoom());
+        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
+
+        if (roomNumber == null || roomNumber.trim().isEmpty()) {
+            return;
+        }
+
+        String normalizedRoomNumber = roomNumber.trim();
+
+        model.addAttribute("roomNumber", normalizedRoomNumber);
+        model.addAttribute("floor", roomService.getFloorForDisplay(normalizedRoomNumber));
+        model.addAttribute("roomTypeName", roomService.getRoomTypeNameForDisplay(normalizedRoomNumber));
     }
 
     @PostMapping("/hotel-admin/room-images/upload")
@@ -158,21 +225,14 @@ public class HotelAdminRoomController {
                                    HttpServletRequest request) {
 
         addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
-
-        model.addAttribute("room", roomService.getRoomById(id));
-        model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
-        model.addAttribute("viewTypes", ViewType.values());
-        model.addAttribute("roomStatuses", RoomStatus.values());
+        addEditRoomFormData(model, id, null, null);
 
         return "hotel_admin/EditRoom";
     }
 
     @PostMapping("/hotel-admin/rooms/edit/{id}")
     public String updateRoom(@PathVariable Long id,
-                             @RequestParam String roomNumber,
-                             @RequestParam Long variantId,
-                             @RequestParam(required = false) Integer floor,
-                             @RequestParam RoomStatus status,
+                             @RequestParam(required = false) String status,
                              @RequestParam(required = false) String note,
                              Model model,
                              RedirectAttributes redirectAttributes,
@@ -181,56 +241,216 @@ public class HotelAdminRoomController {
                              HttpServletRequest request) {
 
         try {
-            roomService.updateRoom(
-                    id,
-                    roomNumber,
-                    variantId,
-                    floor,
-                    status,
-                    note
-            );
+            roomService.updateRoomOperationalInfo(id, status, note);
 
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phòng thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật phòng thành công.");
 
             return "redirect:/hotel-admin/list-room";
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             addLayoutData(model, authentication, session, request, "Chỉnh sửa phòng");
+            addEditRoomFormData(model, id, status, note);
 
             model.addAttribute("errorMessage", e.getMessage());
 
-            model.addAttribute("room", roomService.getRoomById(id));
-            model.addAttribute("roomTypeVariants", roomService.getAllRoomTypeVariants());
-            model.addAttribute("viewTypes", ViewType.values());
-            model.addAttribute("roomStatuses", RoomStatus.values());
-
             return "hotel_admin/EditRoom";
         }
+    }
+
+    private void addEditRoomFormData(Model model,
+                                     Long id,
+                                     String selectedStatus,
+                                     String selectedNote) {
+        Room room = roomService.getRoomById(id);
+
+        model.addAttribute("room", room);
+        model.addAttribute("editableRoomStatuses", roomService.getEditableRoomStatuses());
+        model.addAttribute("selectedStatus", selectedStatus);
+        model.addAttribute("selectedNote", selectedNote);
+    }
+
+    @PostMapping("/hotel-admin/rooms/toggle-operating/{id}")
+    public String toggleRoomOperatingStatus(@PathVariable Long id,
+                                            RedirectAttributes redirectAttributes) {
+        try {
+            roomService.toggleRoomOperatingStatus(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái hoạt động của phòng thành công!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/hotel-admin/list-room";
     }
 
     @PostMapping("/hotel-admin/rooms/delete/{id}")
     public String deleteRoom(@PathVariable Long id,
                              RedirectAttributes redirectAttributes) {
 
-        roomService.deleteRoom(id);
+        try {
+            roomService.deleteRoom(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa phòng thành công.");
 
-        redirectAttributes.addFlashAttribute("successMessage", "Xóa phòng thành công!");
+            return "redirect:/hotel-admin/list-room";
 
-        return "redirect:/hotel-admin/list-room";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+
+            return "redirect:/hotel-admin/rooms/edit/" + id;
+        }
     }
 
     @GetMapping("/hotel-admin/rooms/view/{id}")
     public String viewRoomDetail(@PathVariable Long id,
                                  Model model,
+                                 RedirectAttributes redirectAttributes,
                                  Authentication authentication,
                                  HttpSession session,
                                  HttpServletRequest request) {
 
         addLayoutData(model, authentication, session, request, "Chi tiết phòng");
 
-        model.addAttribute("room", roomService.getRoomById(id));
-        model.addAttribute("roomImages", roomService.getRoomImages(id));
+        try {
+            Room room = roomService.getRoomById(id);
 
-        return "hotel_admin/ViewRoomDetail";
+            if (room.getVariant() == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Phòng chưa được gắn loại phòng chi tiết.");
+                return "redirect:/hotel-admin/list-room";
+            }
+
+            RoomTypeVariant variant = room.getVariant();
+
+            if (Boolean.TRUE.equals(variant.getIsDeleted())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Loại phòng chi tiết của phòng này đã bị xóa hoặc không còn khả dụng.");
+                return "redirect:/hotel-admin/list-room";
+            }
+
+            if (variant.getRoomType() == null || Boolean.TRUE.equals(variant.getRoomType().getIsDeleted())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Hạng phòng của phòng này đã bị xóa hoặc không còn khả dụng.");
+                return "redirect:/hotel-admin/list-room";
+            }
+
+            model.addAttribute("room", room);
+            model.addAttribute("variant", variant);
+            model.addAttribute("roomType", variant.getRoomType());
+            model.addAttribute("roomImages", roomService.getRoomTypeVariantImages(variant.getId()));
+
+            return "hotel_admin/ViewRoomDetail";
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/hotel-admin/list-room";
+        }
+    }
+
+    private String normalizeKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return null;
+        }
+
+        String value = keyword.trim();
+
+        if (value.length() > 10) {
+            throw new IllegalArgumentException("Số phòng không được quá 10 ký tự.");
+        }
+
+        if (!value.matches("\\d+")) {
+            throw new IllegalArgumentException("Số phòng chỉ được nhập số và không được chứa ký tự đặc biệt.");
+        }
+
+        return value;
+    }
+
+    private String normalizeRoomType(String roomType) {
+        if (roomType == null || roomType.trim().isEmpty()) {
+            return null;
+        }
+
+        String value = roomType.trim();
+
+        if (value.length() > 100) {
+            return null;
+        }
+
+        if (!value.matches("^[\\p{L}\\p{N}\\s\\-]+$")) {
+            return null;
+        }
+
+        return roomService.getRoomTypeNamesForAdminFilter()
+                .stream()
+                .filter(name -> name != null && name.equalsIgnoreCase(value))
+                .findFirst()
+                .map(String::toUpperCase)
+                .orElse(null);
+    }
+
+    private Long normalizeVariantId(Long variantId) {
+        if (variantId == null || variantId <= 0) {
+            return null;
+        }
+
+        boolean exists = roomService.getAllRoomTypeVariants()
+                .stream()
+                .anyMatch(variant -> variant.getId() != null && variant.getId().equals(variantId));
+
+        return exists ? variantId : null;
+    }
+
+    private Integer normalizeFloor(Integer floor) {
+        if (floor == null) {
+            return null;
+        }
+
+        return floor >= 1 && floor <= 6 ? floor : null;
+    }
+
+    private ViewType normalizeViewType(String viewType) {
+        if (viewType == null || viewType.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return ViewType.valueOf(viewType.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private RoomStatus normalizeRoomStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return RoomStatus.valueOf(status.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private String normalizeOperatingStatus(String operatingStatus) {
+        if (operatingStatus == null || operatingStatus.trim().isEmpty()) {
+            return null;
+        }
+
+        String value = operatingStatus.trim().toUpperCase();
+        Set<String> validValues = Set.of("ACTIVE", "INACTIVE");
+
+        return validValues.contains(value) ? value : null;
+    }
+
+    private int normalizePage(Integer page) {
+        if (page == null || page < 0) {
+            return 0;
+        }
+
+        return page;
+    }
+
+    private int normalizeSize(Integer size) {
+        if (size == null || size <= 0) {
+            return DEFAULT_ROOM_PAGE_SIZE;
+        }
+
+        return Math.min(size, MAX_ROOM_PAGE_SIZE);
     }
 }
