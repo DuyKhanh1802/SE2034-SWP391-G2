@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -199,4 +199,21 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             @Param("checkOutDate") LocalDate checkOutDate,
             @Param("blockingStatuses") List<BookingStatus> blockingStatuses
     );
+
+    @Query("""
+    SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView$RoomRow(
+        r.id,
+        r.roomNumber,
+        rt.name,
+        v.variantName,
+        r.floor,
+        CAST(r.status AS string)
+    )
+    FROM Room r
+    JOIN r.variant v
+    JOIN v.roomType rt
+    WHERE r.isDeleted = false
+    ORDER BY r.floor ASC, r.roomNumber ASC
+""")
+    List<ReceptionistDashboardView.RoomRow> findDashboardRoomRows(Pageable pageable);
 }

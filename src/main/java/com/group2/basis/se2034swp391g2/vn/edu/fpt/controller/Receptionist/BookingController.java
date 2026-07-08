@@ -74,7 +74,7 @@ public class BookingController {
 
         Page<BookingResponse> bookingPage =
                 bookingService.searchBookingsPaging(keyword, status, checkIn, checkOut, pageable);
-
+        model.addAttribute("pageTitle", "Quản lý đặt phòng");
         model.addAttribute("bookingPage", bookingPage);
         model.addAttribute("bookings", bookingPage.getContent());
 

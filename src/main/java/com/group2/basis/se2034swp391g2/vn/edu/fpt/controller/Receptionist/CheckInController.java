@@ -49,7 +49,7 @@ public class CheckInController {
                 bookingService.getConfirmedBookingsForCheckIn(
                         keyword, roomTypeId, checkInDate, status, pageable
                 );
-
+        model.addAttribute("pageTitle", "Danh sách nhận phòng");
         model.addAttribute("bookingPage", bookingPage);
         model.addAttribute("bookings", bookingPage.getContent());
         model.addAttribute("keyword", keyword);

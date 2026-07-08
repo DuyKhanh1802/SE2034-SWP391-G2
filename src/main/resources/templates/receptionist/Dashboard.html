@@ -1,134 +1,339 @@
 ﻿<!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-<!-- WELCOME -->
-        <section class="welcome-section">
-            <h1>Good morning, Lena</h1>
-            <p>Tuesday, October 24, 2024</p>
-        </section>
 
-        <!-- STATS -->
-        <section class="row g-4 stats-section">
+    <!-- WELCOME -->
+    <section class="reception-welcome">
+        <div>
+            <h1>Xin chào, Lễ Tân </h1>
+            <p>
+                <span th:text="${#temporals.format(dashboard.today(), 'dd/MM/yyyy')}">24/10/2024</span>
+                <span class="shift-badge">Ca sáng (07:00 - 15:00)</span>
+            </p>
+        </div>
+    </section>
 
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div>
-                        <p class="stat-label">Dirty rooms unclaimed</p>
-                        <h2>3</h2>
-                    </div>
+    <!-- KPI CARDS -->
+    <section class="reception-stat-grid">
 
-                    <span class="badge-custom badge-warning">
-                        Priority Action
-                    </span>
-                </div>
+        <a class="reception-stat-card" th:href="@{/receptionist/check-in}">
+            <div class="stat-icon stat-brown">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div>
+                <span>Khách đến hôm nay</span>
+                <strong th:text="${dashboard.todayArrivals()}">0</strong>
+                <p>Cần nhận phòng</p>
+            </div>
+        </a>
+
+        <a class="reception-stat-card" th:href="@{/receptionist/bookings(status='CHECKED_IN')}">
+            <div class="stat-icon stat-green">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+                <span>Đang lưu trú</span>
+                <strong th:text="${dashboard.stayingGuests()}">0</strong>
+                <p>Booking đang có khách</p>
+            </div>
+        </a>
+
+        <a class="reception-stat-card" th:href="@{/receptionist/check-out}">
+            <div class="stat-icon stat-purple">
+                <i class="fa-solid fa-suitcase-rolling"></i>
+            </div>
+            <div>
+                <span>Khách trả phòng hôm nay</span>
+                <strong th:text="${dashboard.todayCheckOuts()}">0</strong>
+                <p>Cần xử lý trả phòng</p>
+            </div>
+        </a>
+
+        <a class="reception-stat-card" th:href="@{/receptionist/bookings(status='PENDING')}">
+            <div class="stat-icon stat-blue">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+            <div>
+                <span>Booking chờ xác nhận</span>
+                <strong th:text="${dashboard.pendingBookings()}">0</strong>
+                <p>Đang chờ xử lý</p>
+            </div>
+        </a>
+
+    </section>
+
+    <!-- MAIN TABLES -->
+    <section class="dashboard-two-columns">
+
+        <!-- CHECK-IN TODAY -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h2>
+                    Hàng đợi nhận phòng hôm nay
+                    <span th:text="${dashboard.todayArrivals()}">0</span>
+                </h2>
+                <a th:href="@{/receptionist/check-in}">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
 
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div>
-                        <p class="stat-label">My rooms in progress</p>
-                        <h2>2</h2>
-                    </div>
+            <div class="table-responsive dashboard-table-wrap">
+                <table class="dashboard-table">
+                    <thead>
+                    <tr>
+                        <th>Mã booking</th>
+                        <th>Khách hàng</th>
+                        <th>Phòng / Loại phòng</th>
+                        <th>Nhận - Trả</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${dashboard.checkInRows()}">
+                        <td th:text="${row.bookingReference()}">BK-001</td>
+                        <td>
+                            <strong th:text="${row.guestName()}">Nguyễn Văn A</strong>
+                            <small th:text="${row.guestPhone()}">0900000000</small>
+                        </td>
+                        <td>
+                            <span th:text="${row.roomDisplay()}">Deluxe - 402</span>
+                        </td>
+                        <td>
+                            <span th:text="${#temporals.format(row.checkInDate(), 'dd/MM')}">24/10</span>
+                            -
+                            <span th:text="${#temporals.format(row.checkOutDate(), 'dd/MM')}">26/10</span>
+                        </td>
+                        <td>
+                            <span class="status-pill"
+                                  th:classappend="${row.depositStatus() == 'PAID'} ? ' paid' : ' unpaid'"
+                                  th:text="${row.depositStatus() == 'PAID'} ? 'Đã cọc' : 'Chưa cọc'">
+                                Đã cọc
+                            </span>
+                        </td>
+                        <td>
+                            <a class="table-btn"
+                               th:href="@{/receptionist/bookings/{id}/check-in(id=${row.bookingId()})}">
+                                Nhận phòng
+                            </a>
+                        </td>
+                    </tr>
 
-                    <span class="badge-custom badge-info">
-                        Active Tasks
-                    </span>
-                </div>
+                    <tr th:if="${#lists.isEmpty(dashboard.checkInRows())}">
+                        <td colspan="6" class="empty-row">Không có khách cần nhận phòng hôm nay.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CHECK-OUT TODAY -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h2>
+                    Khách trả phòng hôm nay
+                    <span th:text="${dashboard.todayCheckOuts()}">0</span>
+                </h2>
+                <a th:href="@{/receptionist/check-out}">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
 
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div>
-                        <p class="stat-label">Completed today</p>
-                        <h2>4</h2>
-                    </div>
+            <div class="table-responsive dashboard-table-wrap">
+                <table class="dashboard-table">
+                    <thead>
+                    <tr>
+                        <th>Phòng</th>
+                        <th>Khách hàng</th>
+                        <th>Trả phòng</th>
+                        <th>Hóa đơn</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${dashboard.checkOutRows()}">
+                        <td th:text="${row.roomNumber()}">402</td>
+                        <td th:text="${row.guestName()}">Nguyễn Văn A</td>
+                        <td th:text="${#temporals.format(row.checkOutDate(), 'dd/MM')}">24/10</td>
+                        <td>
+                            <span th:classappend="${row.remainingAmount().signum() > 0} ? ' money-danger' : ' money-ok'"
+                                  th:text="${#numbers.formatDecimal(row.remainingAmount(), 0, 'COMMA', 0, 'POINT')}">
+                                0
+                            </span>
+                        </td>
+                        <td>
+                            <a class="table-btn"
+                               th:href="@{/receptionist/bookings/view/{id}(id=${row.bookingId()})}">
+                                Xem chi tiết
+                            </a>
+                        </td>
+                    </tr>
 
-                    <span class="badge-custom badge-success">
-                        Daily Quota
-                    </span>
-                </div>
+                    <tr th:if="${#lists.isEmpty(dashboard.checkOutRows())}">
+                        <td colspan="5" class="empty-row">Không có khách trả phòng hôm nay.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- BOTTOM TABLES -->
+    <section class="dashboard-three-columns">
+
+        <!-- ROOM LIST -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h2>Danh sách phòng</h2>
+                <a th:href="@{/receptionist/rooms}">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
 
-        </section>
+            <div class="table-responsive dashboard-table-wrap small-table">
+                <table class="dashboard-table">
+                    <thead>
+                    <tr>
+                        <th>Số phòng</th>
+                        <th>Loại phòng</th>
+                        <th>Tầng</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${dashboard.roomRows()}">
+                        <td th:text="${row.roomNumber()}">402</td>
+                        <td th:text="${row.variantName()}">Deluxe City View</td>
+                        <td th:text="${row.floor()}">4</td>
+                        <td>
+                            <span class="status-pill"
+                                  th:classappend="${row.status() == 'AVAILABLE'} ? ' available' : (${row.status() == 'OCCUPIED'} ? ' occupied' : ' maintenance')"
+                                  th:text="${row.status() == 'AVAILABLE'} ? 'Trống' : (${row.status() == 'OCCUPIED'} ? 'Đang ở' : 'Bảo trì')">
+                                Trống
+                            </span>
+                        </td>
+                    </tr>
 
-        <!-- LOWER DASHBOARD -->
-        <section class="row g-5 dashboard-section">
+                    <tr th:if="${#lists.isEmpty(dashboard.roomRows())}">
+                        <td colspan="4" class="empty-row">Chưa có dữ liệu phòng.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-            <!-- UNCLAIMED ROOMS -->
-            <div class="col-lg-6">
-
-                <div class="section-title-row">
-                    <h2>Unclaimed rooms</h2>
-                    <a href="#">Go to Room Pool</a>
-                </div>
-
-                <div class="room-card">
-                    <div>
-                        <h3>Room 402</h3>
-                        <p>Floor 4 â€¢ Suite</p>
-                    </div>
-                    <span>45m since checkout</span>
-                </div>
-
-                <div class="room-card">
-                    <div>
-                        <h3>Room 305</h3>
-                        <p>Floor 3 â€¢ Double Room</p>
-                    </div>
-                    <span>1h since checkout</span>
-                </div>
-
-                <div class="room-card">
-                    <div>
-                        <h3>Room 512</h3>
-                        <p>Floor 5 â€¢ Penthouse</p>
-                    </div>
-                    <span>2h since checkout</span>
-                </div>
-
+        <!-- PENDING BOOKING -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h2>
+                    Đặt phòng mới
+                    <span th:text="${dashboard.pendingBookings()}">0</span>
+                </h2>
+                <a th:href="@{/receptionist/bookings(status='PENDING')}">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
 
-            <!-- MY TASKS -->
-            <div class="col-lg-6">
+            <div class="table-responsive dashboard-table-wrap small-table">
+                <table class="dashboard-table">
+                    <thead>
+                    <tr>
+                        <th>Mã booking</th>
+                        <th>Khách hàng</th>
+                        <th>Nhận - Trả</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${dashboard.pendingBookingRows()}">
+                        <td>
+                            <a th:href="@{/receptionist/bookings/view/{id}(id=${row.bookingId()})}"
+                               th:text="${row.bookingReference()}">
+                                BK-001
+                            </a>
+                        </td>
+                        <td th:text="${row.guestName()}">Nguyễn Văn A</td>
+                        <td>
+                            <span th:text="${#temporals.format(row.checkInDate(), 'dd/MM')}">24/10</span>
+                            -
+                            <span th:text="${#temporals.format(row.checkOutDate(), 'dd/MM')}">26/10</span>
+                        </td>
+                        <td>
+                            <span class="status-pill pending">Chờ xác nhận</span>
+                        </td>
+                    </tr>
 
-                <div class="section-title-row">
-                    <h2>My tasks today</h2>
-                    <a href="#">View My Tasks</a>
-                </div>
+                    <tr th:if="${#lists.isEmpty(dashboard.pendingBookingRows())}">
+                        <td colspan="4" class="empty-row">Không có booking chờ xác nhận.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <div class="task-card">
-                    <div>
-                        <h3>Room 408</h3>
-                        <p>Assigned 8:00 AM</p>
-                    </div>
-
-                    <div class="task-status">
-                        <span class="dot"></span>
-                        <span>Cleaning</span>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </div>
-                </div>
-
-                <div class="task-card">
-                    <div>
-                        <h3>Room 411</h3>
-                        <p>Assigned 8:30 AM</p>
-                    </div>
-
-                    <div class="task-status">
-                        <span class="dot"></span>
-                        <span>Cleaning</span>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </div>
-                </div>
-
+        <!-- ROOM MOVE -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h2>Đổi phòng / nâng hạng gần đây</h2>
+                <a th:href="@{/receptionist/bookings}">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
 
-        </section>
+            <div class="table-responsive dashboard-table-wrap small-table">
+                <table class="dashboard-table">
+                    <thead>
+                    <tr>
+                        <th>Khách hàng</th>
+                        <th>Phòng cũ → mới</th>
+                        <th>Lý do</th>
+                        <th>Phụ thu</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${dashboard.roomMoveRows()}">
+                        <td>
+                            <a th:href="@{/receptionist/bookings/view/{id}(id=${row.bookingId()})}"
+                               th:text="${row.guestName()}">
+                                Nguyễn Văn A
+                            </a>
+                        </td>
+                        <td>
+                            <span th:text="${row.oldRoomNumber()}">402</span>
+                            →
+                            <span th:text="${row.newRoomNumber()}">601</span>
+                        </td>
+                        <td th:text="${
+                                row.reasonType() == 'HOTEL_FAULT' ? 'Lỗi khách sạn' :
+                                (row.reasonType() == 'GUEST_REQUEST' ? 'Khách yêu cầu' :
+                                (row.reasonType() == 'GUEST_UPGRADE' ? 'Nâng hạng' :
+                                (row.reasonType() == 'NOISY_ROOM' ? 'Phòng ồn' : 'Khác')))
+                            }">
+                            Nâng hạng
+                        </td>
+                        <td>
+                            <span th:classappend="${row.extraChargeAmount().signum() > 0} ? ' money-danger' : ' money-ok'"
+                                  th:text="${#numbers.formatDecimal(row.extraChargeAmount(), 0, 'COMMA', 0, 'POINT')}">
+                                0
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(dashboard.roomMoveRows())}">
+                        <td colspan="4" class="empty-row">Chưa có lịch sử đổi phòng gần đây.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
 </main>
 </body>
 </html>
