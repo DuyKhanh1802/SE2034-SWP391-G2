@@ -8,10 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView;
 import org.springframework.data.domain.Pageable;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 
 public interface BookingDetailRepository extends JpaRepository<BookingDetail, Long> {
 
@@ -102,6 +105,19 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
 """)
     boolean existsActiveOrFutureBookingByRoomId(@Param("roomId") Long roomId,
                                                 @Param("today") LocalDate today);
+
+
+    @Query("""
+    SELECT CASE WHEN COUNT(bd) > 0 THEN true ELSE false END
+    FROM BookingDetail bd
+    JOIN bd.booking b
+    WHERE bd.room.id = :roomId
+      AND b.isDeleted = false
+      AND b.status IN :blockingStatuses
+      AND bd.checkOutDate >= CURRENT_DATE
+    """)
+    boolean existsActiveOrUpcomingBookingByRoomId(@Param("roomId") Long roomId,
+                                                  @Param("blockingStatuses") Collection<BookingStatus> blockingStatuses);
 
     @Query("""
     SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView$CheckInRow(

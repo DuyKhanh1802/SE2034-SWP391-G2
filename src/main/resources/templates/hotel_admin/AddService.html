@@ -17,10 +17,17 @@
             </p>
         </div>
 
-        <div th:if="${errorMessage}" class="service-alert error">
+        <!-- TOAST MESSAGE -->
+        <div id="serviceToast" class="service-toast" role="alert" aria-live="assertive">
             <i class="fa-solid fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+            <span id="serviceToastMessage">Có lỗi xảy ra.</span>
         </div>
+
+        <!-- SERVER ERROR HIDDEN: dùng cho JS show toast 3 giây -->
+        <span id="serverErrorMessage"
+              th:if="${errorMessage}"
+              th:text="${errorMessage}"
+              hidden></span>
 
         <div class="service-card service-form-card">
 
@@ -36,11 +43,13 @@
                 </a>
             </div>
 
-            <form th:action="@{/hotel-admin/services/add}"
+            <form id="addServiceForm"
+                  th:action="@{/hotel-admin/services/add}"
                   th:object="${serviceRequest}"
                   method="post"
                   enctype="multipart/form-data"
-                  class="service-add-form">
+                  class="service-add-form"
+                  novalidate>
 
                 <div class="service-form-grid">
 
@@ -49,16 +58,13 @@
                         <input type="text"
                                id="name"
                                th:field="*{name}"
-                               placeholder="Ví dụ: Massage đá nóng"
-                               maxlength="200"
-                               required>
+                               placeholder="Ví dụ: Massage đá nóng">
                     </div>
 
                     <div class="service-form-group">
                         <label for="categoryId">Loại dịch vụ <span>*</span></label>
                         <select id="categoryId"
-                                th:field="*{categoryId}"
-                                required>
+                                th:field="*{categoryId}">
                             <option value="">-- Chọn loại dịch vụ --</option>
                             <option th:each="category : ${categories}"
                                     th:value="${category.id}"
@@ -74,9 +80,10 @@
                                id="price"
                                th:field="*{price}"
                                placeholder="Ví dụ: 350000"
-                               min="0"
+                               min="1"
+                               max="100000000"
                                step="1000"
-                               required>
+                               inputmode="numeric">
                     </div>
 
                     <div class="service-form-group">
@@ -93,10 +100,15 @@
                         <input type="file"
                                id="imageFile"
                                th:field="*{imageFile}"
-                               accept="image/*">
+                               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+
                         <small>
-                            Chọn ảnh từ máy.
+                            Chọn ảnh JPG, JPEG, PNG hoặc WEBP. Kích thước tối đa 5MB.
                         </small>
+
+                        <div id="serviceImagePreview" class="service-image-preview" hidden>
+                            <img id="serviceImagePreviewImg" src="" alt="Ảnh xem trước dịch vụ">
+                        </div>
                     </div>
 
                     <div class="service-form-group service-form-full">
@@ -125,6 +137,8 @@
         </div>
 
     </section>
+
+    <script th:src="@{/js/addService.js}"></script>
 
 </main>
 </body>
