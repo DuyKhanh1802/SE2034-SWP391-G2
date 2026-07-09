@@ -72,6 +72,17 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
     List<BookingDetail> findDetailsWithRoomsByBookingId(@Param("bookingId") Long bookingId);
 
     @Query("""
+    SELECT b.id, r.roomNumber
+    FROM BookingDetail bd
+    JOIN bd.booking b
+    LEFT JOIN bd.room r
+    WHERE b.id IN :bookingIds
+      AND r.roomNumber IS NOT NULL
+    ORDER BY r.roomNumber
+    """)
+    List<Object[]> findRoomNumbersByBookingIds(@Param("bookingIds") Collection<Long> bookingIds);
+
+    @Query("""
     SELECT bd
     FROM BookingDetail bd
     JOIN FETCH bd.booking b

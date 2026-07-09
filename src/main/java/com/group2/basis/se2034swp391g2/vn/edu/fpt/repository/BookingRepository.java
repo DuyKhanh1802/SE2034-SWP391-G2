@@ -166,6 +166,259 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
             Pageable pageable
     );
 
+    @Query(value = """
+    SELECT b
+    FROM Booking b
+    WHERE b.isDeleted = false
+      AND (
+          :keyword = ''
+          OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          OR EXISTS (
+              SELECT 1
+              FROM BookingDetail bd
+              LEFT JOIN bd.room r
+              WHERE bd.booking = b
+                AND r.roomNumber IS NOT NULL
+                AND LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          )
+          OR (
+              :searchGuestName = true
+              AND (
+                  LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+              )
+          )
+      )
+      AND (:bookingStatus = '' OR CAST(b.status AS string) = :bookingStatus)
+      AND (:checkIn IS NULL OR b.checkInDate >= :checkIn)
+      AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
+    ORDER BY b.createdAt DESC, b.id DESC
+    """,
+            countQuery = """
+    SELECT COUNT(b)
+    FROM Booking b
+    WHERE b.isDeleted = false
+      AND (
+          :keyword = ''
+          OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          OR EXISTS (
+              SELECT 1
+              FROM BookingDetail bd
+              LEFT JOIN bd.room r
+              WHERE bd.booking = b
+                AND r.roomNumber IS NOT NULL
+                AND LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          )
+          OR (
+              :searchGuestName = true
+              AND (
+                  LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+              )
+          )
+      )
+      AND (:bookingStatus = '' OR CAST(b.status AS string) = :bookingStatus)
+      AND (:checkIn IS NULL OR b.checkInDate >= :checkIn)
+      AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
+    """)
+    Page<Booking> searchFolioBookings(
+            @Param("keyword") String keyword,
+            @Param("searchGuestName") boolean searchGuestName,
+            @Param("bookingStatus") String bookingStatus,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut,
+            Pageable pageable
+    );
+
+    @Query(value = """
+    SELECT b
+    FROM Booking b
+    WHERE b.isDeleted = false
+      AND (
+          :keyword = ''
+          OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          OR EXISTS (
+              SELECT 1
+              FROM BookingDetail bd
+              LEFT JOIN bd.room r
+              WHERE bd.booking = b
+                AND r.roomNumber IS NOT NULL
+                AND LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          )
+          OR (
+              :searchGuestName = true
+              AND (
+                  LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+              )
+          )
+      )
+      AND (:bookingStatus = '' OR CAST(b.status AS string) = :bookingStatus)
+      AND (:checkIn IS NULL OR b.checkInDate >= :checkIn)
+      AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
+      AND (
+          :paymentStatus = ''
+          OR (
+              :paymentStatus = 'PAID'
+              AND (
+                  COALESCE(b.grandTotal, 0) = 0
+                  OR (
+                      COALESCE((
+                          SELECT SUM(p.amount)
+                          FROM Payment p
+                          WHERE p.booking = b
+                            AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
+                            AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
+                      ), 0)
+                      -
+                      COALESCE((
+                          SELECT SUM(p.amount)
+                          FROM Payment p
+                          WHERE p.booking = b
+                            AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
+                            AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
+                      ), 0)
+                  ) >= COALESCE(b.grandTotal, 0)
+              )
+          )
+          OR (
+              :paymentStatus = 'UNPAID'
+              AND COALESCE(b.grandTotal, 0) > 0
+              AND (
+                  COALESCE((
+                      SELECT SUM(p.amount)
+                      FROM Payment p
+                      WHERE p.booking = b
+                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
+                        AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
+                  ), 0)
+                  -
+                  COALESCE((
+                      SELECT SUM(p.amount)
+                      FROM Payment p
+                      WHERE p.booking = b
+                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
+                        AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
+                  ), 0)
+              ) = 0
+          )
+          OR (
+              :paymentStatus = 'PARTIAL'
+              AND (
+                  COALESCE((
+                      SELECT SUM(p.amount)
+                      FROM Payment p
+                      WHERE p.booking = b
+                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
+                        AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
+                  ), 0)
+                  -
+                  COALESCE((
+                      SELECT SUM(p.amount)
+                      FROM Payment p
+                      WHERE p.booking = b
+                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
+                        AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
+                  ), 0)
+              ) > 0
+              AND (
+                  COALESCE((
+                      SELECT SUM(p.amount)
+                      FROM Payment p
+                      WHERE p.booking = b
+                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
+                        AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
+                  ), 0)
+                  -
+                  COALESCE((
+                      SELECT SUM(p.amount)
+                      FROM Payment p
+                      WHERE p.booking = b
+                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
+                        AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
+                  ), 0)
+              ) < COALESCE(b.grandTotal, 0)
+          )
+      )
+    ORDER BY b.createdAt DESC, b.id DESC
+    """,
+            countQuery = """
+    SELECT COUNT(b)
+    FROM Booking b
+    WHERE b.isDeleted = false
+      AND (
+          :keyword = ''
+          OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          OR EXISTS (
+              SELECT 1
+              FROM BookingDetail bd
+              LEFT JOIN bd.room r
+              WHERE bd.booking = b
+                AND r.roomNumber IS NOT NULL
+                AND LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          )
+          OR (
+              :searchGuestName = true
+              AND (
+                  LOWER(b.guestFirstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(b.guestLastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(CONCAT(b.guestLastName, ' ', b.guestFirstName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(CONCAT(b.guestFirstName, ' ', b.guestLastName)) LIKE LOWER(CONCAT('%', :keyword, '%'))
+              )
+          )
+      )
+      AND (:bookingStatus = '' OR CAST(b.status AS string) = :bookingStatus)
+      AND (:checkIn IS NULL OR b.checkInDate >= :checkIn)
+      AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
+      AND (
+          :paymentStatus = ''
+          OR (
+              :paymentStatus = 'PAID'
+              AND (
+                  COALESCE(b.grandTotal, 0) = 0
+                  OR (
+                      COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                      - COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  ) >= COALESCE(b.grandTotal, 0)
+              )
+          )
+          OR (
+              :paymentStatus = 'UNPAID'
+              AND COALESCE(b.grandTotal, 0) > 0
+              AND (
+                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  - COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+              ) = 0
+          )
+          OR (
+              :paymentStatus = 'PARTIAL'
+              AND (
+                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  - COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+              ) > 0
+              AND (
+                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  - COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+              ) < COALESCE(b.grandTotal, 0)
+          )
+      )
+    """)
+    Page<Booking> searchFolioBookingsByPaymentStatus(
+            @Param("keyword") String keyword,
+            @Param("searchGuestName") boolean searchGuestName,
+            @Param("bookingStatus") String bookingStatus,
+            @Param("paymentStatus") String paymentStatus,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut,
+            Pageable pageable
+    );
+
     @Query("""
     SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckInProcedureResponse(
         b.id,

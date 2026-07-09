@@ -113,7 +113,6 @@
                 <span>Tổng quan</span>
             </a>
         </li>
-
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/rooms')} ? 'active' : ''">
             <a th:href="@{/receptionist/rooms}">
                 <i class="fas fa-bed"></i>
@@ -134,18 +133,16 @@
                 <span>Nhận phòng</span>
             </a>
         </li>
-
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/folios')} ? 'active' : ''">
+            <a th:href="@{/receptionist/folios}">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Hoá đơn</span>
+            </a>
+        </li>
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/check-out')} ? 'active' : ''">
             <a th:href="@{/receptionist/check-out}">
                 <i class="fas fa-right-from-bracket"></i>
                 <span>Trả phòng</span>
-            </a>
-        </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/invoices')} ? 'active' : ''">
-            <a th:href="@{/receptionist/invoices}">
-                <i class="fas fa-file-invoice-dollar"></i>
-                <span>Hoá đơn</span>
             </a>
         </li>
     </ul>

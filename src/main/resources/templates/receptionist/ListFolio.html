@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="folio-page">
+        <div th:if="${successMessage}" class="folio-alert success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="folio-alert warning" th:text="${errorMessage}"></div>
+
+        <section class="folio-toolbar">
+            <form th:action="@{/receptionist/folios}" method="get" class="folio-filter">
+                <div class="filter-field">
+                    <label>Tìm kiếm</label>
+                    <input type="text"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="Mã booking, tên khách, số phòng">
+                </div>
+
+                <div class="filter-field date-range">
+                    <label>Ngày lưu trú</label>
+                    <div>
+                        <input type="text"
+                               name="checkIn"
+                               class="list-date-picker"
+                               placeholder="dd/mm/yyyy"
+                               th:value="${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : ''}">
+                        <span>/</span>
+                        <input type="text"
+                               name="checkOut"
+                               class="list-date-picker"
+                               placeholder="dd/mm/yyyy"
+                               th:value="${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : ''}">
+                    </div>
+                </div>
+
+                <div class="filter-field">
+                    <label>Trạng thái thanh toán</label>
+                    <select name="paymentStatus">
+                        <option value="">Tất cả</option>
+                        <option value="UNPAID" th:selected="${paymentStatus == 'UNPAID'}">Chưa thanh toán</option>
+                        <option value="PARTIAL" th:selected="${paymentStatus == 'PARTIAL'}">Một phần</option>
+                        <option value="PAID" th:selected="${paymentStatus == 'PAID'}">Đã thanh toán</option>
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit">
+                        <i class="bi bi-funnel"></i>
+                        Lọc
+                    </button>
+                    <a th:href="@{/receptionist/folios}" class="filter-reset">
+                        <i class="bi bi-x-lg"></i>
+                        Xoá lọc
+                    </a>
+                </div>
+            </form>
+        </section>
+
+        <div class="folio-table-wrap">
+            <table class="folio-table">
+                <thead>
+                <tr>
+                    <th>Mã booking</th>
+                    <th>Khách</th>
+                    <th>Phòng</th>
+                    <th>Ngày lưu trú</th>
+                    <th>Tổng tiền</th>
+                    <th>Đã thanh toán</th>
+                    <th>Còn lại</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="folio : ${folios}">
+                    <td class="folio-code" th:text="'#' + ${folio.bookingReference}">#BK0001</td>
+                    <td th:text="${folio.guestName}">Nguyễn Văn A</td>
+                    <td class="room-summary" th:text="${folio.roomSummary}">Phòng 101</td>
+                    <td>
+                        <span th:text="${folio.checkInDate != null ? #temporals.format(folio.checkInDate, 'dd/MM/yyyy') : ''}">01/07/2026</span>
+                        <small th:text="${folio.checkOutDate != null ? ' - ' + #temporals.format(folio.checkOutDate, 'dd/MM/yyyy') : ''}"></small>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(folio.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</td>
+                    <td th:text="${#numbers.formatDecimal(folio.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</td>
+                    <td th:text="${#numbers.formatDecimal(folio.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</td>
+                    <td>
+                        <span class="payment-badge"
+                              th:classappend="${folio.paymentStatus == 'PAID'} ? ' paid' : (${folio.paymentStatus == 'PARTIAL'} ? ' partial' : ' unpaid')"
+                              th:text="${folio.paymentStatusLabel}">
+                            Chưa thanh toán
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <div class="folio-actions">
+                            <a th:href="@{/receptionist/folios/{id}(id=${folio.bookingId})}" title="Xem chi tiết">
+                                <i class="fa-regular fa-eye"></i>
+                            </a>
+                            <a th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId})}" title="Chỉnh sửa">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${folios == null or #lists.isEmpty(folios)}">
+                    <td colspan="9" class="empty-row">Không tìm thấy hoá đơn phù hợp.</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination-row" th:if="${folioPage != null and totalItems > 0}">
+                <p>
+                    Hiển thị
+                    <span th:text="${currentPage * folioPage.size + 1}">1</span>
+                    -
+                    <span th:text="${currentPage * folioPage.size + folioPage.numberOfElements}">5</span>
+                    trên tổng số
+                    <span th:text="${totalItems}">0</span>
+                    hoá đơn
+                </p>
+
+                <div class="pagination-buttons">
+                    <a th:href="@{/receptionist/folios(page=0,keyword=${keyword},paymentStatus=${paymentStatus},checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},checkOut=${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : null})}"
+                       th:classappend="${currentPage == 0} ? ' disabled'"
+                       title="Trang đầu">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+
+                    <a th:href="@{/receptionist/folios(page=${currentPage - 1},keyword=${keyword},paymentStatus=${paymentStatus},checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},checkOut=${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : null})}"
+                       th:classappend="${currentPage == 0} ? ' disabled'">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+
+                    <span th:if="${showLeadingEllipsis}" class="pagination-ellipsis">...</span>
+
+                    <a th:each="pageNumber : ${visiblePages}"
+                       th:href="@{/receptionist/folios(page=${pageNumber},keyword=${keyword},paymentStatus=${paymentStatus},checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},checkOut=${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : null})}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == currentPage} ? ' active'">
+                    </a>
+
+                    <span th:if="${showTrailingEllipsis}" class="pagination-ellipsis">...</span>
+
+                    <a th:href="@{/receptionist/folios(page=${currentPage + 1},keyword=${keyword},paymentStatus=${paymentStatus},checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},checkOut=${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : null})}"
+                       th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+
+                    <a th:href="@{/receptionist/folios(page=${totalPages - 1},keyword=${keyword},paymentStatus=${paymentStatus},checkIn=${checkIn != null ? #temporals.format(checkIn, 'dd/MM/yyyy') : null},checkOut=${checkOut != null ? #temporals.format(checkOut, 'dd/MM/yyyy') : null})}"
+                       th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
+                       title="Trang cuối">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

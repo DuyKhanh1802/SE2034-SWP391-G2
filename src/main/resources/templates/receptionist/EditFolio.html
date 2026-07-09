@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="folio-page">
+
+        <div class="folio-header split">
+            <div>
+                <a class="back-link" th:href="@{/receptionist/folios/{id}(id=${folio.bookingId})}">
+                    <i class="bi bi-arrow-left"></i>
+                    Chi tiết hoá đơn
+                </a>
+                <h1 th:text="'Chỉnh sửa hoá đơn #' + ${folio.bookingReference}">Chỉnh sửa hoá đơn #BK0001</h1>
+                <p th:text="${folio.guestName}">Nguyễn Văn A</p>
+            </div>
+            <div class="header-actions">
+                <a th:href="@{/receptionist/bookings/view/{id}(id=${folio.bookingId})}" class="btn-outline">Booking</a>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="folio-alert success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="folio-alert warning" th:text="${errorMessage}"></div>
+
+        <div class="summary-grid">
+            <div>
+                <span>Tổng hoá đơn</span>
+                <strong th:text="${#numbers.formatDecimal(folio.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
+            </div>
+            <div>
+                <span>Đã thanh toán</span>
+                <strong th:text="${#numbers.formatDecimal(folio.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
+            </div>
+            <div>
+                <span>Còn lại</span>
+                <strong th:text="${#numbers.formatDecimal(folio.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
+            </div>
+            <div>
+                <span>Trạng thái</span>
+                <strong class="summary-status"
+                        th:classappend="${folio.paymentStatus == 'PAID'} ? ' paid' : (${folio.paymentStatus == 'PARTIAL'} ? ' partial' : ' unpaid')"
+                        th:text="${folio.paymentStatusLabel}">Chưa thanh toán</strong>
+            </div>
+        </div>
+
+        <section class="folio-panel full" th:if="${folio.editable}">
+            <h2>Thêm điều chỉnh</h2>
+            <form class="adjustment-form"
+                  th:action="@{/receptionist/folios/{id}/adjustments(id=${folio.bookingId})}"
+                  th:object="${request}"
+                  method="post">
+                <div>
+                    <label>Áp dụng cho phòng</label>
+                    <select th:field="*{bookingDetailId}">
+                        <option value="">Chung toàn booking</option>
+                        <option th:each="room : ${folio.rooms}"
+                                th:value="${room.bookingDetailId}"
+                                th:text="${room.roomNumber != null ? 'Phòng ' + room.roomNumber + ' - ' + room.roomName : room.roomName}">
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label>Mô tả</label>
+                    <input type="text" th:field="*{description}" placeholder="Ví dụ: Phụ thu minibar, giảm giá xử lý sự cố" required>
+                </div>
+                <div>
+                    <label>Số tiền</label>
+                    <input type="number" th:field="*{amount}" step="1000" placeholder="Âm là giảm trừ" required>
+                </div>
+                <div>
+                    <label>Lý do</label>
+                    <input type="text" th:field="*{adjustmentReason}" placeholder="Ghi chú nội bộ">
+                </div>
+                <button type="submit">
+                    <i class="bi bi-plus-lg"></i>
+                    Thêm vào hoá đơn
+                </button>
+            </form>
+        </section>
+
+        <section class="folio-panel full" th:unless="${folio.editable}">
+            <h2>Hoá đơn đã khoá</h2>
+            <p class="locked-note">Booking đã trả phòng, huỷ hoặc no-show nên không thể chỉnh sửa folio.</p>
+        </section>
+
+        <section class="folio-panel full">
+            <h2>Chi phí hoá đơn</h2>
+            <div class="compact-table">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Phòng</th>
+                        <th>Mô tả</th>
+                        <th>Loại</th>
+                        <th>SL</th>
+                        <th class="text-end">Đơn giá</th>
+                        <th class="text-end">Phí DV</th>
+                        <th class="text-end">VAT</th>
+                        <th class="text-end">Số tiền</th>
+                        <th class="text-end">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="line : ${folio.invoiceCharges}">
+                        <td th:text="${line.roomNumber}">Chung</td>
+                        <td>
+                            <span th:text="${line.description}">Điều chỉnh</span>
+                            <small th:if="${line.adjustmentReason != null and !#strings.isEmpty(line.adjustmentReason)}"
+                                   th:text="${line.adjustmentReason}"></small>
+                        </td>
+                        <td th:text="${line.itemType}">ADJUSTMENT</td>
+                        <td th:text="${line.quantity}">1</td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(line.unitPrice, 0, 'COMMA', 0, 'POINT')}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(line.serviceChargeAmount, 0, 'COMMA', 0, 'POINT')}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(line.vatAmount, 0, 'COMMA', 0, 'POINT')}"></td>
+                        <td class="text-end strong-money" th:text="${#numbers.formatDecimal(line.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</td>
+                        <td class="text-end">
+                            <form th:if="${line.voidable}"
+                                  th:action="@{/receptionist/folios/{bookingId}/items/{folioItemId}/void(bookingId=${folio.bookingId},folioItemId=${line.folioItemId})}"
+                                  method="post"
+                                  class="inline-void-form">
+                                <input type="hidden" name="voidedReason" value="Huỷ điều chỉnh từ màn Edit Folio">
+                                <button type="submit" title="Huỷ điều chỉnh">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${folio.invoiceCharges == null or #lists.isEmpty(folio.invoiceCharges)}">
+                        <td colspan="9" class="empty-row">Chưa có chi phí hoá đơn.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </section>
+</main>
+</body>
+</html>
