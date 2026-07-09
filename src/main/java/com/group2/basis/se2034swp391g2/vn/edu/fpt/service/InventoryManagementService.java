@@ -461,6 +461,9 @@ public class InventoryManagementService {
         validateMaxScale(quantity, 2, "Số lượng nhập");
         validatePositive(unitCost, "Đơn giá trước VAT / 1 đơn vị phải lớn hơn 0.");
         validateNaturalNumber(unitCost, "Đơn giá trước VAT / 1 đơn vị");
+        validateRequired(paymentMethod, "Phương thức thanh toán là bắt buộc.");
+        validateOptionalLength(supplier, "Nhà cung cấp", 150);
+        validateOptionalLength(note, "Ghi chú", 300);
         LocalDate effectiveReceiptDate = receiptDate == null ? LocalDate.now(APP_ZONE) : receiptDate;
         if (effectiveReceiptDate.isAfter(LocalDate.now(APP_ZONE))) {
             throw new IllegalArgumentException("Ngày nhập kho không được ở tương lai.");
@@ -596,12 +599,22 @@ public class InventoryManagementService {
             return;
         }
         BigDecimal multiplier = serviceQuantity == null ? BigDecimal.ONE : serviceQuantity;
+        validatePositive(multiplier, "Số lượng dịch vụ phải lớn hơn 0.");
+        validateMaxScale(multiplier, 2, "Số lượng dịch vụ");
+        if (sourceId == null) {
+            throw new IllegalArgumentException("Thiếu mã dịch vụ trong hóa đơn để ghi nhận tiêu hao kho.");
+        }
         List<ServiceInventoryMapping> mappings = serviceInventoryMappingRepository.findByService_Id(service.getId());
         if (mappings.isEmpty()) {
             throw new IllegalStateException("Dịch vụ chưa được cấu hình tiêu hao kho. Vui lòng liên hệ thủ kho.");
         }
 
         for (ServiceInventoryMapping mapping : mappings) {
+            if (mapping.getItem() == null) {
+                throw new IllegalStateException("Quy tắc tiêu hao dịch vụ đang thiếu hàng hóa.");
+            }
+            validatePositive(mapping.getQuantityPerUse(), "Số lượng tiêu hao trong quy tắc dịch vụ phải lớn hơn 0.");
+            validateMaxScale(mapping.getQuantityPerUse(), 2, "Số lượng tiêu hao trong quy tắc dịch vụ");
             InventoryItem item = mapping.getItem();
             BigDecimal consumedQuantity = mapping.getQuantityPerUse().multiply(multiplier);
             ensureSufficientStock(item, consumedQuantity);
@@ -972,6 +985,18 @@ public class InventoryManagementService {
         if (value != null && value.length() > maxLength) {
             errors.add("Dòng " + excelRowNumber + ": " + fieldName
                     + " không được vượt quá " + maxLength + " ký tự.");
+        }
+    }
+
+    private void validateOptionalLength(String value, String fieldName, int maxLength) {
+        if (value != null && value.trim().length() > maxLength) {
+            throw new IllegalArgumentException(fieldName + " không được vượt quá " + maxLength + " ký tự.");
+        }
+    }
+
+    private void validateRequired(Object value, String message) {
+        if (value == null) {
+            throw new IllegalArgumentException(message);
         }
     }
 
