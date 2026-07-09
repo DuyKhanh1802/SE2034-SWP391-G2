@@ -6,9 +6,6 @@ import lombok.Data;
 
 @Data
 public class AccountUpdateRequest {
-    private String firstName;
-    private String lastName;
-    private String phone;
 
     @NotNull(message = "Vui lòng chọn một vai trò.")
     private Long roleId;

@@ -6,14 +6,23 @@ document.addEventListener("DOMContentLoaded", function () {
     if (approvalForm && approvalNote && approvalMessage) {
         approvalForm.addEventListener("submit", function (event) {
             const action = event.submitter ? event.submitter.value : "";
+            const trimmedNote = approvalNote.value.trim();
 
             approvalMessage.textContent = "";
             approvalNote.classList.remove("is-invalid");
 
-            if (action === "reject" && approvalNote.value.trim() === "") {
+            if (action === "reject" && trimmedNote === "") {
                 event.preventDefault();
                 approvalNote.classList.add("is-invalid");
                 approvalMessage.textContent = "Vui lòng nhập lý do từ chối tài khoản.";
+                approvalNote.focus();
+                return;
+            }
+
+            if (action === "reject" && trimmedNote.length > 150) {
+                event.preventDefault();
+                approvalNote.classList.add("is-invalid");
+                approvalMessage.textContent = "Lý do từ chối không được vượt quá 150 ký tự.";
                 approvalNote.focus();
             }
         });
