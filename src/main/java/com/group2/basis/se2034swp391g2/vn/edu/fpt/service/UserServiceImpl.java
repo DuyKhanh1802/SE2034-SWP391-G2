@@ -32,6 +32,8 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private static final int MAX_APPROVAL_NOTE_LENGTH = 150;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
@@ -54,6 +56,8 @@ public class UserServiceImpl implements UserService {
             Join<User, UserRole> userRoleJoin = root.join("userRoles", JoinType.LEFT);
             Join<UserRole, Role> roleJoin = userRoleJoin.join("role", JoinType.LEFT);
             List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(cb.isFalse(root.get("isDeleted")));
 
             if (normalizedKeyword != null) {
                 predicates.add(cb.or(
@@ -93,8 +97,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản."));
     }
 
     @Override
@@ -103,17 +107,6 @@ public class UserServiceImpl implements UserService {
         User existingUser = getUserById(id);
         validateSelfAccountUpdate(existingUser, request);
 
-        if (request.getFirstName() != null) {
-            existingUser.setFirstName(request.getFirstName());
-        }
-        if (request.getLastName() != null) {
-            existingUser.setLastName(request.getLastName());
-        }
-        if (request.getPhone() != null) {
-            existingUser.setPhone(request.getPhone());
-        }
-        existingUser.setUpdatedAt(Instant.now());
-
         if (Boolean.TRUE.equals(request.getIsActive())
                 && existingUser.getApprovalStatus() == ApprovalStatus.REJECTED
                 && request.getApprovalStatus() != ApprovalStatus.APPROVED) {
@@ -121,10 +114,14 @@ public class UserServiceImpl implements UserService {
         }
 
         if (request.getIsActive() != null) {
+            if (Boolean.FALSE.equals(request.getIsActive())) {
+                validateLastActiveSystemAdmin(existingUser, null);
+            }
             existingUser.setIsActive(request.getIsActive());
         }
 
         if (request.getApprovalStatus() != null) {
+            validateApprovalStatus(request.getApprovalStatus());
             if (existingUser.getApprovalStatus() != ApprovalStatus.PENDING) {
                 throw new IllegalArgumentException("Tài khoản này đã được xử lý phê duyệt trước đó.");
             }
@@ -141,6 +138,10 @@ public class UserServiceImpl implements UserService {
 
         if (Boolean.TRUE.equals(request.getRoleUpdateRequested())) {
             Role newRole = validateSingleRole(request.getRoleId());
+            if (existingUser.getApprovalStatus() == ApprovalStatus.REJECTED) {
+                throw new IllegalArgumentException("Không thể thay đổi vai trò của tài khoản đã bị từ chối.");
+            }
+            validateLastActiveSystemAdmin(existingUser, newRole.getRoleName());
 
             existingUser.setUserType(resolveUserType(newRole.getRoleName()));
             existingUser.setUpdatedAt(Instant.now());
@@ -174,6 +175,11 @@ public class UserServiceImpl implements UserService {
             if (approvalNote.isEmpty()) {
                 throw new IllegalArgumentException("Vui lòng nhập lý do từ chối tài khoản.");
             }
+            if (approvalNote.length() > MAX_APPROVAL_NOTE_LENGTH) {
+                throw new IllegalArgumentException("Lý do từ chối không được vượt quá "
+                        + MAX_APPROVAL_NOTE_LENGTH + " ký tự.");
+            }
+            validateLastActiveSystemAdmin(existingUser, null);
             existingUser.setApprovalNote(approvalNote);
             existingUser.setIsActive(false);
         } else if (approvalStatus == ApprovalStatus.APPROVED) {
@@ -184,6 +190,12 @@ public class UserServiceImpl implements UserService {
         }
 
         existingUser.setApprovalStatus(approvalStatus);
+    }
+
+    private void validateApprovalStatus(ApprovalStatus approvalStatus) {
+        if (approvalStatus != ApprovalStatus.APPROVED && approvalStatus != ApprovalStatus.REJECTED) {
+            throw new IllegalArgumentException("Thao tác duyệt tài khoản không hợp lệ.");
+        }
     }
 
     private Role validateSingleRole(Long roleId) {
@@ -203,6 +215,27 @@ public class UserServiceImpl implements UserService {
 
     private UserType resolveUserType(RoleName roleName) {
         return roleName == RoleName.GUEST ? UserType.GUEST : UserType.STAFF;
+    }
+
+    private void validateLastActiveSystemAdmin(User existingUser, RoleName targetRoleName) {
+        if (!Boolean.TRUE.equals(existingUser.getIsActive()) || !hasRole(existingUser, RoleName.SYSTEM_ADMIN)) {
+            return;
+        }
+
+        if (targetRoleName == RoleName.SYSTEM_ADMIN) {
+            return;
+        }
+
+        if (userRepository.countActiveUsersByRoleName(RoleName.SYSTEM_ADMIN) <= 1) {
+            throw new IllegalArgumentException("Phải giữ lại ít nhất một tài khoản Quản trị Hệ thống đang hoạt động.");
+        }
+    }
+
+    private boolean hasRole(User user, RoleName roleName) {
+        return user.getUserRoles() != null
+                && user.getUserRoles().stream()
+                .map(UserRole::getRole)
+                .anyMatch(role -> role != null && role.getRoleName() == roleName);
     }
 
     private void validateSelfAccountUpdate(User existingUser, AccountUpdateRequest request) {

@@ -72,8 +72,16 @@ public class UserController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('" + PermissionCode.USER_VIEW + "')")
-    public String viewUserDetail(@PathVariable("id") Long id, Model model) {
-        User user = userService.getUserById(id);
+    public String viewUserDetail(@PathVariable("id") Long id,
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
+        User user;
+        try {
+            user = userService.getUserById(id);
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/system-admin/list-user";
+        }
         model.addAttribute("user", user);
         model.addAttribute("displayName", DisplayUtils.formatDisplayName(user));
         model.addAttribute("roleLabel", adminUserViewService.getRoleLabel(user));
@@ -123,7 +131,13 @@ public class UserController {
                                    Authentication authentication,
                                    Model model,
                                    RedirectAttributes redirectAttributes) {
-        User user = userService.getUserById(id);
+        User user;
+        try {
+            user = userService.getUserById(id);
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/system-admin/list-user";
+        }
         Long currentAdminId = getCurrentUserId(authentication);
 
         if (currentAdminId != null && currentAdminId.equals(user.getId())) {
@@ -153,6 +167,14 @@ public class UserController {
         Long currentAdminId = getCurrentUserId(authentication);
         if (currentAdminId != null) {
             request.setCurrentAdminId(currentAdminId);
+        }
+        request.setApprovalStatus(null);
+        request.setApprovalNote(null);
+        if (Boolean.TRUE.equals(request.getRoleUpdateRequested())) {
+            request.setIsActive(null);
+        } else {
+            request.setRoleId(null);
+            request.setRoleUpdateRequested(false);
         }
 
         try {

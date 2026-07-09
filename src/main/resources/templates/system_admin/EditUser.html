@@ -88,7 +88,7 @@
                 <textarea id="approvalNote"
                           name="approvalNote"
                           rows="3"
-                          maxlength="300"
+                          maxlength="150"
                           th:text="${user.approvalStatus != null and user.approvalStatus.name() == 'REJECTED' ? user.approvalNote : ''}"
                           placeholder="Nhập lý do khi từ chối tài khoản"></textarea>
                 <p id="approvalValidationMessage" class="settings-note form-validation-message"></p>
