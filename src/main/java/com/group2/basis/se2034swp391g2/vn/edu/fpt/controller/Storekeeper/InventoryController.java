@@ -27,6 +27,7 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.IntStream;
 
 @Controller
 @RequiredArgsConstructor
@@ -58,6 +59,10 @@ public class InventoryController {
         model.addAttribute("pageSize", itemPage.getSize());
         model.addAttribute("hasPrevious", itemPage.hasPrevious());
         model.addAttribute("hasNext", itemPage.hasNext());
+        List<Integer> visiblePages = buildVisiblePages(itemPage.getNumber(), itemPage.getTotalPages());
+        model.addAttribute("visiblePages", visiblePages);
+        model.addAttribute("showLeadingEllipsis", !visiblePages.isEmpty() && visiblePages.getFirst() > 0);
+        model.addAttribute("showTrailingEllipsis", !visiblePages.isEmpty() && visiblePages.getLast() < itemPage.getTotalPages() - 1);
         model.addAttribute("lowStockCount", inventoryManagementService.countLowStockItems());
         List<String> lowStockItemCodes = inventoryManagementService.getLowStockItems()
                 .stream()
@@ -69,9 +74,34 @@ public class InventoryController {
         model.addAttribute("expiringSoonItemCodes", expiringSoonItemCodes);
         model.addAttribute("expiringSoonItemCodesText", formatLimitedItemCodes(expiringSoonItemCodes));
         model.addAttribute("inventoryVatRate", inventoryManagementService.getInventoryVatRate());
-        model.addAttribute("financialChargeConfigured", true);
         model.addAttribute("today", LocalDate.now());
         return "storekeeper/InventoryList";
+    }
+
+    private List<Integer> buildVisiblePages(int currentPage, int totalPages) {
+        if (totalPages <= 0) {
+            return List.of();
+        }
+
+        if (totalPages <= 5) {
+            return IntStream.range(0, totalPages).boxed().toList();
+        }
+
+        int start;
+        int end;
+
+        if (currentPage <= 2) {
+            start = 0;
+            end = 3;
+        } else if (currentPage >= totalPages - 3) {
+            start = totalPages - 4;
+            end = totalPages - 1;
+        } else {
+            start = currentPage - 1;
+            end = currentPage + 2;
+        }
+
+        return IntStream.rangeClosed(start, end).boxed().toList();
     }
 
     @GetMapping("/storekeeper/inventory/{id}/edit")

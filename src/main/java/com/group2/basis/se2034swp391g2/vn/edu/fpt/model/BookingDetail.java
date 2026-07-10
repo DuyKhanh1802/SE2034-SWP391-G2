@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -76,6 +77,20 @@ public class BookingDetail {
 
     @Column(name = "room_code_expires_at")
     private Instant roomCodeExpiresAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "stay_status", length = 30)
+    private BookingDetailStatus stayStatus;
+
+    @Column(name = "actual_checkin_at")
+    private Instant actualCheckinAt;
+
+    @Column(name = "actual_checkout_at")
+    private Instant actualCheckoutAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "checked_out_by")
+    private User checkedOutBy;
 
     // Nếu khách chọn view khi đặt phòng thì giữ trường này.
     // Ví dụ: CITY_VIEW, GARDEN_VIEW.
@@ -165,6 +180,10 @@ public class BookingDetail {
 
         if (this.extraBedTotal == null) {
             this.extraBedTotal = BigDecimal.ZERO;
+        }
+
+        if (this.stayStatus == null) {
+            this.stayStatus = BookingDetailStatus.RESERVED;
         }
     }
 }

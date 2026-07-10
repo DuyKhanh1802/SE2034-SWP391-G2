@@ -2,7 +2,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.SystemAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.constants.PermissionCode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.DisplayUtils;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.AccountUpdateRequest;
@@ -27,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Controller
 @RequestMapping("/system-admin/list-user")
@@ -39,7 +39,7 @@ public class UserController {
     private final AdminUserViewService adminUserViewService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_VIEW + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String listUsers(@RequestParam(value = "keyword", required = false) String keyword,
                             @RequestParam(value = "role", required = false) RoleName role,
                             @RequestParam(value = "activeStatus", defaultValue = "ALL") String activeStatus,
@@ -65,13 +65,44 @@ public class UserController {
         model.addAttribute("totalElements", userPage.getTotalElements());
         model.addAttribute("hasPrevious", userPage.hasPrevious());
         model.addAttribute("hasNext", userPage.hasNext());
+        model.addAttribute("currentPageIndex", userPage.getNumber());
+        List<Integer> visiblePages = buildVisiblePages(userPage.getNumber(), userPage.getTotalPages());
+        model.addAttribute("visiblePages", visiblePages);
+        model.addAttribute("showLeadingEllipsis", !visiblePages.isEmpty() && visiblePages.getFirst() > 0);
+        model.addAttribute("showTrailingEllipsis", !visiblePages.isEmpty() && visiblePages.getLast() < userPage.getTotalPages() - 1);
         model.addAttribute("currentUserId", getCurrentUserId(authentication));
         model.addAttribute("pageTitle", "Quản lý người dùng");
         return "system_admin/ListUser";
     }
 
+    private List<Integer> buildVisiblePages(int currentPage, int totalPages) {
+        if (totalPages <= 0) {
+            return List.of();
+        }
+
+        if (totalPages <= 5) {
+            return IntStream.range(0, totalPages).boxed().toList();
+        }
+
+        int start;
+        int end;
+
+        if (currentPage <= 2) {
+            start = 0;
+            end = 3;
+        } else if (currentPage >= totalPages - 3) {
+            start = totalPages - 4;
+            end = totalPages - 1;
+        } else {
+            start = currentPage - 1;
+            end = currentPage + 2;
+        }
+
+        return IntStream.rangeClosed(start, end).boxed().toList();
+    }
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_VIEW + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String viewUserDetail(@PathVariable("id") Long id,
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
@@ -91,7 +122,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/review")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_APPROVE + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String processReviewUser(@PathVariable("id") Long id,
                                     @RequestParam("action") String action,
                                     @RequestParam(value = "approvalNote", required = false) String approvalNote,
@@ -125,8 +156,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/edit")
-    @PreAuthorize("hasAnyAuthority('" + PermissionCode.USER_MANAGE + "','"
-            + PermissionCode.USER_APPROVE + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String showEditUserForm(@PathVariable("id") Long id,
                                    Authentication authentication,
                                    Model model,
@@ -159,7 +189,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/edit")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_MANAGE + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String processEditUser(@PathVariable("id") Long id,
                                   @ModelAttribute("updateRequest") AccountUpdateRequest request,
                                   Authentication authentication,

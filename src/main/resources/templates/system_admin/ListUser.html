@@ -13,11 +13,11 @@
         <p>Danh sách tài khoản khách hàng và nhân viên. Theo dõi vai trò, trạng thái tài khoản và tình trạng duyệt.</p>
     </section>
 
-    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}">
+    <div th:if="${errorMessage}" class="user-alert warning" th:text="${errorMessage}">
         Không thể thực hiện thao tác.
     </div>
 
-    <section class="admin-card user-toolbar">
+    <section class="user-card user-toolbar">
         <form class="user-filters" method="get" th:action="@{/system-admin/list-user}">
             <label class="search-control">
                 <i class="fa-solid fa-magnifying-glass text-secondary"></i>
@@ -62,15 +62,15 @@
             </select>
 
             <input type="hidden" name="size" th:value="${pageSize}">
-            <button class="btn-admin-primary" type="submit">
+            <button class="user-btn-primary" type="submit">
                 <i class="fa-solid fa-filter"></i>
                 Lọc
             </button>
         </form>
     </section>
 
-    <section class="admin-card p-0 overflow-hidden">
-        <table class="table admin-table align-middle mb-0">
+    <section class="user-card p-0 overflow-hidden">
+        <table class="table user-table align-middle mb-0">
             <thead>
             <tr>
                 <th>ID</th>
@@ -132,7 +132,7 @@
                             <i class="fa-regular fa-eye"></i>
                         </a>
 
-                        <a sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE')"
+                        <a sec:authorize="hasRole('SYSTEM_ADMIN')"
                            th:if="${currentUserId == null or currentUserId != user.id}"
                            th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
                            class="action-btn"
@@ -140,7 +140,7 @@
                             <i class="fa-regular fa-pen-to-square"></i>
                         </a>
 
-                        <span sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE')"
+                        <span sec:authorize="hasRole('SYSTEM_ADMIN')"
                               th:if="${currentUserId != null and currentUserId == user.id}"
                               class="action-btn is-disabled"
                               title="Không thể chỉnh sửa tài khoản đang đăng nhập."
@@ -159,37 +159,47 @@
             </tbody>
         </table>
 
-        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top" th:if="${totalPages > 1}">
-            <div class="text-muted small">
+        <div class="pagination-row" th:if="${totalPages > 1}">
+            <p>
                 <span th:text="${totalElements}">0</span> tài khoản
-            </div>
+            </p>
 
             <nav aria-label="Phân trang người dùng">
-                <ul class="pagination mb-0">
-                    <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
-                        <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${hasPrevious ? currentPage - 2 : 0},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
-                           aria-label="Trang trước">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </a>
-                    </li>
+                <div class="pagination-buttons">
+                    <a th:href="@{/system-admin/list-user(page=0,size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:classappend="${currentPageIndex == 0} ? ' disabled'"
+                       title="Trang đầu">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </a>
 
-                    <li class="page-item"
-                        th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
-                        th:classappend="${pageNum == currentPage} ? ' active'">
-                        <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${pageNum - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
-                           th:text="${pageNum}">1</a>
-                    </li>
+                    <a th:href="@{/system-admin/list-user(page=${currentPageIndex - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:classappend="${currentPageIndex == 0} ? ' disabled'"
+                       title="Trang trước">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
 
-                    <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
-                        <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${hasNext ? currentPage : currentPage - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
-                           aria-label="Trang sau">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
+                    <span th:if="${showLeadingEllipsis}" class="pagination-ellipsis">...</span>
+
+                    <a th:each="pageNumber : ${visiblePages}"
+                       th:href="@{/system-admin/list-user(page=${pageNumber},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == currentPageIndex} ? ' active'">
+                    </a>
+
+                    <span th:if="${showTrailingEllipsis}" class="pagination-ellipsis">...</span>
+
+                    <a th:href="@{/system-admin/list-user(page=${currentPageIndex + 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:classappend="${currentPageIndex + 1 >= totalPages} ? ' disabled'"
+                       title="Trang sau">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+
+                    <a th:href="@{/system-admin/list-user(page=${totalPages - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:classappend="${currentPageIndex + 1 >= totalPages} ? ' disabled'"
+                       title="Trang cuối">
+                        <i class="fa-solid fa-angles-right"></i>
+                    </a>
+                </div>
             </nav>
         </div>
     </section>

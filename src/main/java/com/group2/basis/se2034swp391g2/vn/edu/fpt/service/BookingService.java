@@ -36,12 +36,14 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ServiceCategoryType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Promotion;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
 
 import java.time.LocalTime;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -1344,6 +1346,13 @@ public class BookingService {
                         .roomCode(detail.getRoomCode())
                         .roomCodeExpiresAt(detail.getRoomCodeExpiresAt())
                         .checkOutDate(detail.getCheckOutDate())
+                        .stayStatus(resolveDetailStayStatus(detail, booking).name())
+                        .stayStatusLabel(resolveDetailStayStatus(detail, booking).getLabel())
+                        .numAdults(detail.getNumAdults() == null ? 1 : detail.getNumAdults())
+                        .numChildren(detail.getNumChildren() == null ? 0 : detail.getNumChildren())
+                        .guestCount(Math.max(1,
+                                (detail.getNumAdults() == null ? 1 : detail.getNumAdults())
+                                        + (detail.getNumChildren() == null ? 0 : detail.getNumChildren())))
                         .build())
                 .toList();
 
@@ -1414,6 +1423,28 @@ public class BookingService {
                 .rooms(roomLines)
                 .payments(paymentLines)
                 .build();
+    }
+
+    private BookingDetailStatus resolveDetailStayStatus(BookingDetail detail, Booking booking) {
+        if (detail.getStayStatus() != null) {
+            return detail.getStayStatus();
+        }
+
+        if (booking.getStatus() == BookingStatus.CHECKED_IN
+                || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_IN
+                || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_OUT) {
+            return BookingDetailStatus.CHECKED_IN;
+        }
+
+        if (booking.getStatus() == BookingStatus.CHECKED_OUT) {
+            return BookingDetailStatus.CHECKED_OUT;
+        }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.NO_SHOW) {
+            return BookingDetailStatus.CANCELLED;
+        }
+
+        return BookingDetailStatus.RESERVED;
     }
 
     private void validateDepositRequest(BookingCreateRequest request){
@@ -1631,6 +1662,7 @@ public class BookingService {
 
         if (guest == null) {
             guest = new User();
+            guest.setUserType(UserType.GUEST);
             booking.setGuest(guest);
         }
 
@@ -2010,6 +2042,7 @@ public class BookingService {
                         detail -> roomRepository.findAvailableRoomsByVariantId(detail.getVariant().getId())
                 ));
     }
+
     @Transactional(readOnly = true)
     public List<Booking> getTodayConfirmedBookingsForReminder() {
         return bookingRepository.findByStatusAndCheckInDateAndIsDeletedFalse(

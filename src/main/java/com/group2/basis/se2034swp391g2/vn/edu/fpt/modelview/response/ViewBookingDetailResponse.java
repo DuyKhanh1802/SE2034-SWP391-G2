@@ -96,6 +96,11 @@ public class ViewBookingDetailResponse {
         private Instant roomCodeExpiresAt;
         private LocalDate checkOutDate;
         private Long variantId;
+        private String stayStatus;
+        private String stayStatusLabel;
+        private Integer numAdults;
+        private Integer numChildren;
+        private Integer guestCount;
     }
 
     @Data

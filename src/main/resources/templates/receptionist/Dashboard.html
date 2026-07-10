@@ -42,7 +42,7 @@
             </div>
         </a>
 
-        <a class="reception-stat-card" th:href="@{/receptionist/check-out}">
+        <a class="reception-stat-card" th:href="@{/receptionist/bookings(status='CHECKED_IN')}">
             <div class="stat-icon stat-purple">
                 <i class="fa-solid fa-suitcase-rolling"></i>
             </div>
@@ -138,7 +138,7 @@
                     Khách trả phòng hôm nay
                     <span th:text="${dashboard.todayCheckOuts()}">0</span>
                 </h2>
-                <a th:href="@{/receptionist/check-out}">
+                <a th:href="@{/receptionist/bookings(status='CHECKED_IN')}">
                     Xem tất cả <i class="fa-solid fa-arrow-right"></i>
                 </a>
             </div>

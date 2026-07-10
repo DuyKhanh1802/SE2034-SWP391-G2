@@ -33,7 +33,7 @@
                 Báo cáo dịch vụ
             </a>
 
-            <a href="#" class="report-soft-btn report-soft-btn-light">
+            <a th:href="@{/manager/reports/inventory}" class="report-soft-btn report-soft-btn-light">
                 <i class="fa-solid fa-boxes-stacked"></i>
                 Báo cáo tồn kho
             </a>
@@ -163,29 +163,61 @@
         <div class="report-snapshot-card">
             <div class="report-snapshot-header">
                 <div>
-                    <span>Inventory Alerts</span>
-                    <h2>Báo cáo tồn kho thấp</h2>
-                    <p>Các mặt hàng đã chạm hoặc thấp hơn ngưỡng tối thiểu.</p>
+                    <span>Inventory Summary</span>
+                    <h2>Báo cáo tồn kho</h2>
+                    <p>Tổng hợp số mặt hàng, giá trị tồn kho và cảnh báo cần theo dõi.</p>
                 </div>
 
-                <a href="#" class="report-mini-link">
+                <a th:href="@{/manager/reports/inventory}" class="report-mini-link">
                     Xem chi tiết
                     <i class="fa-solid fa-arrow-right"></i>
                 </a>
             </div>
 
-            <div class="report-empty-state" th:if="${#lists.isEmpty(lowStockItems)}">
+            <!-- INVENTORY SUMMARY MINI CARDS -->
+            <div class="report-inventory-summary">
+                <div class="report-inventory-stat">
+                    <span>Tổng mặt hàng</span>
+                    <strong th:text="${inventoryTotalItems}">0</strong>
+                </div>
+
+                <div class="report-inventory-stat">
+                    <span>Giá trị tồn</span>
+                    <strong th:text="${#numbers.formatDecimal(inventoryTotalValue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </strong>
+                </div>
+
+                <div class="report-inventory-stat warning">
+                    <span>Tồn thấp</span>
+                    <strong th:text="${inventoryLowStockCount}">0</strong>
+                </div>
+
+                <div class="report-inventory-stat">
+                    <span>Sắp hết hạn</span>
+                    <strong th:text="${inventoryExpiringSoonCount}">0</strong>
+                </div>
+            </div>
+
+            <div class="report-alert-title">
+                <span>Cảnh báo nhanh</span>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div class="report-empty-state report-empty-state-compact"
+                 th:if="${#lists.isEmpty(inventoryAlertItems)}">
                 <div>
                     <i class="fa-solid fa-circle-check"></i>
                 </div>
-                <p>Không có cảnh báo tồn kho thấp.</p>
+                <p>Kho hiện không có cảnh báo tồn thấp.</p>
             </div>
 
-            <div class="report-inventory-list" th:if="${!#lists.isEmpty(lowStockItems)}">
+            <!-- INVENTORY ALERT LIST -->
+            <div class="report-inventory-list" th:if="${!#lists.isEmpty(inventoryAlertItems)}">
                 <div class="report-inventory-item"
-                     th:each="item : ${lowStockItems}">
-                    <div class="report-inventory-icon">
-                        <i class="fa-solid fa-box-open"></i>
+                     th:each="item, iter : ${inventoryAlertItems}">
+                    <div class="report-rank" th:text="${iter.index + 1}">
+                        1
                     </div>
 
                     <div class="report-inventory-main">

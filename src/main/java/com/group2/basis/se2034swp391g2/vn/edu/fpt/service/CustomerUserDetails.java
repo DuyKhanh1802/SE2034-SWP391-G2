@@ -30,13 +30,6 @@ public class CustomerUserDetails implements UserDetails {
                 .findFirst()
                 .ifPresent(role -> {
                     authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName().name()));
-                    role.getRolePermissions().stream()
-                            .map(rolePermission -> rolePermission.getPermission())
-                            .filter(permission -> permission != null
-                                    && permission.getCode() != null
-                                    && !permission.getCode().isBlank())
-                            .map(permission -> new SimpleGrantedAuthority(permission.getCode()))
-                            .forEach(authorities::add);
                 });
 
         return authorities;

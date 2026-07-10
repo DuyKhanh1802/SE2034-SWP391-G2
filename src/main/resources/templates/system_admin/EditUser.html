@@ -13,23 +13,23 @@
         <p>Thực hiện các thao tác quản trị tài khoản: đặt lại mật khẩu, bật hoặc tắt tài khoản và thay đổi vai trò.</p>
     </section>
 
-    <section class="admin-card">
+    <section class="user-card">
         <div class="detail-header">
-            <a th:href="@{/system-admin/list-user}" class="btn-admin-outline">
+            <a th:href="@{/system-admin/list-user}" class="user-btn-outline">
                 <i class="fa-solid fa-arrow-left"></i>
                 Quay lại
             </a>
         </div>
 
-        <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}">
+        <div th:if="${successMessage}" class="user-alert success" th:text="${successMessage}">
             Đã cập nhật thành công.
         </div>
 
-        <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}">
+        <div th:if="${errorMessage}" class="user-alert warning" th:text="${errorMessage}">
             Có lỗi xảy ra.
         </div>
 
-        <div th:if="${temporaryPassword}" class="admin-alert warning">
+        <div th:if="${temporaryPassword}" class="user-alert warning">
             Mật khẩu tạm thời:
             <strong th:text="${temporaryPassword}">Vh@Temp123</strong>
         </div>
@@ -51,7 +51,7 @@
     </section>
 
     <section class="settings-grid">
-        <div class="admin-card settings-card">
+        <div class="user-card account-action-card">
             <div class="section-header">
                 <span>PHÊ DUYỆT TÀI KHOẢN</span>
                 <h3>Duyệt hoặc từ chối</h3>
@@ -80,7 +80,7 @@
 
             <form id="approvalForm"
                   class="approval-form"
-                  sec:authorize="hasAuthority('USER_APPROVE')"
+                  sec:authorize="hasRole('SYSTEM_ADMIN')"
                   th:if="${user.approvalStatus != null and user.approvalStatus.name() == 'PENDING'}"
                   th:action="@{/system-admin/list-user/{id}/review(id=${user.id})}"
                   method="post">
@@ -94,11 +94,11 @@
                 <p id="approvalValidationMessage" class="settings-note form-validation-message"></p>
 
                 <div class="review-actions">
-                    <button type="submit" name="action" value="approve" class="btn-admin-primary">
+                    <button type="submit" name="action" value="approve" class="user-btn-primary">
                         <i class="fa-solid fa-check"></i>
                         Duyệt tài khoản
                     </button>
-                    <button type="submit" name="action" value="reject" class="btn-admin-outline danger">
+                    <button type="submit" name="action" value="reject" class="user-btn-outline danger">
                         <i class="fa-solid fa-xmark"></i>
                         Từ chối
                     </button>
@@ -106,8 +106,8 @@
             </form>
         </div>
 
-        <div class="admin-card settings-card compact-card"
-             sec:authorize="hasAuthority('USER_MANAGE')">
+        <div class="user-card account-action-card compact-action-card"
+             sec:authorize="hasRole('SYSTEM_ADMIN')">
             <div class="section-header">
                 <span>TRẠNG THÁI TÀI KHOẢN</span>
                 <h3>Kích hoạt hoặc vô hiệu hóa</h3>
@@ -124,7 +124,7 @@
             <form th:action="@{/system-admin/list-user/{id}/edit(id=${user.id})}" method="post">
                 <input type="hidden" name="isActive" th:value="${!user.isActive}">
                 <button type="submit"
-                        class="btn-admin-primary"
+                        class="user-btn-primary"
                         th:classappend="${user.isActive ? ' danger' : (user.approvalStatus != null and user.approvalStatus.name() == 'REJECTED' ? ' is-disabled' : '')}"
                         th:disabled="${!user.isActive and user.approvalStatus != null and user.approvalStatus.name() == 'REJECTED'}"
                         th:title="${!user.isActive and user.approvalStatus != null and user.approvalStatus.name() == 'REJECTED'
@@ -139,8 +139,8 @@
 
         </div>
 
-        <div class="admin-card settings-card"
-             sec:authorize="hasAuthority('USER_MANAGE')"
+        <div class="user-card account-action-card"
+             sec:authorize="hasRole('SYSTEM_ADMIN')"
              th:if="${user.approvalStatus == null or user.approvalStatus.name() != 'REJECTED'}">
             <div class="section-header">
                 <span>PHÂN QUYỀN</span>
@@ -167,7 +167,7 @@
                     </label>
                 </div>
 
-                <button type="submit" class="btn-admin-primary">
+                <button type="submit" class="user-btn-primary">
                     <i class="fa-solid fa-shield-halved"></i>
                     Lưu vai trò
                 </button>

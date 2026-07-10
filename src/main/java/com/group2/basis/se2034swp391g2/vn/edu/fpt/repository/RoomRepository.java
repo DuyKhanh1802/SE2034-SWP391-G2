@@ -125,7 +125,37 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             r.status,
             rt.name,
             v.variantName,
-            r.note
+            r.note,
+            (
+                SELECT MAX(b.id)
+                FROM BookingDetail bd
+                JOIN bd.booking b
+                WHERE bd.room = r
+                  AND b.isDeleted = false
+                  AND b.status IN (
+                    com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CHECKED_IN,
+                    com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.PARTIALLY_CHECKED_OUT
+                  )
+                  AND (
+                    bd.stayStatus IS NULL
+                    OR bd.stayStatus = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.CHECKED_IN
+                  )
+            ),
+            (
+                SELECT MAX(bd.id)
+                FROM BookingDetail bd
+                JOIN bd.booking b
+                WHERE bd.room = r
+                  AND b.isDeleted = false
+                  AND b.status IN (
+                    com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.CHECKED_IN,
+                    com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus.PARTIALLY_CHECKED_OUT
+                  )
+                  AND (
+                    bd.stayStatus IS NULL
+                    OR bd.stayStatus = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.CHECKED_IN
+                  )
+            )
         )
         FROM Room r
         JOIN r.variant v
@@ -290,4 +320,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     ORDER BY r.floor ASC, r.roomNumber ASC
 """)
     List<ReceptionistDashboardView.RoomRow> findDashboardRoomRows(Pageable pageable);
+
+    List<Room> findTop16ByIsDeletedFalseOrderByRoomNumberAsc();
+
+    List<Room> findTop5ByStatusAndIsDeletedFalseOrderByUpdatedAtDesc(RoomStatus status);
 }

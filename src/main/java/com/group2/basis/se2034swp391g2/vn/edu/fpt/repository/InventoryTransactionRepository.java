@@ -10,17 +10,8 @@ import org.springframework.data.domain.Pageable;
 import java.time.Instant;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public interface InventoryTransactionRepository extends JpaRepository<InventoryTransaction, Long> {
-    List<InventoryTransaction> findTop30ByOrderByCreatedAtDesc();
-
-    List<InventoryTransaction> findByItem_IdOrderByCreatedAtDesc(Long itemId);
-
-    Page<InventoryTransaction> findByItem_Id(Long itemId, Pageable pageable);
-
-    Page<InventoryTransaction> findAll(Pageable pageable);
-
     @Query("""
             SELECT transaction
             FROM InventoryTransaction transaction

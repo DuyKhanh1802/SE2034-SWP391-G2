@@ -1,8 +1,12 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Manager;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.OccupancyReportRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.OccupancyReportResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.InventoryReportRowResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.InventoryReportSummaryResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportRowResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportSummaryResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FolioItemRepository;
@@ -10,6 +14,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceCategoryRepo
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CashTransactionService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.InventoryManagementService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerOccupancyReportService;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerInventoryReportService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerServiceReportService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import jakarta.servlet.http.HttpSession;
@@ -23,6 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -33,6 +39,8 @@ public class ManagerReportController {
 
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private static final int SERVICE_REPORT_PAGE_SIZE = 5;
+    private static final int INVENTORY_REPORT_PAGE_SIZE = 5;
+    private static final int OVERVIEW_ITEM_LIMIT = 5;
 
     private final ProfileService profileService;
     private final CashTransactionService cashTransactionService;
@@ -41,6 +49,7 @@ public class ManagerReportController {
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final ManagerServiceReportService managerServiceReportService;
     private final ManagerOccupancyReportService managerOccupancyReportService;
+    private final ManagerInventoryReportService managerInventoryReportService;
 
     @GetMapping("/manager/reports")
     public String showReports(Model model,
@@ -52,6 +61,27 @@ public class ManagerReportController {
 
         OccupancyReportResponse occupancyReport = managerOccupancyReportService.getOccupancyReport(null, null);
 
+        List<InventoryItem> inventoryItems = inventoryManagementService.getItemsForSelection();
+
+        BigDecimal inventoryTotalValue = inventoryItems.stream()
+                .map(item -> {
+                    BigDecimal currentQuantity = item.getCurrentQuantity() == null
+                            ? BigDecimal.ZERO
+                            : item.getCurrentQuantity();
+
+                    BigDecimal unitCost = item.getUnitCost() == null
+                            ? BigDecimal.ZERO
+                            : item.getUnitCost();
+
+                    return currentQuantity.multiply(unitCost);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<InventoryItem> inventoryAlertItems = inventoryManagementService.getLowStockItems()
+                .stream()
+                .limit(OVERVIEW_ITEM_LIMIT)
+                .toList();
+
         model.addAttribute("todayRevenue", cashTransactionService.getIncomeForDay(today));
         model.addAttribute("monthRevenue", cashTransactionService.getIncomeForMonth(today));
         model.addAttribute("totalIncome", cashTransactionService.getTotalIncome());
@@ -59,6 +89,15 @@ public class ManagerReportController {
         model.addAttribute("occupancyRate", occupancyReport.getSummary().getOccupancyRate());
         model.addAttribute("topServices", folioItemRepository.findTopServiceSales(PageRequest.of(0, 5)));
         model.addAttribute("lowStockItems", inventoryManagementService.getLowStockItems());
+        model.addAttribute("occupancyRate", occupancyRate);
+
+        model.addAttribute("topServices", folioItemRepository.findTopServiceSales(PageRequest.of(0, OVERVIEW_ITEM_LIMIT)));
+
+        model.addAttribute("inventoryTotalItems", inventoryItems.size());
+        model.addAttribute("inventoryTotalValue", inventoryTotalValue);
+        model.addAttribute("inventoryLowStockCount", inventoryManagementService.countLowStockItems());
+        model.addAttribute("inventoryExpiringSoonCount", inventoryManagementService.getExpiringSoonItemCodes().size());
+        model.addAttribute("inventoryAlertItems", inventoryAlertItems);
 
         return "manager/reports";
     }
@@ -114,7 +153,6 @@ public class ManagerReportController {
                 : (int) Math.ceil((double) totalItems / SERVICE_REPORT_PAGE_SIZE);
 
         int currentPage = Math.max(0, Math.min(page, totalPages - 1));
-
         int startIndex = currentPage * SERVICE_REPORT_PAGE_SIZE;
         int endIndex = Math.min(startIndex + SERVICE_REPORT_PAGE_SIZE, totalItems);
 
@@ -163,6 +201,89 @@ public class ManagerReportController {
         model.addAttribute("roomTypeVariants", managerOccupancyReportService.getRoomTypeVariantsForFilter());
 
         return "manager/occupancy-report";
+    }
+
+    @GetMapping("/manager/reports/inventory")
+    public String showInventoryReport(@RequestParam(required = false)
+                                      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                      LocalDate fromDate,
+
+                                      @RequestParam(required = false)
+                                      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                      LocalDate toDate,
+
+                                      @RequestParam(required = false)
+                                      Long categoryId,
+
+                                      @RequestParam(required = false)
+                                      String keyword,
+
+                                      @RequestParam(required = false)
+                                      String stockStatus,
+
+                                      @RequestParam(required = false, defaultValue = "stockAsc")
+                                      String sortBy,
+
+                                      @RequestParam(required = false, defaultValue = "0")
+                                      int page,
+
+                                      Model model,
+                                      Authentication authentication,
+                                      HttpSession session) {
+        addHeaderAttributes(model, authentication, session, "Báo cáo tồn kho");
+
+        LocalDate resolvedFromDate = managerInventoryReportService.resolveFromDate(fromDate);
+        LocalDate resolvedToDate = managerInventoryReportService.resolveToDate(toDate);
+
+        if (resolvedFromDate.isAfter(resolvedToDate)) {
+            model.addAttribute("errorMessage", "Ngày bắt đầu không được sau ngày kết thúc.");
+            resolvedFromDate = LocalDate.now(APP_ZONE).withDayOfMonth(1);
+            resolvedToDate = LocalDate.now(APP_ZONE);
+        }
+
+        List<InventoryReportRowResponse> allRows = managerInventoryReportService.getInventoryReportRows(
+                resolvedFromDate,
+                resolvedToDate,
+                categoryId,
+                keyword,
+                stockStatus,
+                sortBy
+        );
+
+        InventoryReportSummaryResponse summary = managerInventoryReportService.buildSummary(allRows);
+
+        int totalItems = allRows.size();
+        int totalPages = totalItems == 0
+                ? 1
+                : (int) Math.ceil((double) totalItems / INVENTORY_REPORT_PAGE_SIZE);
+
+        int currentPage = Math.max(0, Math.min(page, totalPages - 1));
+        int startIndex = currentPage * INVENTORY_REPORT_PAGE_SIZE;
+        int endIndex = Math.min(startIndex + INVENTORY_REPORT_PAGE_SIZE, totalItems);
+
+        List<InventoryReportRowResponse> pageRows = totalItems == 0
+                ? List.of()
+                : allRows.subList(startIndex, endIndex);
+
+        model.addAttribute("rows", pageRows);
+        model.addAttribute("summary", summary);
+        model.addAttribute("categories", inventoryManagementService.getCategories());
+
+        model.addAttribute("fromDate", resolvedFromDate);
+        model.addAttribute("toDate", resolvedToDate);
+        model.addAttribute("categoryId", categoryId);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("stockStatus", stockStatus);
+        model.addAttribute("sortBy", sortBy);
+
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("pageSize", INVENTORY_REPORT_PAGE_SIZE);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("startItem", totalItems == 0 ? 0 : startIndex + 1);
+        model.addAttribute("endItem", endIndex);
+
+        return "manager/inventory-report";
     }
 
     private void addHeaderAttributes(Model model,

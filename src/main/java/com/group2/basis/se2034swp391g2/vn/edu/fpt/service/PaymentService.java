@@ -5,8 +5,11 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.PaymentCodeGenerator;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.PaymentApplication;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentApplicationRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import java.time.Instant;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentApplicationRepository paymentApplicationRepository;
     private final CashTransactionService cashTransactionService;
 
     @Transactional
@@ -50,8 +54,36 @@ public class PaymentService {
     }
 
     @Transactional
+    public Payment createPayment(Booking booking,
+                                 BookingDetail bookingDetail,
+                                 PaymentType paymentType,
+                                 PaymentMethod method,
+                                 BigDecimal amount,
+                                 User currentStaff) {
+        Payment savedPayment = createPayment(booking, paymentType, method, amount, currentStaff);
+        createApplication(savedPayment, booking, bookingDetail, amount);
+        return savedPayment;
+    }
+
+    @Transactional
     public Payment createRefundPayment(Booking booking,
                                        Payment originalPayment,
+                                       BigDecimal refundAmount,
+                                       User currentStaff) {
+
+        return createRefundPayment(
+                booking,
+                originalPayment,
+                originalPayment == null ? null : originalPayment.getMethod(),
+                refundAmount,
+                currentStaff
+        );
+    }
+
+    @Transactional
+    public Payment createRefundPayment(Booking booking,
+                                       Payment originalPayment,
+                                       PaymentMethod refundMethod,
                                        BigDecimal refundAmount,
                                        User currentStaff) {
 
@@ -62,7 +94,7 @@ public class PaymentService {
         validatePaymentInput(
                 booking,
                 PaymentType.REFUND,
-                originalPayment.getMethod(),
+                refundMethod,
                 refundAmount,
                 currentStaff
         );
@@ -70,7 +102,7 @@ public class PaymentService {
         Payment refundPayment = Payment.builder()
                 .booking(booking)
                 .paymentType(PaymentType.REFUND)
-                .method(originalPayment.getMethod())
+                .method(refundMethod)
                 .amount(refundAmount)
                 .status(PaymentStatus.SUCCESS)
                 .transactionRef(generateUniqueTransactionRef(PaymentType.REFUND))
@@ -84,6 +116,56 @@ public class PaymentService {
         cashTransactionService.createFromPayment(savedRefundPayment);
 
         return savedRefundPayment;
+    }
+
+    @Transactional
+    public Payment createRefundPayment(Booking booking,
+                                       BookingDetail bookingDetail,
+                                       Payment originalPayment,
+                                       PaymentMethod refundMethod,
+                                       BigDecimal refundAmount,
+                                       User currentStaff) {
+        Payment savedRefundPayment = createRefundPayment(booking, originalPayment, refundMethod, refundAmount, currentStaff);
+        createApplication(savedRefundPayment, booking, bookingDetail, refundAmount);
+        return savedRefundPayment;
+    }
+
+    private void createApplication(Payment payment,
+                                   Booking booking,
+                                   BookingDetail bookingDetail,
+                                   BigDecimal amount) {
+        if (payment == null || payment.getId() == null) {
+            throw new IllegalArgumentException("Giao dịch thanh toán không hợp lệ.");
+        }
+
+        if (bookingDetail == null) {
+            throw new IllegalArgumentException("Phòng áp dụng thanh toán không được để trống.");
+        }
+
+        if (booking == null
+                || booking.getId() == null
+                || bookingDetail.getBooking() == null
+                || !booking.getId().equals(bookingDetail.getBooking().getId())) {
+            throw new IllegalArgumentException("Phòng áp dụng thanh toán không thuộc booking này.");
+        }
+
+        BigDecimal normalizedAmount = amount == null ? BigDecimal.ZERO : amount;
+        if (normalizedAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Số tiền áp dụng phải lớn hơn 0.");
+        }
+
+        BigDecimal appliedAmount = paymentApplicationRepository.sumAppliedAmountByPaymentId(payment.getId());
+        BigDecimal paymentAmount = payment.getAmount() == null ? BigDecimal.ZERO : payment.getAmount();
+        if (appliedAmount.add(normalizedAmount).compareTo(paymentAmount) > 0) {
+            throw new IllegalArgumentException("Tổng tiền áp dụng không được vượt quá số tiền giao dịch.");
+        }
+
+        paymentApplicationRepository.save(PaymentApplication.builder()
+                .payment(payment)
+                .booking(booking)
+                .bookingDetail(bookingDetail)
+                .amount(normalizedAmount)
+                .build());
     }
 
     private String generateUniqueTransactionRef(PaymentType paymentType) {

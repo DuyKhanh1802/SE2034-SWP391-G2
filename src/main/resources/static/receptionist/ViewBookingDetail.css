@@ -13,10 +13,11 @@
 .breadcrumb-line {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 9px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     font-size: 13px;
-    letter-spacing: 1px;
+    letter-spacing: .5px;
     color: #666;
 }
 
@@ -24,6 +25,19 @@
     color: #222;
     text-decoration: none;
     font-weight: 700;
+}
+
+.breadcrumb-line a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-line i {
+    color: #9a9a9a;
+    font-size: 10px;
+}
+
+.breadcrumb-line span {
+    color: #6f7475;
 }
 
 .detail-header h1 {
@@ -114,6 +128,19 @@
     padding: 26px 28px;
     margin-bottom: 24px;
     box-shadow: 0 14px 35px rgba(0, 0, 0, 0.035);
+}
+
+.room-action-stack {
+    display: grid;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.room-action-stack .btn-detail {
+    width: 100%;
+    min-height: 34px;
+    padding: 8px 10px;
+    font-size: 11px;
 }
 
 .detail-card-title {

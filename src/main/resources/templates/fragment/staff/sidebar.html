@@ -9,7 +9,7 @@
 
     <!-- SYSTEM ADMIN -->
     <ul class="sidebar-menu" sec:authorize="hasRole('SYSTEM_ADMIN')">
-        <li sec:authorize="hasAuthority('USER_VIEW')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/system-admin/list-user')} ? 'active' : ''">
             <a th:href="@{/system-admin/list-user}">
                 <i class="fas fa-users"></i>
@@ -20,7 +20,7 @@
 
     <!-- HOTEL ADMIN -->
     <ul class="sidebar-menu" sec:authorize="hasRole('HOTEL_ADMIN')">
-        <li sec:authorize="hasAuthority('HOTEL_DASHBOARD_VIEW')"
+        <li
             th:classappend="${#strings.equals(currentUri ?: '', '/hotel-admin/dashboard')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/dashboard}">
                 <i class="fas fa-chart-line"></i>
@@ -28,7 +28,7 @@
             </a>
         </li>
 
-        <li sec:authorize="hasAuthority('ROOM_VIEW')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/list-room') or #strings.startsWith(currentUri ?: '', '/hotel-admin/rooms')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/list-room}">
                 <i class="fas fa-bed"></i>
@@ -36,7 +36,7 @@
             </a>
         </li>
 
-        <li sec:authorize="hasAuthority('ROOM_TYPE_VIEW')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/room-type-variants')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/room-type-variants}">
                 <i class="fas fa-layer-group"></i>
@@ -44,7 +44,7 @@
             </a>
         </li>
 
-        <li sec:authorize="hasAuthority('SERVICE_VIEW')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/services')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/services}">
                 <i class="fas fa-concierge-bell"></i>
@@ -52,7 +52,7 @@
             </a>
         </li>
 
-        <li sec:authorize="hasAuthority('PROMOTION_VIEW')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/promotions}">
                 <i class="fas fa-tags"></i>
@@ -63,14 +63,14 @@
 
     <!-- MANAGER -->
     <ul class="sidebar-menu" sec:authorize="hasRole('MANAGER')">
-        <li sec:authorize="hasAuthority('MANAGER_DASHBOARD_VIEW')"
+        <li
             th:classappend="${#strings.equals(currentUri ?: '', '/manager/dashboard')} ? 'active' : ''">
             <a th:href="@{/manager/dashboard}">
                 <i class="fas fa-chart-line"></i>
                 <span>Tổng quan</span>
             </a>
         </li>
-        <li sec:authorize="hasAuthority('FINANCE_VIEW')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/transactions')} ? 'active' : ''">
             <a th:href="@{/manager/transactions}">
                 <i class="fas fa-money-bill-transfer"></i>
@@ -78,6 +78,14 @@
             </a>
         </li>
         <li sec:authorize="hasAuthority('REPORT_VIEW')"
+        <li
+            th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/fund')} ? 'active' : ''">
+            <a th:href="@{/manager/fund}">
+                <i class="fas fa-wallet"></i>
+                <span>Quản lý quỹ</span>
+            </a>
+        </li>
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/reports')} ? 'active' : ''">
             <a th:href="@{/manager/reports}">
                 <i class="fas fa-chart-pie"></i>
@@ -88,7 +96,7 @@
 
     <!-- STOREKEEPER -->
     <ul class="sidebar-menu" sec:authorize="hasRole('STOREKEEPER')">
-        <li sec:authorize="hasAuthority('INVENTORY_VIEW')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/storekeeper/inventory')} ? 'active' : ''">
             <a th:href="@{/storekeeper/inventory}">
                 <i class="fas fa-boxes-stacked"></i>
@@ -99,46 +107,37 @@
 
     <!-- RECEPTIONIST -->
     <ul class="sidebar-menu" sec:authorize="hasRole('RECEPTIONIST')">
-        <li sec:authorize="hasAuthority('RECEPTION_DASHBOARD_VIEW')"
+        <li
             th:classappend="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')} ? 'active' : ''">
             <a th:href="@{/receptionist/dashboard}">
                 <i class="fas fa-chart-line"></i>
                 <span>Tổng quan</span>
             </a>
         </li>
-
         <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/rooms')} ? 'active' : ''">
             <a th:href="@{/receptionist/rooms}">
                 <i class="fas fa-bed"></i>
-                <span>Danh sách phòng</span>
+                <span>Sơ đồ phòng</span>
             </a>
         </li>
-        <li sec:authorize="hasAuthority('BOOKING_VIEW')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')} ? 'active' : ''">
             <a th:href="@{/receptionist/bookings}">
                 <i class="fas fa-calendar-check"></i>
-                <span>Đặt phòng</span>
+                <span>Quản lý đặt phòng</span>
             </a>
         </li>
-        <li sec:authorize="hasAuthority('CHECK_IN')"
+        <li
             th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/check-in')} ? 'active' : ''">
             <a th:href="@{/receptionist/check-in}">
                 <i class="fas fa-right-to-bracket"></i>
-                <span>Nhận phòng</span>
+                <span>Thủ tục nhận phòng</span>
             </a>
         </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/check-out')} ? 'active' : ''">
-            <a th:href="@{/receptionist/check-out}">
-                <i class="fas fa-right-from-bracket"></i>
-                <span>Trả phòng</span>
-            </a>
-        </li>
-
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/invoices')} ? 'active' : ''">
-            <a th:href="@{/receptionist/invoices}">
+        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/folios')} ? 'active' : ''">
+            <a th:href="@{/receptionist/folios}">
                 <i class="fas fa-file-invoice-dollar"></i>
-                <span>Hoá đơn</span>
+                <span>Danh sách hoá đơn</span>
             </a>
         </li>
     </ul>

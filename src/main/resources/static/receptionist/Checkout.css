@@ -1,0 +1,130 @@
+.checkout-page {
+    color: #333;
+}
+
+.stay-range-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.stay-range-inline span {
+    display: inline;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.checkout-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, .8fr);
+    gap: 24px;
+}
+
+.detail-list {
+    display: grid;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+}
+
+.detail-item.total {
+    border-top: 1px solid #d8d8d8;
+    padding-top: 12px;
+}
+
+.booking-reference-link {
+    color: #111;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.booking-reference-link:hover {
+    text-decoration: underline;
+}
+
+.checkout-form {
+    display: grid;
+    gap: 16px;
+}
+
+.settlement-box {
+    display: grid;
+    gap: 8px;
+    border: 1px solid #d8d8d8;
+    background: #fafafa;
+    padding: 18px;
+}
+
+.settlement-box span,
+.settlement-box label {
+    color: #777;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+}
+
+.settlement-box strong {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.settlement-box.payment {
+    border-color: #d8c48a;
+    background: #fff9e8;
+}
+
+.settlement-box.refund {
+    border-color: #e0b5b5;
+    background: #fff0f0;
+}
+
+.settlement-box.settled {
+    border-color: #b7d8c4;
+    background: #edf8f1;
+}
+
+.checkout-form select {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid #d8d8d8;
+    background: #fff;
+    color: #222;
+    padding: 9px 12px;
+    font-size: 13px;
+    box-shadow: none;
+    outline: none;
+}
+
+.checkout-submit {
+    width: 100%;
+}
+
+@media (max-width: 980px) {
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .stay-range-inline {
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+}

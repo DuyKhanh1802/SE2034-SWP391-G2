@@ -29,8 +29,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query("Select u From User u " +
             "Left join fetch u.userRoles ur " +
             "Left join fetch ur.role " +
-            "Left join fetch ur.role.rolePermissions rp " +
-            "Left join fetch rp.permission " +
             "Left join fetch u.country " +
             "Where u.email = :email")
     Optional<User> findByEmailDetail(String email);
@@ -55,4 +53,15 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Optional<User> findByEmailIgnoreCase(String email);
 
+    @Query("""
+        Select Count(Distinct u.id)
+        From User u
+        Join u.userRoles ur
+        Join ur.role r
+        Where u.isDeleted = false
+          And u.isActive = :active
+          And r.roleName <> :guestRole
+        """)
+    long countStaffByActiveStatus(@Param("active") Boolean active,
+                                  @Param("guestRole") RoleName guestRole);
 }
