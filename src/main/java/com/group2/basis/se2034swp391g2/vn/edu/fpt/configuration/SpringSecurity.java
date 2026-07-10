@@ -81,7 +81,7 @@ public class SpringSecurity {
 
                         .requestMatchers("/manager/dashboard")
                         .hasAuthority(PermissionCode.MANAGER_DASHBOARD_VIEW)
-                        .requestMatchers(HttpMethod.GET, "/manager/reports/**")
+                        .requestMatchers(HttpMethod.GET, "/manager/reports", "/manager/reports/**")
                         .hasAuthority(PermissionCode.REPORT_VIEW)
                         .requestMatchers(HttpMethod.GET, "/manager/**")
                         .hasAuthority(PermissionCode.FINANCE_VIEW)

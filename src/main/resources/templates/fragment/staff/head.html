@@ -77,7 +77,6 @@
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/manager/transactions')
-                  or #strings.startsWith(currentUri ?: '', '/manager/fund')
                   or #strings.startsWith(currentUri ?: '', '/manager/reports')}"
           th:href="@{/manager/manager-modules.css}">
 

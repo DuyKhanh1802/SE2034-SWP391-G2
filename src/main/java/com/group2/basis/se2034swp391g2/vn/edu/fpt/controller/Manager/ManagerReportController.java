@@ -1,14 +1,15 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Manager;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.OccupancyReportRequest;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.OccupancyReportResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportRowResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportSummaryResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FolioItemRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoomRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceCategoryRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CashTransactionService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.InventoryManagementService;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerOccupancyReportService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerServiceReportService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import jakarta.servlet.http.HttpSession;
@@ -19,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
@@ -35,10 +37,10 @@ public class ManagerReportController {
     private final ProfileService profileService;
     private final CashTransactionService cashTransactionService;
     private final InventoryManagementService inventoryManagementService;
-    private final RoomRepository roomRepository;
     private final FolioItemRepository folioItemRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final ManagerServiceReportService managerServiceReportService;
+    private final ManagerOccupancyReportService managerOccupancyReportService;
 
     @GetMapping("/manager/reports")
     public String showReports(Model model,
@@ -48,15 +50,13 @@ public class ManagerReportController {
 
         LocalDate today = LocalDate.now(APP_ZONE);
 
-        long totalRooms = roomRepository.countByIsDeletedFalse();
-        long occupiedRooms = roomRepository.countByStatusAndIsDeletedFalse(RoomStatus.OCCUPIED);
-        long occupancyRate = totalRooms == 0 ? 0 : Math.round((occupiedRooms * 100.0) / totalRooms);
+        OccupancyReportResponse occupancyReport = managerOccupancyReportService.getOccupancyReport(null, null);
 
         model.addAttribute("todayRevenue", cashTransactionService.getIncomeForDay(today));
         model.addAttribute("monthRevenue", cashTransactionService.getIncomeForMonth(today));
         model.addAttribute("totalIncome", cashTransactionService.getTotalIncome());
         model.addAttribute("totalExpense", cashTransactionService.getTotalExpense());
-        model.addAttribute("occupancyRate", occupancyRate);
+        model.addAttribute("occupancyRate", occupancyReport.getSummary().getOccupancyRate());
         model.addAttribute("topServices", folioItemRepository.findTopServiceSales(PageRequest.of(0, 5)));
         model.addAttribute("lowStockItems", inventoryManagementService.getLowStockItems());
 
@@ -140,6 +140,29 @@ public class ManagerReportController {
         model.addAttribute("endItem", endIndex);
 
         return "manager/service-report";
+    }
+
+    @GetMapping("/manager/reports/occupancy")
+    public String showOccupancyReport(@ModelAttribute OccupancyReportRequest request,
+                                      Model model,
+                                      Authentication authentication,
+                                      HttpSession session) {
+        addHeaderAttributes(model, authentication, session, "Báo cáo công suất");
+
+        OccupancyReportResponse report = managerOccupancyReportService.getOccupancyReport(
+                request.getFromDate(),
+                request.getToDate(),
+                request.getVariantId(),
+                request.getSafePage()
+        );
+
+        model.addAttribute("report", report);
+        model.addAttribute("fromDate", request.getFromDate());
+        model.addAttribute("toDate", request.getToDate());
+        model.addAttribute("selectedVariantId", request.getVariantId());
+        model.addAttribute("roomTypeVariants", managerOccupancyReportService.getRoomTypeVariantsForFilter());
+
+        return "manager/occupancy-report";
     }
 
     private void addHeaderAttributes(Model model,

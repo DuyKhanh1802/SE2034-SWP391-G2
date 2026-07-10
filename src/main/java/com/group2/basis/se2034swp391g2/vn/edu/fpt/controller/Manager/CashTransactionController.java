@@ -42,7 +42,7 @@ public class CashTransactionController {
         model.addAttribute("transactions", response.getTransactions());
         model.addAttribute("searchRequest", searchRequest);
         model.addAttribute("transactionTypes", CashTransactionType.values());
-        model.addAttribute("transactionCategories", CashTransactionCategory.values());
+        model.addAttribute("transactionCategories", cashTransactionService.getVisibleCategories());
         model.addAttribute("paymentMethods", PaymentMethod.values());
         model.addAttribute("totalTransactions", response.getTotalTransactions());
         model.addAttribute("currentPage", response.getCurrentPage());

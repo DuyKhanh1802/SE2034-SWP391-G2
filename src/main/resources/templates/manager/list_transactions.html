@@ -102,8 +102,7 @@
                               (transaction.category == 'REFUND' ? ' refund' :
                               (transaction.category == 'INVENTORY_PURCHASE' ? ' inventory' :
                               (transaction.category == 'REVERSAL' ? ' reversal' :
-                              (transaction.category == 'CAPITAL_INJECTION' ? ' capital' :
-                              (transaction.category == 'MANUAL_INCOME' ? ' manual-income' : ' manual-expense'))))))}"
+                              (transaction.category == 'MANUAL_INCOME' ? ' manual-income' : ' manual-expense')))))}"
                           th:text="${transaction.categoryDisplayName}">
                         Đặt cọc
                     </span>

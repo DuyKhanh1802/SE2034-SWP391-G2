@@ -35,6 +35,15 @@ public class CashTransactionService {
             CashTransactionCategory.BOOKING_PAYMENT,
             CashTransactionCategory.REFUND
     );
+    private static final List<CashTransactionCategory> VISIBLE_CATEGORIES = List.of(
+            CashTransactionCategory.BOOKING_PAYMENT,
+            CashTransactionCategory.DEPOSIT,
+            CashTransactionCategory.REFUND,
+            CashTransactionCategory.MANUAL_INCOME,
+            CashTransactionCategory.MANUAL_EXPENSE,
+            CashTransactionCategory.INVENTORY_PURCHASE,
+            CashTransactionCategory.REVERSAL
+    );
 
     private final CashTransactionRepository cashTransactionRepository;
     private final InventoryReceiptRepository inventoryReceiptRepository;
@@ -43,6 +52,10 @@ public class CashTransactionService {
     @Transactional(readOnly = true)
     public List<CashTransaction> getRecentTransactions(int limit) {
         return cashTransactionRepository.findByOrderByCreatedAtDesc(PageRequest.of(0, limit));
+    }
+
+    public List<CashTransactionCategory> getVisibleCategories() {
+        return VISIBLE_CATEGORIES;
     }
 
     @Transactional(readOnly = true)
@@ -88,6 +101,9 @@ public class CashTransactionService {
                 request.getToDate(),
                 request.getKeyword()
         );
+        filteredTransactions = filteredTransactions.stream()
+                .filter(transaction -> VISIBLE_CATEGORIES.contains(transaction.getCategory()))
+                .toList();
         Map<Long, String> paymentMethodMap = getPaymentMethodMap(filteredTransactions);
 
         List<CashTransactionResponse> allTransactions = filteredTransactions
@@ -261,19 +277,6 @@ public class CashTransactionService {
     }
 
     @Transactional
-    public CashTransaction createCapitalInjection(BigDecimal amount,
-                                                  String description,
-                                                  User createdBy) {
-        return createManualTransaction(
-                CashTransactionType.INCOME,
-                CashTransactionCategory.CAPITAL_INJECTION,
-                amount,
-                description == null || description.isBlank() ? "Rot von khach san" : description,
-                createdBy
-        );
-    }
-
-    @Transactional
     public CashTransaction createInventoryPurchase(BigDecimal amount,
                                                    String description,
                                                    Long receiptId,
@@ -351,7 +354,7 @@ public class CashTransactionService {
             case BALANCE -> "Thu phần tiền còn lại cho booking " + bookingCode;
             case FULL -> "Thu toàn bộ tiền booking " + bookingCode;
             case REFUND -> "Hoàn tiền cho booking " + bookingCode;
-            case INCIDENTAL -> "Thu tiền phát sinh cho booking" + bookingCode;
+            case INCIDENTAL -> "Thu tiền phát sinh cho booking " + bookingCode;
         };
     }
 

@@ -12,12 +12,22 @@
             <span class="report-overview-kicker">Manager Reports</span>
             <h1>Báo cáo tổng quan</h1>
             <p>
-                Theo dõi nhanh tình hình doanh thu, công suất phòng, hiệu suất dịch vụ
-                và cảnh báo tồn kho trong hệ thống khách sạn.
+                Tổng hợp các báo cáo quản lý giúp theo dõi doanh thu, công suất phòng,
+                hiệu suất vận hành và các chỉ số cần chú ý của khách sạn.
             </p>
         </div>
 
         <div class="report-overview-actions">
+            <a th:href="@{/manager/reports/occupancy}" class="report-soft-btn report-soft-btn-light">
+                <i class="fa-solid fa-sack-dollar"></i>
+                Báo cáo doanh thu
+            </a>
+
+            <a href="#" class="report-soft-btn report-soft-btn-light">
+                <i class="fa-solid fa-bed"></i>
+                Báo cáo công suất
+            </a>
+
             <a th:href="@{/manager/reports/services}" class="report-soft-btn report-soft-btn-dark">
                 <i class="fa-solid fa-chart-line"></i>
                 Báo cáo dịch vụ
@@ -30,63 +40,71 @@
         </div>
     </section>
 
-    <!-- KPI CARDS -->
-    <section class="report-kpi-grid">
-        <div class="report-kpi-card report-kpi-income">
-            <div class="report-kpi-icon">
+    <!-- REPORT DIRECTORY -->
+    <section class="report-directory-grid">
+        <a href="#" class="report-directory-card report-directory-revenue">
+            <div class="report-directory-icon">
                 <i class="fa-solid fa-sack-dollar"></i>
             </div>
 
-            <div>
-                <span>Doanh thu hôm nay</span>
-                <strong th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
-                    0 VND
-                </strong>
-                <p>Income today</p>
-            </div>
-        </div>
-
-        <div class="report-kpi-card report-kpi-month">
-            <div class="report-kpi-icon">
-                <i class="fa-solid fa-calendar-days"></i>
-            </div>
-
-            <div>
-                <span>Doanh thu tháng</span>
+            <div class="report-directory-content">
+                <span>Revenue Report</span>
+                <h2>Báo cáo doanh thu</h2>
+                <p>Theo dõi doanh thu phòng, dịch vụ, giảm giá, VAT và tổng doanh thu theo khoảng thời gian.</p>
                 <strong th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
                     0 VND
                 </strong>
-                <p>Monthly income</p>
+                <small>Doanh thu tháng hiện tại</small>
             </div>
-        </div>
+        </a>
 
-        <div class="report-kpi-card report-kpi-occupancy">
-            <div class="report-kpi-icon">
+        <a th:href="@{/manager/reports/occupancy}" class="report-directory-card report-directory-occupancy">
+            <div class="report-directory-icon">
                 <i class="fa-solid fa-bed"></i>
             </div>
 
-            <div>
-                <span>Tỉ lệ lấp phòng</span>
+            <div class="report-directory-content">
+                <span>Occupancy Report</span>
+                <h2>Báo cáo công suất</h2>
+                <p>Phân tích tỉ lệ lấp phòng, số đêm phòng đã sử dụng và hiệu suất theo hạng phòng.</p>
                 <strong th:text="${occupancyRate + '%'}">
                     0%
                 </strong>
-                <p>Room occupancy</p>
+                <small>Công suất theo dữ liệu báo cáo</small>
             </div>
-        </div>
+        </a>
 
-        <div class="report-kpi-card report-kpi-balance">
-            <div class="report-kpi-icon">
-                <i class="fa-solid fa-scale-balanced"></i>
+        <a th:href="@{/manager/reports/services}" class="report-directory-card report-directory-service">
+            <div class="report-directory-icon">
+                <i class="fa-solid fa-chart-line"></i>
             </div>
 
-            <div>
-                <span>Chênh lệch thu chi</span>
-                <strong th:text="${#numbers.formatDecimal(totalIncome.subtract(totalExpense), 0, 'POINT', 0, 'COMMA') + ' VND'}">
-                    0 VND
+            <div class="report-directory-content">
+                <span>Service Report</span>
+                <h2>Báo cáo dịch vụ</h2>
+                <p>Xem số lượt bán, doanh thu theo dịch vụ và các dịch vụ có hiệu suất tốt nhất.</p>
+                <strong th:text="${#lists.size(topServices)}">
+                    0
                 </strong>
-                <p>Income minus expense</p>
+                <small>Dịch vụ nổi bật đang hiển thị</small>
             </div>
-        </div>
+        </a>
+
+        <a href="#" class="report-directory-card report-directory-inventory">
+            <div class="report-directory-icon">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+
+            <div class="report-directory-content">
+                <span>Inventory Report</span>
+                <h2>Báo cáo tồn kho</h2>
+                <p>Theo dõi cảnh báo tồn kho thấp, giá trị tồn kho và tình hình tiêu hao vật tư.</p>
+                <strong th:text="${#lists.size(lowStockItems)}">
+                    0
+                </strong>
+                <small>Mặt hàng đang cảnh báo</small>
+            </div>
+        </a>
     </section>
 
     <!-- REPORT SNAPSHOTS -->

@@ -75,6 +75,41 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
     SELECT bd
     FROM BookingDetail bd
     JOIN FETCH bd.booking b
+    LEFT JOIN FETCH bd.room r
+    JOIN FETCH bd.variant v
+    JOIN FETCH v.roomType rt
+    WHERE b.isDeleted = false
+      AND b.status IN :statuses
+      AND bd.checkInDate < :toExclusiveDate
+      AND bd.checkOutDate > :fromDate
+    ORDER BY rt.name ASC, v.variantName ASC, bd.checkInDate ASC
+    """)
+    List<BookingDetail> findOccupancyReportDetails(@Param("fromDate") LocalDate fromDate,
+                                                   @Param("toExclusiveDate") LocalDate toExclusiveDate,
+                                                   @Param("statuses") Collection<BookingStatus> statuses);
+
+    @Query("""
+    SELECT MIN(bd.checkInDate)
+    FROM BookingDetail bd
+    JOIN bd.booking b
+    WHERE b.isDeleted = false
+      AND b.status IN :statuses
+    """)
+    Optional<LocalDate> findEarliestOccupancyCheckInDate(@Param("statuses") Collection<BookingStatus> statuses);
+
+    @Query("""
+    SELECT MAX(bd.checkOutDate)
+    FROM BookingDetail bd
+    JOIN bd.booking b
+    WHERE b.isDeleted = false
+      AND b.status IN :statuses
+    """)
+    Optional<LocalDate> findLatestOccupancyCheckOutDate(@Param("statuses") Collection<BookingStatus> statuses);
+
+    @Query("""
+    SELECT bd
+    FROM BookingDetail bd
+    JOIN FETCH bd.booking b
     JOIN FETCH bd.room r
     JOIN FETCH bd.variant v
     JOIN FETCH v.roomType rt

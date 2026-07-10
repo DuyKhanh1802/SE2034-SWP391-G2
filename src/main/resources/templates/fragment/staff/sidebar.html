@@ -77,13 +77,6 @@
                 <span>Lịch sử giao dịch</span>
             </a>
         </li>
-        <li sec:authorize="hasAuthority('FINANCE_VIEW')"
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/fund')} ? 'active' : ''">
-            <a th:href="@{/manager/fund}">
-                <i class="fas fa-wallet"></i>
-                <span>Quản lý quỹ</span>
-            </a>
-        </li>
         <li sec:authorize="hasAuthority('REPORT_VIEW')"
             th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/reports')} ? 'active' : ''">
             <a th:href="@{/manager/reports}">

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+
+    <section class="module-header">
+        <div>
+            <p>Reports</p>
+            <h1>Báo cáo công suất phòng</h1>
+            <span class="report-unit-note">
+                Theo dõi công suất phòng, số đêm phòng được sử dụng và hiệu suất theo từng hạng phòng.
+            </span>
+        </div>
+
+        <a th:href="@{/manager/reports}" class="btn-secondary-action">
+            <i class="fa-solid fa-arrow-left"></i>
+            Quay lại tổng quan
+        </a>
+    </section>
+
+    <div th:if="${report.errorMessage}" class="alert alert-danger" th:text="${report.errorMessage}">
+        Ngày bắt đầu không được sau ngày kết thúc.
+    </div>
+
+    <section class="panel report-filter-panel">
+        <div class="report-filter-header">
+            <h2>Bộ lọc báo cáo</h2>
+        </div>
+
+        <form th:action="@{/manager/reports/occupancy}" method="get" class="transaction-filter report-filter-form">
+            <div class="report-filter-field">
+                <label for="fromDate">Từ ngày</label>
+                <input id="fromDate"
+                       name="fromDate"
+                       type="date"
+                       th:value="${fromDate}">
+            </div>
+
+            <div class="report-filter-field">
+                <label for="toDate">Đến ngày</label>
+                <input id="toDate"
+                       name="toDate"
+                       type="date"
+                       th:value="${toDate}">
+            </div>
+
+            <div class="report-filter-field">
+                <label for="variantId">Hạng phòng</label>
+                <select id="variantId" name="variantId">
+                    <option value="">Tất cả hạng phòng</option>
+                    <option th:each="variant : ${roomTypeVariants}"
+                            th:value="${variant.id}"
+                            th:selected="${selectedVariantId != null and selectedVariantId == variant.id}"
+                            th:text="${variant.roomType.name + ' - ' + variant.variantName}">
+                        Deluxe Room - hướng biển
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-actions cute-filter-actions">
+                <button type="submit" class="cute-btn cute-btn-filter">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Lọc</span>
+                </button>
+
+                <a th:href="@{/manager/reports/occupancy}" class="cute-btn cute-btn-reset">
+                    Đặt lại
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <section class="metric-grid">
+        <div class="metric-card detail-metric metric-completed">
+            <span>Công suất phòng</span>
+            <strong th:text="${#numbers.formatDecimal(report.summary.occupancyRate, 0, 'POINT', 1, 'COMMA') + '%'}">
+                0.0%
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric">
+            <span>Đêm phòng sử dụng</span>
+            <strong th:text="${report.summary.occupiedRoomNights}">
+                0
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric">
+            <span>Đêm phòng khả dụng</span>
+            <strong th:text="${report.summary.availableRoomNights}">
+                0
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric metric-income">
+            <span>Hạng phòng lấp đầy cao nhất</span>
+            <strong th:text="${report.summary.bestPerformingVariant}">
+                Không có dữ liệu
+            </strong>
+        </div>
+    </section>
+
+    <section class="metric-grid">
+        <div class="metric-card">
+            <span>Phòng kinh doanh</span>
+            <strong th:text="${report.summary.totalRooms}">
+                0
+            </strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Booking hợp lệ</span>
+            <strong th:text="${report.summary.bookingCount}">
+                0
+            </strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Số ngày báo cáo</span>
+            <strong th:text="${report.reportDays}">
+                0
+            </strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Khoảng thời gian</span>
+            <strong>
+                <span th:text="${#temporals.format(report.fromDate, 'dd/MM/yyyy')}">01/07/2026</span>
+                -
+                <span th:text="${#temporals.format(report.toDate, 'dd/MM/yyyy')}">10/07/2026</span>
+            </strong>
+        </div>
+    </section>
+
+    <section class="panel report-table-panel">
+        <div class="module-header report-section-header">
+            <div>
+                <p>Occupancy Performance</p>
+                <h1>Chi tiết công suất theo hạng phòng</h1>
+                <span class="report-unit-note">Phòng bảo trì không được tính vào số đêm phòng khả dụng.</span>
+            </div>
+        </div>
+
+        <div class="report-table-wrap">
+            <table class="module-table compact-report-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Loại phòng</th>
+                    <th>Hạng phòng</th>
+                    <th>Số phòng</th>
+                    <th>Đêm khả dụng</th>
+                    <th>Đêm sử dụng</th>
+                    <th>Booking</th>
+                    <th>Công suất</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:if="${#lists.isEmpty(report.rows)}">
+                    <td colspan="8" class="empty-table-cell">
+                        Không có dữ liệu công suất trong khoảng thời gian này.
+                    </td>
+                </tr>
+
+                <tr th:each="row, iter : ${report.rows}">
+                    <td th:text="${report.currentPage * report.pageSize + iter.index + 1}">
+                        1
+                    </td>
+
+                    <td th:text="${row.roomTypeName}">
+                        Deluxe
+                    </td>
+
+                    <td class="service-name-cell" th:text="${row.variantName}">
+                        Deluxe City View
+                    </td>
+
+                    <td th:text="${row.totalRooms}">
+                        0
+                    </td>
+
+                    <td th:text="${row.availableRoomNights}">
+                        0
+                    </td>
+
+                    <td th:text="${row.occupiedRoomNights}">
+                        0
+                    </td>
+
+                    <td th:text="${row.bookingCount}">
+                        0
+                    </td>
+
+                    <td class="money-text income"
+                        th:text="${#numbers.formatDecimal(row.occupancyRate, 0, 'POINT', 1, 'COMMA') + '%'}">
+                        0.0%
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-bottom" th:if="${report.totalItems > 0}">
+            <p>
+                Hiển thị
+                <strong th:text="${report.startItem}">1</strong>
+                -
+                <strong th:text="${report.endItem}">5</strong>
+                trên
+                <strong th:text="${report.totalItems}">0</strong>
+                hạng phòng
+            </p>
+
+            <div class="pagination-custom">
+                <span class="page-disabled" th:if="${report.currentPage == 0}">
+                    Trước
+                </span>
+
+                <a th:if="${report.currentPage > 0}"
+                   th:href="@{/manager/reports/occupancy(
+                        fromDate=${fromDate},
+                        toDate=${toDate},
+                        variantId=${selectedVariantId},
+                        page=${report.currentPage - 1}
+                   )}">
+                    Trước
+                </a>
+
+                <a th:each="pageNumber : ${#numbers.sequence(0, report.totalPages - 1)}"
+                   th:href="@{/manager/reports/occupancy(
+                        fromDate=${fromDate},
+                        toDate=${toDate},
+                        variantId=${selectedVariantId},
+                        page=${pageNumber}
+                   )}"
+                   th:classappend="${pageNumber == report.currentPage} ? 'active'"
+                   th:text="${pageNumber + 1}">
+                    1
+                </a>
+
+                <span class="page-disabled" th:if="${report.currentPage + 1 >= report.totalPages}">
+                    Sau
+                </span>
+
+                <a th:if="${report.currentPage + 1 < report.totalPages}"
+                   th:href="@{/manager/reports/occupancy(
+                        fromDate=${fromDate},
+                        toDate=${toDate},
+                        variantId=${selectedVariantId},
+                        page=${report.currentPage + 1}
+                   )}">
+                    Sau
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
