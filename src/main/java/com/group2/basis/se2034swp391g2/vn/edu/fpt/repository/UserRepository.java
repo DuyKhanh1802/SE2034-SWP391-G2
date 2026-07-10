@@ -55,4 +55,15 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Optional<User> findByEmailIgnoreCase(String email);
 
+    @Query("""
+        Select Count(Distinct u.id)
+        From User u
+        Join u.userRoles ur
+        Join ur.role r
+        Where u.isDeleted = false
+          And u.isActive = :active
+          And r.roleName <> :guestRole
+        """)
+    long countStaffByActiveStatus(@Param("active") Boolean active,
+                                  @Param("guestRole") RoleName guestRole);
 }

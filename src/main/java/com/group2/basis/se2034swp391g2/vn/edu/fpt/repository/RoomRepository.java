@@ -320,4 +320,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     ORDER BY r.floor ASC, r.roomNumber ASC
 """)
     List<ReceptionistDashboardView.RoomRow> findDashboardRoomRows(Pageable pageable);
+
+    List<Room> findTop16ByIsDeletedFalseOrderByRoomNumberAsc();
+
+    List<Room> findTop5ByStatusAndIsDeletedFalseOrderByUpdatedAtDesc(RoomStatus status);
 }
