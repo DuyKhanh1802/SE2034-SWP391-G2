@@ -32,6 +32,8 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
 
     List<FolioItem> findByBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalseOrderByPostedAtAsc(Long bookingDetailId);
 
+    List<FolioItem> findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(Long bookingDetailId);
+
     Optional<FolioItem> findByBookingDetail_IdAndService_IdAndIsVoidedFalse(Long bookingDetailId, Long serviceId);
 
     Optional<FolioItem> findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(Long folioItemId, Long bookingDetailId);

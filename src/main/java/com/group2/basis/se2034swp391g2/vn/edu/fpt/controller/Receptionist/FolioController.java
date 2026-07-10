@@ -97,11 +97,12 @@ public class FolioController {
 
     @GetMapping("/{bookingId}")
     public String viewFolio(@PathVariable Long bookingId,
+                            @RequestParam(required = false) Long bookingDetailId,
                             Model model,
                             RedirectAttributes redirectAttributes) {
         try {
             model.addAttribute("pageTitle", "Chi tiết hoá đơn");
-            model.addAttribute("folio", folioService.getFolioDetail(bookingId));
+            model.addAttribute("folio", folioService.getFolioDetail(bookingId, bookingDetailId));
             return "receptionist/ViewFolio";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

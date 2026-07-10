@@ -128,6 +128,16 @@
           th:href="@{/receptionist/Folio.css}">
 
     <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/')
+              and #strings.endsWith(currentUri ?: '', '/check-out')}"
+          th:href="@{/receptionist/Folio.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/')
+              and #strings.endsWith(currentUri ?: '', '/check-out')}"
+          th:href="@{/receptionist/Checkout.css}">
+
+    <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/profile')}"
           th:href="@{/profile/EditProfile.css}">
 </head>

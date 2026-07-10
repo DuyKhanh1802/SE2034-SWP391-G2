@@ -86,7 +86,7 @@
         </section>
 
         <section class="folio-panel full">
-            <h2>Chi phí hoá đơn</h2>
+            <h2>Bảng kê chi phí</h2>
             <div class="compact-table">
                 <table>
                     <thead>
@@ -129,7 +129,7 @@
                         </td>
                     </tr>
                     <tr th:if="${folio.invoiceCharges == null or #lists.isEmpty(folio.invoiceCharges)}">
-                        <td colspan="9" class="empty-row">Chưa có chi phí hoá đơn.</td>
+                        <td colspan="9" class="empty-row">Chưa có khoản chi phí nào.</td>
                     </tr>
                     </tbody>
                 </table>

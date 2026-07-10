@@ -22,4 +22,8 @@ public class RoomStatusBoardResponse {
     private String variantName;
 
     private String note;
+
+    private Long activeBookingId;
+
+    private Long activeBookingDetailId;
 }

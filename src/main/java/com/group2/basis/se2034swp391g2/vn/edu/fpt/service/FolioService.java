@@ -10,12 +10,14 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.PaymentAllocation;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.FolioAdjustmentRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioDetailResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioListResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingDetailRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FolioItemRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentAllocationRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -48,6 +50,7 @@ public class FolioService {
     private final BookingDetailRepository bookingDetailRepository;
     private final FolioItemRepository folioItemRepository;
     private final PaymentRepository paymentRepository;
+    private final PaymentAllocationRepository paymentAllocationRepository;
 
     @Transactional(readOnly = true)
     public Page<FolioListResponse> searchFolios(String keyword,
@@ -74,13 +77,40 @@ public class FolioService {
 
     @Transactional(readOnly = true)
     public FolioDetailResponse getFolioDetail(Long bookingId) {
+        return getFolioDetail(bookingId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public FolioDetailResponse getFolioDetail(Long bookingId, Long bookingDetailId) {
         Booking booking = getActiveBooking(bookingId);
         List<BookingDetail> details = bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
         List<FolioItem> items = folioItemRepository.findByBookingIdAndIsVoidedFalseOrderByPostedAtAsc(bookingId);
         List<Payment> payments = paymentRepository.findByBookingId(bookingId);
 
-        BigDecimal totalAmount = money(booking.getGrandTotal());
-        BigDecimal paidAmount = calculatePaidAmount(payments);
+        List<PaymentAllocation> allocations = List.of();
+        if (bookingDetailId != null) {
+            details = details.stream()
+                    .filter(detail -> bookingDetailId.equals(detail.getId()))
+                    .toList();
+            if (details.isEmpty()) {
+                throw new IllegalArgumentException("Phòng được chọn không thuộc booking này.");
+            }
+            items = items.stream()
+                    .filter(item -> item.getBookingDetail() != null && bookingDetailId.equals(item.getBookingDetail().getId()))
+                    .toList();
+            allocations = paymentAllocationRepository.findByBookingDetailId(bookingDetailId);
+            payments = allocations.stream()
+                    .map(PaymentAllocation::getPayment)
+                    .distinct()
+                    .toList();
+        }
+
+        BigDecimal totalAmount = bookingDetailId == null
+                ? money(booking.getGrandTotal())
+                : calculateRoomScopedTotal(details, items);
+        BigDecimal paidAmount = bookingDetailId == null
+                ? calculatePaidAmount(payments)
+                : calculateAllocatedPaidAmount(allocations);
         BigDecimal balanceAmount = calculateBalance(totalAmount, paidAmount);
         PaymentState paymentState = resolvePaymentState(totalAmount, paidAmount);
 
@@ -105,11 +135,23 @@ public class FolioService {
                 .checkInDate(booking.getCheckInDate())
                 .checkOutDate(booking.getCheckOutDate())
                 .bookingStatus(booking.getStatus() == null ? "" : booking.getStatus().name())
-                .roomSubtotal(money(booking.getRoomSubtotal()))
-                .serviceSubtotal(money(booking.getServiceSubtotal()))
-                .serviceChargeTotal(money(booking.getServiceChargeTotal()))
-                .vatTotal(money(booking.getVatTotal()))
-                .discountAmount(money(booking.getDiscountAmount()))
+                .roomSubtotal(bookingDetailId == null ? money(booking.getRoomSubtotal()) : details.stream()
+                        .map(BookingDetail::getTotalAmount)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .serviceSubtotal(bookingDetailId == null ? money(booking.getServiceSubtotal()) : items.stream()
+                        .map(FolioItem::getBaseAmount)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .serviceChargeTotal(bookingDetailId == null ? money(booking.getServiceChargeTotal()) : items.stream()
+                        .map(FolioItem::getServiceChargeAmount)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .vatTotal(bookingDetailId == null ? money(booking.getVatTotal()) : items.stream()
+                        .map(FolioItem::getVatAmount)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .discountAmount(bookingDetailId == null ? money(booking.getDiscountAmount()) : BigDecimal.ZERO)
                 .totalAmount(totalAmount)
                 .paidAmount(paidAmount)
                 .balanceAmount(balanceAmount)
@@ -507,6 +549,37 @@ public class FolioService {
 
         BigDecimal netPaid = collected.subtract(refunded);
         return netPaid.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : money(netPaid);
+    }
+
+    private BigDecimal calculateAllocatedPaidAmount(List<PaymentAllocation> allocations) {
+        BigDecimal collected = allocations.stream()
+                .filter(allocation -> allocation.getPayment() != null)
+                .filter(allocation -> allocation.getPayment().getStatus() == PaymentStatus.SUCCESS)
+                .filter(allocation -> allocation.getPayment().getPaymentType() != PaymentType.REFUND)
+                .map(PaymentAllocation::getAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal refunded = allocations.stream()
+                .filter(allocation -> allocation.getPayment() != null)
+                .filter(allocation -> allocation.getPayment().getStatus() == PaymentStatus.SUCCESS)
+                .filter(allocation -> allocation.getPayment().getPaymentType() == PaymentType.REFUND)
+                .map(PaymentAllocation::getAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal netPaid = collected.subtract(refunded);
+        return netPaid.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : money(netPaid);
+    }
+
+    private BigDecimal calculateRoomScopedTotal(List<BookingDetail> details, List<FolioItem> items) {
+        BigDecimal roomTotal = details.stream()
+                .map(BookingDetail::getTotalAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal itemTotal = items.stream()
+                .map(FolioItem::getAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return money(roomTotal.add(itemTotal));
     }
 
     private BigDecimal calculateBalance(BigDecimal totalAmount, BigDecimal paidAmount) {

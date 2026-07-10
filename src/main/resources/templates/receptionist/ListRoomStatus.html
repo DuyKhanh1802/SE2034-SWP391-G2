@@ -139,7 +139,13 @@
                         Cập nhật trạng thái
                     </button>
 
-                    <span th:if="${room.status.name() == 'OCCUPIED'}"
+                    <a th:if="${room.status.name() == 'OCCUPIED' and room.activeBookingDetailId != null}"
+                       class="btn-edit-status checkout-room-action"
+                       th:href="@{/receptionist/bookings/details/{id}/check-out(id=${room.activeBookingDetailId})}">
+                        Checkout phòng
+                    </a>
+
+                    <span th:if="${room.status.name() == 'OCCUPIED' and room.activeBookingDetailId == null}"
                           class="locked-status">
                         Đang có khách
                     </span>

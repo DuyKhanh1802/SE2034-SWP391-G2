@@ -251,7 +251,8 @@
                         <th>Thành tiền</th>
                         <th>RoomCode</th>
                         <th>Hết hạn</th>
-                        <th th:if="${detail.bookingStatus.name() == 'CHECKED_IN'}">Thao tác</th>
+                        <th th:if="${detail.bookingStatus.name() == 'CHECKED_IN'
+                            or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT'}">Thao tác</th>
                     </tr>
                     </thead>
 
@@ -333,8 +334,22 @@
                             -
                         </td>
 
-                        <td th:if="${detail.bookingStatus.name() == 'CHECKED_IN'}">
+                        <td th:if="${detail.bookingStatus.name() == 'CHECKED_IN'
+                            or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT'}">
+                            <div class="room-action-stack">
+                                <span class="detail-badge"
+                                      th:classappend="${room.stayStatus == 'CHECKED_OUT'} ? ' badge-checked-out' : ' badge-checked-in'"
+                                      th:text="${room.stayStatusLabel}">Đã nhận phòng</span>
+
+                                <a th:if="${room.stayStatus == 'CHECKED_IN'}"
+                                   class="btn-detail primary"
+                                   th:href="@{/receptionist/bookings/details/{id}/check-out(id=${room.bookingDetailId})}">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    Checkout phòng
+                                </a>
+
                             <button type="button"
+                                    th:if="${room.stayStatus == 'CHECKED_IN'}"
                                     class="btn-detail outline room-move-btn"
                                     data-bs-toggle="modal"
                                     th:data-bs-target="${'#roomMoveModal-' + room.bookingDetailId}"
@@ -342,11 +357,13 @@
                                 <i class="bi bi-arrow-left-right"></i>
                                 Đổi phòng
                             </button>
+                            </div>
                         </td>
                     </tr>
 
                     <tr th:if="${detail.rooms == null or #lists.isEmpty(detail.rooms)}">
-                        <td th:colspan="${detail.bookingStatus.name() == 'CHECKED_IN' ? 9 : 8}" class="empty-row">
+                        <td th:colspan="${detail.bookingStatus.name() == 'CHECKED_IN'
+                            or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT' ? 9 : 8}" class="empty-row">
                             Chưa có phòng trong đặt phòng này.
                         </td>
                     </tr>
@@ -894,12 +911,11 @@
                     XEM HOÁ ĐƠN
                 </a>
 
-                <a th:if="${detail.bookingStatus.name() == 'CHECKED_IN'}"
-                   th:href="@{/receptionist/bookings/{id}/check-out(id=${detail.bookingId})}"
-                   class="btn-detail primary">
-                    <i class="bi bi-box-arrow-right"></i>
-                    TIẾN HÀNH TRẢ PHÒNG
-                </a>
+                <span th:if="${detail.bookingStatus.name() == 'CHECKED_IN'
+                    or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT'}"
+                      class="confirm-room-note">
+                    Chọn Checkout phòng trong bảng phòng để trả từng phòng.
+                </span>
 
 
                 <!-- CHECKED_OUT -->
