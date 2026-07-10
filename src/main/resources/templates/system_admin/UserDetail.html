@@ -13,15 +13,15 @@
         <p>Xem thông tin định danh và liên hệ của tài khoản.</p>
     </section>
 
-    <section class="admin-card">
+    <section class="user-card">
         <div class="detail-header">
-            <a th:href="@{/system-admin/list-user}" class="btn-admin-outline">
+            <a th:href="@{/system-admin/list-user}" class="user-btn-outline">
                 <i class="fa-solid fa-arrow-left"></i>
                 Quay lại
             </a>
 
-            <a sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE')"
-               th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}" class="btn-admin-primary">
+            <a sec:authorize="hasRole('SYSTEM_ADMIN')"
+               th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}" class="user-btn-primary">
                 <i class="fa-regular fa-pen-to-square"></i>
                 Chỉnh sửa
             </a>

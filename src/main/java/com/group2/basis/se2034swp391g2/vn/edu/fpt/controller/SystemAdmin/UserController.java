@@ -2,7 +2,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.SystemAdmin;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.constants.PermissionCode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.DisplayUtils;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.AccountUpdateRequest;
@@ -40,7 +39,7 @@ public class UserController {
     private final AdminUserViewService adminUserViewService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_VIEW + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String listUsers(@RequestParam(value = "keyword", required = false) String keyword,
                             @RequestParam(value = "role", required = false) RoleName role,
                             @RequestParam(value = "activeStatus", defaultValue = "ALL") String activeStatus,
@@ -103,7 +102,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_VIEW + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String viewUserDetail(@PathVariable("id") Long id,
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
@@ -123,7 +122,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/review")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_APPROVE + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String processReviewUser(@PathVariable("id") Long id,
                                     @RequestParam("action") String action,
                                     @RequestParam(value = "approvalNote", required = false) String approvalNote,
@@ -157,8 +156,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/edit")
-    @PreAuthorize("hasAnyAuthority('" + PermissionCode.USER_MANAGE + "','"
-            + PermissionCode.USER_APPROVE + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String showEditUserForm(@PathVariable("id") Long id,
                                    Authentication authentication,
                                    Model model,
@@ -191,7 +189,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/edit")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_MANAGE + "')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public String processEditUser(@PathVariable("id") Long id,
                                   @ModelAttribute("updateRequest") AccountUpdateRequest request,
                                   Authentication authentication,

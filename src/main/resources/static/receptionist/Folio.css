@@ -39,19 +39,35 @@ a { text-decoration: none; }
     font-size: 14px;
 }
 
-.back-link {
-    display: inline-flex;
+.breadcrumb-line {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    color: #777;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.1px;
-    text-transform: uppercase;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-bottom: 14px;
+    color: #666;
+    font-size: 13px;
+    letter-spacing: .5px;
 }
 
-.back-link:hover { color: #111; }
+.breadcrumb-line a {
+    color: #222;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.breadcrumb-line a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-line i {
+    color: #9a9a9a;
+    font-size: 10px;
+}
+
+.breadcrumb-line span {
+    color: #6f7475;
+}
 
 .folio-toolbar,
 .folio-panel,

@@ -30,11 +30,6 @@ public class AdminUserViewService {
                 .collect(Collectors.toMap(User::getId, DisplayUtils::formatDisplayName));
     }
 
-    public Map<Long, String> buildGenderLabels(List<User> users) {
-        return users.stream()
-                .collect(Collectors.toMap(User::getId, this::getGenderLabel));
-    }
-
     public String getRoleLabel(User user) {
         if (user.getUserRoles() == null || user.getUserRoles().isEmpty()) {
             return user.getUserType() != null && "GUEST".equals(user.getUserType().name())
@@ -90,15 +85,6 @@ public class AdminUserViewService {
             options.put(roleName, toRoleLabel(roleName));
         }
         return options;
-    }
-
-    public Map<Long, String> getRoleCodesById() {
-        return roleRepository.findAll().stream()
-                .filter(role -> role.getId() != null && role.getRoleName() != null)
-                .collect(Collectors.toMap(
-                        role -> role.getId(),
-                        role -> role.getRoleName().name()
-                ));
     }
 
     private int getRoleOrder(RoleName roleName) {

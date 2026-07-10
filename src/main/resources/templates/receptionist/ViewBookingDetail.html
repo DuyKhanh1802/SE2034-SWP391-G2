@@ -294,60 +294,6 @@
                         </td>
 
                         <td>
-                            <div th:if="${detail.bookingStatus.name() == 'PENDING'}" class="room-guest-fields">
-                                <small class="room-guest-hint"
-                                       th:text="${'Dự kiến: ' + room.numAdults + ' người lớn, ' + room.numChildren + ' trẻ em'}">
-                                    Dự kiến: 2 người lớn
-                                </small>
-                                <div class="room-guest-row">
-                                    <input type="hidden"
-                                           name="guestBookingDetailIds"
-                                           form="confirmBookingForm"
-                                           th:value="${room.bookingDetailId}">
-                                    <input type="hidden"
-                                           name="guestRowRequireds"
-                                           form="confirmBookingForm"
-                                           value="true">
-                                    <input type="text"
-                                           name="guestFullNames"
-                                           form="confirmBookingForm"
-                                           th:value="${room.primaryGuestName != null ? room.primaryGuestName : detail.guestName}"
-                                           placeholder="Họ tên">
-                                    <input type="date"
-                                           name="guestDateOfBirths"
-                                           form="confirmBookingForm"
-                                           th:value="${room.primaryGuestDateOfBirth}">
-                                    <select name="guestIdentityTypes" form="confirmBookingForm">
-                                        <option value="">Loại giấy tờ</option>
-                                        <option th:each="identityType : ${identityTypes}"
-                                                th:value="${identityType.name()}"
-                                                th:text="${identityType.label}"
-                                                th:selected="${room.primaryGuestIdentityType == identityType.label}">
-                                        </option>
-                                    </select>
-                                    <input type="text"
-                                           name="guestIdentityNumbers"
-                                           form="confirmBookingForm"
-                                           th:value="${room.primaryGuestIdentityNumber != null ? room.primaryGuestIdentityNumber : detail.identityNumber}"
-                                           placeholder="Số giấy tờ">
-                                </div>
-                                <button type="button" class="btn-add-room-guest">
-                                    + Thêm hồ sơ khách
-                                </button>
-                            </div>
-                            <div th:unless="${detail.bookingStatus.name() == 'PENDING'}" class="room-guest-display">
-                                <span th:if="${#lists.isEmpty(room.roomGuests)}">Chưa có</span>
-                                <div th:each="roomGuest : ${room.roomGuests}" class="room-guest-display-item">
-                                    <strong th:text="${roomGuest.fullName}">Nguyễn Văn A</strong>
-                                    <small th:if="${roomGuest.dateOfBirth != null}"
-                                           th:text="${#temporals.format(roomGuest.dateOfBirth, 'dd/MM/yyyy')}"></small>
-                                    <small th:if="${roomGuest.identityNumber != null}"
-                                           th:text="${(roomGuest.identityType != null ? roomGuest.identityType + ' - ' : '') + roomGuest.identityNumber}"></small>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td>
                             <strong th:text="${room.variantName != null ? room.variantName : room.roomTypeName}">
                                 Deluxe Room - City View
                             </strong>
@@ -417,7 +363,7 @@
 
                     <tr th:if="${detail.rooms == null or #lists.isEmpty(detail.rooms)}">
                         <td th:colspan="${detail.bookingStatus.name() == 'CHECKED_IN'
-                            or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT' ? 10 : 9}" class="empty-row">
+                            or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT' ? 9 : 8}" class="empty-row">
                             Chưa có phòng trong đặt phòng này.
                         </td>
                     </tr>
@@ -1121,36 +1067,6 @@
     </section>
 
 </main>
-<script>
-    document.addEventListener('click', function (event) {
-        const addButton = event.target.closest('.btn-add-room-guest');
-
-        if (!addButton) {
-            return;
-        }
-
-        const guestFields = addButton.closest('.room-guest-fields');
-        const firstRow = guestFields.querySelector('.room-guest-row');
-        const newRow = firstRow.cloneNode(true);
-
-        newRow.querySelectorAll('input').forEach(function (input) {
-            if (input.name === 'guestRowRequireds') {
-                input.value = 'false';
-                return;
-            }
-
-            if (input.type !== 'hidden') {
-                input.value = '';
-            }
-        });
-
-        newRow.querySelectorAll('select').forEach(function (select) {
-            select.value = '';
-        });
-
-        guestFields.insertBefore(newRow, addButton);
-    });
-</script>
 </body>
 </html>
 

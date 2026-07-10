@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
@@ -10,14 +11,14 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.PaymentAllocation;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.PaymentApplication;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.FolioAdjustmentRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioDetailResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioListResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingDetailRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FolioItemRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentAllocationRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentApplicationRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,11 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -50,7 +47,7 @@ public class FolioService {
     private final BookingDetailRepository bookingDetailRepository;
     private final FolioItemRepository folioItemRepository;
     private final PaymentRepository paymentRepository;
-    private final PaymentAllocationRepository paymentAllocationRepository;
+    private final PaymentApplicationRepository paymentApplicationRepository;
 
     @Transactional(readOnly = true)
     public Page<FolioListResponse> searchFolios(String keyword,
@@ -90,8 +87,8 @@ public class FolioService {
         List<BookingDetail> details = bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
         List<FolioItem> items = folioItemRepository.findByBookingIdAndIsVoidedFalseOrderByPostedAtAsc(bookingId);
         List<Payment> payments = paymentRepository.findByBookingId(bookingId);
+        List<PaymentApplication> applications = List.of();
 
-        List<PaymentAllocation> allocations = List.of();
         if (bookingDetailId != null) {
             details = details.stream()
                     .filter(detail -> bookingDetailId.equals(detail.getId()))
@@ -102,9 +99,10 @@ public class FolioService {
             items = items.stream()
                     .filter(item -> item.getBookingDetail() != null && bookingDetailId.equals(item.getBookingDetail().getId()))
                     .toList();
-            allocations = paymentAllocationRepository.findByBookingDetailId(bookingDetailId);
-            payments = allocations.stream()
-                    .map(PaymentAllocation::getPayment)
+            applications = paymentApplicationRepository.findByBookingDetailId(bookingDetailId);
+            payments = applications.stream()
+                    .map(PaymentApplication::getPayment)
+                    .filter(Objects::nonNull)
                     .distinct()
                     .toList();
         }
@@ -114,7 +112,7 @@ public class FolioService {
                 : calculateRoomScopedTotal(details, items);
         BigDecimal paidAmount = bookingDetailId == null
                 ? calculatePaidAmount(payments)
-                : calculateAllocatedPaidAmount(allocations);
+                : calculateAppliedPaidAmount(applications);
         BigDecimal balanceAmount = calculateBalance(totalAmount, paidAmount);
         PaymentState paymentState = resolvePaymentState(totalAmount, paidAmount);
 
@@ -134,6 +132,7 @@ public class FolioService {
                 .bookingId(booking.getId())
                 .bookingDetailId(bookingDetailId)
                 .bookingReference(booking.getBookingReference())
+                .roomNumber(resolveFolioRoomNumber(rooms))
                 .guestName(buildGuestName(booking))
                 .guestPhone(booking.getGuestPhone())
                 .guestEmail(booking.getGuestEmail())
@@ -164,18 +163,6 @@ public class FolioService {
                 .paymentStatusLabel(paymentState.label())
                 .editable(isEditableBooking(booking))
                 .rooms(rooms)
-                .roomCharges(lines.stream()
-                        .filter(line -> "ROOM_CHARGE".equals(line.getItemType()))
-                        .toList())
-                .serviceCharges(lines.stream()
-                        .filter(line -> !"ROOM_CHARGE".equals(line.getItemType())
-                                && !"ADJUSTMENT".equals(line.getItemType())
-                                && !"DISCOUNT".equals(line.getItemType()))
-                        .toList())
-                .adjustments(lines.stream()
-                        .filter(line -> "ADJUSTMENT".equals(line.getItemType())
-                                || "DISCOUNT".equals(line.getItemType()))
-                        .toList())
                 .invoiceCharges(lines)
                 .payments(paymentLines)
                 .build();
@@ -216,6 +203,9 @@ public class FolioService {
             }
         }
 
+        validateEditableBookingDetail(detail);
+        validateNegativeAdjustmentWithinRoomTotal(normalizedAmount, detail);
+
         FolioItemType itemType = normalizedAmount.compareTo(BigDecimal.ZERO) < 0
                 ? FolioItemType.DISCOUNT
                 : FolioItemType.ADJUSTMENT;
@@ -246,9 +236,11 @@ public class FolioService {
     }
 
     @Transactional
-    public void voidAdjustment(Long bookingId, Long folioItemId, String reason) {
+    public void voidAdjustment(Long bookingId, Long bookingDetailId, Long folioItemId, String reason) {
         Booking booking = getActiveBooking(bookingId);
         validateEditableBooking(booking);
+        BookingDetail detail = getBookingDetailForFolio(booking, bookingDetailId);
+        validateEditableBookingDetail(detail);
 
         if (folioItemId == null) {
             throw new IllegalArgumentException("Thiếu mã dòng folio cần huỷ.");
@@ -259,6 +251,10 @@ public class FolioService {
 
         if (item.getBooking() == null || !booking.getId().equals(item.getBooking().getId())) {
             throw new IllegalArgumentException("Dòng folio không thuộc booking này.");
+        }
+
+        if (item.getBookingDetail() == null || !detail.getId().equals(item.getBookingDetail().getId())) {
+            throw new IllegalArgumentException("Dòng folio không thuộc phòng đang chỉnh sửa.");
         }
 
         if (Boolean.TRUE.equals(item.getIsVoided())) {
@@ -288,74 +284,14 @@ public class FolioService {
         return details.map(this::toListResponse);
     }
 
-    private Map<Long, String> loadRoomNumbersByBookingId(List<Long> bookingIds) {
-        if (bookingIds.isEmpty()) {
-            return Map.of();
-        }
-
-        Map<Long, List<String>> roomsByBookingId = new LinkedHashMap<>();
-        for (Object[] row : bookingDetailRepository.findRoomNumbersByBookingIds(bookingIds)) {
-            Long bookingId = (Long) row[0];
-            String roomNumber = row[1] == null ? "" : row[1].toString().trim();
-            if (!roomNumber.isBlank()) {
-                roomsByBookingId.computeIfAbsent(bookingId, ignored -> new ArrayList<>()).add(roomNumber);
-            }
-        }
-
-        Map<Long, String> result = new HashMap<>();
-        roomsByBookingId.forEach((bookingId, roomNumbers) -> result.put(
-                bookingId,
-                roomNumbers.stream().distinct().reduce((left, right) -> left + ", " + right).orElse("Chưa phân phòng")
-        ));
-        return result;
-    }
-
-    private Map<Long, BigDecimal> loadPaidAmountsByBookingId(List<Long> bookingIds) {
-        if (bookingIds.isEmpty()) {
-            return Map.of();
-        }
-
-        Map<Long, BigDecimal> collectedAmounts = mapAmountRows(
-                paymentRepository.findSuccessfulCollectionTotalsByBookingIds(bookingIds));
-        Map<Long, BigDecimal> refundedAmounts = mapAmountRows(
-                paymentRepository.findSuccessfulRefundTotalsByBookingIds(bookingIds));
-
-        Map<Long, BigDecimal> result = new HashMap<>();
-        for (Long bookingId : bookingIds) {
-            BigDecimal netPaid = money(collectedAmounts.get(bookingId)).subtract(money(refundedAmounts.get(bookingId)));
-            result.put(bookingId, netPaid.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : money(netPaid));
-        }
-        return result;
-    }
-
-    private Map<Long, BigDecimal> mapAmountRows(List<Object[]> rows) {
-        Map<Long, BigDecimal> result = new HashMap<>();
-        for (Object[] row : rows) {
-            Long bookingId = (Long) row[0];
-            BigDecimal amount = toBigDecimal(row[1]);
-            result.put(bookingId, money(amount));
-        }
-        return result;
-    }
-
-    private BigDecimal toBigDecimal(Object value) {
-        if (value instanceof BigDecimal amount) {
-            return amount;
-        }
-        if (value instanceof Number number) {
-            return new BigDecimal(number.toString());
-        }
-        return BigDecimal.ZERO;
-    }
-
     private FolioListResponse toListResponse(BookingDetail detail) {
         Booking booking = detail.getBooking();
         List<FolioItem> items = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
-        List<PaymentAllocation> allocations = paymentAllocationRepository.findByBookingDetailId(detail.getId());
+        List<PaymentApplication> applications = paymentApplicationRepository.findByBookingDetailId(detail.getId());
 
         BigDecimal totalAmount = calculateRoomScopedTotal(List.of(detail), items);
-        BigDecimal paidAmount = calculateAllocatedPaidAmount(allocations);
+        BigDecimal paidAmount = calculateAppliedPaidAmount(applications);
         BigDecimal balanceAmount = calculateBalance(totalAmount, paidAmount);
         PaymentState paymentState = resolvePaymentState(totalAmount, paidAmount);
 
@@ -380,6 +316,17 @@ public class FolioService {
         String variantName = detail.getVariant() == null ? "Phòng" : detail.getVariant().getVariantName();
         String roomNumber = detail.getRoom() == null ? "Chưa phân phòng" : "Phòng " + detail.getRoom().getRoomNumber();
         return roomNumber + " - " + variantName;
+    }
+
+    private String resolveFolioRoomNumber(List<FolioDetailResponse.RoomLine> rooms) {
+        return rooms.stream()
+                .map(FolioDetailResponse.RoomLine::getRoomNumber)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(roomNumber -> !roomNumber.isBlank())
+                .distinct()
+                .reduce((left, right) -> left + ", " + right)
+                .orElse("Chưa phân phòng");
     }
 
     private FolioDetailResponse.RoomLine toRoomLine(BookingDetail detail) {
@@ -444,6 +391,39 @@ public class FolioService {
     private void validateEditableBooking(Booking booking) {
         if (!isEditableBooking(booking)) {
             throw new IllegalStateException("Chỉ có thể chỉnh folio trước khi booking trả phòng, huỷ hoặc no-show.");
+        }
+    }
+
+    private void validateEditableBookingDetail(BookingDetail detail) {
+        BookingDetailStatus stayStatus = detail.getStayStatus();
+        if (stayStatus == BookingDetailStatus.CHECKED_OUT || stayStatus == BookingDetailStatus.CANCELLED) {
+            throw new IllegalStateException("Không thể chỉnh hoá đơn của phòng đã trả, đã huỷ hoặc no-show.");
+        }
+    }
+
+    private BookingDetail getBookingDetailForFolio(Booking booking, Long bookingDetailId) {
+        if (bookingDetailId == null) {
+            throw new IllegalArgumentException("Thiếu phòng áp dụng điều chỉnh.");
+        }
+
+        BookingDetail detail = bookingDetailRepository.findById(bookingDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng được chọn."));
+        if (detail.getBooking() == null || !booking.getId().equals(detail.getBooking().getId())) {
+            throw new IllegalArgumentException("Phòng được chọn không thuộc booking này.");
+        }
+        return detail;
+    }
+
+    private void validateNegativeAdjustmentWithinRoomTotal(BigDecimal amount, BookingDetail detail) {
+        if (amount.compareTo(BigDecimal.ZERO) >= 0) {
+            return;
+        }
+
+        List<FolioItem> currentRoomItems = folioItemRepository
+                .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
+        BigDecimal currentRoomTotal = calculateRoomScopedTotal(List.of(detail), currentRoomItems);
+        if (amount.abs().compareTo(currentRoomTotal) > 0) {
+            throw new IllegalArgumentException("Số tiền giảm trừ không được lớn hơn tổng tiền hiện tại của phòng.");
         }
     }
 
@@ -562,21 +542,23 @@ public class FolioService {
         return netPaid.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : money(netPaid);
     }
 
-    private BigDecimal calculateAllocatedPaidAmount(List<PaymentAllocation> allocations) {
-        BigDecimal collected = allocations.stream()
-                .filter(allocation -> allocation.getPayment() != null)
-                .filter(allocation -> allocation.getPayment().getStatus() == PaymentStatus.SUCCESS)
-                .filter(allocation -> allocation.getPayment().getPaymentType() != PaymentType.REFUND)
-                .map(PaymentAllocation::getAmount)
+    private BigDecimal calculateAppliedPaidAmount(List<PaymentApplication> applications) {
+        BigDecimal collected = applications.stream()
+                .filter(application -> application.getPayment() != null)
+                .filter(application -> application.getPayment().getStatus() == PaymentStatus.SUCCESS)
+                .filter(application -> application.getPayment().getPaymentType() != PaymentType.REFUND)
+                .map(PaymentApplication::getAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal refunded = allocations.stream()
-                .filter(allocation -> allocation.getPayment() != null)
-                .filter(allocation -> allocation.getPayment().getStatus() == PaymentStatus.SUCCESS)
-                .filter(allocation -> allocation.getPayment().getPaymentType() == PaymentType.REFUND)
-                .map(PaymentAllocation::getAmount)
+
+        BigDecimal refunded = applications.stream()
+                .filter(application -> application.getPayment() != null)
+                .filter(application -> application.getPayment().getStatus() == PaymentStatus.SUCCESS)
+                .filter(application -> application.getPayment().getPaymentType() == PaymentType.REFUND)
+                .map(PaymentApplication::getAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         BigDecimal netPaid = collected.subtract(refunded);
         return netPaid.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : money(netPaid);
     }
@@ -615,37 +597,6 @@ public class FolioService {
         String name = ((booking.getGuestLastName() == null ? "" : booking.getGuestLastName()) + " "
                 + (booking.getGuestFirstName() == null ? "" : booking.getGuestFirstName())).trim();
         return name.isBlank() ? booking.getGuestEmail() : name;
-    }
-
-    private String buildRoomNumbers(List<BookingDetail> details) {
-        if (details == null || details.isEmpty()) {
-            return "Chưa phân phòng";
-        }
-
-        return details.stream()
-                .map(detail -> detail.getRoom() == null ? null : detail.getRoom().getRoomNumber())
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(roomNumber -> !roomNumber.isBlank())
-                .distinct()
-                .reduce((left, right) -> left + ", " + right)
-                .orElse("Chưa phân phòng");
-    }
-
-    private String buildRoomSummary(List<BookingDetail> details) {
-        if (details == null || details.isEmpty()) {
-            return "Chưa có phòng";
-        }
-
-        return details.stream()
-                .map(detail -> {
-                    String roomName = detail.getVariant() == null ? "Phòng" : detail.getVariant().getVariantName();
-                    String roomNumber = detail.getRoom() == null ? "chưa phân phòng" : "Phòng " + detail.getRoom().getRoomNumber();
-                    return roomName + " - " + roomNumber;
-                })
-                .distinct()
-                .reduce((left, right) -> left + ", " + right)
-                .orElse("Chưa có phòng");
     }
 
     private BigDecimal money(BigDecimal value) {

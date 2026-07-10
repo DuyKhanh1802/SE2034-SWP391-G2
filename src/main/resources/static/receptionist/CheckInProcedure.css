@@ -36,6 +36,36 @@
     border-bottom: 1px solid var(--procedure-border);
 }
 
+.breadcrumb-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-bottom: 18px;
+    color: var(--procedure-muted);
+    font-size: 13px;
+    letter-spacing: .5px;
+}
+
+.breadcrumb-line a {
+    color: var(--procedure-black);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.breadcrumb-line a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-line i {
+    color: var(--procedure-muted);
+    font-size: 10px;
+}
+
+.breadcrumb-line span {
+    color: var(--procedure-muted);
+}
+
 .back-link {
     display: inline-flex;
     align-items: center;

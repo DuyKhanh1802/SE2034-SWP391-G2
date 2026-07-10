@@ -11,7 +11,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CheckoutService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.IdentityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
@@ -29,9 +28,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingResponse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.TransactionException;
 import java.time.LocalDate;
 import java.util.List;
 @Controller
@@ -283,7 +284,6 @@ public class BookingController {
         model.addAttribute("roomMoveReasons", RoomMoveReason.values());
         model.addAttribute("roomMoveFeePolicies", RoomMoveFeePolicy.values());
         model.addAttribute("roomMoveOldRoomStatuses", List.of(RoomStatus.AVAILABLE, RoomStatus.MAINTENANCE));
-        model.addAttribute("identityTypes", IdentityType.values());
         return "receptionist/ViewBookingDetail";
     }
 
@@ -451,6 +451,12 @@ public class BookingController {
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receptionist/bookings/details/" + bookingDetailId + "/check-out";
+        } catch (DataAccessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể hoàn tất trả phòng do lỗi ghi dữ liệu. Vui lòng kiểm tra lại cấu hình thanh toán hoặc thử lại.");
+            return "redirect:/receptionist/bookings/details/" + bookingDetailId + "/check-out";
+        } catch (TransactionException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể hoàn tất trả phòng do lỗi giao dịch dữ liệu. Vui lòng thử lại.");
+            return "redirect:/receptionist/bookings/details/" + bookingDetailId + "/check-out";
         }
     }
 
@@ -500,26 +506,9 @@ public class BookingController {
     public String confirmBooking(@PathVariable Long bookingId,
                                  @RequestParam(required = false) List<Long> bookingDetailIds,
                                  @RequestParam(required = false) List<String> roomIds,
-                                 @RequestParam(required = false) List<Long> guestBookingDetailIds,
-                                 @RequestParam(required = false) List<Boolean> guestRowRequireds,
-                                 @RequestParam(required = false) List<String> guestFullNames,
-                                 @RequestParam(required = false)
-                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> guestDateOfBirths,
-                                 @RequestParam(required = false) List<IdentityType> guestIdentityTypes,
-                                 @RequestParam(required = false) List<String> guestIdentityNumbers,
                                  RedirectAttributes redirectAttributes) {
         try {
-            bookingService.confirmOnlineBooking(
-                    bookingId,
-                    bookingDetailIds,
-                    roomIds,
-                    guestBookingDetailIds,
-                    guestRowRequireds,
-                    guestFullNames,
-                    guestDateOfBirths,
-                    guestIdentityTypes,
-                    guestIdentityNumbers
-            );
+            bookingService.confirmOnlineBooking(bookingId, bookingDetailIds, roomIds);
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",

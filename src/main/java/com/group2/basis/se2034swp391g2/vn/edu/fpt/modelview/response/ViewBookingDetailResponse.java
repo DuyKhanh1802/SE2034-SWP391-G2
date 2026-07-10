@@ -98,27 +98,9 @@ public class ViewBookingDetailResponse {
         private Long variantId;
         private String stayStatus;
         private String stayStatusLabel;
-        private String primaryGuestName;
-        private LocalDate primaryGuestDateOfBirth;
-        private String primaryGuestIdentityType;
-        private String primaryGuestIdentityNumber;
         private Integer numAdults;
         private Integer numChildren;
         private Integer guestCount;
-
-        @Builder.Default
-        private List<RoomGuestLine> roomGuests = new ArrayList<>();
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class RoomGuestLine {
-        private String fullName;
-        private LocalDate dateOfBirth;
-        private String identityType;
-        private String identityNumber;
     }
 
     @Data

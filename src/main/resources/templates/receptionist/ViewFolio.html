@@ -9,11 +9,15 @@
 
         <div class="folio-header split">
             <div>
-                <a class="back-link" th:href="@{/receptionist/folios}">
-                    <i class="bi bi-arrow-left"></i>
-                    Danh sách hoá đơn
-                </a>
-                <h1 th:text="'Hoá đơn #' + ${folio.bookingReference}">Hoá đơn #BK0001</h1>
+                <div class="breadcrumb-line">
+                    <a th:href="@{/receptionist/bookings}">Bookings</a>
+                    <i class="bi bi-chevron-right"></i>
+                    <a th:href="@{/receptionist/bookings/view/{id}(id=${folio.bookingId})}"
+                       th:text="${folio.bookingReference}">BK-2606295114</a>
+                    <i class="bi bi-chevron-right"></i>
+                    <span th:text="'Hoá đơn phòng ' + ${folio.roomNumber}">Hoá đơn phòng 101</span>
+                </div>
+                <h1 th:text="'Hoá đơn phòng ' + ${folio.roomNumber}">Hoá đơn phòng 101</h1>
                 <p>
                     <span th:text="${folio.guestName}">Nguyễn Văn A</span>
                     <span th:if="${folio.guestPhone != null}" th:text="' · ' + ${folio.guestPhone}"></span>
@@ -22,7 +26,6 @@
             </div>
 
             <div class="header-actions">
-                <a th:href="@{/receptionist/bookings/view/{id}(id=${folio.bookingId})}" class="btn-outline">Booking</a>
                 <a th:if="${folio.editable}"
                    th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}"
                    class="btn-dark">Chỉnh sửa</a>

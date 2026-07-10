@@ -19,6 +19,7 @@ public class FolioDetailResponse {
     private Long bookingId;
     private Long bookingDetailId;
     private String bookingReference;
+    private String roomNumber;
     private String guestName;
     private String guestPhone;
     private String guestEmail;
@@ -39,15 +40,6 @@ public class FolioDetailResponse {
 
     @Builder.Default
     private List<RoomLine> rooms = new ArrayList<>();
-
-    @Builder.Default
-    private List<FolioLine> roomCharges = new ArrayList<>();
-
-    @Builder.Default
-    private List<FolioLine> serviceCharges = new ArrayList<>();
-
-    @Builder.Default
-    private List<FolioLine> adjustments = new ArrayList<>();
 
     @Builder.Default
     private List<FolioLine> invoiceCharges = new ArrayList<>();

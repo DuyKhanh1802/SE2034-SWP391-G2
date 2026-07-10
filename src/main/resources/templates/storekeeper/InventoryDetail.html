@@ -9,17 +9,17 @@
         <p>Thông tin tồn kho, chi phí bình quân và các liên kết tiêu hao của hàng hóa.</p>
     </section>
 
-    <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"></div>
 
-    <section class="admin-card detail-header">
+    <section class="inventory-card detail-header">
         <div>
             <h2 th:text="${item.name}">Hàng hóa</h2>
         </div>
         <div class="detail-actions">
-            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory}"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
-            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history(itemId=${item.id})}"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</a>
-            <a class="btn-admin-primary" th:href="@{/storekeeper/inventory/{id}/edit(id=${item.id})}"><i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa</a>
+            <a class="inventory-btn-outline" th:href="@{/storekeeper/inventory}"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+            <a class="inventory-btn-outline" th:href="@{/storekeeper/inventory/history(itemId=${item.id})}"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</a>
+            <a class="inventory-btn-primary" th:href="@{/storekeeper/inventory/{id}/edit(id=${item.id})}"><i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa</a>
         </div>
     </section>
 
@@ -30,7 +30,7 @@
         <div class="summary-card"><span>Tồn hiện tại</span><strong th:classappend="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' text-danger'" th:text="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}">0</strong></div>
     </section>
 
-    <section class="admin-card">
+    <section class="inventory-card">
         <div class="detail-grid">
             <div class="detail-item"><span>Mã hàng</span><strong th:text="${item.code}"></strong></div>
             <div class="detail-item"><span>Loại hàng</span><strong th:text="${item.categoryName ?: 'Chưa phân loại'}"></strong></div>
@@ -46,14 +46,14 @@
         </div>
     </section>
 
-    <section class="admin-card p-0 overflow-hidden">
+    <section class="inventory-card p-0 overflow-hidden">
         <div class="px-4 pt-4">
             <span class="eyebrow">RECEIPT BATCHES</span>
             <h2 class="modal-title">Lô nhập gần đây</h2>
             <p class="form-hint">Hạn sử dụng được theo dõi theo phiếu nhập; tồn kho hiện vẫn được quản lý tổng theo hàng hóa.</p>
         </div>
         <div class="table-responsive mt-3">
-            <table class="table admin-table">
+            <table class="table inventory-table">
                 <thead>
                 <tr>
                     <th>Mã phiếu</th>
@@ -87,10 +87,10 @@
         </div>
     </section>
 
-    <section class="admin-card p-0 overflow-hidden">
+    <section class="inventory-card p-0 overflow-hidden">
         <div class="px-4 pt-4"><span class="eyebrow">CONSUMPTION MAPPINGS</span><h2 class="modal-title">Liên kết tiêu hao</h2></div>
         <div class="table-responsive mt-3">
-            <table class="table admin-table">
+            <table class="table inventory-table">
                 <thead><tr><th>Nguồn sử dụng</th><th>Loại</th><th>Tiêu hao/lần</th><th>Chi phí/lần</th></tr></thead>
                 <tbody>
                 <tr th:each="mapping : ${mappings}">

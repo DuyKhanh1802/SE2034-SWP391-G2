@@ -9,27 +9,25 @@
         <p>Theo dõi số lượng tồn, ngưỡng tối thiểu và thực hiện các nghiệp vụ nhập kho trên một màn hình.</p>
     </section>
 
-    <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"></div>
 
-    <section class="admin-card">
+    <section class="inventory-card">
         <div class="inventory-toolbar mb-4">
             <div>
                 <h2>Danh sách hàng hóa</h2>
             </div>
             <div class="toolbar-actions">
-                <a class="btn-admin-outline" th:href="@{/storekeeper/inventory/history}">
+                <a class="inventory-btn-outline" th:href="@{/storekeeper/inventory/history}">
                     <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử kho
                 </a>
-                <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#itemImportModal">
+                <button class="inventory-btn-outline" type="button" data-bs-toggle="modal" data-bs-target="#itemImportModal">
                     <i class="fa-solid fa-file-import"></i> Import danh sách hàng hóa
                 </button>
-                <button class="btn-admin-outline" type="button" data-bs-toggle="modal" data-bs-target="#receiptImportModal"
-                        th:disabled="${!financialChargeConfigured}">
+                <button class="inventory-btn-outline" type="button" data-bs-toggle="modal" data-bs-target="#receiptImportModal">
                     <i class="fa-solid fa-boxes-packing"></i> Import lô hàng nhập
                 </button>
-                <button class="btn-admin-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal"
-                        th:disabled="${!financialChargeConfigured}">
+                <button class="inventory-btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal">
                     <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
                 </button>
             </div>
@@ -54,22 +52,22 @@
                 <option value="NORMAL" th:selected="${stockStatus == 'NORMAL'}">Tồn kho ổn định</option>
             </select>
             <input type="hidden" name="size" th:value="${pageSize}">
-            <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
+            <button class="inventory-btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
         </form>
 
-        <div th:if="${!#lists.isEmpty(lowStockItemCodes)}" class="admin-alert warning mt-3 mb-0">
+        <div th:if="${!#lists.isEmpty(lowStockItemCodes)}" class="inventory-alert warning mt-3 mb-0">
             Có hàng hoá sắp hết hoặc đã hết hàng, cần nhập thêm:
             <strong th:text="${lowStockItemCodesText}"></strong>.
         </div>
-        <div th:if="${!#lists.isEmpty(expiringSoonItemCodes)}" class="admin-alert warning mt-3 mb-0">
+        <div th:if="${!#lists.isEmpty(expiringSoonItemCodes)}" class="inventory-alert warning mt-3 mb-0">
             Có hàng hoá sắp hết hạn, cần nhập lô hàng mới:
             <strong th:text="${expiringSoonItemCodesText}"></strong>.
         </div>
     </section>
 
-    <section class="admin-card p-0 overflow-hidden">
+    <section class="inventory-card p-0 overflow-hidden">
         <div class="table-responsive">
-            <table class="table admin-table inventory-items-table align-middle">
+            <table class="table inventory-table inventory-items-table align-middle">
                 <thead>
                 <tr>
                     <th>Mã hàng</th>
@@ -193,7 +191,7 @@
                     </div>
                     <div class="modal-body">
                         <label class="eyebrow mb-2 d-block">FILE DỮ LIỆU (.XLSX)</label>
-                        <input class="form-control-admin" type="file" name="file" accept=".xlsx" required>
+                        <input class="inventory-form-control" type="file" name="file" accept=".xlsx" required>
                         <p class="form-hint">
                             Dùng đúng 5 cột: <code>ten_hang</code>, <code>loai</code>, <code>don_vi</code>,
                             <code>ton_dau_ky</code>, <code>nguong_canh_bao</code>.
@@ -202,8 +200,8 @@
                         </p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn-admin-primary">Import danh sách</button>
+                        <button type="button" class="inventory-btn-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="inventory-btn-primary">Import danh sách</button>
                     </div>
                 </form>
             </div>
@@ -221,7 +219,7 @@
                     </div>
                     <div class="modal-body">
                         <label class="eyebrow mb-2 d-block">FILE LÔ NHẬP (.XLSX)</label>
-                        <input class="form-control-admin" type="file" name="file" accept=".xlsx" required>
+                        <input class="inventory-form-control" type="file" name="file" accept=".xlsx" required>
                         <p class="form-hint">
                             Dùng đúng 7 cột: <code>ten_hang</code>, <code>so_luong</code>,
                             <code>gia_von_truoc_vat</code>, <code>han_su_dung</code>,
@@ -232,8 +230,8 @@
                         </p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn-admin-primary">Import lô nhập</button>
+                        <button type="button" class="inventory-btn-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="inventory-btn-primary">Import lô nhập</button>
                     </div>
                 </form>
             </div>
@@ -250,36 +248,36 @@
                             <h2 class="modal-title">Lập phiếu nhập</h2></div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body admin-form">
+                    <div class="modal-body inventory-form">
                         <div>
                             <label>Hàng hóa</label>
-                            <select id="receiptItemSelect" class="form-control-admin" name="itemId"
+                            <select id="receiptItemSelect" class="inventory-form-control" name="itemId"
                                     data-options-url="/storekeeper/inventory/items/options" required>
                                 <option value="" selected disabled>Chọn hàng hóa</option>
                             </select>
                         </div>
                         <div class="form-grid">
-                            <div><label>Số lượng</label><input id="receiptQuantity" class="form-control-admin"
+                            <div><label>Số lượng</label><input id="receiptQuantity" class="inventory-form-control"
                                                                type="number" step="0.01" min="0.01" name="quantity"
                                                                required></div>
-                            <div><label>Đơn giá trước VAT / 1 đơn vị</label><input id="receiptUnitCost" class="form-control-admin"
+                            <div><label>Đơn giá trước VAT / 1 đơn vị</label><input id="receiptUnitCost" class="inventory-form-control"
                                                                                    type="number" step="1" min="1" name="unitCost"
                                                                                    placeholder="VD: 30000" required></div>
                         </div>
-                        <div><label>Thuế VAT</label><input class="form-control-admin"
+                        <div><label>Thuế VAT</label><input class="inventory-form-control"
                                                            th:value="${inventoryVatRate + '%'}" disabled></div>
                         <div>
                             <label>Phương thức thanh toán</label>
-                            <select class="form-control-admin" name="paymentMethod" required>
+                            <select class="inventory-form-control" name="paymentMethod" required>
                                 <option value="CASH">Tiền mặt</option>
                                 <option value="TRANSFER">Chuyển khoản</option>
                             </select>
                         </div>
                         <div class="form-grid">
-                            <div><label>Tiền VAT dự kiến</label><input id="receiptVatAmount" class="form-control-admin"
+                            <div><label>Tiền VAT dự kiến</label><input id="receiptVatAmount" class="inventory-form-control"
                                                                        value="0 VND" disabled></div>
                             <div><label>Tổng tiền sau VAT dự kiến</label><input id="receiptTotalCost"
-                                                                                class="form-control-admin" value="0 VND"
+                                                                                class="inventory-form-control" value="0 VND"
                                                                                 disabled></div>
                         </div>
                         <label class="expiry-toggle">
@@ -289,24 +287,24 @@
                         <div id="expiryFields" class="form-grid" style="display: none;">
                             <div>
                                 <label>Mã lô</label>
-                                <input id="receiptBatchCode" class="form-control-admin" name="batchCode" maxlength="50"
+                                <input id="receiptBatchCode" class="inventory-form-control" name="batchCode" maxlength="50"
                                        readonly placeholder="Tự sinh theo ngày nhập kho">
                             </div>
                             <div>
                                 <label>Hạn sử dụng</label>
-                                <input id="receiptExpiryDate" class="form-control-admin" type="date" name="expiryDate">
+                                <input id="receiptExpiryDate" class="inventory-form-control" type="date" name="expiryDate">
                             </div>
                         </div>
-                        <div id="receiptValidationMessage" class="admin-alert warning mb-0"
+                        <div id="receiptValidationMessage" class="inventory-alert warning mb-0"
                              style="display: none;"></div>
-                        <div><label>Nhà cung cấp</label><input class="form-control-admin" name="supplier"
+                        <div><label>Nhà cung cấp</label><input class="inventory-form-control" name="supplier"
                                                                maxlength="150"></div>
-                        <div><label>Ghi chú</label><textarea class="form-control-admin" name="note" rows="3"
+                        <div><label>Ghi chú</label><textarea class="inventory-form-control" name="note" rows="3"
                                                              maxlength="300"></textarea></div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn-admin-primary">Tạo phiếu nhập</button>
+                        <button type="button" class="inventory-btn-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="inventory-btn-primary">Tạo phiếu nhập</button>
                     </div>
                 </form>
             </div>

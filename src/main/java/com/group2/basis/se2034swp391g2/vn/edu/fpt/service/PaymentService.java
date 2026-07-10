@@ -7,9 +7,9 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.PaymentCodeGenera
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.PaymentAllocation;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.PaymentApplication;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentAllocationRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentApplicationRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ import java.time.Instant;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final PaymentAllocationRepository paymentAllocationRepository;
+    private final PaymentApplicationRepository paymentApplicationRepository;
     private final CashTransactionService cashTransactionService;
 
     @Transactional
@@ -61,7 +61,7 @@ public class PaymentService {
                                  BigDecimal amount,
                                  User currentStaff) {
         Payment savedPayment = createPayment(booking, paymentType, method, amount, currentStaff);
-        createAllocation(savedPayment, booking, bookingDetail, amount);
+        createApplication(savedPayment, booking, bookingDetail, amount);
         return savedPayment;
     }
 
@@ -126,29 +126,45 @@ public class PaymentService {
                                        BigDecimal refundAmount,
                                        User currentStaff) {
         Payment savedRefundPayment = createRefundPayment(booking, originalPayment, refundMethod, refundAmount, currentStaff);
-        createAllocation(savedRefundPayment, booking, bookingDetail, refundAmount);
+        createApplication(savedRefundPayment, booking, bookingDetail, refundAmount);
         return savedRefundPayment;
     }
 
-    private void createAllocation(Payment payment,
-                                  Booking booking,
-                                  BookingDetail bookingDetail,
-                                  BigDecimal amount) {
+    private void createApplication(Payment payment,
+                                   Booking booking,
+                                   BookingDetail bookingDetail,
+                                   BigDecimal amount) {
+        if (payment == null || payment.getId() == null) {
+            throw new IllegalArgumentException("Giao dịch thanh toán không hợp lệ.");
+        }
+
         if (bookingDetail == null) {
-            throw new IllegalArgumentException("Phòng được phân bổ thanh toán không được để trống.");
+            throw new IllegalArgumentException("Phòng áp dụng thanh toán không được để trống.");
         }
 
-        if (bookingDetail.getBooking() == null
-                || booking == null
+        if (booking == null
+                || booking.getId() == null
+                || bookingDetail.getBooking() == null
                 || !booking.getId().equals(bookingDetail.getBooking().getId())) {
-            throw new IllegalArgumentException("Phòng được phân bổ không thuộc booking này.");
+            throw new IllegalArgumentException("Phòng áp dụng thanh toán không thuộc booking này.");
         }
 
-        paymentAllocationRepository.save(PaymentAllocation.builder()
+        BigDecimal normalizedAmount = amount == null ? BigDecimal.ZERO : amount;
+        if (normalizedAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Số tiền áp dụng phải lớn hơn 0.");
+        }
+
+        BigDecimal appliedAmount = paymentApplicationRepository.sumAppliedAmountByPaymentId(payment.getId());
+        BigDecimal paymentAmount = payment.getAmount() == null ? BigDecimal.ZERO : payment.getAmount();
+        if (appliedAmount.add(normalizedAmount).compareTo(paymentAmount) > 0) {
+            throw new IllegalArgumentException("Tổng tiền áp dụng không được vượt quá số tiền giao dịch.");
+        }
+
+        paymentApplicationRepository.save(PaymentApplication.builder()
                 .payment(payment)
                 .booking(booking)
                 .bookingDetail(bookingDetail)
-                .amount(amount)
+                .amount(normalizedAmount)
                 .build());
     }
 

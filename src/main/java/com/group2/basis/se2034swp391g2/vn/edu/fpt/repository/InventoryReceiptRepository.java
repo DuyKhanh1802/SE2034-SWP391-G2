@@ -15,7 +15,6 @@ public interface InventoryReceiptRepository extends JpaRepository<InventoryRecei
 
     Optional<InventoryReceipt> findTopByBatchCodeStartingWithOrderByBatchCodeDesc(String prefix);
 
-    List<InventoryReceipt> findTop20ByOrderByCreatedAtDesc();
 
     // Lấy phiếu nhập kèm vật tư và người tạo để màn dòng tiền hiển thị đúng nguồn nhập kho.
     @Query("""
