@@ -89,6 +89,9 @@
           th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')}"
           href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/folios')}"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet"
           th:if="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')}"
           th:href="@{/receptionist/Dashboard.css}">
 
@@ -119,6 +122,20 @@
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/rooms')}"
           th:href="@{/receptionist/ListRoomStatus.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/folios')}"
+          th:href="@{/receptionist/Folio.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/')
+              and #strings.endsWith(currentUri ?: '', '/check-out')}"
+          th:href="@{/receptionist/Folio.css}">
+
+    <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings/')
+              and #strings.endsWith(currentUri ?: '', '/check-out')}"
+          th:href="@{/receptionist/Checkout.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri ?: '', '/profile')}"

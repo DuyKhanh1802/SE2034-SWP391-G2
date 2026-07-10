@@ -78,7 +78,7 @@ public class Booking {
     private BigDecimal depositAmount = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 15)
+    @Column(name = "status", nullable = false, length = 30)
     private BookingStatus status = BookingStatus.PENDING;
 
     // Tổng tiền cuối cùng của booking

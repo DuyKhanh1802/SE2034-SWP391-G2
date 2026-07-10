@@ -8,10 +8,12 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CountryRepository;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CheckoutService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomMoveFeePolicy;
@@ -41,11 +43,13 @@ public class BookingController {
     private final ServiceRepository serviceRepository;
     private final PromotionService promotionService;
     private final RoomMoveService roomMoveService;
+    private final CheckoutService checkoutService;
     public BookingController(BookingService bookingService,
                              CountryRepository countryRepository,
                              PromotionService promotionService,
                              ServiceRepository serviceRepository,
                              RoomMoveService roomMoveService,
+                             CheckoutService checkoutService,
                              PaymentService paymentService) {
         this.bookingService = bookingService;
         this.countryRepository = countryRepository;
@@ -53,6 +57,7 @@ public class BookingController {
         this.promotionService = promotionService;
         this.paymentService = paymentService;
         this.roomMoveService = roomMoveService;
+        this.checkoutService = checkoutService;
     }
 
     @GetMapping
@@ -403,6 +408,48 @@ public class BookingController {
         }
 
         return "redirect:/receptionist/bookings/view/" + bookingId;
+    }
+
+    @GetMapping("/{bookingId}/check-out")
+    public String showCheckout(@PathVariable Long bookingId,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            Long bookingDetailId = checkoutService.findFirstCheckoutDetailId(bookingId);
+            return "redirect:/receptionist/bookings/details/" + bookingDetailId + "/check-out";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/receptionist/bookings/view/" + bookingId;
+        }
+    }
+
+    @GetMapping("/details/{bookingDetailId}/check-out")
+    public String showRoomCheckout(@PathVariable Long bookingDetailId,
+                                   Model model,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("checkout", checkoutService.getCheckoutDetail(bookingDetailId));
+            model.addAttribute("request", new CheckoutRequest());
+            model.addAttribute("paymentMethods", PaymentMethod.values());
+            model.addAttribute("pageTitle", "Trả phòng");
+            return "receptionist/Checkout";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/receptionist/rooms";
+        }
+    }
+
+    @PostMapping("/details/{bookingDetailId}/check-out")
+    public String completeCheckout(@PathVariable Long bookingDetailId,
+                                   @ModelAttribute("request") CheckoutRequest request,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            checkoutService.completeCheckout(bookingDetailId, request);
+            redirectAttributes.addFlashAttribute("successMessage", "Hoàn tất trả phòng thành công.");
+            return "redirect:/receptionist/rooms";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/receptionist/bookings/details/" + bookingDetailId + "/check-out";
+        }
     }
 
     @PostMapping("/{bookingId}/cancel")

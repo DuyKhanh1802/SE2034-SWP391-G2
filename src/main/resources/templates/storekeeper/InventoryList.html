@@ -138,31 +138,46 @@
             </table>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
-            <div class="text-muted small">
+        <div class="pagination-row">
+            <p>
                 <span th:text="${totalElements}">0</span> hàng hóa
-            </div>
+            </p>
             <nav th:if="${totalPages > 1}" aria-label="Phân trang kho hàng">
-                <ul class="pagination mb-0">
-                    <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
-                        <a class="page-link"
-                           th:href="@{/storekeeper/inventory(page=${currentPage - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </a>
-                    </li>
-                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
-                        th:classappend="${pageNumber == currentPage} ? ' active'">
-                        <a class="page-link"
-                           th:href="@{/storekeeper/inventory(page=${pageNumber},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
-                           th:text="${pageNumber + 1}">1</a>
-                    </li>
-                    <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
-                        <a class="page-link"
-                           th:href="@{/storekeeper/inventory(page=${currentPage + 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
+                <div class="pagination-buttons">
+                    <a th:href="@{/storekeeper/inventory(page=0,size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                       th:classappend="${currentPage == 0} ? ' disabled'"
+                       title="Trang đầu">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </a>
+
+                    <a th:href="@{/storekeeper/inventory(page=${currentPage - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                       th:classappend="${currentPage == 0} ? ' disabled'"
+                       title="Trang trước">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+
+                    <span th:if="${showLeadingEllipsis}" class="pagination-ellipsis">...</span>
+
+                    <a th:each="pageNumber : ${visiblePages}"
+                       th:href="@{/storekeeper/inventory(page=${pageNumber},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == currentPage} ? ' active'">
+                    </a>
+
+                    <span th:if="${showTrailingEllipsis}" class="pagination-ellipsis">...</span>
+
+                    <a th:href="@{/storekeeper/inventory(page=${currentPage + 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                       th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
+                       title="Trang sau">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+
+                    <a th:href="@{/storekeeper/inventory(page=${totalPages - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                       th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
+                       title="Trang cuối">
+                        <i class="fa-solid fa-angles-right"></i>
+                    </a>
+                </div>
             </nav>
         </div>
     </section>

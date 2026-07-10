@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Controller
 @RequestMapping("/system-admin/list-user")
@@ -65,9 +66,40 @@ public class UserController {
         model.addAttribute("totalElements", userPage.getTotalElements());
         model.addAttribute("hasPrevious", userPage.hasPrevious());
         model.addAttribute("hasNext", userPage.hasNext());
+        model.addAttribute("currentPageIndex", userPage.getNumber());
+        List<Integer> visiblePages = buildVisiblePages(userPage.getNumber(), userPage.getTotalPages());
+        model.addAttribute("visiblePages", visiblePages);
+        model.addAttribute("showLeadingEllipsis", !visiblePages.isEmpty() && visiblePages.getFirst() > 0);
+        model.addAttribute("showTrailingEllipsis", !visiblePages.isEmpty() && visiblePages.getLast() < userPage.getTotalPages() - 1);
         model.addAttribute("currentUserId", getCurrentUserId(authentication));
         model.addAttribute("pageTitle", "Quản lý người dùng");
         return "system_admin/ListUser";
+    }
+
+    private List<Integer> buildVisiblePages(int currentPage, int totalPages) {
+        if (totalPages <= 0) {
+            return List.of();
+        }
+
+        if (totalPages <= 5) {
+            return IntStream.range(0, totalPages).boxed().toList();
+        }
+
+        int start;
+        int end;
+
+        if (currentPage <= 2) {
+            start = 0;
+            end = 3;
+        } else if (currentPage >= totalPages - 3) {
+            start = totalPages - 4;
+            end = totalPages - 1;
+        } else {
+            start = currentPage - 1;
+            end = currentPage + 2;
+        }
+
+        return IntStream.rangeClosed(start, end).boxed().toList();
     }
 
     @GetMapping("/{id}")

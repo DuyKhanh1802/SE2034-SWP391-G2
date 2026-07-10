@@ -353,6 +353,13 @@
     color: #ffffff;
 }
 
+.checkout-room-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
 /* OCCUPIED chip */
 .locked-status {
     display: inline-flex;

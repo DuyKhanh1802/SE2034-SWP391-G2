@@ -159,37 +159,47 @@
             </tbody>
         </table>
 
-        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top" th:if="${totalPages > 1}">
-            <div class="text-muted small">
+        <div class="pagination-row" th:if="${totalPages > 1}">
+            <p>
                 <span th:text="${totalElements}">0</span> tài khoản
-            </div>
+            </p>
 
             <nav aria-label="Phân trang người dùng">
-                <ul class="pagination mb-0">
-                    <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
-                        <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${hasPrevious ? currentPage - 2 : 0},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
-                           aria-label="Trang trước">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </a>
-                    </li>
+                <div class="pagination-buttons">
+                    <a th:href="@{/system-admin/list-user(page=0,size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:classappend="${currentPageIndex == 0} ? ' disabled'"
+                       title="Trang đầu">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </a>
 
-                    <li class="page-item"
-                        th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
-                        th:classappend="${pageNum == currentPage} ? ' active'">
-                        <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${pageNum - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
-                           th:text="${pageNum}">1</a>
-                    </li>
+                    <a th:href="@{/system-admin/list-user(page=${currentPageIndex - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:classappend="${currentPageIndex == 0} ? ' disabled'"
+                       title="Trang trước">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
 
-                    <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
-                        <a class="page-link"
-                           th:href="@{/system-admin/list-user(page=${hasNext ? currentPage : currentPage - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
-                           aria-label="Trang sau">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
+                    <span th:if="${showLeadingEllipsis}" class="pagination-ellipsis">...</span>
+
+                    <a th:each="pageNumber : ${visiblePages}"
+                       th:href="@{/system-admin/list-user(page=${pageNumber},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == currentPageIndex} ? ' active'">
+                    </a>
+
+                    <span th:if="${showTrailingEllipsis}" class="pagination-ellipsis">...</span>
+
+                    <a th:href="@{/system-admin/list-user(page=${currentPageIndex + 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:classappend="${currentPageIndex + 1 >= totalPages} ? ' disabled'"
+                       title="Trang sau">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+
+                    <a th:href="@{/system-admin/list-user(page=${totalPages - 1},size=${pageSize},keyword=${keyword},role=${selectedRole},activeStatus=${activeStatus},approvalStatus=${selectedApprovalStatus})}"
+                       th:classappend="${currentPageIndex + 1 >= totalPages} ? ' disabled'"
+                       title="Trang cuối">
+                        <i class="fa-solid fa-angles-right"></i>
+                    </a>
+                </div>
             </nav>
         </div>
     </section>

@@ -36,6 +36,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ServiceCategoryType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Promotion;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionApplyResponse;
@@ -1344,6 +1345,8 @@ public class BookingService {
                         .roomCode(detail.getRoomCode())
                         .roomCodeExpiresAt(detail.getRoomCodeExpiresAt())
                         .checkOutDate(detail.getCheckOutDate())
+                        .stayStatus(resolveDetailStayStatus(detail, booking).name())
+                        .stayStatusLabel(resolveDetailStayStatus(detail, booking).getLabel())
                         .build())
                 .toList();
 
@@ -1414,6 +1417,28 @@ public class BookingService {
                 .rooms(roomLines)
                 .payments(paymentLines)
                 .build();
+    }
+
+    private BookingDetailStatus resolveDetailStayStatus(BookingDetail detail, Booking booking) {
+        if (detail.getStayStatus() != null) {
+            return detail.getStayStatus();
+        }
+
+        if (booking.getStatus() == BookingStatus.CHECKED_IN
+                || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_IN
+                || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_OUT) {
+            return BookingDetailStatus.CHECKED_IN;
+        }
+
+        if (booking.getStatus() == BookingStatus.CHECKED_OUT) {
+            return BookingDetailStatus.CHECKED_OUT;
+        }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.NO_SHOW) {
+            return BookingDetailStatus.CANCELLED;
+        }
+
+        return BookingDetailStatus.RESERVED;
     }
 
     private void validateDepositRequest(BookingCreateRequest request){
@@ -1631,6 +1656,7 @@ public class BookingService {
 
         if (guest == null) {
             guest = new User();
+            guest.setUserType(UserType.GUEST);
             booking.setGuest(guest);
         }
 

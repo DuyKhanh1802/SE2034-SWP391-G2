@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+    <section class="folio-page">
+
+        <div class="folio-header split">
+            <div>
+                <a class="back-link" th:href="@{/receptionist/folios}">
+                    <i class="bi bi-arrow-left"></i>
+                    Danh sách hoá đơn
+                </a>
+                <h1 th:text="'Hoá đơn #' + ${folio.bookingReference}">Hoá đơn #BK0001</h1>
+                <p>
+                    <span th:text="${folio.guestName}">Nguyễn Văn A</span>
+                    <span th:if="${folio.guestPhone != null}" th:text="' · ' + ${folio.guestPhone}"></span>
+                    <span th:if="${folio.guestEmail != null}" th:text="' · ' + ${folio.guestEmail}"></span>
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a th:href="@{/receptionist/bookings/view/{id}(id=${folio.bookingId})}" class="btn-outline">Booking</a>
+                <a th:if="${folio.editable}"
+                   th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId})}"
+                   class="btn-dark">Chỉnh sửa</a>
+            </div>
+        </div>
+
+        <div class="summary-grid">
+            <div>
+                <span>Tổng hoá đơn</span>
+                <strong th:text="${#numbers.formatDecimal(folio.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
+            </div>
+            <div>
+                <span>Đã thanh toán</span>
+                <strong th:text="${#numbers.formatDecimal(folio.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
+            </div>
+            <div>
+                <span>Còn lại</span>
+                <strong th:text="${#numbers.formatDecimal(folio.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
+            </div>
+            <div>
+                <span>Trạng thái</span>
+                <strong class="summary-status"
+                        th:classappend="${folio.paymentStatus == 'PAID'} ? ' paid' : (${folio.paymentStatus == 'PARTIAL'} ? ' partial' : ' unpaid')"
+                        th:text="${folio.paymentStatusLabel}">Chưa thanh toán</strong>
+            </div>
+        </div>
+
+        <div class="folio-grid">
+            <section class="folio-panel">
+                <h2>Phòng trong booking</h2>
+                <div class="compact-table">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Phòng</th>
+                            <th>Hạng phòng</th>
+                            <th class="text-end">Tổng</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="room : ${folio.rooms}">
+                            <td th:text="${room.roomNumber != null ? 'Phòng ' + room.roomNumber : 'Chưa phân phòng'}">Phòng 101</td>
+                            <td th:text="${room.roomName}">Deluxe</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(room.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="folio-panel">
+                <h2>Tổng hợp tiền</h2>
+                <div class="price-lines">
+                    <div><span>Tiền phòng</span><strong th:text="${#numbers.formatDecimal(folio.roomSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                    <div><span>Dịch vụ thêm</span><strong th:text="${#numbers.formatDecimal(folio.serviceSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                    <div><span>Phí dịch vụ</span><strong th:text="${#numbers.formatDecimal(folio.serviceChargeTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                    <div><span>VAT</span><strong th:text="${#numbers.formatDecimal(folio.vatTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                    <div><span>Giảm giá</span><strong th:text="'- ' + ${#numbers.formatDecimal(folio.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                    <div class="total"><span>Tổng thanh toán</span><strong th:text="${#numbers.formatDecimal(folio.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                </div>
+            </section>
+        </div>
+
+        <section class="folio-panel full">
+            <h2>Bảng kê chi phí</h2>
+            <div th:replace="~{receptionist/ViewFolio :: lineTable(${folio.invoiceCharges}, false)}"></div>
+        </section>
+
+        <section class="folio-panel full">
+            <h2>Lịch sử thanh toán</h2>
+            <div class="compact-table">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Mã giao dịch</th>
+                        <th>Loại</th>
+                        <th>Phương thức</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Số tiền</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="payment : ${folio.payments}">
+                        <td th:text="${payment.transactionRef != null ? payment.transactionRef : 'Chưa có mã'}"></td>
+                        <td th:text="${payment.paymentType}"></td>
+                        <td th:text="${payment.method}"></td>
+                        <td th:text="${payment.status}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></td>
+                    </tr>
+                    <tr th:if="${folio.payments == null or #lists.isEmpty(folio.payments)}">
+                        <td colspan="5" class="empty-row">Chưa có giao dịch thanh toán.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </section>
+</main>
+
+<div th:fragment="lineTable(lines, editable)" class="compact-table">
+    <table>
+        <thead>
+        <tr>
+            <th>Phòng</th>
+            <th>Mô tả</th>
+            <th>Loại</th>
+            <th>SL</th>
+            <th class="text-end">Đơn giá</th>
+            <th class="text-end">Phí DV</th>
+            <th class="text-end">VAT</th>
+            <th class="text-end">Tổng</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="line : ${lines}">
+            <td th:text="${line.roomNumber}">Chung</td>
+            <td>
+                <strong th:text="${line.description}">Adjustment</strong>
+                <small th:if="${line.adjustmentReason != null and !#strings.isEmpty(line.adjustmentReason)}"
+                       th:text="${line.adjustmentReason}"></small>
+            </td>
+            <td th:text="${line.itemType}">ADJUSTMENT</td>
+            <td th:text="${line.quantity}">1</td>
+            <td class="text-end" th:text="${#numbers.formatDecimal(line.unitPrice, 0, 'COMMA', 0, 'POINT')}"></td>
+            <td class="text-end" th:text="${#numbers.formatDecimal(line.serviceChargeAmount, 0, 'COMMA', 0, 'POINT')}"></td>
+            <td class="text-end" th:text="${#numbers.formatDecimal(line.vatAmount, 0, 'COMMA', 0, 'POINT')}"></td>
+            <td class="text-end strong-money" th:text="${#numbers.formatDecimal(line.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></td>
+        </tr>
+        <tr th:if="${lines == null or #lists.isEmpty(lines)}">
+            <td colspan="8" class="empty-row">Không có dòng dữ liệu.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

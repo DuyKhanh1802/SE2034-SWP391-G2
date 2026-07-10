@@ -168,43 +168,65 @@ ul {
     font-size: 11px;
 }
 
-.pagination {
+.pagination-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 24px;
+    border-top: 1px solid #eee;
+}
+
+.pagination-row p {
+    margin: 0;
+    color: #777;
+    font-size: 13px;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
     gap: 6px;
 }
 
-.pagination .page-link {
+.pagination-buttons a,
+.pagination-buttons .pagination-ellipsis {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 30px;
-    height: 30px;
+    min-width: 32px;
+    height: 32px;
     padding: 0 10px;
     border: 1px solid #d8d8d8;
-    border-radius: 0 !important;
     background: #fff;
     color: #222;
     font-size: 12px;
     font-weight: 600;
-    box-shadow: none;
 }
 
-.pagination .page-link:hover {
+.pagination-buttons .pagination-ellipsis {
+    border-color: transparent;
+    background: transparent;
+    color: #777;
+}
+
+.pagination-buttons a:hover {
     border-color: #111;
     background: #f1f1f1;
     color: #111;
 }
 
-.pagination .page-item.active .page-link {
+.pagination-buttons a.active {
     border-color: #111;
     background: #111;
     color: #fff;
 }
 
-.pagination .page-item.disabled .page-link {
+.pagination-buttons a.disabled {
+    pointer-events: none;
     border-color: #e5e5e5;
     background: #f5f5f5;
     color: #aaa;
-    opacity: 1;
 }
 
 /* =========================
@@ -719,6 +741,11 @@ ul {
 }
 
 @media (max-width: 640px) {
+    .pagination-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
     .user-filters {
         grid-template-columns: 1fr;
     }

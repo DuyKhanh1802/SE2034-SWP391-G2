@@ -116,6 +116,19 @@
     box-shadow: 0 14px 35px rgba(0, 0, 0, 0.035);
 }
 
+.room-action-stack {
+    display: grid;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.room-action-stack .btn-detail {
+    width: 100%;
+    min-height: 34px;
+    padding: 8px 10px;
+    font-size: 11px;
+}
+
 .detail-card-title {
     padding-bottom: 14px;
     margin-bottom: 22px;
