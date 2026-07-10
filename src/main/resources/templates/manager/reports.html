@@ -1,53 +1,232 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-    <section class="module-header">
+
+    <!-- PAGE HERO -->
+    <section class="report-overview-hero">
         <div>
-            <p>Reports</p>
-            <h1>Báo cáo</h1>
+            <span class="report-overview-kicker">Manager Reports</span>
+            <h1>Báo cáo tổng quan</h1>
+            <p>
+                Theo dõi nhanh tình hình doanh thu, công suất phòng, hiệu suất dịch vụ
+                và tình trạng tồn kho trong hệ thống khách sạn.
+            </p>
+        </div>
+
+        <div class="report-overview-actions">
+            <a th:href="@{/manager/reports/services}" class="report-soft-btn report-soft-btn-dark">
+                <i class="fa-solid fa-chart-line"></i>
+                Báo cáo dịch vụ
+            </a>
+
+            <a th:href="@{/manager/reports/inventory}" class="report-soft-btn report-soft-btn-light">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                Báo cáo tồn kho
+            </a>
         </div>
     </section>
 
-    <section class="metric-grid">
-        <div class="metric-card"><span>Doanh thu hôm nay</span><strong th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-        <div class="metric-card"><span>Doanh thu tháng</span><strong th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-        <div class="metric-card"><span>Tỉ lệ lấp phòng</span><strong th:text="${occupancyRate + '%'}">0%</strong></div>
-        <div class="metric-card"><span>Chênh lệch thu chi</span><strong th:text="${#numbers.formatDecimal(totalIncome.subtract(totalExpense), 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong></div>
-    </section>
+    <!-- KPI CARDS -->
+    <section class="report-kpi-grid">
+        <div class="report-kpi-card report-kpi-income">
+            <div class="report-kpi-icon">
+                <i class="fa-solid fa-sack-dollar"></i>
+            </div>
 
-    <section class="detail-grid">
-        <div class="panel">
-            <h2>Báo cáo dịch vụ</h2>
-            <table class="module-table">
-                <thead><tr><th>Dịch vụ</th><th>Số lượng</th><th>Doanh thu</th></tr></thead>
-                <tbody>
-                <tr th:each="serviceStat : ${topServices}">
-                    <td th:text="${serviceStat[0]}">Dịch vụ</td>
-                    <td th:text="${serviceStat[1]}">0</td>
-                    <td th:text="${#numbers.formatDecimal(serviceStat[2], 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</td>
-                </tr>
-                </tbody>
-            </table>
+            <div>
+                <span>Doanh thu hôm nay</span>
+                <strong th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                    0 VND
+                </strong>
+                <p>Income today</p>
+            </div>
         </div>
 
-        <div class="panel">
-            <h2>Báo cáo tồn kho thấp</h2>
-            <table class="module-table">
-                <thead><tr><th>Hàng hóa</th><th>Tồn hiện tại</th><th>Ngưỡng</th></tr></thead>
-                <tbody>
-                <tr th:each="item : ${lowStockItems}">
-                    <td th:text="${item.name}">Hàng hóa</td>
-                    <td th:text="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}">0</td>
-                    <td th:text="${@inventoryQuantityFormatter.format(item.minimumQuantity) + ' ' + item.unit}">0</td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(lowStockItems)}"><td colspan="3">Không có cảnh báo tồn kho thấp.</td></tr>
-                </tbody>
-            </table>
+        <div class="report-kpi-card report-kpi-month">
+            <div class="report-kpi-icon">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
+
+            <div>
+                <span>Doanh thu tháng</span>
+                <strong th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                    0 VND
+                </strong>
+                <p>Monthly income</p>
+            </div>
+        </div>
+
+        <div class="report-kpi-card report-kpi-occupancy">
+            <div class="report-kpi-icon">
+                <i class="fa-solid fa-bed"></i>
+            </div>
+
+            <div>
+                <span>Tỉ lệ lấp phòng</span>
+                <strong th:text="${occupancyRate + '%'}">
+                    0%
+                </strong>
+                <p>Room occupancy</p>
+            </div>
+        </div>
+
+        <div class="report-kpi-card report-kpi-balance">
+            <div class="report-kpi-icon">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+
+            <div>
+                <span>Chênh lệch thu chi</span>
+                <strong th:text="${#numbers.formatDecimal(totalIncome.subtract(totalExpense), 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                    0 VND
+                </strong>
+                <p>Income minus expense</p>
+            </div>
         </div>
     </section>
+
+    <!-- REPORT SNAPSHOTS -->
+    <section class="report-overview-grid">
+
+        <!-- SERVICE REPORT SNAPSHOT -->
+        <div class="report-snapshot-card">
+            <div class="report-snapshot-header">
+                <div>
+                    <span>Service Performance</span>
+                    <h2>Báo cáo dịch vụ</h2>
+                    <p>Top dịch vụ có số lượng bán cao nhất.</p>
+                </div>
+
+                <a th:href="@{/manager/reports/services}" class="report-mini-link">
+                    Xem chi tiết
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="report-empty-state" th:if="${#lists.isEmpty(topServices)}">
+                <div>
+                    <i class="fa-regular fa-chart-bar"></i>
+                </div>
+                <p>Chưa có dữ liệu dịch vụ.</p>
+            </div>
+
+            <div class="report-service-list" th:if="${!#lists.isEmpty(topServices)}">
+                <div class="report-service-item"
+                     th:each="serviceStat, iter : ${topServices}">
+                    <div class="report-rank" th:text="${iter.index + 1}">
+                        1
+                    </div>
+
+                    <div class="report-service-main">
+                        <strong th:text="${serviceStat[0]}">
+                            Dịch vụ
+                        </strong>
+
+                        <span>
+                            Đã bán
+                            <b th:text="${serviceStat[1]}">0</b>
+                            lượt
+                        </span>
+                    </div>
+
+                    <div class="report-service-revenue"
+                         th:text="${#numbers.formatDecimal(serviceStat[2], 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INVENTORY REPORT SNAPSHOT -->
+        <div class="report-snapshot-card">
+            <div class="report-snapshot-header">
+                <div>
+                    <span>Inventory Summary</span>
+                    <h2>Báo cáo tồn kho</h2>
+                    <p>Tổng hợp số mặt hàng, giá trị tồn kho và cảnh báo cần theo dõi.</p>
+                </div>
+
+                <a th:href="@{/manager/reports/inventory}" class="report-mini-link">
+                    Xem chi tiết
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- INVENTORY SUMMARY MINI CARDS -->
+            <div class="report-inventory-summary">
+                <div class="report-inventory-stat">
+                    <span>Tổng mặt hàng</span>
+                    <strong th:text="${inventoryTotalItems}">0</strong>
+                </div>
+
+                <div class="report-inventory-stat">
+                    <span>Giá trị tồn</span>
+                    <strong th:text="${#numbers.formatDecimal(inventoryTotalValue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </strong>
+                </div>
+
+                <div class="report-inventory-stat warning">
+                    <span>Tồn thấp</span>
+                    <strong th:text="${inventoryLowStockCount}">0</strong>
+                </div>
+
+                <div class="report-inventory-stat">
+                    <span>Sắp hết hạn</span>
+                    <strong th:text="${inventoryExpiringSoonCount}">0</strong>
+                </div>
+            </div>
+
+            <div class="report-alert-title">
+                <span>Cảnh báo nhanh</span>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div class="report-empty-state report-empty-state-compact"
+                 th:if="${#lists.isEmpty(inventoryAlertItems)}">
+                <div>
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <p>Kho hiện không có cảnh báo tồn thấp.</p>
+            </div>
+
+            <!-- INVENTORY ALERT LIST -->
+            <div class="report-inventory-list" th:if="${!#lists.isEmpty(inventoryAlertItems)}">
+                <div class="report-inventory-item"
+                     th:each="item, iter : ${inventoryAlertItems}">
+                    <div class="report-rank" th:text="${iter.index + 1}">
+                        1
+                    </div>
+
+                    <div class="report-inventory-main">
+                        <strong th:text="${item.name}">
+                            Hàng hóa
+                        </strong>
+
+                        <span>
+                            Tồn hiện tại:
+                            <b th:text="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}">
+                                0
+                            </b>
+                        </span>
+                    </div>
+
+                    <div class="report-threshold">
+                        Ngưỡng
+                        <b th:text="${@inventoryQuantityFormatter.format(item.minimumQuantity) + ' ' + item.unit}">
+                            0
+                        </b>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
 </main>
 </body>
 </html>

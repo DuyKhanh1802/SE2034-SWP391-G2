@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+
+    <!-- PAGE HEADER -->
+    <section class="module-header">
+        <div>
+            <p>Reports</p>
+            <h1>Báo cáo dịch vụ</h1>
+        </div>
+
+        <a th:href="@{/manager/reports}" class="btn-secondary-action">
+            <i class="fa-solid fa-arrow-left"></i>
+            Quay lại tổng quan
+        </a>
+    </section>
+
+    <!-- ERROR MESSAGE -->
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+        Ngày bắt đầu không được sau ngày kết thúc.
+    </div>
+
+    <!-- FILTER -->
+    <section class="panel report-filter-panel">
+        <div class="report-filter-header">
+            <h2>Bộ lọc báo cáo</h2>
+        </div>
+
+        <form th:action="@{/manager/reports/services}" method="get" class="transaction-filter report-filter-form">
+
+            <div class="report-filter-field">
+                <label for="fromDate">Từ ngày</label>
+                <input id="fromDate"
+                       name="fromDate"
+                       type="date"
+                       th:value="${fromDate}">
+            </div>
+
+            <div class="report-filter-field">
+                <label for="toDate">Đến ngày</label>
+                <input id="toDate"
+                       name="toDate"
+                       type="date"
+                       th:value="${toDate}">
+            </div>
+
+            <div class="report-filter-field">
+                <label for="categoryId">Danh mục dịch vụ</label>
+                <select id="categoryId" name="categoryId">
+                    <option value="">Tất cả danh mục</option>
+
+                    <option th:each="category : ${categories}"
+                            th:value="${category.id}"
+                            th:text="${category.name}"
+                            th:selected="${categoryId != null and categoryId == category.id}">
+                        Dining
+                    </option>
+                </select>
+            </div>
+
+            <div class="report-filter-field">
+                <label for="keyword">Tên dịch vụ</label>
+                <input id="keyword"
+                       name="keyword"
+                       type="text"
+                       placeholder="Nhập tên dịch vụ..."
+                       th:value="${keyword}">
+            </div>
+
+            <div class="report-filter-field">
+                <label for="sortBy">Sắp xếp</label>
+                <select id="sortBy" name="sortBy">
+                    <option value="revenueDesc" th:selected="${sortBy == 'revenueDesc'}">
+                        Doanh thu cao nhất
+                    </option>
+
+                    <option value="quantityDesc" th:selected="${sortBy == 'quantityDesc'}">
+                        Số lượng bán nhiều nhất
+                    </option>
+
+                    <option value="nameAsc" th:selected="${sortBy == 'nameAsc'}">
+                        Tên dịch vụ A-Z
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-actions cute-filter-actions">
+                <button type="submit" class="cute-btn cute-btn-filter">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Lọc</span>
+                </button>
+
+                <a th:href="@{/manager/reports/services}" class="cute-btn cute-btn-reset">
+                    Đặt lại
+                </a>
+            </div>
+
+        </form>
+    </section>
+
+    <!-- MAIN SUMMARY -->
+    <section class="metric-grid">
+        <div class="metric-card detail-metric metric-income">
+            <span>Tổng doanh thu dịch vụ</span>
+            <strong class="text-income"
+                    th:text="${#numbers.formatDecimal(summary.totalRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                0 VND
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric metric-completed">
+            <span>Tổng số lượng đã bán</span>
+            <strong th:text="${summary.totalSoldQuantity}">
+                0
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric">
+            <span>Dịch vụ bán chạy nhất</span>
+            <strong th:text="${summary.bestSellingService}">
+                Không có dữ liệu
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric">
+            <span>Dịch vụ doanh thu cao nhất</span>
+            <strong th:text="${summary.highestRevenueService}">
+                Không có dữ liệu
+            </strong>
+        </div>
+    </section>
+
+    <!-- SUB SUMMARY -->
+    <section class="metric-grid">
+        <div class="metric-card">
+            <span>Số loại dịch vụ phát sinh</span>
+            <strong th:text="${summary.totalServiceCount}">
+                0
+            </strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Tiền dịch vụ gốc</span>
+            <strong th:text="${#numbers.formatDecimal(summary.totalBaseRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                0 VND
+            </strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Phí dịch vụ</span>
+            <strong th:text="${#numbers.formatDecimal(summary.totalServiceCharge, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                0 VND
+            </strong>
+        </div>
+
+        <div class="metric-card">
+            <span>VAT</span>
+            <strong th:text="${#numbers.formatDecimal(summary.totalVat, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                0 VND
+            </strong>
+        </div>
+    </section>
+
+    <!-- TABLE -->
+    <section class="panel report-table-panel">
+        <div class="module-header report-section-header">
+            <div>
+                <p>Service Performance</p>
+                <h1>Chi tiết doanh thu theo dịch vụ</h1>
+                <span class="report-unit-note">Đơn vị tiền tệ: VND</span>
+            </div>
+        </div>
+
+        <div class="report-table-wrap">
+            <table class="module-table compact-report-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Dịch vụ</th>
+                    <th>Danh mục</th>
+                    <th>SL</th>
+                    <th>Giá TB</th>
+                    <th>Tiền gốc</th>
+                    <th>Phí DV</th>
+                    <th>VAT</th>
+                    <th>Tổng DT</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:if="${#lists.isEmpty(rows)}">
+                    <td colspan="9" class="empty-table-cell">
+                        Không có dữ liệu dịch vụ trong khoảng thời gian này.
+                    </td>
+                </tr>
+
+                <tr th:each="row, iter : ${rows}">
+                    <td th:text="${currentPage * pageSize + iter.index + 1}">
+                        1
+                    </td>
+
+                    <td class="service-name-cell" th:text="${row.serviceName}">
+                        Set pasta
+                    </td>
+
+                    <td class="category-text"
+                        th:text="${row.categoryName != null ? row.categoryName : 'Chưa phân loại'}">
+                        Ẩm thực
+                    </td>
+
+                    <td th:text="${row.soldQuantity}">
+                        0
+                    </td>
+
+                    <td th:text="${#numbers.formatDecimal(row.averageUnitPrice, 0, 'POINT', 0, 'COMMA')}">
+                        0
+                    </td>
+
+                    <td th:text="${#numbers.formatDecimal(row.baseRevenue, 0, 'POINT', 0, 'COMMA')}">
+                        0
+                    </td>
+
+                    <td th:text="${#numbers.formatDecimal(row.serviceChargeAmount, 0, 'POINT', 0, 'COMMA')}">
+                        0
+                    </td>
+
+                    <td th:text="${#numbers.formatDecimal(row.vatAmount, 0, 'POINT', 0, 'COMMA')}">
+                        0
+                    </td>
+
+                    <td class="money-text income"
+                        th:text="${#numbers.formatDecimal(row.totalRevenue, 0, 'POINT', 0, 'COMMA')}">
+                        0
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="table-bottom" th:if="${totalItems > 0}">
+            <p>
+                Hiển thị
+                <strong th:text="${startItem}">1</strong>
+                -
+                <strong th:text="${endItem}">5</strong>
+                trên
+                <strong th:text="${totalItems}">0</strong>
+                dịch vụ
+            </p>
+
+            <div class="pagination-custom">
+                <span class="page-disabled" th:if="${currentPage == 0}">
+                    Trước
+                </span>
+
+                <a th:if="${currentPage > 0}"
+                   th:href="@{/manager/reports/services(
+                        fromDate=${fromDate},
+                        toDate=${toDate},
+                        categoryId=${categoryId},
+                        keyword=${keyword},
+                        sortBy=${sortBy},
+                        page=${currentPage - 1}
+                   )}">
+                    Trước
+                </a>
+
+                <a th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
+                   th:href="@{/manager/reports/services(
+                        fromDate=${fromDate},
+                        toDate=${toDate},
+                        categoryId=${categoryId},
+                        keyword=${keyword},
+                        sortBy=${sortBy},
+                        page=${pageNumber}
+                   )}"
+                   th:classappend="${pageNumber == currentPage} ? 'active'"
+                   th:text="${pageNumber + 1}">
+                    1
+                </a>
+
+                <span class="page-disabled" th:if="${currentPage + 1 >= totalPages}">
+                    Sau
+                </span>
+
+                <a th:if="${currentPage + 1 < totalPages}"
+                   th:href="@{/manager/reports/services(
+                        fromDate=${fromDate},
+                        toDate=${toDate},
+                        categoryId=${categoryId},
+                        keyword=${keyword},
+                        sortBy=${sortBy},
+                        page=${currentPage + 1}
+                   )}">
+                    Sau
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
