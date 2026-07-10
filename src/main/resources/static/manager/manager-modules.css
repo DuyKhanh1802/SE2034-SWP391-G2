@@ -1,19 +1,18 @@
 /* =========================================================
-   MANAGER MODULES CSS
-   Used for: Transactions, Fund, Reports, Service Report
+   MANAGER MODULES
+   Used for: Transactions, Fund, Report Overview,
+             Service Report, Inventory Report
    ========================================================= */
 
 /* ---------- Base ---------- */
 
 :root {
-    --manager-bg: #f7f7f5;
     --manager-card: #ffffff;
     --manager-text: #111827;
     --manager-muted: #64748b;
     --manager-border: #e5e7eb;
     --manager-soft-border: #e2ded8;
     --manager-primary: #0f766e;
-    --manager-primary-dark: #0b5f59;
     --manager-income: #166534;
     --manager-expense: #991b1b;
     --manager-dark: #111111;
@@ -111,10 +110,6 @@
     word-break: break-word;
 }
 
-.metric-card strong span {
-    margin-bottom: 0;
-}
-
 .metric-card strong.text-income {
     color: var(--manager-income);
 }
@@ -146,14 +141,6 @@
 .detail-metric.metric-cancelled {
     border-left-color: #94a3b8;
     background: linear-gradient(90deg, #f8fafc 0, #ffffff 36%);
-}
-
-.detail-accent-text {
-    color: #0f766e !important;
-}
-
-.detail-source-text {
-    color: #475569 !important;
 }
 
 /* ---------- Forms ---------- */
@@ -272,11 +259,6 @@ button,
 .btn-danger-action {
     background: #b91c1c;
     color: #ffffff;
-}
-
-.transaction-filter button,
-.transaction-filter .btn-secondary-action {
-    text-align: center;
 }
 
 .secondary-link {
@@ -619,18 +601,23 @@ button,
     white-space: nowrap;
 }
 
-.report-soft-btn {
-    height: 40px;
-    padding: 0 15px;
+.report-soft-btn,
+.report-mini-link {
     border-radius: 999px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.22s ease;
+}
+
+.report-soft-btn {
+    height: 40px;
+    padding: 0 15px;
     gap: 8px;
     font-size: 12px;
     font-weight: 800;
-    text-decoration: none;
-    transition: all 0.22s ease;
 }
 
 .report-soft-btn i {
@@ -656,7 +643,7 @@ button,
 }
 
 .report-soft-btn-light:hover {
-    background: #f3f0ec;
+    background: var(--manager-beige);
     color: #111111;
     transform: translateY(-1px);
 }
@@ -816,18 +803,11 @@ button,
     height: 34px;
     padding: 0 12px;
     border: 1px solid #ded8d1;
-    border-radius: 999px;
     background: #ffffff;
     color: #333333;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     gap: 7px;
-    text-decoration: none;
     font-size: 11px;
     font-weight: 800;
-    white-space: nowrap;
-    transition: all 0.22s ease;
 }
 
 .report-mini-link i {
@@ -840,6 +820,8 @@ button,
     color: #ffffff;
     transform: translateY(-1px);
 }
+
+/* ---------- Overview Lists ---------- */
 
 .report-service-list,
 .report-inventory-list {
@@ -945,6 +927,57 @@ button,
     font-size: 12px;
 }
 
+/* ---------- Inventory Overview Summary ---------- */
+
+.report-inventory-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.report-inventory-stat {
+    padding: 12px 13px;
+    border: 1px solid #eeeae6;
+    border-radius: 14px;
+    background: #fbfaf8;
+}
+
+.report-inventory-stat span {
+    display: block;
+    margin-bottom: 6px;
+    color: #777777;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.report-inventory-stat strong {
+    display: block;
+    color: #111111;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.25;
+    word-break: break-word;
+}
+
+.report-inventory-stat.warning strong {
+    color: #b45309;
+}
+
+.report-alert-title {
+    margin: 4px 0 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eeeae6;
+}
+
+.report-alert-title span {
+    color: #8b8076;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+}
+
 .report-empty-state {
     min-height: 250px;
     border: 1px dashed #ded8d1;
@@ -955,6 +988,10 @@ button,
     align-items: center;
     justify-content: center;
     gap: 10px;
+}
+
+.report-empty-state-compact {
+    min-height: 190px;
 }
 
 .report-empty-state div {
@@ -980,7 +1017,7 @@ button,
 }
 
 /* =========================================================
-   SERVICE REPORT
+   REPORT DETAIL PAGES
    ========================================================= */
 
 /* ---------- Filter ---------- */
@@ -1099,7 +1136,7 @@ button,
     transform: translateY(-1px);
 }
 
-/* ---------- Service Report Table ---------- */
+/* ---------- Report Tables ---------- */
 
 .report-table-panel {
     padding: 18px 20px;
@@ -1209,6 +1246,83 @@ button,
     padding: 24px 12px !important;
     color: var(--manager-muted);
     text-align: center;
+}
+
+/* ---------- Inventory Report Table ---------- */
+
+.inventory-report-table th,
+.inventory-report-table td {
+    font-size: 11px;
+}
+
+.inventory-report-table th:nth-child(1),
+.inventory-report-table td:nth-child(1) {
+    width: 4%;
+}
+
+.inventory-report-table th:nth-child(2),
+.inventory-report-table td:nth-child(2) {
+    width: 20%;
+}
+
+.inventory-report-table th:nth-child(3),
+.inventory-report-table td:nth-child(3) {
+    width: 11%;
+}
+
+.inventory-report-table th:nth-child(4),
+.inventory-report-table td:nth-child(4),
+.inventory-report-table th:nth-child(5),
+.inventory-report-table td:nth-child(5) {
+    width: 10%;
+}
+
+.inventory-report-table th:nth-child(6),
+.inventory-report-table td:nth-child(6) {
+    width: 13%;
+}
+
+.inventory-report-table th:nth-child(7),
+.inventory-report-table td:nth-child(7),
+.inventory-report-table th:nth-child(8),
+.inventory-report-table td:nth-child(8) {
+    width: 11%;
+}
+
+.inventory-report-table th:nth-child(9),
+.inventory-report-table td:nth-child(9) {
+    width: 10%;
+}
+
+.inventory-expiry-text {
+    display: block;
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.inventory-status-text {
+    display: inline;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.inventory-status-text.status-normal {
+    color: #166534;
+}
+
+.inventory-status-text.status-low {
+    color: #b45309;
+}
+
+.inventory-status-text.status-out {
+    color: #991b1b;
 }
 
 /* =========================================================
