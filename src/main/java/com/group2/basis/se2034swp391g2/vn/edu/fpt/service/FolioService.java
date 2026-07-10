@@ -66,13 +66,17 @@ public class FolioService {
         String searchPaymentStatus = normalizePaymentStatus(paymentStatus);
         boolean searchGuestName = searchKeyword.length() >= 2;
 
-        Page<Booking> bookings = searchPaymentStatus.isBlank()
-                ? bookingRepository.searchFolioBookings(
-                searchKeyword, searchGuestName, searchBookingStatus, checkIn, checkOut, pageable)
-                : bookingRepository.searchFolioBookingsByPaymentStatus(
-                searchKeyword, searchGuestName, searchBookingStatus, searchPaymentStatus.toUpperCase(), checkIn, checkOut, pageable);
+        Page<BookingDetail> details = bookingDetailRepository.searchFolioBookingDetails(
+                searchKeyword,
+                searchGuestName,
+                searchBookingStatus,
+                searchPaymentStatus.toUpperCase(),
+                checkIn,
+                checkOut,
+                pageable
+        );
 
-        return toListResponsePage(bookings);
+        return toListResponsePage(details);
     }
 
     @Transactional(readOnly = true)
@@ -128,6 +132,7 @@ public class FolioService {
 
         return FolioDetailResponse.builder()
                 .bookingId(booking.getId())
+                .bookingDetailId(bookingDetailId)
                 .bookingReference(booking.getBookingReference())
                 .guestName(buildGuestName(booking))
                 .guestPhone(booking.getGuestPhone())
@@ -183,6 +188,10 @@ public class FolioService {
 
         if (request == null) {
             throw new IllegalArgumentException("Thiếu thông tin điều chỉnh.");
+        }
+
+        if (request.getBookingDetailId() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn phòng áp dụng điều chỉnh.");
         }
 
         BigDecimal normalizedAmount = validateAndNormalizeAdjustmentAmount(request.getAmount(), booking);
@@ -275,19 +284,8 @@ public class FolioService {
         applyAmountToBooking(booking, reverseAmount, item.getItemType());
     }
 
-    private Page<FolioListResponse> toListResponsePage(Page<Booking> bookings) {
-        List<Long> bookingIds = bookings.getContent().stream()
-                .map(Booking::getId)
-                .toList();
-
-        Map<Long, String> roomNumbersByBookingId = loadRoomNumbersByBookingId(bookingIds);
-        Map<Long, BigDecimal> paidAmountsByBookingId = loadPaidAmountsByBookingId(bookingIds);
-
-        return bookings.map(booking -> toListResponse(
-                booking,
-                roomNumbersByBookingId.getOrDefault(booking.getId(), "Chưa phân phòng"),
-                paidAmountsByBookingId.getOrDefault(booking.getId(), BigDecimal.ZERO)
-        ));
+    private Page<FolioListResponse> toListResponsePage(Page<BookingDetail> details) {
+        return details.map(this::toListResponse);
     }
 
     private Map<Long, String> loadRoomNumbersByBookingId(List<Long> bookingIds) {
@@ -350,18 +348,25 @@ public class FolioService {
         return BigDecimal.ZERO;
     }
 
-    private FolioListResponse toListResponse(Booking booking, String roomSummary, BigDecimal paidAmount) {
-        BigDecimal totalAmount = money(booking.getGrandTotal());
+    private FolioListResponse toListResponse(BookingDetail detail) {
+        Booking booking = detail.getBooking();
+        List<FolioItem> items = folioItemRepository
+                .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
+        List<PaymentAllocation> allocations = paymentAllocationRepository.findByBookingDetailId(detail.getId());
+
+        BigDecimal totalAmount = calculateRoomScopedTotal(List.of(detail), items);
+        BigDecimal paidAmount = calculateAllocatedPaidAmount(allocations);
         BigDecimal balanceAmount = calculateBalance(totalAmount, paidAmount);
         PaymentState paymentState = resolvePaymentState(totalAmount, paidAmount);
 
         return new FolioListResponse(
                 booking.getId(),
+                detail.getId(),
                 booking.getBookingReference(),
                 buildGuestName(booking),
-                roomSummary,
-                booking.getCheckInDate(),
-                booking.getCheckOutDate(),
+                buildRoomSummary(detail),
+                detail.getCheckInDate(),
+                detail.getCheckOutDate(),
                 booking.getStatus() == null ? "" : booking.getStatus().name(),
                 totalAmount,
                 paidAmount,
@@ -369,6 +374,12 @@ public class FolioService {
                 paymentState.status(),
                 paymentState.label()
         );
+    }
+
+    private String buildRoomSummary(BookingDetail detail) {
+        String variantName = detail.getVariant() == null ? "Phòng" : detail.getVariant().getVariantName();
+        String roomNumber = detail.getRoom() == null ? "Chưa phân phòng" : "Phòng " + detail.getRoom().getRoomNumber();
+        return roomNumber + " - " + variantName;
     }
 
     private FolioDetailResponse.RoomLine toRoomLine(BookingDetail detail) {

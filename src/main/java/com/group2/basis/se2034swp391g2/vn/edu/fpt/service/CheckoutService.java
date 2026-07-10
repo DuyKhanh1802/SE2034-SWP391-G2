@@ -111,7 +111,7 @@ public class CheckoutService {
         Room room = detail.getRoom();
         if (room != null) {
             room.setStatus(nextRoomStatus);
-            room.setNote(normalizeNote(request.getNote(), nextRoomStatus));
+            room.setNote(null);
         }
 
         detail.setStayStatus(BookingDetailStatus.CHECKED_OUT);
@@ -462,14 +462,6 @@ public class CheckoutService {
 
     private BigDecimal money(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value.setScale(0, RoundingMode.HALF_UP);
-    }
-
-    private String normalizeNote(String note, RoomStatus status) {
-        String value = note == null ? "" : note.trim();
-        if (status == RoomStatus.MAINTENANCE && value.isBlank()) {
-            return "Cần dọn phòng sau checkout";
-        }
-        return value.isBlank() ? null : value;
     }
 
     private User getCurrentStaffUser() {

@@ -5,6 +5,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.DepositStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetailGuest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Room;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingCreateRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingUpdateRequest;
@@ -43,6 +44,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionAp
 
 import java.time.LocalTime;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -61,6 +63,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
     private final BookingDetailRepository bookingDetailRepository;
+    private final BookingDetailGuestRepository bookingDetailGuestRepository;
     private static final String ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final int ROOM_CODE_LENGTH = 8;
     private static final int MAX_FULL_NAME_LENGTH = 100;
@@ -79,6 +82,7 @@ public class BookingService {
     private static final int MAX_IDENTITY_LENGTH = 30;
     private static final int MAX_CANCEL_REASON_LENGTH = 300;
     private static final int MAX_LATE_REASON_LENGTH = 300;
+    private static final int MAX_GUEST_AGE_YEARS = 120;
 
     private static final Pattern IDENTITY_PATTERN =
             Pattern.compile("^[A-Za-z0-9-]{6,30}$");
@@ -97,6 +101,7 @@ public class BookingService {
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
+                          BookingDetailGuestRepository bookingDetailGuestRepository,
                           UserRepository userRepository,
                           CountryRepository countryRepository,
                           MailService mailService,
@@ -111,6 +116,7 @@ public class BookingService {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingDetailRepository = bookingDetailRepository;
+        this.bookingDetailGuestRepository = bookingDetailGuestRepository;
         this.userRepository = userRepository;
         this.countryRepository = countryRepository;
         this.mailService = mailService;
@@ -363,6 +369,8 @@ public class BookingService {
         }
 
         bookingDetailRepository.saveAll(bookingDetails);
+        saveWalkInRoomGuests(bookingDetails, request, resolveIdentityType(countryRepository.findById(request.getCountryId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quốc gia đã chọn."))));
 
         BigDecimal serviceSubtotal = createAdditionalServiceFolioItems(
                 savedBooking,
@@ -702,6 +710,12 @@ public class BookingService {
         if (request.getCountryId() == null) {
             throw new IllegalArgumentException("Vui lòng chọn quốc gia của khách.");
         }
+        if (request.getDateOfBirth() == null) {
+            throw new IllegalArgumentException("Vui lòng nhập ngày sinh của khách.");
+        }
+        if (request.getDateOfBirth().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày sinh của khách không được ở tương lai.");
+        }
         if (request.getGender() == null) {
             throw new IllegalArgumentException("Vui lòng chọn giới tính của khách.");
         }
@@ -853,7 +867,7 @@ public class BookingService {
                 .phone(phone)
                 .email(email)
                 .gender(request.getGender())
-                .birthYear(request.getBirthYear())
+                .birthYear(request.getDateOfBirth() == null ? request.getBirthYear() : request.getDateOfBirth().getYear())
                 .country(country)
                 .identityType(identityType)
                 .identityNumber(identityNumber)
@@ -1313,6 +1327,18 @@ public class BookingService {
         User guest = booking.getGuest();
 
         String guestName = (booking.getGuestLastName() + " " + booking.getGuestFirstName()).trim();
+        Map<Long, BookingDetailGuest> primaryGuestsByDetailId = bookingDetailGuestRepository
+                .findByBookingDetailIdIn(details.stream().map(BookingDetail::getId).toList())
+                .stream()
+                .collect(Collectors.toMap(
+                        roomGuest -> roomGuest.getBookingDetail().getId(),
+                        roomGuest -> roomGuest,
+                        (existing, ignored) -> existing
+                ));
+        Map<Long, List<BookingDetailGuest>> roomGuestsByDetailId = bookingDetailGuestRepository
+                .findByBookingDetailIdIn(details.stream().map(BookingDetail::getId).toList())
+                .stream()
+                .collect(Collectors.groupingBy(roomGuest -> roomGuest.getBookingDetail().getId()));
 
         List<ViewBookingDetailResponse.RoomLine> roomLines = details.stream()
                 .map(detail -> ViewBookingDetailResponse.RoomLine.builder()
@@ -1347,6 +1373,32 @@ public class BookingService {
                         .checkOutDate(detail.getCheckOutDate())
                         .stayStatus(resolveDetailStayStatus(detail, booking).name())
                         .stayStatusLabel(resolveDetailStayStatus(detail, booking).getLabel())
+                        .primaryGuestName(primaryGuestsByDetailId.get(detail.getId()) == null
+                                ? null
+                                : primaryGuestsByDetailId.get(detail.getId()).getFullName())
+                        .primaryGuestDateOfBirth(primaryGuestsByDetailId.get(detail.getId()) == null
+                                ? null
+                                : primaryGuestsByDetailId.get(detail.getId()).getDateOfBirth())
+                        .primaryGuestIdentityType(primaryGuestsByDetailId.get(detail.getId()) == null
+                                || primaryGuestsByDetailId.get(detail.getId()).getIdentityType() == null
+                                ? null
+                                : primaryGuestsByDetailId.get(detail.getId()).getIdentityType().getLabel())
+                        .primaryGuestIdentityNumber(primaryGuestsByDetailId.get(detail.getId()) == null
+                                ? null
+                                : primaryGuestsByDetailId.get(detail.getId()).getIdentityNumber())
+                        .numAdults(detail.getNumAdults() == null ? 1 : detail.getNumAdults())
+                        .numChildren(detail.getNumChildren() == null ? 0 : detail.getNumChildren())
+                        .guestCount(Math.max(1,
+                                (detail.getNumAdults() == null ? 1 : detail.getNumAdults())
+                                        + (detail.getNumChildren() == null ? 0 : detail.getNumChildren())))
+                        .roomGuests(roomGuestsByDetailId.getOrDefault(detail.getId(), List.of()).stream()
+                                .map(roomGuest -> ViewBookingDetailResponse.RoomGuestLine.builder()
+                                        .fullName(roomGuest.getFullName())
+                                        .dateOfBirth(roomGuest.getDateOfBirth())
+                                        .identityType(roomGuest.getIdentityType() == null ? null : roomGuest.getIdentityType().getLabel())
+                                        .identityNumber(roomGuest.getIdentityNumber())
+                                        .build())
+                                .toList())
                         .build())
                 .toList();
 
@@ -1872,7 +1924,13 @@ public class BookingService {
     @Transactional
     public void confirmOnlineBooking(Long bookingId,
                                      List<Long> bookingDetailIds,
-                                     List<String> roomIds) {
+                                     List<String> roomIds,
+                                     List<Long> guestBookingDetailIds,
+                                     List<Boolean> guestRowRequireds,
+                                     List<String> guestFullNames,
+                                     List<LocalDate> guestDateOfBirths,
+                                     List<IdentityType> guestIdentityTypes,
+                                     List<String> guestIdentityNumbers) {
         Booking booking = bookingRepository.findByIdAndIsDeletedFalse(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
 
@@ -1940,6 +1998,9 @@ public class BookingService {
             }
         }
 
+        validateRoomGuestInput(actualDetailIds, guestBookingDetailIds, guestRowRequireds, guestFullNames, guestDateOfBirths,
+                guestIdentityTypes, guestIdentityNumbers);
+
         List<Room> availableRooms = roomRepository.findAvailableRoomsByIds(
                 parsedRoomIds,
                 booking.getCheckInDate(),
@@ -1995,6 +2056,9 @@ public class BookingService {
             throw new IllegalStateException("Vui lòng phân phòng cho tất cả phòng đã đặt trước khi xác nhận.");
         }
 
+        saveRoomGuests(details, guestBookingDetailIds, guestRowRequireds, guestFullNames, guestDateOfBirths,
+                guestIdentityTypes, guestIdentityNumbers);
+
         Payment depositPayment = paymentRepository
                 .findFirstByBookingIdAndPaymentTypeAndStatus(
                         bookingId,
@@ -2036,6 +2100,167 @@ public class BookingService {
                         detail -> roomRepository.findAvailableRoomsByVariantId(detail.getVariant().getId())
                 ));
     }
+    private void saveWalkInRoomGuests(List<BookingDetail> details,
+                                      BookingCreateRequest request,
+                                      IdentityType identityType) {
+        String fullName = (request.getLastName().trim() + " " + request.getFirstName().trim()).trim();
+        List<BookingDetailGuest> guests = details.stream()
+                .map(detail -> BookingDetailGuest.builder()
+                        .bookingDetail(detail)
+                        .fullName(fullName)
+                        .dateOfBirth(request.getDateOfBirth())
+                        .identityType(identityType)
+                        .identityNumber(request.getIdentityNumber().trim())
+                        .isPrimary(true)
+                        .build())
+                .toList();
+        bookingDetailGuestRepository.saveAll(guests);
+    }
+
+    private void validateRoomGuestInput(Set<Long> actualDetailIds,
+                                        List<Long> guestBookingDetailIds,
+                                        List<Boolean> guestRowRequireds,
+                                        List<String> guestFullNames,
+                                        List<LocalDate> guestDateOfBirths,
+                                        List<IdentityType> guestIdentityTypes,
+                                        List<String> guestIdentityNumbers) {
+        int rowCount = maxSize(guestBookingDetailIds, guestFullNames, guestDateOfBirths,
+                guestIdentityTypes, guestIdentityNumbers, guestRowRequireds);
+        Map<Long, Integer> guestCountByDetailId = new HashMap<>();
+        Set<String> identityKeys = new HashSet<>();
+
+        for (int i = 0; i < rowCount; i++) {
+            Long bookingDetailId = getOrNull(guestBookingDetailIds, i);
+            boolean requiredRow = Boolean.TRUE.equals(getOrNull(guestRowRequireds, i));
+            String fullName = normalizeText(getOrNull(guestFullNames, i));
+            LocalDate dateOfBirth = getOrNull(guestDateOfBirths, i);
+            IdentityType identityType = getOrNull(guestIdentityTypes, i);
+            String identityNumber = normalizeText(getOrNull(guestIdentityNumbers, i));
+
+            boolean hasGuestData = fullName != null
+                    || dateOfBirth != null
+                    || identityType != null
+                    || identityNumber != null;
+
+            if (!requiredRow && !hasGuestData) {
+                continue;
+            }
+
+            if (bookingDetailId == null || !actualDetailIds.contains(bookingDetailId)) {
+                throw new IllegalArgumentException("Hồ sơ khách lưu trú không thuộc phòng trong booking này.");
+            }
+
+            if (fullName == null || fullName.length() > MAX_FULL_NAME_LENGTH) {
+                throw new IllegalArgumentException("Họ tên khách lưu trú không được để trống và không vượt quá 100 ký tự.");
+            }
+
+            if (dateOfBirth == null || dateOfBirth.isAfter(LocalDate.now())) {
+                throw new IllegalArgumentException("Ngày sinh khách lưu trú không hợp lệ.");
+            }
+
+            if (dateOfBirth.isBefore(LocalDate.now().minusYears(MAX_GUEST_AGE_YEARS))) {
+                throw new IllegalArgumentException("Ngày sinh khách lưu trú không hợp lệ.");
+            }
+
+            if (identityType == null) {
+                throw new IllegalArgumentException("Vui lòng chọn loại giấy tờ của khách lưu trú.");
+            }
+
+            if (identityNumber == null
+                    || identityNumber.length() > MAX_IDENTITY_LENGTH
+                    || !IDENTITY_PATTERN.matcher(identityNumber).matches()) {
+                throw new IllegalArgumentException("Số giấy tờ của khách lưu trú không hợp lệ.");
+            }
+
+            String identityKey = identityType.name() + ":" + identityNumber.toUpperCase();
+            if (!identityKeys.add(identityKey)) {
+                throw new IllegalArgumentException("Không được nhập trùng giấy tờ khách lưu trú trong cùng booking.");
+            }
+
+            guestCountByDetailId.merge(bookingDetailId, 1, Integer::sum);
+        }
+
+        for (Long detailId : actualDetailIds) {
+            if (!guestCountByDetailId.containsKey(detailId)) {
+                throw new IllegalArgumentException("Mỗi phòng cần có ít nhất một hồ sơ khách lưu trú.");
+            }
+        }
+    }
+
+    private void saveRoomGuests(List<BookingDetail> details,
+                                List<Long> guestBookingDetailIds,
+                                List<Boolean> guestRowRequireds,
+                                List<String> guestFullNames,
+                                List<LocalDate> guestDateOfBirths,
+                                List<IdentityType> guestIdentityTypes,
+                                List<String> guestIdentityNumbers) {
+        Map<Long, BookingDetail> detailMap = details.stream()
+                .collect(Collectors.toMap(BookingDetail::getId, detail -> detail));
+
+        bookingDetailGuestRepository.deleteByBookingDetail_Booking_Id(details.getFirst().getBooking().getId());
+
+        List<BookingDetailGuest> guests = new ArrayList<>();
+        Map<Long, Integer> guestCountByDetailId = new HashMap<>();
+        int rowCount = maxSize(guestBookingDetailIds, guestFullNames, guestDateOfBirths,
+                guestIdentityTypes, guestIdentityNumbers, guestRowRequireds);
+
+        for (int i = 0; i < rowCount; i++) {
+            Long bookingDetailId = getOrNull(guestBookingDetailIds, i);
+            boolean requiredRow = Boolean.TRUE.equals(getOrNull(guestRowRequireds, i));
+            String fullName = normalizeText(getOrNull(guestFullNames, i));
+            LocalDate dateOfBirth = getOrNull(guestDateOfBirths, i);
+            IdentityType identityType = getOrNull(guestIdentityTypes, i);
+            String identityNumber = normalizeText(getOrNull(guestIdentityNumbers, i));
+
+            boolean hasGuestData = fullName != null
+                    || dateOfBirth != null
+                    || identityType != null
+                    || identityNumber != null;
+
+            if (!requiredRow && !hasGuestData) {
+                continue;
+            }
+
+            BookingDetail detail = detailMap.get(bookingDetailId);
+            if (detail == null) {
+                throw new IllegalArgumentException("Chi tiết đặt phòng không hợp lệ.");
+            }
+
+            int guestIndex = guestCountByDetailId.merge(bookingDetailId, 1, Integer::sum);
+            guests.add(BookingDetailGuest.builder()
+                    .bookingDetail(detail)
+                    .fullName(fullName)
+                    .dateOfBirth(dateOfBirth)
+                    .identityType(identityType)
+                    .identityNumber(identityNumber)
+                    .isPrimary(guestIndex == 1)
+                    .build());
+        }
+
+        bookingDetailGuestRepository.saveAll(guests);
+    }
+
+    private int maxSize(List<?>... lists) {
+        int maxSize = 0;
+        for (List<?> list : lists) {
+            if (list != null && list.size() > maxSize) {
+                maxSize = list.size();
+            }
+        }
+        return maxSize;
+    }
+
+    private <T> T getOrNull(List<T> values, int index) {
+        return values == null || index >= values.size() ? null : values.get(index);
+    }
+
+    private String normalizeText(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
+    }
+
     @Transactional(readOnly = true)
     public List<Booking> getTodayConfirmedBookingsForReminder() {
         return bookingRepository.findByStatusAndCheckInDateAndIsDeletedFalse(

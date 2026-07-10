@@ -11,6 +11,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CheckoutService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.IdentityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
@@ -282,6 +283,7 @@ public class BookingController {
         model.addAttribute("roomMoveReasons", RoomMoveReason.values());
         model.addAttribute("roomMoveFeePolicies", RoomMoveFeePolicy.values());
         model.addAttribute("roomMoveOldRoomStatuses", List.of(RoomStatus.AVAILABLE, RoomStatus.MAINTENANCE));
+        model.addAttribute("identityTypes", IdentityType.values());
         return "receptionist/ViewBookingDetail";
     }
 
@@ -498,9 +500,26 @@ public class BookingController {
     public String confirmBooking(@PathVariable Long bookingId,
                                  @RequestParam(required = false) List<Long> bookingDetailIds,
                                  @RequestParam(required = false) List<String> roomIds,
+                                 @RequestParam(required = false) List<Long> guestBookingDetailIds,
+                                 @RequestParam(required = false) List<Boolean> guestRowRequireds,
+                                 @RequestParam(required = false) List<String> guestFullNames,
+                                 @RequestParam(required = false)
+                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> guestDateOfBirths,
+                                 @RequestParam(required = false) List<IdentityType> guestIdentityTypes,
+                                 @RequestParam(required = false) List<String> guestIdentityNumbers,
                                  RedirectAttributes redirectAttributes) {
         try {
-            bookingService.confirmOnlineBooking(bookingId, bookingDetailIds, roomIds);
+            bookingService.confirmOnlineBooking(
+                    bookingId,
+                    bookingDetailIds,
+                    roomIds,
+                    guestBookingDetailIds,
+                    guestRowRequireds,
+                    guestFullNames,
+                    guestDateOfBirths,
+                    guestIdentityTypes,
+                    guestIdentityNumbers
+            );
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",

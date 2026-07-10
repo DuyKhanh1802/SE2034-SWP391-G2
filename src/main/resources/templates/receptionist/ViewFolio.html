@@ -24,7 +24,7 @@
             <div class="header-actions">
                 <a th:href="@{/receptionist/bookings/view/{id}(id=${folio.bookingId})}" class="btn-outline">Booking</a>
                 <a th:if="${folio.editable}"
-                   th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId})}"
+                   th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}"
                    class="btn-dark">Chỉnh sửa</a>
             </div>
         </div>

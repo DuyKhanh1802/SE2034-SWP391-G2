@@ -112,13 +112,16 @@ public class FolioController {
 
     @GetMapping("/{bookingId}/edit")
     public String editFolio(@PathVariable Long bookingId,
+                            @RequestParam(required = false) Long bookingDetailId,
                             Model model,
                             RedirectAttributes redirectAttributes) {
         try {
-            FolioDetailResponse folio = folioService.getFolioDetail(bookingId);
+            FolioDetailResponse folio = folioService.getFolioDetail(bookingId, bookingDetailId);
+            FolioAdjustmentRequest request = new FolioAdjustmentRequest();
+            request.setBookingDetailId(bookingDetailId);
             model.addAttribute("pageTitle", "Chỉnh sửa hoá đơn");
             model.addAttribute("folio", folio);
-            model.addAttribute("request", new FolioAdjustmentRequest());
+            model.addAttribute("request", request);
             return "receptionist/EditFolio";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -137,6 +140,9 @@ public class FolioController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
+        if (request != null && request.getBookingDetailId() != null) {
+            return "redirect:/receptionist/folios/" + bookingId + "/edit?bookingDetailId=" + request.getBookingDetailId();
+        }
         return "redirect:/receptionist/folios/" + bookingId + "/edit";
     }
 

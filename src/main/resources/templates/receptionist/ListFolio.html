@@ -95,10 +95,10 @@
                     </td>
                     <td class="text-end">
                         <div class="folio-actions">
-                            <a th:href="@{/receptionist/folios/{id}(id=${folio.bookingId})}" title="Xem chi tiết">
+                            <a th:href="@{/receptionist/folios/{id}(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}" title="Xem chi tiết">
                                 <i class="fa-regular fa-eye"></i>
                             </a>
-                            <a th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId})}" title="Chỉnh sửa">
+                            <a th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}" title="Chỉnh sửa">
                                 <i class="fa-regular fa-pen-to-square"></i>
                             </a>
                         </div>
@@ -161,3 +161,4 @@
 </main>
 </body>
 </html>
+

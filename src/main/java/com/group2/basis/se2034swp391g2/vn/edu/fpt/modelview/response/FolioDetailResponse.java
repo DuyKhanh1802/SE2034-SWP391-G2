@@ -17,6 +17,7 @@ import java.util.List;
 @Builder
 public class FolioDetailResponse {
     private Long bookingId;
+    private Long bookingDetailId;
     private String bookingReference;
     private String guestName;
     private String guestPhone;

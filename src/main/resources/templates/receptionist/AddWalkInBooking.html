@@ -332,12 +332,14 @@
                             </div>
 
                             <div class="form-group-line">
-                                <label>NĂM SINH</label>
+                                <label>NGÀY SINH</label>
 
-                                <input type="number"
-                                       th:field="*{birthYear}"
-                                       class="year-input"
-                                       placeholder="1998">
+                                <input type="date"
+                                       th:field="*{dateOfBirth}"
+                                       class="required-field"
+                                       data-message="Vui lòng nhập ngày sinh của khách."
+                                       required>
+                                <small class="field-error"></small>
                             </div>
 
                             <div class="form-group-line">

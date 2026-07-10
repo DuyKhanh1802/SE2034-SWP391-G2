@@ -37,6 +37,9 @@ public class BookingCreateRequest {
 
     private Integer birthYear;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dateOfBirth;
+
     private Long countryId;
 
     private String identityNumber;

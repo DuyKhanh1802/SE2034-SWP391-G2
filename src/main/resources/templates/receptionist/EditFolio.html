@@ -9,7 +9,7 @@
 
         <div class="folio-header split">
             <div>
-                <a class="back-link" th:href="@{/receptionist/folios/{id}(id=${folio.bookingId})}">
+                <a class="back-link" th:href="@{/receptionist/folios/{id}(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}">
                     <i class="bi bi-arrow-left"></i>
                     Chi tiết hoá đơn
                 </a>
@@ -53,8 +53,7 @@
                   method="post">
                 <div>
                     <label>Áp dụng cho phòng</label>
-                    <select th:field="*{bookingDetailId}">
-                        <option value="">Chung toàn booking</option>
+                    <select th:field="*{bookingDetailId}" required>
                         <option th:each="room : ${folio.rooms}"
                                 th:value="${room.bookingDetailId}"
                                 th:text="${room.roomNumber != null ? 'Phòng ' + room.roomNumber + ' - ' + room.roomName : room.roomName}">
