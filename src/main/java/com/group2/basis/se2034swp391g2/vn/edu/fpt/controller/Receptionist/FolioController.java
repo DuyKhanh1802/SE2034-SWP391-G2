@@ -5,11 +5,13 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioDetail
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioListResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.FolioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -112,13 +114,16 @@ public class FolioController {
 
     @GetMapping("/{bookingId}/edit")
     public String editFolio(@PathVariable Long bookingId,
+                            @RequestParam(required = false) Long bookingDetailId,
                             Model model,
                             RedirectAttributes redirectAttributes) {
         try {
-            FolioDetailResponse folio = folioService.getFolioDetail(bookingId);
+            FolioDetailResponse folio = folioService.getFolioDetail(bookingId, bookingDetailId);
+            FolioAdjustmentRequest request = new FolioAdjustmentRequest();
+            request.setBookingDetailId(bookingDetailId);
             model.addAttribute("pageTitle", "Chỉnh sửa hoá đơn");
             model.addAttribute("folio", folio);
-            model.addAttribute("request", new FolioAdjustmentRequest());
+            model.addAttribute("request", request);
             return "receptionist/EditFolio";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -135,23 +140,34 @@ public class FolioController {
             redirectAttributes.addFlashAttribute("successMessage", "Đã thêm điều chỉnh vào hoá đơn.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException | TransactionException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể cập nhật hoá đơn do lỗi ghi dữ liệu. Vui lòng thử lại.");
         }
 
+        if (request != null && request.getBookingDetailId() != null) {
+            return "redirect:/receptionist/folios/" + bookingId + "/edit?bookingDetailId=" + request.getBookingDetailId();
+        }
         return "redirect:/receptionist/folios/" + bookingId + "/edit";
     }
 
     @PostMapping("/{bookingId}/items/{folioItemId}/void")
     public String voidAdjustment(@PathVariable Long bookingId,
                                  @PathVariable Long folioItemId,
+                                 @RequestParam(required = false) Long bookingDetailId,
                                  @RequestParam(required = false) String voidedReason,
                                  RedirectAttributes redirectAttributes) {
         try {
-            folioService.voidAdjustment(bookingId, folioItemId, voidedReason);
+            folioService.voidAdjustment(bookingId, bookingDetailId, folioItemId, voidedReason);
             redirectAttributes.addFlashAttribute("successMessage", "Đã huỷ dòng điều chỉnh.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException | TransactionException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể huỷ dòng hoá đơn do lỗi ghi dữ liệu. Vui lòng thử lại.");
         }
 
+        if (bookingDetailId != null) {
+            return "redirect:/receptionist/folios/" + bookingId + "/edit?bookingDetailId=" + bookingDetailId;
+        }
         return "redirect:/receptionist/folios/" + bookingId + "/edit";
     }
 }

@@ -1,6 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.configuration;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.constants.PermissionCode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -52,56 +51,53 @@ public class SpringSecurity {
                         .requestMatchers(HttpMethod.GET, "/profile/*.css").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/edit").permitAll()
                         .requestMatchers(HttpMethod.POST, "/profile/update").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/profile/**").hasAuthority(PermissionCode.PROFILE_VIEW)
-                        .requestMatchers(HttpMethod.POST, "/profile/**").hasAuthority(PermissionCode.PROFILE_EDIT)
+                        .requestMatchers(HttpMethod.GET, "/profile/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/profile/**").authenticated()
 
                         .requestMatchers(HttpMethod.POST, "/system-admin/list-user/*/review")
-                        .hasAuthority(PermissionCode.USER_APPROVE)
+                        .hasRole(RoleName.SYSTEM_ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/system-admin/list-user/*/edit")
-                        .hasAnyAuthority(
-                                PermissionCode.USER_MANAGE,
-                                PermissionCode.USER_APPROVE
-                        )
+                        .hasRole(RoleName.SYSTEM_ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/system-admin/list-user/**")
-                        .hasAuthority(PermissionCode.USER_MANAGE)
+                        .hasRole(RoleName.SYSTEM_ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/system-admin/**")
-                        .hasAuthority(PermissionCode.USER_VIEW)
+                        .hasRole(RoleName.SYSTEM_ADMIN.name())
 
                         .requestMatchers("/hotel-admin/dashboard")
-                        .hasAuthority(PermissionCode.HOTEL_DASHBOARD_VIEW)
+                        .hasRole(RoleName.HOTEL_ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/hotel-admin/promotions/**")
-                        .hasAuthority(PermissionCode.PROMOTION_VIEW)
+                        .hasRole(RoleName.HOTEL_ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/hotel-admin/promotions/**",
                                 "/hotel-admin/promotion-images/**")
-                        .hasAuthority(PermissionCode.PROMOTION_MANAGE)
+                        .hasRole(RoleName.HOTEL_ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/hotel-admin/**")
-                        .hasAuthority(PermissionCode.ROOM_VIEW)
+                        .hasRole(RoleName.HOTEL_ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/hotel-admin/**")
-                        .hasAuthority(PermissionCode.ROOM_MANAGE)
+                        .hasRole(RoleName.HOTEL_ADMIN.name())
 
                         .requestMatchers("/manager/dashboard")
-                        .hasAuthority(PermissionCode.MANAGER_DASHBOARD_VIEW)
+                        .hasRole(RoleName.MANAGER.name())
                         .requestMatchers(HttpMethod.GET, "/manager/reports/**")
-                        .hasAuthority(PermissionCode.REPORT_VIEW)
+                        .hasRole(RoleName.MANAGER.name())
                         .requestMatchers(HttpMethod.GET, "/manager/**")
-                        .hasAuthority(PermissionCode.FINANCE_VIEW)
+                        .hasRole(RoleName.MANAGER.name())
                         .requestMatchers(HttpMethod.POST, "/manager/**")
-                        .hasAuthority(PermissionCode.FINANCE_MANAGE)
+                        .hasRole(RoleName.MANAGER.name())
 
                         .requestMatchers(HttpMethod.GET, "/storekeeper/**")
-                        .hasAuthority(PermissionCode.INVENTORY_VIEW)
+                        .hasRole(RoleName.STOREKEEPER.name())
                         .requestMatchers(HttpMethod.POST, "/storekeeper/**")
-                        .hasAuthority(PermissionCode.INVENTORY_MANAGE)
+                        .hasRole(RoleName.STOREKEEPER.name())
 
                         .requestMatchers("/receptionist/dashboard")
-                        .hasAuthority(PermissionCode.RECEPTION_DASHBOARD_VIEW)
+                        .hasRole(RoleName.RECEPTIONIST.name())
                         .requestMatchers(HttpMethod.POST, "/receptionist/check-in/**",
                                 "/receptionist/bookings/*/confirm-check-in")
-                        .hasAuthority(PermissionCode.CHECK_IN)
+                        .hasRole(RoleName.RECEPTIONIST.name())
                         .requestMatchers(HttpMethod.GET, "/receptionist/**")
-                        .hasAuthority(PermissionCode.BOOKING_VIEW)
+                        .hasRole(RoleName.RECEPTIONIST.name())
                         .requestMatchers(HttpMethod.POST, "/receptionist/**")
-                        .hasAuthority(PermissionCode.BOOKING_MANAGE)
+                        .hasRole(RoleName.RECEPTIONIST.name())
 
                         // 5. Mọi request khác đều phải đăng nhập
                         .anyRequest().authenticated()

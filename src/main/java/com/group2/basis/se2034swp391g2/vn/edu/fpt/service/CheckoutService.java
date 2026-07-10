@@ -24,7 +24,7 @@ public class CheckoutService {
     private final BookingRepository bookingRepository;
     private final BookingDetailRepository bookingDetailRepository;
     private final FolioItemRepository folioItemRepository;
-    private final PaymentAllocationRepository paymentAllocationRepository;
+    private final PaymentApplicationRepository paymentApplicationRepository;
     private final UserRepository userRepository;
     private final PaymentService paymentService;
 
@@ -35,9 +35,9 @@ public class CheckoutService {
         List<BookingDetail> bookingDetails = bookingDetailRepository.findDetailsWithRoomsByBookingId(booking.getId());
         List<FolioItem> folioItems = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
-        List<PaymentAllocation> allocations = paymentAllocationRepository.findByBookingDetailId(detail.getId());
+        List<PaymentApplication> applications = paymentApplicationRepository.findByBookingDetailId(detail.getId());
 
-        return toResponse(booking, detail, bookingDetails, folioItems, allocations);
+        return toResponse(booking, detail, bookingDetails, folioItems, applications);
     }
 
     @Transactional(readOnly = true)
@@ -67,10 +67,10 @@ public class CheckoutService {
 
         List<FolioItem> folioItems = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
-        List<PaymentAllocation> allocations = paymentAllocationRepository.findByBookingDetailId(detail.getId());
+        List<PaymentApplication> applications = paymentApplicationRepository.findByBookingDetailId(detail.getId());
 
         BigDecimal totalAmount = calculateRoomFolioTotal(detail, folioItems);
-        BigDecimal paidAmount = calculateAllocatedPaidAmount(allocations);
+        BigDecimal paidAmount = calculateAppliedPaidAmount(applications);
         BigDecimal balance = totalAmount.subtract(paidAmount).setScale(0, RoundingMode.HALF_UP);
         BigDecimal paymentAmount = money(request.getPaymentAmount());
         BigDecimal refundAmount = money(request.getRefundAmount());
@@ -91,8 +91,8 @@ public class CheckoutService {
             if (refundAmount.compareTo(expectedRefund) != 0) {
                 throw new IllegalArgumentException("Số tiền hoàn phải bằng số tiền khách đã trả dư cho phòng.");
             }
-            Payment originalPayment = allocations.stream()
-                    .map(PaymentAllocation::getPayment)
+            Payment originalPayment = applications.stream()
+                    .map(PaymentApplication::getPayment)
                     .filter(Objects::nonNull)
                     .filter(payment -> payment.getStatus() == PaymentStatus.SUCCESS)
                     .filter(payment -> payment.getPaymentType() != PaymentType.REFUND)
@@ -111,7 +111,7 @@ public class CheckoutService {
         Room room = detail.getRoom();
         if (room != null) {
             room.setStatus(nextRoomStatus);
-            room.setNote(normalizeNote(request.getNote(), nextRoomStatus));
+            room.setNote(null);
         }
 
         detail.setStayStatus(BookingDetailStatus.CHECKED_OUT);
@@ -125,9 +125,9 @@ public class CheckoutService {
                                               BookingDetail detail,
                                               List<BookingDetail> bookingDetails,
                                               List<FolioItem> folioItems,
-                                              List<PaymentAllocation> allocations) {
+                                              List<PaymentApplication> applications) {
         BigDecimal totalAmount = calculateRoomFolioTotal(detail, folioItems);
-        BigDecimal netPaid = calculateAllocatedPaidAmount(allocations);
+        BigDecimal netPaid = calculateAppliedPaidAmount(applications);
         BigDecimal balance = totalAmount.subtract(netPaid).setScale(0, RoundingMode.HALF_UP);
         BigDecimal payable = balance.max(BigDecimal.ZERO);
         BigDecimal refundable = balance.compareTo(BigDecimal.ZERO) < 0 ? balance.abs() : BigDecimal.ZERO;
@@ -163,13 +163,6 @@ public class CheckoutService {
                 .paymentStatusLabel(resolvePaymentStatusLabel(totalAmount, netPaid))
                 .canCheckout(canCheckout)
                 .blockReason(canCheckout ? null : resolveCheckoutBlockReason(detail, booking))
-                .folioLines(folioItems.stream().map(this::toFolioLine).toList())
-                .payments(allocations.stream()
-                        .map(PaymentAllocation::getPayment)
-                        .filter(Objects::nonNull)
-                        .distinct()
-                        .map(this::toPaymentLine)
-                        .toList())
                 .build();
     }
 
@@ -393,45 +386,22 @@ public class CheckoutService {
                 .setScale(0, RoundingMode.HALF_UP);
     }
 
-    private BigDecimal calculateAllocatedPaidAmount(List<PaymentAllocation> allocations) {
-        BigDecimal collected = allocations.stream()
-                .filter(allocation -> allocation.getPayment() != null)
-                .filter(allocation -> allocation.getPayment().getStatus() == PaymentStatus.SUCCESS)
-                .filter(allocation -> allocation.getPayment().getPaymentType() != PaymentType.REFUND)
-                .map(PaymentAllocation::getAmount)
+    private BigDecimal calculateAppliedPaidAmount(List<PaymentApplication> applications) {
+        BigDecimal collected = applications.stream()
+                .filter(application -> application.getPayment() != null)
+                .filter(application -> application.getPayment().getStatus() == PaymentStatus.SUCCESS)
+                .filter(application -> application.getPayment().getPaymentType() != PaymentType.REFUND)
+                .map(PaymentApplication::getAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal refunded = allocations.stream()
-                .filter(allocation -> allocation.getPayment() != null)
-                .filter(allocation -> allocation.getPayment().getStatus() == PaymentStatus.SUCCESS)
-                .filter(allocation -> allocation.getPayment().getPaymentType() == PaymentType.REFUND)
-                .map(PaymentAllocation::getAmount)
+        BigDecimal refunded = applications.stream()
+                .filter(application -> application.getPayment() != null)
+                .filter(application -> application.getPayment().getStatus() == PaymentStatus.SUCCESS)
+                .filter(application -> application.getPayment().getPaymentType() == PaymentType.REFUND)
+                .map(PaymentApplication::getAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         return collected.subtract(refunded).setScale(0, RoundingMode.HALF_UP);
-    }
-
-    private CheckoutDetailResponse.FolioLine toFolioLine(FolioItem item) {
-        FolioItemStatus status = item.getServiceStatus() == null ? FolioItemStatus.COMPLETED : item.getServiceStatus();
-        return CheckoutDetailResponse.FolioLine.builder()
-                .itemType(item.getItemType() == null ? "N/A" : item.getItemType().name())
-                .description(item.getDescription())
-                .quantity(item.getQuantity())
-                .unitPrice(money(item.getUnitPrice()))
-                .amount(money(item.getAmount()))
-                .statusLabel(status.getLabel())
-                .build();
-    }
-
-    private CheckoutDetailResponse.PaymentLine toPaymentLine(Payment payment) {
-        return CheckoutDetailResponse.PaymentLine.builder()
-                .transactionRef(payment.getTransactionRef())
-                .paymentType(payment.getPaymentType() == null ? "N/A" : payment.getPaymentType().getLabel())
-                .method(payment.getMethod() == null ? "N/A" : payment.getMethod().getLabel())
-                .status(payment.getStatus() == null ? "N/A" : payment.getStatus().getLabel())
-                .amount(money(payment.getAmount()))
-                .paidAt(payment.getPaidAt())
-                .build();
     }
 
     private String resolveSettlementType(BigDecimal balance) {
@@ -462,14 +432,6 @@ public class CheckoutService {
 
     private BigDecimal money(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value.setScale(0, RoundingMode.HALF_UP);
-    }
-
-    private String normalizeNote(String note, RoomStatus status) {
-        String value = note == null ? "" : note.trim();
-        if (status == RoomStatus.MAINTENANCE && value.isBlank()) {
-            return "Cần dọn phòng sau checkout";
-        }
-        return value.isBlank() ? null : value;
     }
 
     private User getCurrentStaffUser() {

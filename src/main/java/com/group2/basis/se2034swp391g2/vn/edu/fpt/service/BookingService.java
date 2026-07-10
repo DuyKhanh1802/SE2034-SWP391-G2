@@ -43,6 +43,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.PromotionAp
 
 import java.time.LocalTime;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -1347,6 +1348,11 @@ public class BookingService {
                         .checkOutDate(detail.getCheckOutDate())
                         .stayStatus(resolveDetailStayStatus(detail, booking).name())
                         .stayStatusLabel(resolveDetailStayStatus(detail, booking).getLabel())
+                        .numAdults(detail.getNumAdults() == null ? 1 : detail.getNumAdults())
+                        .numChildren(detail.getNumChildren() == null ? 0 : detail.getNumChildren())
+                        .guestCount(Math.max(1,
+                                (detail.getNumAdults() == null ? 1 : detail.getNumAdults())
+                                        + (detail.getNumChildren() == null ? 0 : detail.getNumChildren())))
                         .build())
                 .toList();
 
@@ -2036,6 +2042,7 @@ public class BookingService {
                         detail -> roomRepository.findAvailableRoomsByVariantId(detail.getVariant().getId())
                 ));
     }
+
     @Transactional(readOnly = true)
     public List<Booking> getTodayConfirmedBookingsForReminder() {
         return bookingRepository.findByStatusAndCheckInDateAndIsDeletedFalse(

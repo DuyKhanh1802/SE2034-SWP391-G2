@@ -904,13 +904,6 @@
                     XEM ROOM CODE
                 </a>
 
-                <a th:if="${detail.bookingStatus.name() == 'CHECKED_IN'}"
-                   th:href="@{/receptionist/folios/{id}(id=${detail.bookingId})}"
-                   class="btn-detail outline">
-                    <i class="bi bi-receipt"></i>
-                    XEM HOÁ ĐƠN
-                </a>
-
                 <span th:if="${detail.bookingStatus.name() == 'CHECKED_IN'
                     or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT'}"
                       class="confirm-room-note">
@@ -919,13 +912,6 @@
 
 
                 <!-- CHECKED_OUT -->
-                <a th:if="${detail.bookingStatus.name() == 'CHECKED_OUT'}"
-                   th:href="@{/receptionist/folios/{id}(id=${detail.bookingId})}"
-                   class="btn-detail outline">
-                    <i class="bi bi-receipt"></i>
-                    XEM HÓA ĐƠN
-                </a>
-
                 <a th:if="${detail.bookingStatus.name() == 'CHECKED_OUT'}"
                    th:href="@{/receptionist/bookings/{id}/payments(id=${detail.bookingId})}"
                    class="btn-detail outline">
@@ -1083,3 +1069,6 @@
 </main>
 </body>
 </html>
+
+
+

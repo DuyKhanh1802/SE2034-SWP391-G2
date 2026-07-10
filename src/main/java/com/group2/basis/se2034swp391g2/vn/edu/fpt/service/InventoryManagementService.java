@@ -26,7 +26,6 @@ import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.Normalizer;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -625,55 +624,6 @@ public class InventoryManagementService {
         }
     }
 
-    @Transactional
-    public void consumeForRoomRefresh(RoomType roomType,
-                                      Long sourceId,
-                                      User createdBy) {
-        if (roomType == null) {
-            return;
-        }
-
-        List<RoomRefreshInventoryMapping> mappings = roomRefreshInventoryMappingRepository.findByRoomType_Id(roomType.getId());
-        for (RoomRefreshInventoryMapping mapping : mappings) {
-            InventoryItem item = mapping.getItem();
-            BigDecimal consumedQuantity = mapping.getQuantityPerRefresh();
-            ensureSufficientStock(item, consumedQuantity);
-            item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
-            inventoryItemRepository.save(item);
-            recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
-                    "ROOM_REFRESH", sourceId, createdBy);
-        }
-    }
-
-    @Transactional(readOnly = true)
-    public BigDecimal calculateServiceCost(Long serviceId, BigDecimal serviceQuantity) {
-        BigDecimal multiplier = serviceQuantity == null ? BigDecimal.ONE : serviceQuantity;
-        return serviceInventoryMappingRepository.findByService_Id(serviceId).stream()
-                .map(mapping -> mapping.getQuantityPerUse()
-                        .multiply(mapping.getItem().getUnitCost())
-                        .multiply(multiplier))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(0, java.math.RoundingMode.HALF_UP);
-    }
-
-    @Transactional(readOnly = true)
-    public BigDecimal calculateRoomRefreshCost(Long roomTypeId) {
-        return roomRefreshInventoryMappingRepository.findByRoomType_Id(roomTypeId).stream()
-                .map(mapping -> mapping.getQuantityPerRefresh().multiply(mapping.getItem().getUnitCost()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(0, java.math.RoundingMode.HALF_UP);
-    }
-
-    @Transactional(readOnly = true)
-    public List<InventoryTransaction> getRecentTransactions() {
-        return inventoryTransactionRepository.findTop30ByOrderByCreatedAtDesc();
-    }
-
-    @Transactional(readOnly = true)
-    public List<InventoryReceipt> getRecentReceipts() {
-        return inventoryReceiptRepository.findTop20ByOrderByCreatedAtDesc();
-    }
-
     @Transactional(readOnly = true)
     public List<InventoryReceipt> getReceiptsForItem(Long itemId) {
         getItem(itemId);
@@ -688,11 +638,6 @@ public class InventoryManagementService {
     @Transactional(readOnly = true)
     public List<RoomRefreshInventoryMapping> getRefreshMappingsForItem(Long itemId) {
         return roomRefreshInventoryMappingRepository.findByItem_Id(itemId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<InventoryTransaction> getTransactionsForItem(Long itemId) {
-        return inventoryTransactionRepository.findByItem_IdOrderByCreatedAtDesc(itemId);
     }
 
     private void attachLatestBatchExpiry(InventoryItem item) {
@@ -1156,15 +1101,6 @@ public class InventoryManagementService {
             return null;
         }
         return normalized;
-    }
-
-    private InventoryCategory getCategory(Long categoryId) {
-        if (categoryId == null) {
-            throw new IllegalArgumentException("Loại hàng là bắt buộc.");
-        }
-        return inventoryCategoryRepository.findByIdAndIsActiveTrue(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Loại hàng không tồn tại hoặc đã ngừng sử dụng."));
     }
 
     private BigDecimal calculateWeightedUnitCost(BigDecimal currentCost,

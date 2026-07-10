@@ -13,11 +13,11 @@
         <p>Danh sách tài khoản khách hàng và nhân viên. Theo dõi vai trò, trạng thái tài khoản và tình trạng duyệt.</p>
     </section>
 
-    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}">
+    <div th:if="${errorMessage}" class="user-alert warning" th:text="${errorMessage}">
         Không thể thực hiện thao tác.
     </div>
 
-    <section class="admin-card user-toolbar">
+    <section class="user-card user-toolbar">
         <form class="user-filters" method="get" th:action="@{/system-admin/list-user}">
             <label class="search-control">
                 <i class="fa-solid fa-magnifying-glass text-secondary"></i>
@@ -62,15 +62,15 @@
             </select>
 
             <input type="hidden" name="size" th:value="${pageSize}">
-            <button class="btn-admin-primary" type="submit">
+            <button class="user-btn-primary" type="submit">
                 <i class="fa-solid fa-filter"></i>
                 Lọc
             </button>
         </form>
     </section>
 
-    <section class="admin-card p-0 overflow-hidden">
-        <table class="table admin-table align-middle mb-0">
+    <section class="user-card p-0 overflow-hidden">
+        <table class="table user-table align-middle mb-0">
             <thead>
             <tr>
                 <th>ID</th>
@@ -132,7 +132,7 @@
                             <i class="fa-regular fa-eye"></i>
                         </a>
 
-                        <a sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE')"
+                        <a sec:authorize="hasRole('SYSTEM_ADMIN')"
                            th:if="${currentUserId == null or currentUserId != user.id}"
                            th:href="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
                            class="action-btn"
@@ -140,7 +140,7 @@
                             <i class="fa-regular fa-pen-to-square"></i>
                         </a>
 
-                        <span sec:authorize="hasAnyAuthority('USER_MANAGE','USER_APPROVE')"
+                        <span sec:authorize="hasRole('SYSTEM_ADMIN')"
                               th:if="${currentUserId != null and currentUserId == user.id}"
                               class="action-btn is-disabled"
                               title="Không thể chỉnh sửa tài khoản đang đăng nhập."

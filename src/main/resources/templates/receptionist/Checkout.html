@@ -11,80 +11,64 @@
 
         <div class="folio-header split">
             <div>
-                <a class="back-link" th:href="@{/receptionist/bookings/view/{id}(id=${checkout.bookingId})}">
-                    <i class="bi bi-arrow-left"></i>
-                    Booking
-                </a>
-                <h1 th:text="'Trả phòng #' + ${checkout.bookingReference}">Trả phòng #BK0001</h1>
+                <div class="breadcrumb-line">
+                    <a th:href="@{/receptionist/bookings}">Bookings</a>
+                    <i class="bi bi-chevron-right"></i>
+                    <a th:href="@{/receptionist/bookings/view/{id}(id=${checkout.bookingId})}"
+                       th:text="${checkout.bookingReference}">BK-2606295114</a>
+                    <i class="bi bi-chevron-right"></i>
+                    <span th:text="'Trả phòng ' + ${checkout.roomNumber}">Trả phòng 101</span>
+                </div>
+                <h1 th:text="'Trả phòng ' + ${checkout.roomNumber}">Trả phòng 101</h1>
                 <p>
                     <span th:text="${checkout.guestName}">Guest</span>
                     <span th:if="${checkout.guestPhone != null}" th:text="' - ' + ${checkout.guestPhone}"></span>
                     <span th:if="${checkout.guestEmail != null}" th:text="' - ' + ${checkout.guestEmail}"></span>
-                    <span th:text="' - Phòng ' + ${checkout.roomNumber}"></span>
                 </p>
             </div>
 
             <div class="header-actions">
-                <a th:href="@{/receptionist/folios/{id}(id=${checkout.bookingId})}" class="btn-outline">
-                    <i class="bi bi-receipt"></i>
-                    Xem hoá đơn booking
-                </a>
                 <a th:href="@{/receptionist/folios/{id}(id=${checkout.bookingId}, bookingDetailId=${checkout.bookingDetailId})}" class="btn-outline">
                     <i class="bi bi-file-earmark-text"></i>
                     Xem hoá đơn phòng
                 </a>
-                <span class="checkout-status" th:text="${checkout.bookingStatusLabel}">Đã nhận phòng</span>
-            </div>
-        </div>
-
-        <div class="summary-grid checkout-summary">
-            <div class="stay-summary-card">
-                <span>Thời gian lưu trú</span>
-                <div class="stay-range">
-                    <strong th:text="${#temporals.format(checkout.checkInDate, 'dd/MM/yyyy')}">01/07/2026</strong>
-                    <i class="bi bi-arrow-right"></i>
-                    <strong th:text="${#temporals.format(checkout.checkOutDate, 'dd/MM/yyyy')}">03/07/2026</strong>
-                </div>
-            </div>
-            <div>
-                <span>Tổng hóa đơn</span>
-                <strong th:text="${#numbers.formatDecimal(checkout.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
-            </div>
-            <div>
-                <span>Đã thanh toán</span>
-                <strong th:text="${#numbers.formatDecimal(checkout.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
-            </div>
-            <div th:if="${checkout.settlementType == 'PAYMENT'}">
-                <span>Cần thu thêm</span>
-                <strong th:text="${#numbers.formatDecimal(checkout.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
-            </div>
-            <div th:if="${checkout.settlementType == 'REFUND'}">
-                <span>Cần hoàn tiền</span>
-                <strong th:text="${#numbers.formatDecimal(checkout.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
-            </div>
-            <div th:if="${checkout.settlementType == 'SETTLED'}">
-                <span>Số dư</span>
-                <strong>Đã cân bằng</strong>
             </div>
         </div>
 
         <div class="checkout-grid">
             <section class="folio-panel">
-                <h2>Tóm tắt booking</h2>
+                <h2>Tóm tắt hoá đơn phòng</h2>
                 <div class="detail-list">
-                    <div class="detail-item"><span>Phòng checkout</span><strong th:text="${checkout.roomNumber + ' - ' + checkout.variantName}">101</strong></div>
-                    <div class="detail-item" th:if="${checkout.roomCount != null and checkout.roomCount > 1}"><span>Số phòng trong booking</span><strong th:text="${checkout.roomCount} + ' phòng'">2 phòng</strong></div>
+                    <div class="detail-item">
+                        <span>Phòng trong Booking</span>
+                        <a class="booking-reference-link"
+                           th:href="@{/receptionist/bookings/view/{id}(id=${checkout.bookingId})}"
+                           th:text="'#' + ${checkout.bookingReference}">#BK-2606295114</a>
+                    </div>
+                    <div class="detail-item"><span>Trả phòng:</span><strong th:text="${checkout.roomNumber + ' - ' + checkout.variantName}">101</strong></div>
+                    <div class="detail-item">
+                        <span>Thời gian lưu trú</span>
+                        <strong class="stay-range-inline">
+                            <span th:text="${#temporals.format(checkout.checkInDate, 'dd/MM/yyyy')}">01/07/2026</span>
+                            <span>-</span>
+                            <span th:text="${#temporals.format(checkout.checkOutDate, 'dd/MM/yyyy')}">03/07/2026</span>
+                        </strong>
+                    </div>
                     <div class="detail-item"><span>Tiền phòng</span><strong th:text="${#numbers.formatDecimal(checkout.roomSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item"><span>Dịch vụ thêm</span><strong th:text="${#numbers.formatDecimal(checkout.serviceSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item"><span>Phí dịch vụ</span><strong th:text="${#numbers.formatDecimal(checkout.serviceChargeTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item"><span>VAT</span><strong th:text="${#numbers.formatDecimal(checkout.vatTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item"><span>Giảm giá</span><strong th:text="'- ' + ${#numbers.formatDecimal(checkout.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
-                    <div class="detail-item total"><span>Trạng thái thanh toán</span><strong th:text="${checkout.paymentStatusLabel}">Thanh toán một phần</strong></div>
+                    <div class="detail-item total"><span>Tổng tiền</span><strong th:text="${#numbers.formatDecimal(checkout.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
+                    <div class="detail-item"><span>Đã thanh toán</span><strong th:text="${#numbers.formatDecimal(checkout.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
+                    <div class="detail-item" th:if="${checkout.settlementType == 'PAYMENT'}"><span>Còn lại</span><strong th:text="${#numbers.formatDecimal(checkout.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
+                    <div class="detail-item" th:if="${checkout.settlementType == 'REFUND'}"><span>Cần hoàn tiền</span><strong th:text="${#numbers.formatDecimal(checkout.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
+                    <div class="detail-item" th:if="${checkout.settlementType == 'SETTLED'}"><span>Còn lại</span><strong>Đã cân bằng</strong></div>
                 </div>
             </section>
 
             <section class="folio-panel checkout-form-panel">
-                <h2>Xác nhận checkout</h2>
+                <h2>Xác nhận trả phòng</h2>
                 <div th:if="${!checkout.canCheckout}" class="alert alert-warning" th:text="${checkout.blockReason}">
                     Booking không thể checkout.
                 </div>
@@ -94,7 +78,7 @@
                       method="post"
                       class="checkout-form">
                     <div th:if="${checkout.settlementType == 'PAYMENT'}" class="settlement-box payment">
-                        <span>Thu số dư checkout</span>
+                        <span>Tổng tiền còn lại</span>
                         <strong th:text="${#numbers.formatDecimal(checkout.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
                         <input type="hidden" name="paymentAmount" th:value="${checkout.balanceAmount}">
                         <label>Phương thức thanh toán</label>
@@ -122,19 +106,6 @@
                     <div th:if="${checkout.settlementType == 'SETTLED'}" class="settlement-box settled">
                         <span>Thanh toán</span>
                         <strong>Không còn số dư</strong>
-                    </div>
-
-                    <div class="filter-field">
-                        <label>Trạng thái phòng sau checkout</label>
-                        <input type="hidden" name="roomStatusAfterCheckout" value="MAINTENANCE">
-                        <div class="checkout-room-status-note">
-                            Maintenance - cần dọn/kiểm tra phòng trước khi bán lại
-                        </div>
-                    </div>
-
-                    <div class="filter-field">
-                        <label>Ghi chú</label>
-                        <textarea name="note" rows="3" maxlength="500" placeholder="Ví dụ: cần kiểm tra minibar, đồ vật thất lạc..."></textarea>
                     </div>
 
                     <button type="submit" class="btn-dark checkout-submit">

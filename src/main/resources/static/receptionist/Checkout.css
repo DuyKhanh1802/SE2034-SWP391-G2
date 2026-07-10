@@ -2,38 +2,25 @@
     color: #333;
 }
 
-.checkout-status {
-    display: inline-flex;
-    align-items: center;
-    min-height: 42px;
-    padding: 10px 14px;
-    border: 1px solid #d8d8d8;
-    background: #f7f7f7;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .8px;
-    text-transform: uppercase;
-}
-
-.checkout-summary {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    margin-bottom: 24px;
-}
-
-.stay-range {
+.stay-range-inline {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    color: #333;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
     white-space: nowrap;
 }
 
-.stay-range i {
-    color: #777;
-    font-size: 18px;
-}
-
-.stay-summary-card strong {
-    font-size: 28px;
+.stay-range-inline span {
+    display: inline;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    letter-spacing: 0;
+    text-transform: none;
 }
 
 .checkout-grid {
@@ -57,8 +44,18 @@
 }
 
 .detail-item.total {
-    border-bottom: 0;
-    padding-bottom: 0;
+    border-top: 1px solid #d8d8d8;
+    padding-top: 12px;
+}
+
+.booking-reference-link {
+    color: #111;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.booking-reference-link:hover {
+    text-decoration: underline;
 }
 
 .checkout-form {
@@ -103,8 +100,7 @@
     background: #edf8f1;
 }
 
-.checkout-form select,
-.checkout-form textarea {
+.checkout-form select {
     width: 100%;
     min-height: 42px;
     border: 1px solid #d8d8d8;
@@ -116,44 +112,18 @@
     outline: none;
 }
 
-.checkout-room-status-note {
-    min-height: 42px;
-    border: 1px solid #d8d8d8;
-    background: #f7f7f7;
-    color: #222;
-    padding: 11px 12px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.checkout-form textarea {
-    resize: vertical;
-}
-
 .checkout-submit {
     width: 100%;
 }
 
-.folio-table-wrap.compact {
-    margin-bottom: 0;
-}
-
 @media (max-width: 980px) {
-    .checkout-summary {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .checkout-grid {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 640px) {
-    .checkout-summary {
-        grid-template-columns: 1fr;
-    }
-
-    .stay-range {
+    .stay-range-inline {
         flex-wrap: wrap;
         white-space: normal;
     }

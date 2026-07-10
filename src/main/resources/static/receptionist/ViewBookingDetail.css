@@ -13,10 +13,11 @@
 .breadcrumb-line {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 9px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     font-size: 13px;
-    letter-spacing: 1px;
+    letter-spacing: .5px;
     color: #666;
 }
 
@@ -24,6 +25,19 @@
     color: #222;
     text-decoration: none;
     font-weight: 700;
+}
+
+.breadcrumb-line a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-line i {
+    color: #9a9a9a;
+    font-size: 10px;
+}
+
+.breadcrumb-line span {
+    color: #6f7475;
 }
 
 .detail-header h1 {

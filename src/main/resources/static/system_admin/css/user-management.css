@@ -47,7 +47,7 @@ ul {
    CARDS
 ========================= */
 
-.admin-card {
+.user-card {
     background: white;
     border: 1px solid #ddd;
     padding: 24px;
@@ -101,71 +101,6 @@ ul {
 
 .filter-control {
     padding: 9px 12px;
-}
-
-.permission-role-filter {
-    max-width: 340px;
-}
-
-.permission-form {
-    display: grid;
-    gap: 5px;
-}
-
-.permission-form .section-header {
-    margin-bottom: 0;
-}
-
-.permission-form .btn-admin-primary {
-    margin-top: 10px;
-}
-
-.permission-form .settings-note {
-    margin-top: 5px;
-}
-
-.permission-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px;
-}
-
-.permission-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    min-height: 70px;
-    padding: 14px 16px;
-    border: 1px solid #d8d8d8;
-    background: #fff;
-    cursor: pointer;
-}
-
-.permission-item:has(input:checked) {
-    border-color: #222;
-    background: #f7f7f7;
-}
-
-.permission-item input {
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    accent-color: #222;
-}
-
-.permission-item span {
-    display: grid;
-    gap: 5px;
-}
-
-.permission-item strong {
-    font-size: 13px;
-}
-
-.permission-item small {
-    color: #777;
-    font-family: monospace;
-    font-size: 11px;
 }
 
 .pagination-row {
@@ -254,7 +189,7 @@ ul {
    BUTTONS
 ========================= */
 
-.btn-admin-primary {
+.user-btn-primary {
     background: #000;
     color: white;
     border: none;
@@ -264,35 +199,35 @@ ul {
     font-weight: 600;
 }
 
-.btn-admin-primary:hover {
+.user-btn-primary:hover {
     background: #333;
     color: white;
 }
 
-.btn-admin-primary.danger {
+.user-btn-primary.danger {
     background: #b42318;
 }
 
-.btn-admin-primary.danger:hover {
+.user-btn-primary.danger:hover {
     background: #8f1d14;
 }
 
-.btn-admin-primary:disabled,
-.btn-admin-outline:disabled,
-.btn-admin-primary.is-disabled {
+.user-btn-primary:disabled,
+.user-btn-outline:disabled,
+.user-btn-primary.is-disabled {
     opacity: .48;
     cursor: not-allowed;
     pointer-events: none;
     filter: grayscale(1);
 }
 
-.btn-admin-primary:disabled:hover,
-.btn-admin-outline:disabled:hover {
+.user-btn-primary:disabled:hover,
+.user-btn-outline:disabled:hover {
     background: inherit;
     color: inherit;
 }
 
-.btn-admin-outline {
+.user-btn-outline {
     background: white;
     color: black;
     border: 1px solid black;
@@ -302,16 +237,16 @@ ul {
     font-weight: 600;
 }
 
-.btn-admin-outline:hover {
+.user-btn-outline:hover {
     background: #f2f2f2;
 }
 
-.btn-admin-outline.danger {
+.user-btn-outline.danger {
     border-color: #b42318;
     color: #b42318;
 }
 
-.btn-admin-outline.danger:hover {
+.user-btn-outline.danger:hover {
     background: #fff1f0;
 }
 
@@ -319,11 +254,11 @@ ul {
    TABLE
 ========================= */
 
-.admin-table {
+.user-table {
     margin-bottom: 0;
 }
 
-.admin-table thead th {
+.user-table thead th {
     background: #efefef;
     color: #555;
     font-size: 11px;
@@ -334,47 +269,19 @@ ul {
     border-bottom: 1px solid #ddd;
 }
 
-.admin-table tbody td {
+.user-table tbody td {
     padding: 12px 14px;
     font-size: 13px;
     border-bottom: 1px solid #eee;
 }
 
-.admin-table tbody tr:hover {
+.user-table tbody tr:hover {
     background: #f8f8f8;
 }
 
 /* =========================
    STATUS
 ========================= */
-
-.badge-success {
-    background: #e7f5e7;
-    color: #2f7d32;
-}
-
-.badge-info {
-    background: #e8f2ff;
-    color: #1e70b7;
-}
-
-.badge-danger {
-    background: #ffe5e5;
-    color: #d32f2f;
-}
-
-.badge-warning {
-    background: #fff6dd;
-    color: #c28a00;
-}
-
-.admin-badge {
-    display: inline-block;
-    padding: 5px 9px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: .8px;
-}
 
 .role-text {
     color: #2f3742;
@@ -432,11 +339,6 @@ ul {
     cursor: not-allowed;
     background: #f3f3f3;
     color: #777;
-}
-
-.action-btn-delete:hover {
-    background: #d32f2f;
-    border-color: #d32f2f;
 }
 
 /* =========================
@@ -534,25 +436,21 @@ ul {
     gap: 24px;
 }
 
-.settings-card {
+.account-action-card {
     display: flex;
     flex-direction: column;
 }
 
-.settings-card > form {
+.account-action-card > form {
     margin-top: auto;
 }
 
-.settings-card.compact-card {
+.account-action-card.compact-action-card {
     align-self: start;
 }
 
-.settings-card.compact-card > form {
+.account-action-card.compact-action-card > form {
     margin-top: 0;
-}
-
-.settings-card.wide {
-    grid-column: 1 / -1;
 }
 
 .settings-note {
@@ -590,7 +488,7 @@ ul {
     font-size: 14px;
 }
 
-.admin-alert {
+.user-alert {
     border-left: 4px solid #222;
     background: #f7f7f7;
     padding: 14px 16px;
@@ -599,12 +497,12 @@ ul {
     font-size: 14px;
 }
 
-.admin-alert.success {
+.user-alert.success {
     border-color: #2f7d32;
     background: #f1f8f1;
 }
 
-.admin-alert.warning {
+.user-alert.warning {
     border-color: #b77900;
     background: #fff8e6;
 }
@@ -623,25 +521,6 @@ ul {
     font-weight: 600;
     letter-spacing: 1.2px;
     text-transform: uppercase;
-}
-
-.role-form select {
-    height: 44px;
-    border: 1px solid #ddd;
-    background: #fff;
-    padding: 0 12px;
-    color: #222;
-    font-size: 14px;
-}
-
-.role-form.is-disabled {
-    opacity: 0.55;
-}
-
-.role-form select:disabled {
-    cursor: not-allowed;
-    background: #f3f3f3;
-    color: #777;
 }
 
 .single-role-form {
@@ -729,10 +608,6 @@ ul {
 
     .user-filters {
         grid-template-columns: 1fr 1fr;
-    }
-
-    .permission-grid {
-        grid-template-columns: 1fr;
     }
 
     .role-form {

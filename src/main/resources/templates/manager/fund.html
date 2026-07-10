@@ -17,10 +17,6 @@
 
     <section class="metric-grid">
         <div class="metric-card">
-            <span>Vốn đầu kỳ</span>
-            <strong th:text="${#numbers.formatDecimal(openingBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
-        </div>
-        <div class="metric-card">
             <span>Tổng thu</span>
             <strong th:text="${#numbers.formatDecimal(totalIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
         </div>
@@ -32,14 +28,6 @@
             <span>Tổng quỹ</span>
             <strong th:text="${#numbers.formatDecimal(currentBalance, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
         </div>
-    </section>
-
-    <section class="panel">
-        <form class="form-panel" th:action="@{/manager/fund/add-capital}" method="post">
-            <h2>Rót vốn</h2>
-            <input type="number" min="1" step="1000" name="amount" placeholder="Số tiền" required>
-            <button type="submit" th:text="${fundSetting == null ? 'Lưu vốn đầu kỳ' : 'Rót thêm vốn'}">Rót vốn</button>
-        </form>
     </section>
 
     <section class="panel">

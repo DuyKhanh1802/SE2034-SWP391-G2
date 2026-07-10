@@ -98,6 +98,9 @@ public class ViewBookingDetailResponse {
         private Long variantId;
         private String stayStatus;
         private String stayStatusLabel;
+        private Integer numAdults;
+        private Integer numChildren;
+        private Integer guestCount;
     }
 
     @Data

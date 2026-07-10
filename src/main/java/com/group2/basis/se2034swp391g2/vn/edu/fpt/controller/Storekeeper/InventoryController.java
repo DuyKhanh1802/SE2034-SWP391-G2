@@ -74,7 +74,6 @@ public class InventoryController {
         model.addAttribute("expiringSoonItemCodes", expiringSoonItemCodes);
         model.addAttribute("expiringSoonItemCodesText", formatLimitedItemCodes(expiringSoonItemCodes));
         model.addAttribute("inventoryVatRate", inventoryManagementService.getInventoryVatRate());
-        model.addAttribute("financialChargeConfigured", true);
         model.addAttribute("today", LocalDate.now());
         return "storekeeper/InventoryList";
     }

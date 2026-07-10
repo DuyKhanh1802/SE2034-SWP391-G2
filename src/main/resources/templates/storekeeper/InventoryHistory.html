@@ -9,14 +9,14 @@
         <p>Tra cứu giao dịch nhập, xuất, nguồn chứng từ và số tồn sau mỗi biến động.</p>
     </section>
 
-    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"></div>
 
-    <section class="admin-card inventory-toolbar">
+    <section class="inventory-card inventory-toolbar">
         <div><h2>Nhật ký nhập xuất</h2></div>
-        <a class="btn-admin-outline" th:href="@{/storekeeper/inventory}"><i class="fa-solid fa-arrow-left"></i> Danh sách hàng hóa</a>
+        <a class="inventory-btn-outline" th:href="@{/storekeeper/inventory}"><i class="fa-solid fa-arrow-left"></i> Danh sách hàng hóa</a>
     </section>
 
-    <section class="admin-card">
+    <section class="inventory-card">
         <form method="get" th:action="@{/storekeeper/inventory/history}" class="history-filters">
             <div>
                 <label>Hàng hóa</label>
@@ -40,13 +40,13 @@
             <div><label>Từ ngày</label><input class="filter-control" type="date" name="dateFrom" th:value="${dateFrom}"></div>
             <div><label>Đến ngày</label><input class="filter-control" type="date" name="dateTo" th:value="${dateTo}"></div>
             <input type="hidden" name="size" th:value="${pageSize}">
-            <button class="btn-admin-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc lịch sử</button>
+            <button class="inventory-btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc lịch sử</button>
         </form>
     </section>
 
-    <section class="admin-card p-0 overflow-hidden">
+    <section class="inventory-card p-0 overflow-hidden">
         <div class="table-responsive">
-            <table class="table admin-table">
+            <table class="table inventory-table">
                 <thead>
                 <tr>
                     <th>Thời gian</th>

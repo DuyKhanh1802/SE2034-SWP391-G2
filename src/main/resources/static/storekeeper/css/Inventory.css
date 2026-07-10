@@ -20,7 +20,7 @@ a { text-decoration: none; }
     font-size: 14px;
 }
 
-.admin-card {
+.inventory-card {
     margin-bottom: 24px;
     padding: 24px;
     border: 1px solid #ddd;
@@ -57,8 +57,8 @@ a { text-decoration: none; }
     gap: 8px;
 }
 
-.btn-admin-primary,
-.btn-admin-outline {
+.inventory-btn-primary,
+.inventory-btn-outline {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -70,15 +70,15 @@ a { text-decoration: none; }
     font-weight: 600;
     letter-spacing: .8px;
 }
-.btn-admin-primary { background: #111; color: #fff; }
-.btn-admin-primary:hover { background: #333; color: #fff; }
-.btn-admin-primary.danger { border-color: #b42318; background: #b42318; }
-.btn-admin-primary.danger:hover { border-color: #8f1d14; background: #8f1d14; }
-.btn-admin-outline { background: #fff; color: #111; }
-.btn-admin-outline:hover { background: #f1f1f1; color: #111; }
-.btn-admin-outline.danger { border-color: #b42318; color: #b42318; }
-.btn-admin-outline.danger:hover { background: #fff1f0; }
-.btn-admin-outline:disabled { opacity: .45; cursor: not-allowed; }
+.inventory-btn-primary { background: #111; color: #fff; }
+.inventory-btn-primary:hover { background: #333; color: #fff; }
+.inventory-btn-primary.danger { border-color: #b42318; background: #b42318; }
+.inventory-btn-primary.danger:hover { border-color: #8f1d14; background: #8f1d14; }
+.inventory-btn-outline { background: #fff; color: #111; }
+.inventory-btn-outline:hover { background: #f1f1f1; color: #111; }
+.inventory-btn-outline.danger { border-color: #b42318; color: #b42318; }
+.inventory-btn-outline.danger:hover { background: #fff1f0; }
+.inventory-btn-outline:disabled { opacity: .45; cursor: not-allowed; }
 
 .inventory-filters {
     display: grid;
@@ -105,7 +105,7 @@ a { text-decoration: none; }
 
 .search-control,
 .filter-control,
-.form-control-admin {
+.inventory-form-control {
     width: 100%;
     min-height: 42px;
     border: 1px solid #d8d8d8;
@@ -129,9 +129,9 @@ a { text-decoration: none; }
     font-size: 13px;
 }
 .filter-control,
-.form-control-admin { padding: 9px 12px; }
+.inventory-form-control { padding: 9px 12px; }
 
-.admin-form label.expiry-toggle {
+.inventory-form label.expiry-toggle {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -145,7 +145,7 @@ a { text-decoration: none; }
     text-transform: uppercase;
 }
 
-.admin-form label.expiry-toggle input {
+.inventory-form label.expiry-toggle input {
     width: 16px;
     height: 16px;
     flex: 0 0 16px;
@@ -153,25 +153,25 @@ a { text-decoration: none; }
     accent-color: #111;
 }
 
-.admin-form label.expiry-toggle span {
+.inventory-form label.expiry-toggle span {
     display: inline-flex;
     align-items: center;
     min-height: 16px;
 }
 
-.form-control-admin[type="number"]::-webkit-outer-spin-button,
-.form-control-admin[type="number"]::-webkit-inner-spin-button {
+.inventory-form-control[type="number"]::-webkit-outer-spin-button,
+.inventory-form-control[type="number"]::-webkit-inner-spin-button {
     margin: 0;
     -webkit-appearance: none;
 }
 
-.form-control-admin[type="number"] {
+.inventory-form-control[type="number"] {
     -moz-appearance: textfield;
     appearance: textfield;
 }
 
-.form-control-admin:disabled,
-.form-control-admin[readonly] {
+.inventory-form-control:disabled,
+.inventory-form-control[readonly] {
     border-color: #e1e1e1;
     background: #f3f3f3;
     color: #777;
@@ -179,18 +179,18 @@ a { text-decoration: none; }
     opacity: 1;
 }
 
-.form-control-admin:disabled:hover,
-.form-control-admin[readonly]:hover,
-.form-control-admin:disabled:focus,
-.form-control-admin[readonly]:focus {
+.inventory-form-control:disabled:hover,
+.inventory-form-control[readonly]:hover,
+.inventory-form-control:disabled:focus,
+.inventory-form-control[readonly]:focus {
     border-color: #e1e1e1;
     background: #f3f3f3;
     box-shadow: none;
     outline: none;
 }
 
-.admin-table { margin: 0; }
-.admin-table thead th {
+.inventory-table { margin: 0; }
+.inventory-table thead th {
     padding: 12px 14px;
     border-bottom: 1px solid #ddd;
     background: #efefef;
@@ -201,13 +201,13 @@ a { text-decoration: none; }
     text-transform: uppercase;
     white-space: nowrap;
 }
-.admin-table tbody td {
+.inventory-table tbody td {
     padding: 13px 14px;
     border-bottom: 1px solid #eee;
     font-size: 13px;
     vertical-align: middle;
 }
-.admin-table tbody tr:hover { background: #f8f8f8; }
+.inventory-table tbody tr:hover { background: #f8f8f8; }
 .inventory-items-table thead th { text-align: center; }
 .inventory-cell-center { text-align: center; }
 .item-code { font-family: monospace; font-weight: 600; color: #555; }
@@ -237,17 +237,6 @@ a { text-decoration: none; }
 .expiry-soon { color: #a56a00; }
 .expiry-expired { color: #c0392b; }
 
-.admin-badge {
-    display: inline-block;
-    padding: 5px 9px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .6px;
-}
-.badge-success { background: #e7f5e7; color: #2f7d32; }
-.badge-danger { background: #ffe5e5; color: #c0392b; }
-.badge-info { background: #e8f2ff; color: #1e70b7; }
-
 .movement-type {
     display: inline-block;
     font-size: 13px;
@@ -273,15 +262,15 @@ a { text-decoration: none; }
 }
 .action-btn:hover { border-color: #111; background: #111; color: #fff; }
 
-.admin-alert {
+.inventory-alert {
     margin-bottom: 18px;
     padding: 14px 16px;
     border-left: 4px solid #222;
     background: #f7f7f7;
     font-size: 14px;
 }
-.admin-alert.success { border-color: #2f7d32; background: #f1f8f1; }
-.admin-alert.warning { border-color: #b77900; background: #fff8e6; }
+.inventory-alert.success { border-color: #2f7d32; background: #f1f8f1; }
+.inventory-alert.warning { border-color: #b77900; background: #fff8e6; }
 
 .summary-grid {
     display: grid;
@@ -337,7 +326,7 @@ a { text-decoration: none; }
     border-bottom: 1px solid #eee;
 }
 .detail-item span,
-.admin-form label {
+.inventory-form label {
     display: block;
     margin-bottom: 6px;
     color: #777;
@@ -347,7 +336,7 @@ a { text-decoration: none; }
     text-transform: uppercase;
 }
 .detail-item strong { font-size: 14px; }
-.admin-form { display: grid; gap: 16px; }
+.inventory-form { display: grid; gap: 16px; }
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

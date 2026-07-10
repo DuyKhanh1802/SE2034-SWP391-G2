@@ -29,8 +29,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query("Select u From User u " +
             "Left join fetch u.userRoles ur " +
             "Left join fetch ur.role " +
-            "Left join fetch ur.role.rolePermissions rp " +
-            "Left join fetch rp.permission " +
             "Left join fetch u.country " +
             "Where u.email = :email")
     Optional<User> findByEmailDetail(String email);

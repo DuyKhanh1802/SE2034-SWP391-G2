@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class FolioListResponse {
     private Long bookingId;
+    private Long bookingDetailId;
     private String bookingReference;
     private String guestName;
     private String roomSummary;

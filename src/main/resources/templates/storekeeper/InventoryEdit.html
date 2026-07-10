@@ -9,20 +9,20 @@
         <p>Cập nhật thông tin, ngưỡng cảnh báo và quản lý các quy tắc tiêu hao liên quan.</p>
     </section>
 
-    <div th:if="${successMessage}" class="admin-alert success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="admin-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"></div>
 
-    <section class="admin-card detail-header">
+    <section class="inventory-card detail-header">
         <div><span class="eyebrow" th:text="${item.code}"></span><h2 th:text="${item.name}"></h2></div>
         <div class="detail-actions">
-            <a class="btn-admin-outline" th:href="@{/storekeeper/inventory}">
+            <a class="inventory-btn-outline" th:href="@{/storekeeper/inventory}">
                 <i class="fa-solid fa-arrow-left"></i> Danh sách hàng hóa
             </a>
-            <button class="btn-admin-outline danger" type="button" data-bs-toggle="modal" data-bs-target="#disposeStockModal"
+            <button class="inventory-btn-outline danger" type="button" data-bs-toggle="modal" data-bs-target="#disposeStockModal"
                     th:disabled="${item.currentQuantity.signum() == 0}">
                 <i class="fa-solid fa-trash-can"></i> Hủy hàng hóa
             </button>
-            <button class="btn-admin-outline danger" type="button"
+            <button class="inventory-btn-outline danger" type="button"
                     data-bs-toggle="modal" data-bs-target="#deleteItemModal">
                 <i class="fa-regular fa-trash-can"></i> Xóa hàng hóa
             </button>
@@ -30,39 +30,39 @@
     </section>
 
     <section class="detail-grid">
-        <form class="admin-card admin-form" th:action="@{/storekeeper/inventory/service-mappings}" method="post">
+        <form class="inventory-card inventory-form" th:action="@{/storekeeper/inventory/service-mappings}" method="post">
             <div><h2 class="modal-title">Cập nhật tiêu hao của dịch vụ</h2></div>
             <input type="hidden" name="itemId" th:value="${item.id}">
             <div>
                 <label>Dịch vụ</label>
-                <select class="form-control-admin" name="serviceId" required>
+                <select class="inventory-form-control" name="serviceId" required>
                     <option value="" selected disabled>Chọn dịch vụ</option>
                     <option th:each="service : ${services}" th:value="${service.id}" th:text="${service.name}"></option>
                 </select>
             </div>
-            <div><label>Số lượng tiêu hao/lần</label><input class="form-control-admin" type="number" step="0.01" min="0.01" name="quantityPerUse" required></div>
-            <button class="btn-admin-primary" type="submit">Lưu quy tắc</button>
+            <div><label>Số lượng tiêu hao/lần</label><input class="inventory-form-control" type="number" step="0.01" min="0.01" name="quantityPerUse" required></div>
+            <button class="inventory-btn-primary" type="submit">Lưu quy tắc</button>
         </form>
 
-        <form class="admin-card admin-form" th:action="@{/storekeeper/inventory/room-refresh-mappings}" method="post">
+        <form class="inventory-card inventory-form" th:action="@{/storekeeper/inventory/room-refresh-mappings}" method="post">
             <div><h2 class="modal-title">Cập nhật lấp đồ cho phòng</h2></div>
             <input type="hidden" name="itemId" th:value="${item.id}">
             <div>
                 <label>Hạng phòng</label>
-                <select class="form-control-admin" name="roomTypeId" required>
+                <select class="inventory-form-control" name="roomTypeId" required>
                     <option value="" selected disabled>Chọn hạng phòng</option>
                     <option th:each="roomType : ${roomTypes}" th:value="${roomType.id}" th:text="${roomType.name}"></option>
                 </select>
             </div>
-            <div><label>Số lượng lấp đồ/lần</label><input class="form-control-admin" type="number" step="0.01" min="0.01" name="quantityPerRefresh" required></div>
-            <button class="btn-admin-primary" type="submit">Lưu quy tắc</button>
+            <div><label>Số lượng lấp đồ/lần</label><input class="inventory-form-control" type="number" step="0.01" min="0.01" name="quantityPerRefresh" required></div>
+            <button class="inventory-btn-primary" type="submit">Lưu quy tắc</button>
         </form>
     </section>
 
-    <section class="admin-card p-0 overflow-hidden">
+    <section class="inventory-card p-0 overflow-hidden">
         <div class="px-4 pt-4"><h2 class="modal-title">Liên kết tiêu hao đang áp dụng</h2></div>
         <div class="table-responsive mt-3">
-            <table class="table admin-table">
+            <table class="table inventory-table">
                 <thead><tr><th>Nguồn sử dụng</th><th>Loại</th><th>Tiêu hao/lần</th><th>Thao tác</th></tr></thead>
                 <tbody>
                 <tr th:each="mapping : ${mappings}">
@@ -71,7 +71,7 @@
                     <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerUse) + ' ' + item.unit}"></td>
                     <td>
                         <form th:action="@{/storekeeper/inventory/{itemId}/service-mappings/{mappingId}/delete(itemId=${item.id},mappingId=${mapping.id})}" method="post">
-                            <button class="action-btn action-btn-delete" type="submit" title="Xóa quy tắc"><i class="fa-regular fa-trash-can"></i></button>
+                            <button class="action-btn" type="submit" title="Xóa quy tắc"><i class="fa-regular fa-trash-can"></i></button>
                         </form>
                     </td>
                 </tr>
@@ -81,7 +81,7 @@
                     <td th:text="${@inventoryQuantityFormatter.format(mapping.quantityPerRefresh) + ' ' + item.unit}"></td>
                     <td>
                         <form th:action="@{/storekeeper/inventory/{itemId}/room-refresh-mappings/{mappingId}/delete(itemId=${item.id},mappingId=${mapping.id})}" method="post">
-                            <button class="action-btn action-btn-delete" type="submit" title="Xóa quy tắc"><i class="fa-regular fa-trash-can"></i></button>
+                            <button class="action-btn" type="submit" title="Xóa quy tắc"><i class="fa-regular fa-trash-can"></i></button>
                         </form>
                     </td>
                 </tr>
@@ -104,7 +104,7 @@
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body admin-form">
+                    <div class="modal-body inventory-form">
                         <p class="form-hint">
                             Ghi nhận hủy sẽ trừ tồn kho hiện tại và tạo một dòng lịch sử kho.
                             Hành động này không xóa danh mục hàng hóa.
@@ -112,29 +112,29 @@
                         <div class="form-grid">
                             <div>
                                 <label>Hàng hóa</label>
-                                <input class="form-control-admin" th:value="${item.code + ' - ' + item.name}" disabled>
+                                <input class="inventory-form-control" th:value="${item.code + ' - ' + item.name}" disabled>
                             </div>
                             <div>
                                 <label>Tồn hiện tại</label>
-                                <input class="form-control-admin"
+                                <input class="inventory-form-control"
                                        th:value="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}"
                                        disabled>
                             </div>
                         </div>
                         <div>
                             <label>Số lượng hủy</label>
-                            <input class="form-control-admin" type="number" name="quantity" step="0.01" min="0.01"
+                            <input class="inventory-form-control" type="number" name="quantity" step="0.01" min="0.01"
                                    th:max="${item.currentQuantity}" required>
                         </div>
                         <div>
                             <label>Lý do hủy</label>
-                            <textarea class="form-control-admin" name="reason" rows="3" maxlength="250"
+                            <textarea class="inventory-form-control" name="reason" rows="3" maxlength="250"
                                       placeholder="Ví dụ: Hủy do hết hạn sử dụng, hỏng bao bì, không còn đạt chất lượng..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn-admin-primary danger">Ghi nhận hủy</button>
+                        <button type="button" class="inventory-btn-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="inventory-btn-primary danger">Ghi nhận hủy</button>
                     </div>
                 </form>
             </div>
@@ -159,11 +159,11 @@
                     </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-admin-outline" data-bs-dismiss="modal"
+                    <button type="button" class="inventory-btn-outline" data-bs-dismiss="modal"
                             th:text="${canDelete ? 'Hủy' : 'Đã hiểu'}"></button>
                     <form th:if="${canDelete}"
                           th:action="@{/storekeeper/inventory/{id}/delete(id=${item.id})}" method="post">
-                        <button class="btn-admin-primary danger" type="submit">Xác nhận xóa</button>
+                        <button class="inventory-btn-primary danger" type="submit">Xác nhận xóa</button>
                     </form>
                 </div>
             </div>
