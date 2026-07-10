@@ -1,206 +1,247 @@
 ﻿<!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-<!-- WELCOME -->
-        <section class="welcome-section">
-            <h1>
-                Morning,
-                <span th:text="${currentUser != null ? currentUser.firstName : 'Admin'}">Admin</span>.
-            </h1>
-            <p>System operational across all property sectors.</p>
-        </section>
 
+    <!-- PAGE HEADER -->
+    <section class="admin-dashboard-hero">
+        <div>
+            <span class="dashboard-kicker">HOTEL ADMIN</span>
+            <h1>Bảng điều khiển tổng quan</h1>
+            <p>
+                Theo dõi nhanh tình trạng phòng, dịch vụ, tài khoản nhân sự và các mục cần xử lý trong hệ thống.
+            </p>
+        </div>
 
-        <!-- STATS -->
-        <section class="stats-grid">
+        <div class="hero-actions">
+            <a th:href="@{/hotel-admin/list-room/add}" class="soft-btn soft-btn-dark">
+                <i class="fa-solid fa-plus"></i>
+                Thêm phòng
+            </a>
 
-            <div class="stat-card">
-                <div class="card-top d-flex justify-content-between">
-                    <i class="fa-regular fa-id-badge"></i>
-                    <span>STAFF</span>
-                </div>
+            <a th:href="@{/hotel-admin/services/add}" class="soft-btn soft-btn-light">
+                <i class="fa-solid fa-plus"></i>
+                Thêm dịch vụ
+            </a>
+        </div>
+    </section>
 
-                <div class="card-bottom">
-                    <h2>12 <small>ACTIVE</small></h2>
-                    <p>2 inactive accounts</p>
-                </div>
+    <!-- SUMMARY CARDS -->
+    <section class="stats-grid">
+
+        <!-- STAFF -->
+        <article class="stat-card">
+            <div class="card-top">
+                <i class="fa-regular fa-id-badge"></i>
+                <span>NHÂN SỰ</span>
             </div>
 
-            <div class="stat-card">
-                <div class="card-top d-flex justify-content-between">
-                    <i class="fa-solid fa-bed"></i>
-                    <span>ROOMS</span>
-                </div>
-
-                <div class="room-stats d-flex gap-4 mt-4">
-                    <div>
-                        <h3 class="green">8</h3>
-                        <small>AVAIL</small>
-                    </div>
-
-                    <div>
-                        <h3 class="blue">14</h3>
-                        <small>OCCU</small>
-                    </div>
-
-                    <div>
-                        <h3 class="yellow">3</h3>
-                        <small>DIRTY</small>
-                    </div>
-
-                    <div>
-                        <h3 class="red">1</h3>
-                        <small>MAIN</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="card-top d-flex justify-content-between">
-                    <i class="fa-solid fa-bell-concierge"></i>
-                    <span>SERVICES</span>
-                </div>
-
-                <div class="card-bottom">
-                    <h2>24 <small>LIVE</small></h2>
-                    <p>3 currently unavailable</p>
-                </div>
-            </div>
-
-            <div class="stat-card alert-card">
-                <div class="card-top d-flex justify-content-between">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>ALERTS</span>
-                </div>
-
-                <div class="card-bottom">
-                    <h2 class="red">2 <small>INCIDENTS</small></h2>
-                    <p>High priority status</p>
-                </div>
-            </div>
-
-        </section>
-
-
-        <!-- CONTENT -->
-        <section class="content-grid">
-
-            <!-- ROOM OVERVIEW -->
-            <div class="room-overview">
-                <div class="section-title d-flex justify-content-between align-items-center">
-                    <h3>Room Overview</h3>
-
-                    <div class="legend">
-                        <span class="green-dot"></span> AVAIL
-                        <span class="blue-dot"></span> OCCU
-                        <span class="yellow-dot"></span> DIRTY
-                    </div>
-                </div>
-
-                <div class="room-grid">
-                    <div class="room green">101</div>
-                    <div class="room blue">102</div>
-                    <div class="room blue">103</div>
-                    <div class="room yellow">104</div>
-                    <div class="room purple">105</div>
-                    <div class="room green">106</div>
-                    <div class="room red">201</div>
-                    <div class="room blue">202</div>
-                    <div class="room green">203</div>
-                    <div class="room blue">204</div>
-                    <div class="room blue">205</div>
-                    <div class="room yellow">206</div>
-                    <div class="room green">301</div>
-                    <div class="room red">302</div>
-                    <div class="room blue">303</div>
-                    <div class="room green">304</div>
-                </div>
-
-                <div class="quote-box">
-                    <p>
-                        â€œTrue architecture is more than just spaces.
-                        It's about how those spaces are managed.â€
-                    </p>
-
-                    <span>â€” NORDIC ESTATE DIRECTIVE</span>
-                </div>
-            </div>
-
-
-            <!-- RECENT ACTIVITY -->
-            <div class="recent-activity">
-
-                <div class="section-title d-flex justify-content-between align-items-center">
-                    <h3>Recent Activity</h3>
-                    <button>VIEW LOGS</button>
-                </div>
-
-                <div class="activity-list">
-
-                    <div class="activity-item">
-                        <div class="icon yellow-bg">
-                            <i class="fa-solid fa-broom"></i>
-                        </div>
-
-                        <div>
-                            <h6>Room 104 status changed to Dirty</h6>
-                            <p>2 mins ago</p>
-                        </div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="icon black-bg">
-                            <i class="fa-solid fa-user-plus"></i>
-                        </div>
-
-                        <div>
-                            <h6>New staff account created: Elena R.</h6>
-                            <p>14 mins ago</p>
-                        </div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="icon red-bg">
-                            <i class="fa-solid fa-wifi"></i>
-                        </div>
-
-                        <div>
-                            <h6 class="text-danger">Incident opened: WiFi down in Room 302</h6>
-                            <p>45 mins ago</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-
-        <!-- BOTTOM -->
-        <section class="bottom-section row align-items-center">
-            <div class="col-lg-6">
-                <img class="bottom-image"
-                     src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1200&auto=format&fit=crop"
-                     alt="hotel">
-            </div>
-
-            <div class="col-lg-6 bottom-text">
-                <span>PROPERTY SPOTLIGHT</span>
-                <h2>Stockholm North Extension</h2>
+            <div class="card-bottom">
+                <h2>
+                    <span th:text="${dashboard.activeStaff}">0</span>
+                    <small>đang hoạt động</small>
+                </h2>
 
                 <p>
-                    Ongoing integration of the new northern wing is at 84% completion.
-                    Final staff training for automated concierge services begins next week.
+                    <span th:text="${dashboard.inactiveStaff}">0</span>
+                    tài khoản đang ngừng hoạt động
                 </p>
-
-                <button class="report-btn">REPORTS</button>
             </div>
-        </section>
+        </article>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- ROOMS -->
+        <article class="stat-card stat-card-wide">
+            <div class="card-top">
+                <i class="fa-solid fa-bed"></i>
+                <span>PHÒNG</span>
+            </div>
+
+            <div class="room-stats">
+                <div>
+                    <h3 class="green" th:text="${dashboard.availableRooms}">0</h3>
+                    <small>Sẵn sàng</small>
+                </div>
+
+                <div>
+                    <h3 class="blue" th:text="${dashboard.occupiedRooms}">0</h3>
+                    <small>Đang sử dụng</small>
+                </div>
+
+                <div>
+                    <h3 class="red" th:text="${dashboard.maintenanceRooms}">0</h3>
+                    <small>Bảo trì</small>
+                </div>
+            </div>
+
+            <p class="stat-note">
+                Tổng số phòng:
+                <strong th:text="${dashboard.totalRooms}">0</strong>
+            </p>
+        </article>
+
+        <!-- SERVICES -->
+        <article class="stat-card">
+            <div class="card-top">
+                <i class="fa-solid fa-bell-concierge"></i>
+                <span>DỊCH VỤ</span>
+            </div>
+
+            <div class="card-bottom">
+                <h2>
+                    <span th:text="${dashboard.availableServices}">0</span>
+                    <small>đang mở</small>
+                </h2>
+
+                <p>
+                    <span th:text="${dashboard.unavailableServices}">0</span>
+                    dịch vụ tạm ngừng /
+                    <span th:text="${dashboard.totalServices}">0</span>
+                    tổng dịch vụ
+                </p>
+            </div>
+        </article>
+
+        <!-- ALERTS -->
+        <article class="stat-card alert-card">
+            <div class="card-top">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>CẦN XỬ LÝ</span>
+            </div>
+
+            <div class="card-bottom">
+                <h2 th:text="${dashboard.alerts != null ? #lists.size(dashboard.alerts) : 0}">
+                    0
+                </h2>
+
+                <p>Phòng bảo trì và dịch vụ tạm ngừng</p>
+            </div>
+        </article>
+
+    </section>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <section class="dashboard-main-grid">
+
+        <!-- ROOM OVERVIEW -->
+        <article class="dashboard-panel room-overview-panel">
+            <div class="section-title">
+                <div>
+                    <span>TÌNH TRẠNG PHÒNG</span>
+                    <h3>Tổng quan phòng</h3>
+                </div>
+
+                <a th:href="@{/hotel-admin/list-room}">Xem tất cả</a>
+            </div>
+
+            <div class="legend">
+                <span>
+                    <i class="legend-dot dot-green"></i>
+                    Sẵn sàng
+                </span>
+
+                <span>
+                    <i class="legend-dot dot-blue"></i>
+                    Đang sử dụng
+                </span>
+
+                <span>
+                    <i class="legend-dot dot-red"></i>
+                    Bảo trì
+                </span>
+            </div>
+
+            <div class="room-grid" th:if="${!#lists.isEmpty(dashboard.roomOverview)}">
+                <a th:each="room : ${dashboard.roomOverview}"
+                   class="room-cell"
+                   th:classappend="${room.statusClass}"
+                   th:href="${room.detailUrl}"
+                   th:title="${room.roomTypeName + ' - ' + room.statusLabel}">
+
+                    <strong th:text="${room.roomNumber}">101</strong>
+                    <span th:text="${room.statusLabel}">Sẵn sàng</span>
+                </a>
+            </div>
+
+            <div class="empty-state" th:if="${#lists.isEmpty(dashboard.roomOverview)}">
+                Chưa có dữ liệu phòng để hiển thị.
+            </div>
+        </article>
+
+        <!-- RIGHT SIDE -->
+        <aside class="dashboard-side">
+
+            <!-- ALERTS -->
+            <article class="dashboard-panel">
+                <div class="section-title compact-title">
+                    <div>
+                        <span>VIỆC CẦN XỬ LÝ</span>
+                        <h3>Cảnh báo</h3>
+                    </div>
+                </div>
+
+                <div class="alert-list" th:if="${!#lists.isEmpty(dashboard.alerts)}">
+                    <a th:each="alert : ${dashboard.alerts}"
+                       class="alert-item"
+                       th:classappend="${alert.level == 'danger' ? 'alert-danger' : 'alert-warning'}"
+                       th:href="${alert.actionUrl}">
+
+                        <div class="alert-icon">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        </div>
+
+                        <div>
+                            <span th:text="${alert.type}">Phòng</span>
+                            <h6 th:text="${alert.title}">Phòng 101 đang bảo trì</h6>
+                            <p th:text="${alert.message}">Cần kiểm tra và cập nhật trạng thái.</p>
+                            <small th:text="${alert.actionLabel}">Cập nhật</small>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(dashboard.alerts)}">
+                    Hiện chưa có cảnh báo cần xử lý.
+                </div>
+            </article>
+
+            <!-- QUICK ACTIONS -->
+            <article class="dashboard-panel quick-actions-panel">
+                <div class="section-title compact-title">
+                    <div>
+                        <span>TRUY CẬP NHANH</span>
+                        <h3>Thao tác nhanh</h3>
+                    </div>
+                </div>
+
+                <div class="quick-actions-grid">
+                    <a th:href="@{/hotel-admin/list-room}">
+                        <i class="fa-solid fa-bed"></i>
+                        <span>Quản lý phòng</span>
+                    </a>
+
+                    <a th:href="@{/hotel-admin/list-room/add}">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Thêm phòng</span>
+                    </a>
+
+                    <a th:href="@{/hotel-admin/services}">
+                        <i class="fa-solid fa-bell-concierge"></i>
+                        <span>Quản lý dịch vụ</span>
+                    </a>
+
+                    <a th:href="@{/hotel-admin/services/add}">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Thêm dịch vụ</span>
+                    </a>
+                </div>
+            </article>
+
+        </aside>
+
+    </section>
+
 </main>
 </body>
 </html>

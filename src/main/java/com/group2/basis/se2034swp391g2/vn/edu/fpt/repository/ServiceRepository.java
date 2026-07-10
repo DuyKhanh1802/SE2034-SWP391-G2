@@ -292,4 +292,12 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
     boolean existsActiveByNormalizedNameAndIdNot(@Param("name") String name,
                                                  @Param("serviceId") Long serviceId);
 
+    long countByIsDeletedFalse();
+
+    long countByIsDeletedFalseAndIsAvailableTrue();
+
+    long countByIsDeletedFalseAndIsAvailableFalse();
+
+    List<Service> findTop5ByIsDeletedFalseAndIsAvailableFalseOrderByUpdatedAtDesc();
+
 }

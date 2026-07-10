@@ -6,10 +6,9 @@
 <header th:fragment="header" class="topbar">
     <h4 th:text="${pageTitle != null ? pageTitle : 'DASHBOARD'}">DASHBOARD</h4>
 
-    <div class="dropdown">
-        <button class="profile-dropdown-btn dropdown-toggle"
+    <div class="staff-profile">
+        <button class="profile-dropdown-btn"
                 type="button"
-                data-bs-toggle="dropdown"
                 aria-expanded="false">
 
             <img th:src="${currentUser != null and currentUser.avatarUrl != null
