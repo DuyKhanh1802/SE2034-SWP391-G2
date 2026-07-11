@@ -16,6 +16,8 @@ public class OccupancyReportRequest {
 
     private Long variantId;
 
+    private String sortBy = "variantNameAsc";
+
     private Integer page = 0;
 
     public int getSafePage() {

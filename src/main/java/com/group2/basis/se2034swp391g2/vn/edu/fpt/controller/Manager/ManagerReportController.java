@@ -1,6 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Manager;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.OccupancyReportRequest;
@@ -87,10 +86,11 @@ public class ManagerReportController {
         model.addAttribute("totalIncome", cashTransactionService.getTotalIncome());
         model.addAttribute("totalExpense", cashTransactionService.getTotalExpense());
         model.addAttribute("occupancyRate", occupancyReport.getSummary().getOccupancyRate());
-        model.addAttribute("topServices", folioItemRepository.findTopServiceSales(PageRequest.of(0, 5)));
-        model.addAttribute("lowStockItems", inventoryManagementService.getLowStockItems());
-        model.addAttribute("occupancyRate", occupancyRate);
-
+        model.addAttribute("occupancyUsedNights", occupancyReport.getSummary().getOccupiedRoomNights());
+        model.addAttribute("occupancyAvailableNights", occupancyReport.getSummary().getAvailableRoomNights());
+        model.addAttribute("occupancyBestVariant", occupancyReport.getSummary().getBestPerformingVariant());
+        model.addAttribute("occupancyBookingCount", occupancyReport.getSummary().getBookingCount());
+        model.addAttribute("occupancyTotalRooms", occupancyReport.getSummary().getTotalRooms());
         model.addAttribute("topServices", folioItemRepository.findTopServiceSales(PageRequest.of(0, OVERVIEW_ITEM_LIMIT)));
 
         model.addAttribute("inventoryTotalItems", inventoryItems.size());
@@ -191,6 +191,7 @@ public class ManagerReportController {
                 request.getFromDate(),
                 request.getToDate(),
                 request.getVariantId(),
+                request.getSortBy(),
                 request.getSafePage()
         );
 
@@ -198,6 +199,7 @@ public class ManagerReportController {
         model.addAttribute("fromDate", request.getFromDate());
         model.addAttribute("toDate", request.getToDate());
         model.addAttribute("selectedVariantId", request.getVariantId());
+        model.addAttribute("sortBy", request.getSortBy());
         model.addAttribute("roomTypeVariants", managerOccupancyReportService.getRoomTypeVariantsForFilter());
 
         return "manager/occupancy-report";

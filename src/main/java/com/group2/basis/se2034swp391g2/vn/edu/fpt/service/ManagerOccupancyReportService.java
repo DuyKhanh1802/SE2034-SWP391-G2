@@ -30,7 +30,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ManagerOccupancyReportService {
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
-    private static final int OCCUPANCY_REPORT_PAGE_SIZE = 5;
+    private static final int OCCUPANCY_REPORT_PAGE_SIZE = 10;
     private static final List<BookingStatus> OCCUPANCY_STATUSES = List.of(
             BookingStatus.CONFIRMED,
             BookingStatus.CHECKED_IN,
@@ -43,7 +43,11 @@ public class ManagerOccupancyReportService {
     private final RoomTypeVariantRepository roomTypeVariantRepository;
 
     @Transactional(readOnly = true)
-    public OccupancyReportResponse getOccupancyReport(LocalDate fromDate, LocalDate toDate, Long variantId, int page) {
+    public OccupancyReportResponse getOccupancyReport(LocalDate fromDate,
+                                                      LocalDate toDate,
+                                                      Long variantId,
+                                                      String sortBy,
+                                                      int page) {
         LocalDate resolvedFromDate = resolveFromDate(fromDate);
         LocalDate resolvedToDate = resolveToDate(toDate);
         Long selectedVariantId = normalizeVariantId(variantId);
@@ -103,9 +107,7 @@ public class ManagerOccupancyReportService {
         List<OccupancyReportRowResponse> allRows = rowsByVariant.values()
                 .stream()
                 .map(RowAccumulator::toResponse)
-                .sorted(Comparator
-                        .comparing(OccupancyReportRowResponse::getRoomTypeName, String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(OccupancyReportRowResponse::getVariantName, String.CASE_INSENSITIVE_ORDER))
+                .sorted(buildRowComparator(sortBy))
                 .toList();
 
         OccupancyReportSummaryResponse summary = buildSummary(allRows, reportBookingIds.size());
@@ -137,11 +139,11 @@ public class ManagerOccupancyReportService {
     }
 
     public OccupancyReportResponse getOccupancyReport(LocalDate fromDate, LocalDate toDate, int page) {
-        return getOccupancyReport(fromDate, toDate, null, page);
+        return getOccupancyReport(fromDate, toDate, null, null, page);
     }
 
     public OccupancyReportResponse getOccupancyReport(LocalDate fromDate, LocalDate toDate) {
-        return getOccupancyReport(fromDate, toDate, null, 0);
+        return getOccupancyReport(fromDate, toDate, null, null, 0);
     }
 
     public List<RoomTypeVariant> getRoomTypeVariantsForFilter() {
@@ -214,6 +216,34 @@ public class ManagerOccupancyReportService {
                 bookingCount,
                 bestVariant
         );
+    }
+
+    private Comparator<OccupancyReportRowResponse> buildRowComparator(String sortBy) {
+        Comparator<OccupancyReportRowResponse> defaultComparator = Comparator
+                .comparing(OccupancyReportRowResponse::getRoomTypeName, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(OccupancyReportRowResponse::getVariantName, String.CASE_INSENSITIVE_ORDER);
+
+        if (sortBy == null || sortBy.isBlank()) {
+            return defaultComparator;
+        }
+
+        return switch (sortBy) {
+            case "occupancyDesc" -> Comparator
+                    .comparing(OccupancyReportRowResponse::getOccupancyRate)
+                    .reversed()
+                    .thenComparing(defaultComparator);
+            case "occupancyAsc" -> Comparator
+                    .comparing(OccupancyReportRowResponse::getOccupancyRate)
+                    .thenComparing(defaultComparator);
+            case "occupiedNightsDesc" -> Comparator
+                    .comparingLong(OccupancyReportRowResponse::getOccupiedRoomNights)
+                    .reversed()
+                    .thenComparing(defaultComparator);
+            case "occupiedNightsAsc" -> Comparator
+                    .comparingLong(OccupancyReportRowResponse::getOccupiedRoomNights)
+                    .thenComparing(defaultComparator);
+            default -> defaultComparator;
+        };
     }
 
     private long calculateOverlapNights(LocalDate bookingFromDate,

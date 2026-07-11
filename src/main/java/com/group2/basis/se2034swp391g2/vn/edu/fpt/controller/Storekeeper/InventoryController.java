@@ -206,7 +206,7 @@ public class InventoryController {
                     itemId, quantity, unitCost, supplier, note, receiptDate, batchCode, expiryDate,
                     paymentMethod,
                     resolveCurrentUser(authentication, session));
-            redirectAttributes.addFlashAttribute("successMessage", "Đã lập phiếu nhập hàng và ghi nhận chi quỹ.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã lập phiếu nhập hàng và ghi nhận giao dịch chi nhập kho.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

@@ -30,7 +30,7 @@
             <h2>Bộ lọc báo cáo</h2>
         </div>
 
-        <form th:action="@{/manager/reports/occupancy}" method="get" class="transaction-filter report-filter-form">
+        <form th:action="@{/manager/reports/occupancy}" method="get" class="transaction-filter report-filter-form occupancy-filter-form">
             <div class="report-filter-field">
                 <label for="fromDate">Từ ngày</label>
                 <input id="fromDate"
@@ -60,6 +60,32 @@
                 </select>
             </div>
 
+            <div class="report-filter-field">
+                <label for="sortBy">Sắp xếp</label>
+                <select id="sortBy" name="sortBy">
+                    <option value="variantNameAsc"
+                            th:selected="${sortBy == null or sortBy == 'variantNameAsc'}">
+                        Tên hạng phòng A-Z
+                    </option>
+                    <option value="occupancyDesc"
+                            th:selected="${sortBy == 'occupancyDesc'}">
+                        Công suất cao đến thấp
+                    </option>
+                    <option value="occupancyAsc"
+                            th:selected="${sortBy == 'occupancyAsc'}">
+                        Công suất thấp đến cao
+                    </option>
+                    <option value="occupiedNightsDesc"
+                            th:selected="${sortBy == 'occupiedNightsDesc'}">
+                        Đêm sử dụng nhiều nhất
+                    </option>
+                    <option value="occupiedNightsAsc"
+                            th:selected="${sortBy == 'occupiedNightsAsc'}">
+                        Đêm sử dụng ít nhất
+                    </option>
+                </select>
+            </div>
+
             <div class="form-actions cute-filter-actions">
                 <button type="submit" class="cute-btn cute-btn-filter">
                     <i class="fa-solid fa-filter"></i>
@@ -76,7 +102,7 @@
     <section class="metric-grid">
         <div class="metric-card detail-metric metric-completed">
             <span>Công suất phòng</span>
-            <strong th:text="${#numbers.formatDecimal(report.summary.occupancyRate, 0, 'POINT', 1, 'COMMA') + '%'}">
+            <strong th:text="${#numbers.formatDecimal(report.summary.occupancyRate, 1, 'POINT', 1, 'COMMA') + '%'}">
                 0.0%
             </strong>
         </div>
@@ -105,14 +131,14 @@
 
     <section class="metric-grid">
         <div class="metric-card">
-            <span>Phòng kinh doanh</span>
+            <span>Số phòng đang kinh doanh</span>
             <strong th:text="${report.summary.totalRooms}">
                 0
             </strong>
         </div>
 
         <div class="metric-card">
-            <span>Booking hợp lệ</span>
+            <span>Số booking được tính</span>
             <strong th:text="${report.summary.bookingCount}">
                 0
             </strong>
@@ -128,9 +154,9 @@
         <div class="metric-card">
             <span>Khoảng thời gian</span>
             <strong>
-                <span th:text="${#temporals.format(report.fromDate, 'dd/MM/yyyy')}">01/07/2026</span>
-                -
-                <span th:text="${#temporals.format(report.toDate, 'dd/MM/yyyy')}">10/07/2026</span>
+                <span th:text="${#temporals.format(report.fromDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(report.toDate, 'dd/MM/yyyy')}">
+                    01/07/2026 - 10/07/2026
+                </span>
             </strong>
         </div>
     </section>
@@ -196,7 +222,7 @@
                     </td>
 
                     <td class="money-text income"
-                        th:text="${#numbers.formatDecimal(row.occupancyRate, 0, 'POINT', 1, 'COMMA') + '%'}">
+                        th:text="${#numbers.formatDecimal(row.occupancyRate, 1, 'POINT', 1, 'COMMA') + '%'}">
                         0.0%
                     </td>
                 </tr>
@@ -225,6 +251,7 @@
                         fromDate=${fromDate},
                         toDate=${toDate},
                         variantId=${selectedVariantId},
+                        sortBy=${sortBy},
                         page=${report.currentPage - 1}
                    )}">
                     Trước
@@ -235,6 +262,7 @@
                         fromDate=${fromDate},
                         toDate=${toDate},
                         variantId=${selectedVariantId},
+                        sortBy=${sortBy},
                         page=${pageNumber}
                    )}"
                    th:classappend="${pageNumber == report.currentPage} ? 'active'"
@@ -251,6 +279,7 @@
                         fromDate=${fromDate},
                         toDate=${toDate},
                         variantId=${selectedVariantId},
+                        sortBy=${sortBy},
                         page=${report.currentPage + 1}
                    )}">
                     Sau

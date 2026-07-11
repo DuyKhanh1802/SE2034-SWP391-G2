@@ -776,13 +776,6 @@ button,
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: all 0.22s ease;
-}
-
-.report-directory-card:hover {
-    color: #111111;
-    transform: translateY(-2px);
-    box-shadow: 0 18px 38px rgba(17, 17, 17, 0.075);
 }
 
 .report-directory-card::before {
@@ -888,6 +881,10 @@ button,
     grid-template-columns: 1.15fr 0.95fr;
     gap: 18px;
     align-items: start;
+}
+
+.report-overview-grid-spaced {
+    margin-bottom: 18px;
 }
 
 .report-snapshot-card {
@@ -1053,6 +1050,54 @@ button,
     white-space: nowrap;
 }
 
+.report-occupancy-simple {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.report-occupancy-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 52px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eeeae6;
+}
+
+.report-occupancy-row:first-child {
+    padding-top: 2px;
+}
+
+.report-occupancy-row:last-child {
+    border-bottom: 0;
+}
+
+.report-occupancy-row span {
+    color: #777777;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.report-occupancy-row strong {
+    min-width: 0;
+    color: #111111;
+    font-size: 15px;
+    font-weight: 900;
+    text-align: right;
+}
+
+.report-occupancy-row.main strong {
+    color: #25637a;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.report-occupancy-row b {
+    color: inherit;
+}
+
 .report-threshold {
     color: #8a5a12;
     font-size: 11px;
@@ -1129,6 +1174,10 @@ button,
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px 16px;
     align-items: end;
+}
+
+.occupancy-filter-form {
+    grid-template-columns: 1fr 1fr 1.15fr 1fr auto;
 }
 
 .report-filter-field {

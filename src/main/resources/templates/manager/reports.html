@@ -23,7 +23,7 @@
                 Báo cáo doanh thu
             </a>
 
-            <a href="#" class="report-soft-btn report-soft-btn-light">
+            <a th:href="@{/manager/reports/occupancy}" class="report-soft-btn report-soft-btn-light">
                 <i class="fa-solid fa-bed"></i>
                 Báo cáo công suất
             </a>
@@ -42,7 +42,7 @@
 
     <!-- REPORT DIRECTORY -->
     <section class="report-directory-grid">
-        <a href="#" class="report-directory-card report-directory-revenue">
+        <div class="report-directory-card report-directory-revenue">
             <div class="report-directory-icon">
                 <i class="fa-solid fa-sack-dollar"></i>
             </div>
@@ -56,9 +56,9 @@
                 </strong>
                 <small>Doanh thu tháng hiện tại</small>
             </div>
-        </a>
+        </div>
 
-        <a th:href="@{/manager/reports/occupancy}" class="report-directory-card report-directory-occupancy">
+        <div class="report-directory-card report-directory-occupancy">
             <div class="report-directory-icon">
                 <i class="fa-solid fa-bed"></i>
             </div>
@@ -72,9 +72,9 @@
                 </strong>
                 <small>Công suất theo dữ liệu báo cáo</small>
             </div>
-        </a>
+        </div>
 
-        <a th:href="@{/manager/reports/services}" class="report-directory-card report-directory-service">
+        <div class="report-directory-card report-directory-service">
             <div class="report-directory-icon">
                 <i class="fa-solid fa-chart-line"></i>
             </div>
@@ -88,9 +88,9 @@
                 </strong>
                 <small>Dịch vụ nổi bật đang hiển thị</small>
             </div>
-        </a>
+        </div>
 
-        <a href="#" class="report-directory-card report-directory-inventory">
+        <div class="report-directory-card report-directory-inventory">
             <div class="report-directory-icon">
                 <i class="fa-solid fa-boxes-stacked"></i>
             </div>
@@ -99,15 +99,64 @@
                 <span>Inventory Report</span>
                 <h2>Báo cáo tồn kho</h2>
                 <p>Theo dõi cảnh báo tồn kho thấp, giá trị tồn kho và tình hình tiêu hao vật tư.</p>
-                <strong th:text="${#lists.size(lowStockItems)}">
+                <strong th:text="${#lists.size(inventoryAlertItems)}">
                     0
                 </strong>
                 <small>Mặt hàng đang cảnh báo</small>
             </div>
-        </a>
+        </div>
     </section>
 
     <!-- REPORT SNAPSHOTS -->
+    <section class="report-overview-grid report-overview-grid-spaced">
+        <!-- OCCUPANCY REPORT SNAPSHOT -->
+        <div class="report-snapshot-card">
+            <div class="report-snapshot-header">
+                <div>
+                    <span>Occupancy Snapshot</span>
+                    <h2>Báo cáo công suất</h2>
+                    <p>Tóm tắt tỉ lệ lấp phòng, số đêm phòng được sử dụng và các hạng phòng có hiệu suất cao.</p>
+                </div>
+
+                <a th:href="@{/manager/reports/occupancy}" class="report-mini-link">
+                    Xem chi tiết
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="report-occupancy-simple">
+                <div class="report-occupancy-row main">
+                    <span>Công suất phòng</span>
+                    <strong th:text="${occupancyRate + '%'}">0%</strong>
+                </div>
+
+                <div class="report-occupancy-row">
+                    <span>Đêm sử dụng / khả dụng</span>
+                    <strong>
+                        <b th:text="${occupancyUsedNights}">0</b>
+                        /
+                        <b th:text="${occupancyAvailableNights}">0</b>
+                    </strong>
+                </div>
+
+                <div class="report-occupancy-row">
+                    <span>Hạng phòng có công suất cao nhất</span>
+                    <strong th:text="${occupancyBestVariant}">Không có dữ liệu</strong>
+                </div>
+
+                <div class="report-occupancy-row">
+                    <span>Số booking được tính</span>
+                    <strong th:text="${occupancyBookingCount}">0</strong>
+                </div>
+
+                <div class="report-occupancy-row">
+                    <span>Số phòng đang kinh doanh</span>
+                    <strong th:text="${occupancyTotalRooms}">0</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="report-overview-grid">
 
         <!-- SERVICE REPORT SNAPSHOT -->
