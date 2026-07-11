@@ -556,7 +556,7 @@ public class OnlineBookingService {
         }
 
 
-        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setStatus(BookingStatus.PENDING);
         booking.setDepositStatus(DepositStatus.PAID);
         booking.setDepositAmount(paidAmount);
 

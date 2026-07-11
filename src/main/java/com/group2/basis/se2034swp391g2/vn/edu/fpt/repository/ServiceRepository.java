@@ -216,56 +216,96 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
 
     @Query(
             value = """
-            SELECT
-                s.service_id AS serviceId,
-                s.name AS name,
-                s.description AS description,
-                s.price AS price,
-                s.category_id AS categoryId,
-                sc.name AS categoryName,
-                img.image_url AS imageUrl
-            FROM services s
-            LEFT JOIN service_categories sc
-                ON sc.service_category_id = s.category_id
-            LEFT JOIN images img
-                ON img.entity_type = 'SERVICE'
-                AND img.entity_id = s.service_id
-                AND img.is_primary = 1
-            WHERE s.is_deleted = 0
-              AND s.is_available = 1
-              AND (
-                    :category = 'ALL'
-                    OR (:category = 'DINING' AND s.category_id = 1)
-                    OR (:category = 'WELLNESS' AND s.category_id = 2)
-                  )
-              AND (
-                    :priceFilter = 'ALL'
-                    OR (:priceFilter = 'UNDER_200' AND s.price < 200000)
-                    OR (:priceFilter = 'FROM_200_TO_500' AND s.price >= 200000 AND s.price <= 500000)
-                    OR (:priceFilter = 'OVER_500' AND s.price > 500000)
-                  )
-            ORDER BY
-                CASE WHEN :sort = 'priceAsc' THEN s.price END ASC,
-                CASE WHEN :sort = 'priceDesc' THEN s.price END DESC,
-                s.service_id ASC
-            """,
+        SELECT
+            s.service_id AS serviceId,
+            s.name AS name,
+            s.description AS description,
+            s.price AS price,
+            sc.name AS categoryName,
+            img.image_url AS imageUrl
+
+        FROM services s
+
+        LEFT JOIN service_categories sc
+            ON sc.service_category_id = s.category_id
+
+        LEFT JOIN images img
+            ON img.entity_type = 'SERVICE'
+            AND img.entity_id = s.service_id
+            AND img.is_primary = 1
+
+        WHERE s.is_deleted = 0
+          AND s.is_available = 1
+
+          AND (
+                :category = 'ALL'
+                OR (:category = 'DINING' AND s.category_id = 1)
+                OR (:category = 'WELLNESS' AND s.category_id = 2)
+              )
+
+          AND (
+                :priceFilter = 'ALL'
+                OR (
+                    :priceFilter = 'UNDER_200'
+                    AND s.price < 200000
+                )
+                OR (
+                    :priceFilter = 'FROM_200_TO_500'
+                    AND s.price >= 200000
+                    AND s.price <= 500000
+                )
+                OR (
+                    :priceFilter = 'OVER_500'
+                    AND s.price > 500000
+                )
+              )
+
+        ORDER BY
+            CASE
+                WHEN :sort = 'priceAsc'
+                THEN s.price
+            END ASC,
+
+            CASE
+                WHEN :sort = 'priceDesc'
+                THEN s.price
+            END DESC,
+
+            s.service_id ASC
+        """,
+
             countQuery = """
-            SELECT COUNT(*)
-            FROM services s
-            WHERE s.is_deleted = 0
-              AND s.is_available = 1
-              AND (
-                    :category = 'ALL'
-                    OR (:category = 'DINING' AND s.category_id = 1)
-                    OR (:category = 'WELLNESS' AND s.category_id = 2)
-                  )
-              AND (
-                    :priceFilter = 'ALL'
-                    OR (:priceFilter = 'UNDER_200' AND s.price < 200000)
-                    OR (:priceFilter = 'FROM_200_TO_500' AND s.price >= 200000 AND s.price <= 500000)
-                    OR (:priceFilter = 'OVER_500' AND s.price > 500000)
-                  )
-            """,
+        SELECT COUNT(*)
+
+        FROM services s
+
+        WHERE s.is_deleted = 0
+          AND s.is_available = 1
+
+          AND (
+                :category = 'ALL'
+                OR (:category = 'DINING' AND s.category_id = 1)
+                OR (:category = 'WELLNESS' AND s.category_id = 2)
+              )
+
+          AND (
+                :priceFilter = 'ALL'
+                OR (
+                    :priceFilter = 'UNDER_200'
+                    AND s.price < 200000
+                )
+                OR (
+                    :priceFilter = 'FROM_200_TO_500'
+                    AND s.price >= 200000
+                    AND s.price <= 500000
+                )
+                OR (
+                    :priceFilter = 'OVER_500'
+                    AND s.price > 500000
+                )
+              )
+        """,
+
             nativeQuery = true
     )
     Page<BookingServiceProjection> findBookingServices(
@@ -274,6 +314,7 @@ public interface ServiceRepository extends JpaRepository<com.group2.basis.se2034
             @Param("priceFilter") String priceFilter,
             Pageable pageable
     );
+
     @Query("""
     SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END
     FROM Service s
