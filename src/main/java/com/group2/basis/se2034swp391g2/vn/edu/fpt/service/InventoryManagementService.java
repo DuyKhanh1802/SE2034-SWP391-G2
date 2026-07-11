@@ -54,12 +54,11 @@ public class InventoryManagementService {
     );
     private static final long MAX_IMPORT_FILE_SIZE = 5L * 1024 * 1024;
     private static final int MAX_IMPORT_ROWS = 1000;
-    private static final int ITEM_IMPORT_COLUMN_COUNT = 5;
+    private static final int ITEM_IMPORT_COLUMN_COUNT = 4;
     private static final List<String> ITEM_IMPORT_HEADERS = List.of(
             "ten_hang",
             "loai",
             "don_vi",
-            "ton_dau_ky",
             "nguong_canh_bao");
     private static final int RECEIPT_IMPORT_COLUMN_COUNT = 7;
     private static final List<String> RECEIPT_IMPORT_HEADERS = List.of(
@@ -227,10 +226,8 @@ public class InventoryManagementService {
                     }
                 }
 
-                BigDecimal openingQuantity = readDecimalCell(
-                        row, 3, "Tá»“n Ä‘áº§u ká»³", excelRowNumber, 2, 10, rowErrors);
                 BigDecimal minimumQuantity = readDecimalCell(
-                        row, 4, "NgÆ°á»¡ng cáº£nh bÃ¡o", excelRowNumber, 2, 10, rowErrors);
+                        row, 3, "NgÆ°á»¡ng cáº£nh bÃ¡o", excelRowNumber, 2, 10, rowErrors);
                 String normalizedName = name == null ? null : name.trim().toLowerCase(Locale.ROOT);
                 if (normalizedName != null && !normalizedName.isBlank() && !namesInFile.add(normalizedName)) {
                     rowErrors.add("DÃ²ng " + excelRowNumber + ": tÃªn hÃ ng bá»‹ trÃ¹ng trong chÃ­nh file Excel.");
@@ -248,7 +245,7 @@ public class InventoryManagementService {
 
                 validRows.add(new InventoryImportRow(
                         name.trim(), category, unit.trim(),
-                        openingQuantity, minimumQuantity, BigDecimal.ZERO));
+                        minimumQuantity, BigDecimal.ZERO));
             }
 
             if (!errors.isEmpty()) {
@@ -260,9 +257,9 @@ public class InventoryManagementService {
 
             for (InventoryImportRow row : validRows) {
                 createItem(row.name(), row.category(), row.unit(),
-                        row.openingQuantity(), row.minimumQuantity(), row.unitCost());
+                        row.minimumQuantity(), row.unitCost());
             }
-            return new InventoryImportResult(validRows.size(), skippedCount, BigDecimal.ZERO);
+            return new InventoryImportResult(validRows.size(), skippedCount);
         } catch (IOException e) {
             throw new IllegalArgumentException("KhÃ´ng thá»ƒ Ä‘Ã³ng hoáº·c hoÃ n táº¥t viá»‡c Ä‘á»c file Excel.");
         }
@@ -271,7 +268,6 @@ public class InventoryManagementService {
     private InventoryItem createItem(String name,
                                      InventoryCategory category,
                                      String unit,
-                                     BigDecimal openingQuantity,
                                      BigDecimal minimumQuantity,
                                      BigDecimal unitCost) {
         if (name == null || name.isBlank()) {
@@ -287,7 +283,6 @@ public class InventoryManagementService {
             throw new IllegalArgumentException("HÃ ng hÃ³a Ä‘Ã£ tá»“n táº¡i.");
         }
 
-        BigDecimal opening = normalizeQuantity(openingQuantity, "Tá»“n Ä‘áº§u ká»³", false);
         BigDecimal normalizedMinimumQuantity = normalizeQuantity(minimumQuantity, "Má»©c tá»“n tá»‘i thiá»ƒu", false);
         BigDecimal normalizedUnitCost = normalizeNonNegative(unitCost);
         validateWholeNumber(normalizedUnitCost, "GiÃ¡ vá»‘n trÆ°á»›c VAT");
@@ -295,7 +290,6 @@ public class InventoryManagementService {
                 .name(name.trim())
                 .category(category)
                 .unit(unit.trim())
-                .openingQuantity(opening)
                 .currentQuantity(BigDecimal.ZERO)
                 .minimumQuantity(normalizedMinimumQuantity)
                 .unitCost(normalizedUnitCost)
@@ -305,13 +299,12 @@ public class InventoryManagementService {
         return inventoryItemRepository.save(item);
     }
 
-    public record InventoryImportResult(int importedCount, int skippedCount, BigDecimal totalOpeningCost) {
+    public record InventoryImportResult(int importedCount, int skippedCount) {
     }
 
     private record InventoryImportRow(String name,
                                       InventoryCategory category,
                                       String unit,
-                                      BigDecimal openingQuantity,
                                       BigDecimal minimumQuantity,
                                       BigDecimal unitCost) {
     }

@@ -24,7 +24,6 @@
     </section>
 
     <section class="summary-grid">
-        <div class="summary-card"><span>Tồn đầu kỳ</span><strong th:text="${@inventoryQuantityFormatter.format(item.openingQuantity) + ' ' + item.unit}">0</strong></div>
         <div class="summary-card"><span>Tổng nhập</span><strong th:text="${@inventoryQuantityFormatter.format(totalIn) + ' ' + item.unit}">0</strong></div>
         <div class="summary-card"><span>Tổng xuất</span><strong th:text="${@inventoryQuantityFormatter.format(totalOut) + ' ' + item.unit}">0</strong></div>
         <div class="summary-card"><span>Tồn hiện tại</span><strong th:classappend="${item.currentQuantity.compareTo(item.minimumQuantity) <= 0} ? ' text-danger'" th:text="${@inventoryQuantityFormatter.format(item.currentQuantity) + ' ' + item.unit}">0</strong></div>

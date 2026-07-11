@@ -30,9 +30,6 @@ public class InventoryItem {
     @Column(name = "unit", nullable = false, length = 30, columnDefinition = "NVARCHAR(30)")
     private String unit;
 
-    @Column(name = "opening_quantity", nullable = false, precision = 12, scale = 2)
-    private BigDecimal openingQuantity = BigDecimal.ZERO;
-
     @Column(name = "current_quantity", nullable = false, precision = 12, scale = 2)
     private BigDecimal currentQuantity = BigDecimal.ZERO;
 
@@ -59,9 +56,6 @@ public class InventoryItem {
         Instant now = Instant.now();
         if (this.createdAt == null) {
             this.createdAt = now;
-        }
-        if (this.openingQuantity == null) {
-            this.openingQuantity = BigDecimal.ZERO;
         }
         if (this.currentQuantity == null) {
             this.currentQuantity = BigDecimal.ZERO;
