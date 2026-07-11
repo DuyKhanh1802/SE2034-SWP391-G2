@@ -11,8 +11,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CheckoutService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
@@ -433,7 +431,7 @@ public class BookingController {
             model.addAttribute("request", new CheckoutRequest());
             model.addAttribute("paymentMethods", PaymentMethod.values());
             model.addAttribute("pageTitle", "Trả phòng");
-            return "receptionist/Checkout";
+            return "CheckoutProcedure";
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receptionist/rooms";

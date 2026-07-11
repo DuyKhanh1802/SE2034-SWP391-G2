@@ -132,7 +132,7 @@ public class InventoryManagementService {
     @Transactional(readOnly = true)
     public InventoryItem getItem(Long id) {
         InventoryItem item = inventoryItemRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hàng hóa."));
+                .orElseThrow(() -> new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y hÃ ng hÃ³a."));
         attachLatestBatchExpiry(item);
         return item;
     }
@@ -149,11 +149,11 @@ public class InventoryManagementService {
     public void softDeleteItem(Long id) {
         InventoryItem item = getItem(id);
         if (item.getCurrentQuantity().compareTo(BigDecimal.ZERO) != 0) {
-            throw new IllegalArgumentException("Chỉ có thể xóa hàng hóa khi tồn kho bằng 0.");
+            throw new IllegalArgumentException("Chá»‰ cÃ³ thá»ƒ xÃ³a hÃ ng hÃ³a khi tá»“n kho báº±ng 0.");
         }
         if (serviceInventoryMappingRepository.existsByItem_Id(id)
                 || roomRefreshInventoryMappingRepository.existsByItem_Id(id)) {
-            throw new IllegalArgumentException("Hãy xóa toàn bộ quy tắc tiêu hao trước khi xóa hàng hóa.");
+            throw new IllegalArgumentException("HÃ£y xÃ³a toÃ n bá»™ quy táº¯c tiÃªu hao trÆ°á»›c khi xÃ³a hÃ ng hÃ³a.");
         }
         item.setIsDeleted(true);
         inventoryItemRepository.save(item);
@@ -162,27 +162,27 @@ public class InventoryManagementService {
     @Transactional
     public InventoryImportResult importItemsFromExcel(MultipartFile file, User createdBy) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng chọn file Excel cần import.");
+            throw new IllegalArgumentException("Vui lÃ²ng chá»n file Excel cáº§n import.");
         }
 
         String filename = file.getOriginalFilename();
         if (filename == null || !filename.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
-            throw new IllegalArgumentException("Chỉ hỗ trợ file Excel định dạng .xlsx.");
+            throw new IllegalArgumentException("Chá»‰ há»— trá»£ file Excel Ä‘á»‹nh dáº¡ng .xlsx.");
         }
         if (file.getSize() > MAX_IMPORT_FILE_SIZE) {
-            throw new IllegalArgumentException("File Excel không được vượt quá 5 MB.");
+            throw new IllegalArgumentException("File Excel khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ 5 MB.");
         }
 
         Workbook workbook;
         try {
             workbook = new XSSFWorkbook(file.getInputStream());
         } catch (IOException | RuntimeException e) {
-            throw new IllegalArgumentException("File không phải workbook .xlsx hợp lệ hoặc đã bị hỏng.");
+            throw new IllegalArgumentException("File khÃ´ng pháº£i workbook .xlsx há»£p lá»‡ hoáº·c Ä‘Ã£ bá»‹ há»ng.");
         }
 
         try (workbook) {
             if (workbook.getNumberOfSheets() == 0) {
-                throw new IllegalArgumentException("File Excel không có sheet dữ liệu.");
+                throw new IllegalArgumentException("File Excel khÃ´ng cÃ³ sheet dá»¯ liá»‡u.");
             }
 
             DataFormatter formatter = new DataFormatter(Locale.US);
@@ -190,7 +190,7 @@ public class InventoryManagementService {
             validateImportHeader(sheet, formatter, ITEM_IMPORT_HEADERS, ITEM_IMPORT_COLUMN_COUNT);
 
             if (sheet.getLastRowNum() > MAX_IMPORT_ROWS) {
-                throw new IllegalArgumentException("File Excel chỉ được chứa tối đa 1.000 dòng dữ liệu.");
+                throw new IllegalArgumentException("File Excel chá»‰ Ä‘Æ°á»£c chá»©a tá»‘i Ä‘a 1.000 dÃ²ng dá»¯ liá»‡u.");
             }
 
             List<InventoryImportRow> validRows = new ArrayList<>();
@@ -208,13 +208,13 @@ public class InventoryManagementService {
                 List<String> rowErrors = new ArrayList<>();
                 validateNoExtraColumns(formatter, row, excelRowNumber, ITEM_IMPORT_COLUMN_COUNT, rowErrors);
 
-                String name = readTextCell(formatter, row, 0, "Tên hàng", excelRowNumber, rowErrors);
-                String categoryName = readTextCell(formatter, row, 1, "Loại hàng", excelRowNumber, rowErrors);
-                String unit = readTextCell(formatter, row, 2, "Đơn vị tính", excelRowNumber, rowErrors);
+                String name = readTextCell(formatter, row, 0, "TÃªn hÃ ng", excelRowNumber, rowErrors);
+                String categoryName = readTextCell(formatter, row, 1, "Loáº¡i hÃ ng", excelRowNumber, rowErrors);
+                String unit = readTextCell(formatter, row, 2, "ÄÆ¡n vá»‹ tÃ­nh", excelRowNumber, rowErrors);
 
-                validateRequiredAndLength(name, "Tên hàng", 150, excelRowNumber, rowErrors);
-                validateRequiredAndLength(categoryName, "Loại hàng", 100, excelRowNumber, rowErrors);
-                validateRequiredAndLength(unit, "Đơn vị tính", 30, excelRowNumber, rowErrors);
+                validateRequiredAndLength(name, "TÃªn hÃ ng", 150, excelRowNumber, rowErrors);
+                validateRequiredAndLength(categoryName, "Loáº¡i hÃ ng", 100, excelRowNumber, rowErrors);
+                validateRequiredAndLength(unit, "ÄÆ¡n vá»‹ tÃ­nh", 30, excelRowNumber, rowErrors);
 
                 InventoryCategory category = null;
                 if (categoryName != null && !categoryName.isBlank()) {
@@ -222,18 +222,18 @@ public class InventoryManagementService {
                             .findByNameIgnoreCaseAndIsActiveTrue(categoryName)
                             .orElse(null);
                     if (category == null) {
-                        rowErrors.add("Dòng " + excelRowNumber + ": loại hàng '" + categoryName
-                                + "' không tồn tại hoặc đã ngừng sử dụng.");
+                        rowErrors.add("DÃ²ng " + excelRowNumber + ": loáº¡i hÃ ng '" + categoryName
+                                + "' khÃ´ng tá»“n táº¡i hoáº·c Ä‘Ã£ ngá»«ng sá»­ dá»¥ng.");
                     }
                 }
 
                 BigDecimal openingQuantity = readDecimalCell(
-                        row, 3, "Tồn đầu kỳ", excelRowNumber, 2, 10, rowErrors);
+                        row, 3, "Tá»“n Ä‘áº§u ká»³", excelRowNumber, 2, 10, rowErrors);
                 BigDecimal minimumQuantity = readDecimalCell(
-                        row, 4, "Ngưỡng cảnh báo", excelRowNumber, 2, 10, rowErrors);
+                        row, 4, "NgÆ°á»¡ng cáº£nh bÃ¡o", excelRowNumber, 2, 10, rowErrors);
                 String normalizedName = name == null ? null : name.trim().toLowerCase(Locale.ROOT);
                 if (normalizedName != null && !normalizedName.isBlank() && !namesInFile.add(normalizedName)) {
-                    rowErrors.add("Dòng " + excelRowNumber + ": tên hàng bị trùng trong chính file Excel.");
+                    rowErrors.add("DÃ²ng " + excelRowNumber + ": tÃªn hÃ ng bá»‹ trÃ¹ng trong chÃ­nh file Excel.");
                 }
 
                 if (!rowErrors.isEmpty()) {
@@ -255,7 +255,7 @@ public class InventoryManagementService {
                 throw new IllegalArgumentException(buildImportErrorMessage(errors));
             }
             if (validRows.isEmpty() && skippedCount == 0) {
-                throw new IllegalArgumentException("File Excel không có dòng hàng hóa nào.");
+                throw new IllegalArgumentException("File Excel khÃ´ng cÃ³ dÃ²ng hÃ ng hÃ³a nÃ o.");
             }
 
             for (InventoryImportRow row : validRows) {
@@ -264,7 +264,7 @@ public class InventoryManagementService {
             }
             return new InventoryImportResult(validRows.size(), skippedCount, BigDecimal.ZERO);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Không thể đóng hoặc hoàn tất việc đọc file Excel.");
+            throw new IllegalArgumentException("KhÃ´ng thá»ƒ Ä‘Ã³ng hoáº·c hoÃ n táº¥t viá»‡c Ä‘á»c file Excel.");
         }
     }
 
@@ -275,22 +275,22 @@ public class InventoryManagementService {
                                      BigDecimal minimumQuantity,
                                      BigDecimal unitCost) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Tên hàng hóa là bắt buộc.");
+            throw new IllegalArgumentException("TÃªn hÃ ng hÃ³a lÃ  báº¯t buá»™c.");
         }
         if (unit == null || unit.isBlank()) {
-            throw new IllegalArgumentException("Đơn vị tính là bắt buộc.");
+            throw new IllegalArgumentException("ÄÆ¡n vá»‹ tÃ­nh lÃ  báº¯t buá»™c.");
         }
         if (category == null) {
-            throw new IllegalArgumentException("Loại hàng là bắt buộc.");
+            throw new IllegalArgumentException("Loáº¡i hÃ ng lÃ  báº¯t buá»™c.");
         }
         if (inventoryItemRepository.existsByNameIgnoreCaseAndIsDeletedFalse(name.trim())) {
-            throw new IllegalArgumentException("Hàng hóa đã tồn tại.");
+            throw new IllegalArgumentException("HÃ ng hÃ³a Ä‘Ã£ tá»“n táº¡i.");
         }
 
-        BigDecimal opening = normalizeQuantity(openingQuantity, "Tồn đầu kỳ", false);
-        BigDecimal normalizedMinimumQuantity = normalizeQuantity(minimumQuantity, "Mức tồn tối thiểu", false);
+        BigDecimal opening = normalizeQuantity(openingQuantity, "Tá»“n Ä‘áº§u ká»³", false);
+        BigDecimal normalizedMinimumQuantity = normalizeQuantity(minimumQuantity, "Má»©c tá»“n tá»‘i thiá»ƒu", false);
         BigDecimal normalizedUnitCost = normalizeNonNegative(unitCost);
-        validateWholeNumber(normalizedUnitCost, "Giá vốn trước VAT");
+        validateWholeNumber(normalizedUnitCost, "GiÃ¡ vá»‘n trÆ°á»›c VAT");
         InventoryItem item = InventoryItem.builder()
                 .name(name.trim())
                 .category(category)
@@ -319,27 +319,27 @@ public class InventoryManagementService {
     @Transactional
     public ReceiptImportResult importReceiptsFromExcel(MultipartFile file, User createdBy) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng chọn file Excel cần import.");
+            throw new IllegalArgumentException("Vui lÃ²ng chá»n file Excel cáº§n import.");
         }
 
         String filename = file.getOriginalFilename();
         if (filename == null || !filename.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
-            throw new IllegalArgumentException("Chỉ hỗ trợ file Excel định dạng .xlsx.");
+            throw new IllegalArgumentException("Chá»‰ há»— trá»£ file Excel Ä‘á»‹nh dáº¡ng .xlsx.");
         }
         if (file.getSize() > MAX_IMPORT_FILE_SIZE) {
-            throw new IllegalArgumentException("File Excel không được vượt quá 5 MB.");
+            throw new IllegalArgumentException("File Excel khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ 5 MB.");
         }
 
         Workbook workbook;
         try {
             workbook = new XSSFWorkbook(file.getInputStream());
         } catch (IOException | RuntimeException e) {
-            throw new IllegalArgumentException("File không phải workbook .xlsx hợp lệ hoặc đã bị hỏng.");
+            throw new IllegalArgumentException("File khÃ´ng pháº£i workbook .xlsx há»£p lá»‡ hoáº·c Ä‘Ã£ bá»‹ há»ng.");
         }
 
         try (workbook) {
             if (workbook.getNumberOfSheets() == 0) {
-                throw new IllegalArgumentException("File Excel không có sheet dữ liệu.");
+                throw new IllegalArgumentException("File Excel khÃ´ng cÃ³ sheet dá»¯ liá»‡u.");
             }
 
             DataFormatter formatter = new DataFormatter(Locale.US);
@@ -347,7 +347,7 @@ public class InventoryManagementService {
             validateImportHeader(sheet, formatter, RECEIPT_IMPORT_HEADERS, RECEIPT_IMPORT_COLUMN_COUNT);
 
             if (sheet.getLastRowNum() > MAX_IMPORT_ROWS) {
-                throw new IllegalArgumentException("File Excel chỉ được chứa tối đa 1.000 dòng dữ liệu.");
+                throw new IllegalArgumentException("File Excel chá»‰ Ä‘Æ°á»£c chá»©a tá»‘i Ä‘a 1.000 dÃ²ng dá»¯ liá»‡u.");
             }
 
             List<ReceiptImportRow> validRows = new ArrayList<>();
@@ -363,34 +363,34 @@ public class InventoryManagementService {
                 List<String> rowErrors = new ArrayList<>();
                 validateNoExtraColumns(formatter, row, excelRowNumber, RECEIPT_IMPORT_COLUMN_COUNT, rowErrors);
 
-                String itemName = readTextCell(formatter, row, 0, "Tên hàng", excelRowNumber, rowErrors);
-                validateRequiredAndLength(itemName, "Tên hàng", 150, excelRowNumber, rowErrors);
+                String itemName = readTextCell(formatter, row, 0, "TÃªn hÃ ng", excelRowNumber, rowErrors);
+                validateRequiredAndLength(itemName, "TÃªn hÃ ng", 150, excelRowNumber, rowErrors);
                 InventoryItem item = null;
                 if (itemName != null && !itemName.isBlank()) {
                     item = inventoryItemRepository.findByNameIgnoreCaseAndIsDeletedFalse(itemName.trim()).orElse(null);
                     if (item == null) {
-                        rowErrors.add("Dòng " + excelRowNumber + ": hàng hóa '" + itemName + "' không tồn tại.");
+                        rowErrors.add("DÃ²ng " + excelRowNumber + ": hÃ ng hÃ³a '" + itemName + "' khÃ´ng tá»“n táº¡i.");
                     }
                 }
 
                 BigDecimal quantity = readDecimalCell(
-                        row, 1, "Số lượng nhập", excelRowNumber, 2, 10, rowErrors);
+                        row, 1, "Sá»‘ lÆ°á»£ng nháº­p", excelRowNumber, 2, 10, rowErrors);
                 BigDecimal unitCost = readDecimalCell(
-                        row, 2, "Giá vốn trước VAT", excelRowNumber, 0, 15, rowErrors);
+                        row, 2, "GiÃ¡ vá»‘n trÆ°á»›c VAT", excelRowNumber, 0, 15, rowErrors);
                 LocalDate expiryDate = readDateCell(
-                        formatter, row, 3, "Hạn sử dụng", excelRowNumber, rowErrors);
+                        formatter, row, 3, "Háº¡n sá»­ dá»¥ng", excelRowNumber, rowErrors);
                 String paymentMethodText = readTextCell(
-                        formatter, row, 4, "Phương thức thanh toán", excelRowNumber, rowErrors);
-                String supplier = readTextCell(formatter, row, 5, "Nhà cung cấp", excelRowNumber, rowErrors);
-                String note = readTextCell(formatter, row, 6, "Ghi chú", excelRowNumber, rowErrors);
+                        formatter, row, 4, "PhÆ°Æ¡ng thá»©c thanh toÃ¡n", excelRowNumber, rowErrors);
+                String supplier = readTextCell(formatter, row, 5, "NhÃ  cung cáº¥p", excelRowNumber, rowErrors);
+                String note = readTextCell(formatter, row, 6, "Ghi chÃº", excelRowNumber, rowErrors);
 
-                validatePositiveQuantity(quantity, "Số lượng nhập", excelRowNumber, rowErrors);
-                validatePositiveMoney(unitCost, "Giá vốn trước VAT", excelRowNumber, rowErrors);
+                validatePositiveQuantity(quantity, "Sá»‘ lÆ°á»£ng nháº­p", excelRowNumber, rowErrors);
+                validatePositiveMoney(unitCost, "GiÃ¡ vá»‘n trÆ°á»›c VAT", excelRowNumber, rowErrors);
                 if (expiryDate != null && !expiryDate.isAfter(LocalDate.now(APP_ZONE))) {
-                    rowErrors.add("Dòng " + excelRowNumber + ": hạn sử dụng phải sau ngày nhập kho.");
+                    rowErrors.add("DÃ²ng " + excelRowNumber + ": háº¡n sá»­ dá»¥ng pháº£i sau ngÃ y nháº­p kho.");
                 }
-                validateOptionalLength(supplier, "Nhà cung cấp", 150, excelRowNumber, rowErrors);
-                validateOptionalLength(note, "Ghi chú", 300, excelRowNumber, rowErrors);
+                validateOptionalLength(supplier, "NhÃ  cung cáº¥p", 150, excelRowNumber, rowErrors);
+                validateOptionalLength(note, "Ghi chÃº", 300, excelRowNumber, rowErrors);
 
                 PaymentMethod paymentMethod = parseImportPaymentMethod(paymentMethodText, excelRowNumber, rowErrors);
 
@@ -408,7 +408,7 @@ public class InventoryManagementService {
                 throw new IllegalArgumentException(buildImportErrorMessage(errors));
             }
             if (validRows.isEmpty()) {
-                throw new IllegalArgumentException("File Excel không có dòng lô hàng nhập nào.");
+                throw new IllegalArgumentException("File Excel khÃ´ng cÃ³ dÃ²ng lÃ´ hÃ ng nháº­p nÃ o.");
             }
 
             BigDecimal totalCost = BigDecimal.ZERO;
@@ -428,7 +428,7 @@ public class InventoryManagementService {
             }
             return new ReceiptImportResult(validRows.size(), totalCost);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Không thể đóng hoặc hoàn tất việc đọc file Excel.");
+            throw new IllegalArgumentException("KhÃ´ng thá»ƒ Ä‘Ã³ng hoáº·c hoÃ n táº¥t viá»‡c Ä‘á»c file Excel.");
         }
     }
 
@@ -456,19 +456,19 @@ public class InventoryManagementService {
                                           PaymentMethod paymentMethod,
                                           User createdBy) {
         InventoryItem item = getItem(itemId);
-        validatePositive(quantity, "Số lượng nhập phải lớn hơn 0.");
-        validateMaxScale(quantity, 2, "Số lượng nhập");
-        validatePositive(unitCost, "Đơn giá trước VAT / 1 đơn vị phải lớn hơn 0.");
-        validateNaturalNumber(unitCost, "Đơn giá trước VAT / 1 đơn vị");
-        validateRequired(paymentMethod, "Phương thức thanh toán là bắt buộc.");
-        validateOptionalLength(supplier, "Nhà cung cấp", 150);
-        validateOptionalLength(note, "Ghi chú", 300);
+        validatePositive(quantity, "Sá»‘ lÆ°á»£ng nháº­p pháº£i lá»›n hÆ¡n 0.");
+        validateMaxScale(quantity, 2, "Sá»‘ lÆ°á»£ng nháº­p");
+        validatePositive(unitCost, "ÄÆ¡n giÃ¡ trÆ°á»›c VAT / 1 Ä‘Æ¡n vá»‹ pháº£i lá»›n hÆ¡n 0.");
+        validateNaturalNumber(unitCost, "ÄÆ¡n giÃ¡ trÆ°á»›c VAT / 1 Ä‘Æ¡n vá»‹");
+        validateRequired(paymentMethod, "PhÆ°Æ¡ng thá»©c thanh toÃ¡n lÃ  báº¯t buá»™c.");
+        validateOptionalLength(supplier, "NhÃ  cung cáº¥p", 150);
+        validateOptionalLength(note, "Ghi chÃº", 300);
         LocalDate effectiveReceiptDate = receiptDate == null ? LocalDate.now(APP_ZONE) : receiptDate;
         if (effectiveReceiptDate.isAfter(LocalDate.now(APP_ZONE))) {
-            throw new IllegalArgumentException("Ngày nhập kho không được ở tương lai.");
+            throw new IllegalArgumentException("NgÃ y nháº­p kho khÃ´ng Ä‘Æ°á»£c á»Ÿ tÆ°Æ¡ng lai.");
         }
         if (expiryDate != null && !expiryDate.isAfter(effectiveReceiptDate)) {
-            throw new IllegalArgumentException("Hạn sử dụng phải sau ngày nhập kho.");
+            throw new IllegalArgumentException("Háº¡n sá»­ dá»¥ng pháº£i sau ngÃ y nháº­p kho.");
         }
         String generatedBatchCode = expiryDate == null ? null : generateBatchCode(effectiveReceiptDate);
 
@@ -505,7 +505,7 @@ public class InventoryManagementService {
                 "INVENTORY_RECEIPT", savedReceipt.getId(), createdBy);
 
         cashTransactionService.createInventoryPurchase(totalCost,
-                "Chi nhập kho " + savedReceipt.getCode() + " - " + item.getName(),
+                "Chi nháº­p kho " + savedReceipt.getCode() + " - " + item.getName(),
                 savedReceipt.getId(),
                 paymentMethod,
                 createdBy);
@@ -519,8 +519,8 @@ public class InventoryManagementService {
                              String reason,
                              User createdBy) {
         InventoryItem item = getItem(itemId);
-        validatePositive(quantity, "Số lượng hủy phải lớn hơn 0.");
-        validateMaxScale(quantity, 2, "Số lượng hủy");
+        validatePositive(quantity, "Sá»‘ lÆ°á»£ng há»§y pháº£i lá»›n hÆ¡n 0.");
+        validateMaxScale(quantity, 2, "Sá»‘ lÆ°á»£ng há»§y");
         ensureSufficientStock(item, quantity);
 
         item.setCurrentQuantity(item.getCurrentQuantity().subtract(quantity));
@@ -536,10 +536,10 @@ public class InventoryManagementService {
                                                      BigDecimal quantityPerUse) {
         com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service =
                 serviceRepository.findById(serviceId)
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ."));
+                        .orElseThrow(() -> new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y dá»‹ch vá»¥."));
         InventoryItem item = getItem(itemId);
-        validatePositive(quantityPerUse, "Số lượng tiêu hao phải lớn hơn 0.");
-        validateMaxScale(quantityPerUse, 2, "Số lượng tiêu hao");
+        validatePositive(quantityPerUse, "Sá»‘ lÆ°á»£ng tiÃªu hao pháº£i lá»›n hÆ¡n 0.");
+        validateMaxScale(quantityPerUse, 2, "Sá»‘ lÆ°á»£ng tiÃªu hao");
 
         ServiceInventoryMapping mapping = serviceInventoryMappingRepository
                 .findByService_IdAndItem_Id(serviceId, itemId)
@@ -557,10 +557,10 @@ public class InventoryManagementService {
                                                              Long itemId,
                                                              BigDecimal quantityPerRefresh) {
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hạng phòng."));
+                .orElseThrow(() -> new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y háº¡ng phÃ²ng."));
         InventoryItem item = getItem(itemId);
-        validatePositive(quantityPerRefresh, "Số lượng lấp đồ phải lớn hơn 0.");
-        validateMaxScale(quantityPerRefresh, 2, "Số lượng lấp đồ");
+        validatePositive(quantityPerRefresh, "Sá»‘ lÆ°á»£ng láº¥p Ä‘á»“ pháº£i lá»›n hÆ¡n 0.");
+        validateMaxScale(quantityPerRefresh, 2, "Sá»‘ lÆ°á»£ng láº¥p Ä‘á»“");
 
         RoomRefreshInventoryMapping mapping = roomRefreshInventoryMappingRepository
                 .findByRoomType_IdAndItem_Id(roomTypeId, itemId)
@@ -577,7 +577,7 @@ public class InventoryManagementService {
     public void deleteServiceMapping(Long itemId, Long mappingId) {
         getItem(itemId);
         ServiceInventoryMapping mapping = serviceInventoryMappingRepository.findByIdAndItem_Id(mappingId, itemId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quy tắc tiêu hao dịch vụ."));
+                .orElseThrow(() -> new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y quy táº¯c tiÃªu hao dá»‹ch vá»¥."));
         serviceInventoryMappingRepository.delete(mapping);
     }
 
@@ -585,7 +585,7 @@ public class InventoryManagementService {
     public void deleteRoomRefreshMapping(Long itemId, Long mappingId) {
         getItem(itemId);
         RoomRefreshInventoryMapping mapping = roomRefreshInventoryMappingRepository.findByIdAndItem_Id(mappingId, itemId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quy tắc lấp đồ phòng."));
+                .orElseThrow(() -> new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y quy táº¯c láº¥p Ä‘á»“ phÃ²ng."));
         roomRefreshInventoryMappingRepository.delete(mapping);
     }
 
@@ -598,29 +598,66 @@ public class InventoryManagementService {
             return;
         }
         BigDecimal multiplier = serviceQuantity == null ? BigDecimal.ONE : serviceQuantity;
-        validatePositive(multiplier, "Số lượng dịch vụ phải lớn hơn 0.");
-        validateMaxScale(multiplier, 2, "Số lượng dịch vụ");
+        validatePositive(multiplier, "Sá»‘ lÆ°á»£ng dá»‹ch vá»¥ pháº£i lá»›n hÆ¡n 0.");
+        validateMaxScale(multiplier, 2, "Sá»‘ lÆ°á»£ng dá»‹ch vá»¥");
         if (sourceId == null) {
-            throw new IllegalArgumentException("Thiếu mã dịch vụ trong hóa đơn để ghi nhận tiêu hao kho.");
+            throw new IllegalArgumentException("Thiáº¿u mÃ£ dá»‹ch vá»¥ trong hÃ³a Ä‘Æ¡n Ä‘á»ƒ ghi nháº­n tiÃªu hao kho.");
         }
         List<ServiceInventoryMapping> mappings = serviceInventoryMappingRepository.findByService_Id(service.getId());
         if (mappings.isEmpty()) {
-            throw new IllegalStateException("Dịch vụ chưa được cấu hình tiêu hao kho. Vui lòng liên hệ thủ kho.");
+            throw new IllegalStateException("Dá»‹ch vá»¥ chÆ°a Ä‘Æ°á»£c cáº¥u hÃ¬nh tiÃªu hao kho. Vui lÃ²ng liÃªn há»‡ thá»§ kho.");
         }
 
         for (ServiceInventoryMapping mapping : mappings) {
             if (mapping.getItem() == null) {
-                throw new IllegalStateException("Quy tắc tiêu hao dịch vụ đang thiếu hàng hóa.");
+                throw new IllegalStateException("Quy táº¯c tiÃªu hao dá»‹ch vá»¥ Ä‘ang thiáº¿u hÃ ng hÃ³a.");
             }
-            validatePositive(mapping.getQuantityPerUse(), "Số lượng tiêu hao trong quy tắc dịch vụ phải lớn hơn 0.");
-            validateMaxScale(mapping.getQuantityPerUse(), 2, "Số lượng tiêu hao trong quy tắc dịch vụ");
+            validatePositive(mapping.getQuantityPerUse(), "Sá»‘ lÆ°á»£ng tiÃªu hao trong quy táº¯c dá»‹ch vá»¥ pháº£i lá»›n hÆ¡n 0.");
+            validateMaxScale(mapping.getQuantityPerUse(), 2, "Sá»‘ lÆ°á»£ng tiÃªu hao trong quy táº¯c dá»‹ch vá»¥");
             InventoryItem item = mapping.getItem();
+            validateConsumableInventoryItem(item, "Quy tắc tiêu hao dịch vụ");
             BigDecimal consumedQuantity = mapping.getQuantityPerUse().multiply(multiplier);
             ensureSufficientStock(item, consumedQuantity);
             item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
             inventoryItemRepository.save(item);
             recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
                     "FOLIO_ITEM", sourceId, createdBy);
+        }
+    }
+
+    @Transactional
+    public void consumeForRoomRefresh(RoomType roomType,
+                                      Long sourceId,
+                                      User createdBy) {
+        if (roomType != null && roomType.getId() == null) {
+            throw new IllegalArgumentException("Hạng phòng không hợp lệ để ghi nhận tiêu hao lấp đồ.");
+        }
+        if (roomType == null) {
+            throw new IllegalArgumentException("ThiÃ¡ÂºÂ¿u hÃ¡ÂºÂ¡ng phÃƒÂ²ng Ã„â€˜Ã¡Â»Æ’ ghi nhÃ¡ÂºÂ­n tiÃƒÂªu hao lÃ¡ÂºÂ¥p Ã„â€˜Ã¡Â»â€œ.");
+        }
+        if (sourceId == null) {
+            throw new IllegalArgumentException("ThiÃ¡ÂºÂ¿u mÃƒÂ£ phÃƒÂ²ng Ã„â€˜Ã¡Â»Æ’ ghi nhÃ¡ÂºÂ­n tiÃƒÂªu hao lÃ¡ÂºÂ¥p Ã„â€˜Ã¡Â»â€œ.");
+        }
+
+        List<RoomRefreshInventoryMapping> mappings = roomRefreshInventoryMappingRepository.findByRoomType_Id(roomType.getId());
+        if (mappings.isEmpty()) {
+            return;
+        }
+
+        for (RoomRefreshInventoryMapping mapping : mappings) {
+            if (mapping.getItem() == null) {
+                throw new IllegalStateException("Quy tÃ¡ÂºÂ¯c lÃ¡ÂºÂ¥p Ã„â€˜Ã¡Â»â€œ phÃƒÂ²ng Ã„â€˜ang thiÃ¡ÂºÂ¿u hÃƒÂ ng hÃƒÂ³a.");
+            }
+            validatePositive(mapping.getQuantityPerRefresh(), "SÃ¡Â»â€˜ lÃ†Â°Ã¡Â»Â£ng lÃ¡ÂºÂ¥p Ã„â€˜Ã¡Â»â€œ trong quy tÃ¡ÂºÂ¯c phÃƒÂ²ng phÃ¡ÂºÂ£i lÃ¡Â»â€ºn hÃ†Â¡n 0.");
+            validateMaxScale(mapping.getQuantityPerRefresh(), 2, "SÃ¡Â»â€˜ lÃ†Â°Ã¡Â»Â£ng lÃ¡ÂºÂ¥p Ã„â€˜Ã¡Â»â€œ trong quy tÃ¡ÂºÂ¯c phÃƒÂ²ng");
+            InventoryItem item = mapping.getItem();
+            validateConsumableInventoryItem(item, "Quy tắc lấp đồ phòng");
+            BigDecimal consumedQuantity = mapping.getQuantityPerRefresh();
+            ensureSufficientStock(item, consumedQuantity);
+            item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
+            inventoryItemRepository.save(item);
+            recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
+                    "ROOM_REFRESH", sourceId, createdBy);
         }
     }
 
@@ -701,7 +738,7 @@ public class InventoryManagementService {
             getItem(itemId);
         }
         if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
-            throw new IllegalArgumentException("Ngày bắt đầu không được sau ngày kết thúc.");
+            throw new IllegalArgumentException("NgÃ y báº¯t Ä‘áº§u khÃ´ng Ä‘Æ°á»£c sau ngÃ y káº¿t thÃºc.");
         }
         Instant fromTime = dateFrom == null ? null : dateFrom.atStartOfDay(APP_ZONE).toInstant();
         Instant toTime = dateTo == null ? null : dateTo.plusDays(1).atStartOfDay(APP_ZONE).toInstant();
@@ -773,14 +810,14 @@ public class InventoryManagementService {
             return BigDecimal.ZERO;
         }
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Giá trị không được âm.");
+            throw new IllegalArgumentException("GiÃ¡ trá»‹ khÃ´ng Ä‘Æ°á»£c Ã¢m.");
         }
         return value;
     }
 
     private BigDecimal normalizeQuantity(BigDecimal value, String fieldName, boolean positive) {
         if (positive) {
-            validatePositive(value, fieldName + " phải lớn hơn 0.");
+            validatePositive(value, fieldName + " pháº£i lá»›n hÆ¡n 0.");
         } else {
             value = normalizeNonNegative(value);
         }
@@ -799,7 +836,7 @@ public class InventoryManagementService {
                                       int expectedColumnCount) {
         Row header = sheet.getRow(0);
         if (header == null) {
-            throw new IllegalArgumentException("Thiếu dòng tiêu đề của file Excel.");
+            throw new IllegalArgumentException("Thiáº¿u dÃ²ng tiÃªu Ä‘á» cá»§a file Excel.");
         }
         List<String> actualHeaders = new ArrayList<>();
         for (int columnIndex = 0; columnIndex < expectedColumnCount; columnIndex++) {
@@ -808,7 +845,7 @@ public class InventoryManagementService {
         }
         if (!actualHeaders.equals(expectedHeaders)) {
             throw new IllegalArgumentException(
-                    "Tiêu đề không đúng mẫu. Thứ tự bắt buộc: " + String.join(", ", expectedHeaders) + ".");
+                    "TiÃªu Ä‘á» khÃ´ng Ä‘Ãºng máº«u. Thá»© tá»± báº¯t buá»™c: " + String.join(", ", expectedHeaders) + ".");
         }
         List<String> errors = new ArrayList<>();
         validateNoExtraColumns(formatter, header, 1, expectedColumnCount, errors);
@@ -840,7 +877,7 @@ public class InventoryManagementService {
         }
         for (int columnIndex = expectedColumnCount; columnIndex < row.getLastCellNum(); columnIndex++) {
             if (readCell(formatter, row, columnIndex) != null) {
-                errors.add("Dòng " + excelRowNumber + ": file chỉ được có đúng " + expectedColumnCount + " cột.");
+                errors.add("DÃ²ng " + excelRowNumber + ": file chá»‰ Ä‘Æ°á»£c cÃ³ Ä‘Ãºng " + expectedColumnCount + " cá»™t.");
                 return;
             }
         }
@@ -854,12 +891,12 @@ public class InventoryManagementService {
                                 List<String> errors) {
         Cell cell = row.getCell(cellIndex);
         if (cell != null && cell.getCellType() == CellType.FORMULA) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " không được dùng công thức.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " khÃ´ng Ä‘Æ°á»£c dÃ¹ng cÃ´ng thá»©c.");
             return null;
         }
         if (cell != null && cell.getCellType() != CellType.BLANK
                 && cell.getCellType() != CellType.STRING) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " phải là văn bản.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " pháº£i lÃ  vÄƒn báº£n.");
             return null;
         }
         return readCell(formatter, row, cellIndex);
@@ -876,20 +913,20 @@ public class InventoryManagementService {
             return null;
         }
         if (cell.getCellType() == CellType.FORMULA) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " không được dùng công thức.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " khÃ´ng Ä‘Æ°á»£c dÃ¹ng cÃ´ng thá»©c.");
             return null;
         }
         if (cell.getCellType() == CellType.NUMERIC) {
             if (!DateUtil.isCellDateFormatted(cell)) {
-                errors.add("Dòng " + excelRowNumber + ": " + fieldName
-                        + " phải là ngày hợp lệ theo định dạng yyyy-MM-dd hoặc dd/MM/yyyy.");
+                errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName
+                        + " pháº£i lÃ  ngÃ y há»£p lá»‡ theo Ä‘á»‹nh dáº¡ng yyyy-MM-dd hoáº·c dd/MM/yyyy.");
                 return null;
             }
             return cell.getLocalDateTimeCellValue().toLocalDate();
         }
         if (cell.getCellType() != CellType.STRING) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName
-                    + " phải là ngày hợp lệ theo định dạng yyyy-MM-dd hoặc dd/MM/yyyy.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName
+                    + " pháº£i lÃ  ngÃ y há»£p lá»‡ theo Ä‘á»‹nh dáº¡ng yyyy-MM-dd hoáº·c dd/MM/yyyy.");
             return null;
         }
 
@@ -904,8 +941,8 @@ public class InventoryManagementService {
                 // Try next supported format.
             }
         }
-        errors.add("Dòng " + excelRowNumber + ": " + fieldName
-                + " phải là ngày hợp lệ theo định dạng yyyy-MM-dd hoặc dd/MM/yyyy.");
+        errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName
+                + " pháº£i lÃ  ngÃ y há»£p lá»‡ theo Ä‘á»‹nh dáº¡ng yyyy-MM-dd hoáº·c dd/MM/yyyy.");
         return null;
     }
 
@@ -915,10 +952,10 @@ public class InventoryManagementService {
                                            int excelRowNumber,
                                            List<String> errors) {
         if (value == null || value.isBlank()) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " là bắt buộc.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " lÃ  báº¯t buá»™c.");
         } else if (value.length() > maxLength) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName
-                    + " không được vượt quá " + maxLength + " ký tự.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName
+                    + " khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ " + maxLength + " kÃ½ tá»±.");
         }
     }
 
@@ -928,14 +965,14 @@ public class InventoryManagementService {
                                         int excelRowNumber,
                                         List<String> errors) {
         if (value != null && value.length() > maxLength) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName
-                    + " không được vượt quá " + maxLength + " ký tự.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName
+                    + " khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ " + maxLength + " kÃ½ tá»±.");
         }
     }
 
     private void validateOptionalLength(String value, String fieldName, int maxLength) {
         if (value != null && value.trim().length() > maxLength) {
-            throw new IllegalArgumentException(fieldName + " không được vượt quá " + maxLength + " ký tự.");
+            throw new IllegalArgumentException(fieldName + " khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ " + maxLength + " kÃ½ tá»±.");
         }
     }
 
@@ -950,7 +987,7 @@ public class InventoryManagementService {
                                           int excelRowNumber,
                                           List<String> errors) {
         if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " phải lớn hơn 0.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " pháº£i lá»›n hÆ¡n 0.");
         }
     }
 
@@ -959,27 +996,27 @@ public class InventoryManagementService {
                                        int excelRowNumber,
                                        List<String> errors) {
         if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " phải là số nguyên VND lớn hơn 0.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " pháº£i lÃ  sá»‘ nguyÃªn VND lá»›n hÆ¡n 0.");
         }
     }
 
     private PaymentMethod parseImportPaymentMethod(String value, int excelRowNumber, List<String> errors) {
         if (value == null || value.isBlank()) {
-            errors.add("Dòng " + excelRowNumber + ": Phương thức thanh toán là bắt buộc.");
+            errors.add("DÃ²ng " + excelRowNumber + ": PhÆ°Æ¡ng thá»©c thanh toÃ¡n lÃ  báº¯t buá»™c.");
             return null;
         }
         String normalized = Normalizer.normalize(value.trim(), Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")
-                .replace('đ', 'd')
-                .replace('Đ', 'D')
+                .replace('\u0111', 'd')
+                .replace('\u0110', 'D')
                 .toUpperCase(Locale.ROOT)
                 .replaceAll("[\\s_-]+", "");
         return switch (normalized) {
             case "CASH", "TIENMAT" -> PaymentMethod.CASH;
             case "TRANSFER", "CHUYENKHOAN" -> PaymentMethod.TRANSFER;
             default -> {
-                errors.add("Dòng " + excelRowNumber
-                        + ": Phương thức thanh toán chỉ nhận CASH/Tiền mặt hoặc TRANSFER/Chuyển khoản.");
+                errors.add("DÃ²ng " + excelRowNumber
+                        + ": PhÆ°Æ¡ng thá»©c thanh toÃ¡n chá»‰ nháº­n CASH/Tiá»n máº·t hoáº·c TRANSFER/Chuyá»ƒn khoáº£n.");
                 yield null;
             }
         };
@@ -997,7 +1034,7 @@ public class InventoryManagementService {
             return BigDecimal.ZERO;
         }
         if (cell.getCellType() == CellType.FORMULA) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " không được dùng công thức.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " khÃ´ng Ä‘Æ°á»£c dÃ¹ng cÃ´ng thá»©c.");
             return BigDecimal.ZERO;
         }
 
@@ -1007,23 +1044,23 @@ public class InventoryManagementService {
         } else if (cell.getCellType() == CellType.STRING) {
             rawValue = cell.getStringCellValue().trim().replace(',', '.');
         } else {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " phải là số.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " pháº£i lÃ  sá»‘.");
             return BigDecimal.ZERO;
         }
 
         if (!rawValue.matches(maxScale == 0 ? "\\d+" : "\\d+(?:\\.\\d{1," + maxScale + "})?")) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName
                     + (maxScale == 0
-                    ? " phải là số nguyên không âm, không dùng dấu phân cách hàng nghìn."
-                    : " phải là số không âm, tối đa " + maxScale
-                    + " chữ số thập phân và không dùng dấu phân cách hàng nghìn."));
+                    ? " pháº£i lÃ  sá»‘ nguyÃªn khÃ´ng Ã¢m, khÃ´ng dÃ¹ng dáº¥u phÃ¢n cÃ¡ch hÃ ng nghÃ¬n."
+                    : " pháº£i lÃ  sá»‘ khÃ´ng Ã¢m, tá»‘i Ä‘a " + maxScale
+                    + " chá»¯ sá»‘ tháº­p phÃ¢n vÃ  khÃ´ng dÃ¹ng dáº¥u phÃ¢n cÃ¡ch hÃ ng nghÃ¬n."));
             return BigDecimal.ZERO;
         }
 
         BigDecimal value = new BigDecimal(rawValue);
         int integerDigits = Math.max(value.precision() - value.scale(), 1);
         if (integerDigits > maxIntegerDigits) {
-            errors.add("Dòng " + excelRowNumber + ": " + fieldName + " vượt quá giới hạn lưu trữ.");
+            errors.add("DÃ²ng " + excelRowNumber + ": " + fieldName + " vÆ°á»£t quÃ¡ giá»›i háº¡n lÆ°u trá»¯.");
             return BigDecimal.ZERO;
         }
         return value;
@@ -1031,9 +1068,9 @@ public class InventoryManagementService {
 
     private String buildImportErrorMessage(List<String> errors) {
         int displayCount = Math.min(errors.size(), 10);
-        StringBuilder message = new StringBuilder("File Excel có ")
+        StringBuilder message = new StringBuilder("File Excel cÃ³ ")
                 .append(errors.size())
-                .append(" lỗi: ");
+                .append(" lá»—i: ");
         for (int index = 0; index < displayCount; index++) {
             if (index > 0) {
                 message.append(" | ");
@@ -1041,7 +1078,7 @@ public class InventoryManagementService {
             message.append(errors.get(index));
         }
         if (errors.size() > displayCount) {
-            message.append(" | ... và ").append(errors.size() - displayCount).append(" lỗi khác.");
+            message.append(" | ... vÃ  ").append(errors.size() - displayCount).append(" lá»—i khÃ¡c.");
         }
         return message.toString();
     }
@@ -1057,14 +1094,14 @@ public class InventoryManagementService {
             return;
         }
         if (value.stripTrailingZeros().scale() > maxScale) {
-            throw new IllegalArgumentException(fieldName + " chỉ được nhập tối đa "
-                    + maxScale + " chữ số thập phân.");
+            throw new IllegalArgumentException(fieldName + " chá»‰ Ä‘Æ°á»£c nháº­p tá»‘i Ä‘a "
+                    + maxScale + " chá»¯ sá»‘ tháº­p phÃ¢n.");
         }
     }
 
     private void validateNaturalNumber(BigDecimal value, String fieldName) {
         if (value == null || value.compareTo(BigDecimal.ONE) < 0) {
-            throw new IllegalArgumentException(fieldName + " phải là số tự nhiên.");
+            throw new IllegalArgumentException(fieldName + " pháº£i lÃ  sá»‘ tá»± nhiÃªn.");
         }
         validateWholeNumber(value, fieldName);
     }
@@ -1074,15 +1111,27 @@ public class InventoryManagementService {
             return;
         }
         if (value.stripTrailingZeros().scale() > 0) {
-            throw new IllegalArgumentException(fieldName + " phải là số nguyên VND, không nhập số thập phân.");
+            throw new IllegalArgumentException(fieldName + " pháº£i lÃ  sá»‘ nguyÃªn VND, khÃ´ng nháº­p sá»‘ tháº­p phÃ¢n.");
+        }
+    }
+
+    private void validateConsumableInventoryItem(InventoryItem item, String ruleName) {
+        if (item == null) {
+            throw new IllegalStateException(ruleName + " Ä‘ang thiáº¿u hÃ ng hÃ³a.");
+        }
+        if (Boolean.TRUE.equals(item.getIsDeleted())) {
+            throw new IllegalStateException(ruleName + " Ä‘ang liÃªn káº¿t vá»›i hÃ ng hÃ³a Ä‘Ã£ bá»‹ xÃ³a: " + item.getName() + ".");
+        }
+        if (item.getCurrentQuantity() == null) {
+            throw new IllegalStateException("Tá»“n kho hiá»‡n táº¡i cá»§a " + item.getName() + " khÃ´ng há»£p lá»‡.");
         }
     }
 
     private void ensureSufficientStock(InventoryItem item, BigDecimal consumedQuantity) {
         if (item.getCurrentQuantity().compareTo(consumedQuantity) < 0) {
             throw new IllegalArgumentException(
-                    "Không đủ tồn kho cho " + item.getName()
-                            + ". Hiện có " + item.getCurrentQuantity() + " " + item.getUnit() + ".");
+                    "KhÃ´ng Ä‘á»§ tá»“n kho cho " + item.getName()
+                            + ". Hiá»‡n cÃ³ " + item.getCurrentQuantity() + " " + item.getUnit() + ".");
         }
     }
 
@@ -1128,7 +1177,7 @@ public class InventoryManagementService {
 
     private String formatReceiptCode(Long receiptId) {
         if (receiptId == null) {
-            throw new IllegalStateException("Không thể sinh mã phiếu nhập khi chưa có ID phiếu.");
+            throw new IllegalStateException("KhÃ´ng thá»ƒ sinh mÃ£ phiáº¿u nháº­p khi chÆ°a cÃ³ ID phiáº¿u.");
         }
         return "IR-%04d".formatted(receiptId);
     }
@@ -1145,7 +1194,7 @@ public class InventoryManagementService {
                 .orElse(0) + 1;
 
         if (nextNumber > 999) {
-            throw new IllegalArgumentException("Đã vượt quá số lượng mã lô trong ngày nhập kho này.");
+            throw new IllegalArgumentException("ÄÃ£ vÆ°á»£t quÃ¡ sá»‘ lÆ°á»£ng mÃ£ lÃ´ trong ngÃ y nháº­p kho nÃ y.");
         }
 
         String batchCode;

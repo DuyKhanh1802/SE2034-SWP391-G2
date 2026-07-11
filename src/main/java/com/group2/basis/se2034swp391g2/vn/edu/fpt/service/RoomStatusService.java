@@ -20,6 +20,7 @@ public class RoomStatusService {
 
     private final RoomRepository roomRepository;
     private final BookingDetailRepository bookingDetailRepository;
+    private final InventoryManagementService inventoryManagementService;
 
     @Transactional(readOnly = true)
     public List<RoomStatusBoardResponse> getRoomStatusBoard(Integer floor,
@@ -111,6 +112,7 @@ public class RoomStatusService {
         }
 
         if (currentStatus == RoomStatus.MAINTENANCE && newStatus == RoomStatus.AVAILABLE) {
+            inventoryManagementService.consumeForRoomRefresh(room.getRoomType(), room.getId(), null);
             room.setStatus(RoomStatus.AVAILABLE);
             room.setNote(cleanNote.isEmpty() ? null : cleanNote);
         }
