@@ -4,7 +4,9 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomStatusBoardResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -60,8 +62,10 @@ public class RoomStatusController {
         try {
             roomStatusService.updateRoomStatus(roomId, newStatus, note);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái phòng thành công.");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException | TransactionException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể cập nhật trạng thái phòng lúc này. Vui lòng thử lại.");
         }
 
         return "redirect:/receptionist/rooms";

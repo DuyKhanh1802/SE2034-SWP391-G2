@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RoomRefreshInventoryMappingRepository extends JpaRepository<RoomRefreshInventoryMapping, Long> {
+    List<RoomRefreshInventoryMapping> findByRoomType_Id(Long roomTypeId);
+
     List<RoomRefreshInventoryMapping> findByItem_Id(Long itemId);
 
     Optional<RoomRefreshInventoryMapping> findByRoomType_IdAndItem_Id(Long roomTypeId, Long itemId);
