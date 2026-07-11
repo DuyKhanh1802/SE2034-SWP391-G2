@@ -11,7 +11,15 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "service_inventory_mappings")
+@Table(
+        name = "service_inventory_mappings",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_service_inventory_mapping",
+                        columnNames = {"service_id", "inventory_item_id"}
+                )
+        }
+)
 public class ServiceInventoryMapping {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
