@@ -612,16 +612,9 @@ public class InventoryManagementService {
             if (mapping.getItem() == null) {
                 throw new IllegalStateException("Quy táº¯c tiÃªu hao dá»‹ch vá»¥ Ä‘ang thiáº¿u hÃ ng hÃ³a.");
             }
-            validatePositive(mapping.getQuantityPerUse(), "Sá»‘ lÆ°á»£ng tiÃªu hao trong quy táº¯c dá»‹ch vá»¥ pháº£i lá»›n hÆ¡n 0.");
-            validateMaxScale(mapping.getQuantityPerUse(), 2, "Sá»‘ lÆ°á»£ng tiÃªu hao trong quy táº¯c dá»‹ch vá»¥");
-            InventoryItem item = mapping.getItem();
-            validateConsumableInventoryItem(item, "Quy tắc tiêu hao dịch vụ");
             BigDecimal consumedQuantity = mapping.getQuantityPerUse().multiply(multiplier);
-            ensureSufficientStock(item, consumedQuantity);
-            item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
-            inventoryItemRepository.save(item);
-            recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
-                    "FOLIO_ITEM", sourceId, createdBy);
+            consumeInventoryItem(mapping.getItem(), mapping.getQuantityPerUse(), consumedQuantity,
+                    "Quy tắc tiêu hao dịch vụ", "FOLIO_ITEM", sourceId, createdBy);
         }
     }
 
@@ -648,17 +641,28 @@ public class InventoryManagementService {
             if (mapping.getItem() == null) {
                 throw new IllegalStateException("Quy tÃ¡ÂºÂ¯c lÃ¡ÂºÂ¥p Ã„â€˜Ã¡Â»â€œ phÃƒÂ²ng Ã„â€˜ang thiÃ¡ÂºÂ¿u hÃƒÂ ng hÃƒÂ³a.");
             }
-            validatePositive(mapping.getQuantityPerRefresh(), "SÃ¡Â»â€˜ lÃ†Â°Ã¡Â»Â£ng lÃ¡ÂºÂ¥p Ã„â€˜Ã¡Â»â€œ trong quy tÃ¡ÂºÂ¯c phÃƒÂ²ng phÃ¡ÂºÂ£i lÃ¡Â»â€ºn hÃ†Â¡n 0.");
-            validateMaxScale(mapping.getQuantityPerRefresh(), 2, "SÃ¡Â»â€˜ lÃ†Â°Ã¡Â»Â£ng lÃ¡ÂºÂ¥p Ã„â€˜Ã¡Â»â€œ trong quy tÃ¡ÂºÂ¯c phÃƒÂ²ng");
-            InventoryItem item = mapping.getItem();
-            validateConsumableInventoryItem(item, "Quy tắc lấp đồ phòng");
             BigDecimal consumedQuantity = mapping.getQuantityPerRefresh();
-            ensureSufficientStock(item, consumedQuantity);
-            item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
-            inventoryItemRepository.save(item);
-            recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
-                    "ROOM_REFRESH", sourceId, createdBy);
+            consumeInventoryItem(mapping.getItem(), mapping.getQuantityPerRefresh(), consumedQuantity,
+                    "Quy tắc lấp đồ phòng", "ROOM_REFRESH", sourceId, createdBy);
         }
+    }
+
+    private void consumeInventoryItem(InventoryItem item,
+                                      BigDecimal configuredQuantity,
+                                      BigDecimal consumedQuantity,
+                                      String ruleName,
+                                      String sourceType,
+                                      Long sourceId,
+                                      User createdBy) {
+        validatePositive(configuredQuantity, "Số lượng tiêu hao phải lớn hơn 0.");
+        validateMaxScale(configuredQuantity, 2, "Số lượng tiêu hao");
+        validateConsumableInventoryItem(item, ruleName);
+        ensureSufficientStock(item, consumedQuantity);
+
+        item.setCurrentQuantity(item.getCurrentQuantity().subtract(consumedQuantity));
+        inventoryItemRepository.save(item);
+        recordInventoryTransaction(item, InventoryTransactionType.OUT, consumedQuantity,
+                sourceType, sourceId, createdBy);
     }
 
     @Transactional(readOnly = true)
