@@ -2001,23 +2001,10 @@ public class BookingService {
             throw new IllegalStateException("Vui lòng phân phòng cho tất cả phòng đã đặt trước khi xác nhận.");
         }
 
-        Payment depositPayment = paymentRepository
-                .findFirstByBookingIdAndPaymentTypeAndStatus(
-                        bookingId,
-                        PaymentType.DEPOSIT,
-                        PaymentStatus.PENDING
-                )
-                .orElseThrow(() -> new IllegalStateException("Không tìm thấy giao dịch cọc đang chờ xác nhận."));
 
-        depositPayment.setStatus(PaymentStatus.SUCCESS);
-        depositPayment.setPaidAt(Instant.now());
-        depositPayment.setProcessedBy(getCurrentStaffUser());
-
-        booking.setDepositStatus(DepositStatus.PAID);
         booking.setStatus(BookingStatus.CONFIRMED);
 
         bookingDetailRepository.saveAll(details);
-        paymentRepository.save(depositPayment);
         bookingRepository.save(booking);
 
         mailService.sendBookingConfirmedEmail(booking, details);
