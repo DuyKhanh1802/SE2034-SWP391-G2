@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InventoryCategoryRepository extends JpaRepository<InventoryCategory, Long> {
-    List<InventoryCategory> findByIsActiveTrueOrderByNameAsc();
+    List<InventoryCategory> findAllByOrderByNameAsc();
 
-    Optional<InventoryCategory> findByIdAndIsActiveTrue(Long id);
-
-    Optional<InventoryCategory> findByNameIgnoreCaseAndIsActiveTrue(String name);
+    Optional<InventoryCategory> findByNameIgnoreCase(String name);
 }

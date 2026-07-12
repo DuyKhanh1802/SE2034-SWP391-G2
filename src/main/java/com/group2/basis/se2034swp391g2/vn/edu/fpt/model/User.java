@@ -9,7 +9,6 @@ import lombok.*;
 import org.hibernate.annotations.Nationalized;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -88,22 +87,6 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
     private Country country;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "preferred_room_type_id")
-    private RoomType preferredRoomType;
-
-    @Column(name = "total_stays", nullable = false)
-    private Integer totalStays = 0;
-
-    @Column(name = "total_spent", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
-    private BigDecimal totalSpent = BigDecimal.ZERO;
-
-    @Column(name = "last_stay_at")
-    private Instant lastStayAt;
-
-    @Column(name = "internal_notes",columnDefinition = "NVARCHAR(MAX)")
-    private String internalNotes;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;

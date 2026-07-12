@@ -114,7 +114,7 @@ public class InventoryManagementService {
 
     @Transactional(readOnly = true)
     public List<InventoryCategory> getCategories() {
-        return inventoryCategoryRepository.findByIsActiveTrueOrderByNameAsc();
+        return inventoryCategoryRepository.findAllByOrderByNameAsc();
     }
 
     @Transactional(readOnly = true)
@@ -218,11 +218,11 @@ public class InventoryManagementService {
                 InventoryCategory category = null;
                 if (categoryName != null && !categoryName.isBlank()) {
                     category = inventoryCategoryRepository
-                            .findByNameIgnoreCaseAndIsActiveTrue(categoryName)
+                            .findByNameIgnoreCase(categoryName)
                             .orElse(null);
                     if (category == null) {
                         rowErrors.add("DÃ²ng " + excelRowNumber + ": loáº¡i hÃ ng '" + categoryName
-                                + "' khÃ´ng tá»“n táº¡i hoáº·c Ä‘Ã£ ngá»«ng sá»­ dá»¥ng.");
+                                + "' khÃ´ng tá»“n táº¡i.");
                     }
                 }
 
@@ -520,7 +520,7 @@ public class InventoryManagementService {
         inventoryItemRepository.save(item);
 
         recordInventoryTransaction(item, InventoryTransactionType.DISPOSAL, quantity,
-                "INVENTORY_DISPOSAL", item.getId(), createdBy);
+                "INVENTORY_DISPOSAL", item.getId(), createdBy, normalizeText(reason));
     }
 
     @Transactional
@@ -789,6 +789,16 @@ public class InventoryManagementService {
                                             String sourceType,
                                             Long sourceId,
                                             User createdBy) {
+        recordInventoryTransaction(item, type, quantity, sourceType, sourceId, createdBy, null);
+    }
+
+    private void recordInventoryTransaction(InventoryItem item,
+                                            InventoryTransactionType type,
+                                            BigDecimal quantity,
+                                            String sourceType,
+                                            Long sourceId,
+                                            User createdBy,
+                                            String reason) {
         InventoryTransaction transaction = InventoryTransaction.builder()
                 .item(item)
                 .type(type)
@@ -796,6 +806,7 @@ public class InventoryManagementService {
                 .remainingQuantity(item.getCurrentQuantity())
                 .sourceType(sourceType)
                 .sourceId(sourceId)
+                .reason(reason)
                 .createdBy(createdBy)
                 .build();
 
