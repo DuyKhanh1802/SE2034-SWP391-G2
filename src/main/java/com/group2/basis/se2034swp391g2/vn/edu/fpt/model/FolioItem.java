@@ -2,7 +2,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.model;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -42,9 +41,6 @@ public class FolioItem {
     @Column(name = "service_status", nullable = false, length = 25)
     private FolioItemStatus serviceStatus = FolioItemStatus.REQUESTED;
 
-    @Column(name = "amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
-    private BigDecimal amount;
-
     @Column(name = "base_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
     private BigDecimal baseAmount = BigDecimal.ZERO;
 
@@ -62,10 +58,6 @@ public class FolioItem {
 
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0) default 0")
     private BigDecimal totalAmount = BigDecimal.ZERO;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "price_display_mode", nullable = false, length = 15, columnDefinition = "varchar(15) default 'PLUS_PLUS'")
-    private PriceDisplayMode priceDisplayMode = PriceDisplayMode.PLUS_PLUS;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
@@ -106,7 +98,7 @@ public class FolioItem {
             this.postedAt = Instant.now();
         }
         if (this.baseAmount == null) {
-            this.baseAmount = this.amount == null ? BigDecimal.ZERO : this.amount;
+            this.baseAmount = this.totalAmount == null ? BigDecimal.ZERO : this.totalAmount;
         }
         if (this.serviceChargeRate == null) {
             this.serviceChargeRate = BigDecimal.ZERO;
@@ -121,13 +113,7 @@ public class FolioItem {
             this.vatAmount = BigDecimal.ZERO;
         }
         if (this.totalAmount == null) {
-            this.totalAmount = this.amount == null ? BigDecimal.ZERO : this.amount;
-        }
-        if (this.amount == null) {
-            this.amount = this.totalAmount;
-        }
-        if (this.priceDisplayMode == null) {
-            this.priceDisplayMode = PriceDisplayMode.PLUS_PLUS;
+            this.totalAmount = BigDecimal.ZERO;
         }
         if (this.serviceStatus == null) {
             this.serviceStatus = FolioItemStatus.REQUESTED;

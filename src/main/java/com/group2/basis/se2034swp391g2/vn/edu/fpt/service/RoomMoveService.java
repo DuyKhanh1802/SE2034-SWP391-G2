@@ -3,7 +3,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomMoveFeePolicy;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomMoveReason;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
@@ -450,8 +449,6 @@ public class RoomMoveService {
                 .vatRate(VAT_RATE)
                 .vatAmount(vatAmount)
                 .totalAmount(totalAmount)
-                .amount(totalAmount)
-                .priceDisplayMode(PriceDisplayMode.PLUS_PLUS)
                 .postedBy(currentStaff)
                 .postedAt(Instant.now())
                 .adjustmentReason("Phụ thu nâng hạng phát sinh từ nghiệp vụ đổi phòng.")

@@ -18,7 +18,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -79,9 +78,6 @@ public class AuthService {
 
         user.setUserType(UserType.GUEST);
         user.setApprovalStatus(ApprovalStatus.APPROVED);
-
-        user.setTotalStays(0);
-        user.setTotalSpent(BigDecimal.ZERO);
 
         /*
          * Quan trọng:

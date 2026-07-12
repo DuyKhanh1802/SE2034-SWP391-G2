@@ -750,13 +750,11 @@ public class OnlineBookingService {
                         .quantity(quantity)
                         .unitPrice(unitPrice)
                         .baseAmount(baseAmount)
-                        .amount(baseAmount)
                         .serviceChargeRate(SERVICE_CHARGE_RATE)
                         .serviceChargeAmount(serviceChargeAmount)
                         .vatRate(VAT_RATE)
                         .vatAmount(vatAmount)
                         .totalAmount(totalAmount)
-                        .priceDisplayMode(PriceDisplayMode.PLUS_PLUS)
                         .postedAt(Instant.now())
                         .isVoided(false)
                         .build();

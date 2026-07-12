@@ -56,6 +56,7 @@
                     <th>Tồn sau biến động</th>
                     <th>Nguồn</th>
                     <th>Người thực hiện</th>
+                    <th>Lý do</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -76,8 +77,9 @@
                     <td th:text="${transaction.createdBy != null
                         ? ((transaction.createdBy.lastName ?: '') + ' ' + (transaction.createdBy.firstName ?: '')).trim()
                         : 'Hệ thống'}"></td>
+                    <td th:text="${transaction.reason ?: '—'}"></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="7" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td></tr>
+                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="8" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td></tr>
                 </tbody>
             </table>
         </div>

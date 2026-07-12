@@ -160,7 +160,6 @@ public class BookingController {
         model.addAttribute("vatRate", new BigDecimal("8"));
         model.addAttribute("serviceChargeRate", new BigDecimal("5"));
         model.addAttribute("taxOnServiceCharge", true);
-        model.addAttribute("priceDisplayMode", "EXCLUSIVE");
 
         boolean hasApplied =
                 request.getCheckInDate() != null

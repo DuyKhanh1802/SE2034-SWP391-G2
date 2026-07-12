@@ -58,6 +58,7 @@
                     <th>Mã phiếu</th>
                     <th>Mã lô</th>
                     <th>Ngày nhập</th>
+                    <th>Nhà cung cấp</th>
                     <th>Số lượng nhập</th>
                     <th>Hạn sử dụng</th>
                     <th>Trạng thái hạn</th>
@@ -68,6 +69,7 @@
                     <td th:text="${receipt.code}"></td>
                     <td th:text="${receipt.batchCode ?: '—'}"></td>
                     <td th:text="${#temporals.format(receipt.receiptDate, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${receipt.supplier ?: 'Không khai báo'}"></td>
                     <td th:text="${@inventoryQuantityFormatter.format(receipt.quantity) + ' ' + item.unit}"></td>
                     <td th:text="${receipt.expiryDate != null ? #temporals.format(receipt.expiryDate, 'dd/MM/yyyy') : 'Không khai báo'}"></td>
                     <td>
@@ -79,7 +81,7 @@
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(receipts)}">
-                    <td colspan="6" class="text-center py-5 text-muted">Chưa có phiếu nhập cho hàng hóa này.</td>
+                    <td colspan="7" class="text-center py-5 text-muted">Chưa có phiếu nhập cho hàng hóa này.</td>
                 </tr>
                 </tbody>
             </table>

@@ -863,8 +863,6 @@ public class BookingService {
                         : null)
                 .isActive(true)
                 .isDeleted(false)
-                .totalStays(0)
-                .totalSpent(BigDecimal.ZERO)
                 .build();
 
         return userRepository.save(guest);
@@ -1248,7 +1246,7 @@ public class BookingService {
                                     : serviceStatus.getLabel())
                         .quantity(item.getQuantity())
                         .unitPrice(item.getUnitPrice())
-                        .amount(item.getAmount())
+                        .amount(item.getTotalAmount())
                         .postedAt(item.getPostedAt())
                         .postedBy(item.getPostedBy() != null
                                 ? item.getPostedBy().getFirstName() + " " + item.getPostedBy().getLastName()
@@ -1557,7 +1555,6 @@ public class BookingService {
                     .vatRate(VAT_RATE)
                     .vatAmount(vatAmount)
                     .totalAmount(totalAmount)
-                    .amount(totalAmount)
                     .postedBy(currentStaff)
                     .postedAt(Instant.now())
                     .isVoided(false)

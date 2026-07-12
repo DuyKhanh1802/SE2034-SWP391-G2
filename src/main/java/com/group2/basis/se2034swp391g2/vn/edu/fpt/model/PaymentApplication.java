@@ -35,18 +35,12 @@ public class PaymentApplication {
     @Column(name = "amount", nullable = false, precision = 15, scale = 0, columnDefinition = "numeric(15,0)")
     private BigDecimal amount;
 
-    @Column(name = "applied_at", nullable = false)
-    private Instant appliedAt;
-
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
-        if (this.appliedAt == null) {
-            this.appliedAt = now;
-        }
         if (this.createdAt == null) {
             this.createdAt = now;
         }
