@@ -11,7 +11,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingConf
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.OnlineBookingService;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.VnPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -37,7 +36,6 @@ public class VnPayBookingController {
     private final OnlineBookingService onlineBookingService;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
-    private final PaymentService paymentService;
 
     @PostMapping("/payment/vnpay")
     public String createVnPayPayment(@ModelAttribute BookingConfirmRequest request,
@@ -182,19 +180,9 @@ public class VnPayBookingController {
             return "guest/payment-result";
         }
 
-        if (payment != null && payment.getPaymentType() == PaymentType.BALANCE) {
-            if (paidSuccess) {
-                paymentService.completePendingTransferPayment(txnRef);
-                model.addAttribute("success", true);
-                model.addAttribute("message", "Thanh toán phần còn lại khi trả phòng đã thành công. Vui lòng quay lại quầy lễ tân để xác nhận trả phòng.");
-                model.addAttribute("txnRef", txnRef);
-                model.addAttribute("transactionNo", transactionNo);
-                return "guest/payment-result";
-            }
-
-            paymentService.markPendingTransferPaymentFailed(txnRef);
+        if (payment.getPaymentType() != PaymentType.DEPOSIT) {
             model.addAttribute("success", false);
-            model.addAttribute("message", "Thanh toán không thành công. Mã lỗi: " + responseCode);
+            model.addAttribute("message", "Giao dịch này không thuộc luồng thanh toán đặt phòng qua VNPay.");
             model.addAttribute("txnRef", txnRef);
             return "guest/payment-result";
         }
