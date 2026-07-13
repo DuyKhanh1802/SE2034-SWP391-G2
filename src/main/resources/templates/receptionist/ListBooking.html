@@ -58,7 +58,9 @@
                 <select name="status">
                     <option value="" th:selected="${status == null or status == ''}">Tất cả trạng thái</option>
                     <option value="CONFIRMED" th:selected="${status == 'CONFIRMED'}">Đã xác nhận</option>
+                    <option value="PARTIALLY_CHECKED_IN" th:selected="${status == 'PARTIALLY_CHECKED_IN'}">Nhận phòng một phần</option>
                     <option value="CHECKED_IN" th:selected="${status == 'CHECKED_IN'}">Đã nhận phòng</option>
+                    <option value="PARTIALLY_CHECKED_OUT" th:selected="${status == 'PARTIALLY_CHECKED_OUT'}">Trả phòng một phần</option>
                     <option value="CHECKED_OUT" th:selected="${status == 'CHECKED_OUT'}">Đã trả phòng</option>
                     <option value="PENDING" th:selected="${status == 'PENDING'}">Chờ xử lý</option>
                     <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">Đã hủy</option>
@@ -121,15 +123,19 @@
                     <td>
                             <span class="status-badge"
                                   th:classappend="${booking.status == 'CONFIRMED'} ? ' status-confirmed' :
-                      (${booking.status == 'CHECKED_IN'} ? ' status-checked-in' :
-                      (${booking.status == 'CHECKED_OUT'} ? ' status-checked-out' :
+                      (${booking.status == 'CHECKED_IN' or booking.status == 'PARTIALLY_CHECKED_IN'} ? ' status-checked-in' :
+                      (${booking.status == 'CHECKED_OUT' or booking.status == 'PARTIALLY_CHECKED_OUT'} ? ' status-checked-out' :
                       (${booking.status == 'PENDING'} ? ' status-pending' :
-                      (${booking.status == 'NO_SHOW'} ? ' status-no-show' : ' status-cancelled'))))"
+                      (${booking.status == 'NO_SHOW'} ? ' status-no-show' :
+                      (${booking.status == 'CANCELLED'} ? ' status-cancelled' : ' status-pending')))))"
                                   th:text="${booking.status == 'CONFIRMED' ? 'Đã xác nhận' :
+                (booking.status == 'PARTIALLY_CHECKED_IN' ? 'Nhận phòng một phần' :
                 (booking.status == 'CHECKED_IN' ? 'Đã nhận phòng' :
+                (booking.status == 'PARTIALLY_CHECKED_OUT' ? 'Trả phòng một phần' :
                 (booking.status == 'CHECKED_OUT' ? 'Đã trả phòng' :
                 (booking.status == 'PENDING' ? 'Chờ xử lý' :
-                (booking.status == 'NO_SHOW' ? 'Không đến' : 'Đã hủy'))))}">
+                (booking.status == 'NO_SHOW' ? 'Không đến' :
+                (booking.status == 'CANCELLED' ? 'Đã hủy' : booking.status))))))}">
                             </span>
                     </td>
 
