@@ -19,7 +19,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomMoveReason;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.RoomMoveRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomMoveService;
-import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -436,27 +435,6 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receptionist/rooms";
         }
-    }
-
-    @PostMapping("/details/{bookingDetailId}/check-out/payment-bill")
-    public String sendCheckoutPaymentBill(@PathVariable Long bookingDetailId,
-                                          HttpServletRequest httpRequest,
-                                          RedirectAttributes redirectAttributes) {
-        try {
-            String transactionRef = checkoutService.sendCheckoutTransferBill(bookingDetailId, httpRequest);
-            redirectAttributes.addFlashAttribute(
-                    "successMessage",
-                    "Đã gửi bill thanh toán chuyển khoản cho khách. Mã giao dịch: " + transactionRef
-            );
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (DataAccessException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tạo bill thanh toán do lỗi ghi dữ liệu. Vui lòng thử lại.");
-        } catch (TransactionException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tạo bill thanh toán do lỗi giao dịch dữ liệu. Vui lòng thử lại.");
-        }
-
-        return "redirect:/receptionist/bookings/details/" + bookingDetailId + "/check-out";
     }
 
     @PostMapping("/details/{bookingDetailId}/check-out")

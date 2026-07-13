@@ -90,9 +90,9 @@
                         <strong th:text="${#numbers.formatDecimal(checkout.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
                         <input type="hidden" name="paymentAmount" th:value="${checkout.balanceAmount}">
                         <label>Phương thức thanh toán</label>
-                        <select name="paymentMethod" required>
+                        <select name="paymentMethod" id="checkoutPaymentMethod" required>
                             <option th:each="method : ${paymentMethods}"
-                                    th:if="${method.name() == 'CASH'}"
+                                    th:if="${method.name() == 'CASH' or method.name() == 'TRANSFER'}"
                                     th:value="${method.name()}"
                                     th:text="${method.label}">Cash</option>
                         </select>
@@ -122,23 +122,63 @@
                     </button>
                 </form>
 
-                <form th:if="${checkout.canCheckout and checkout.settlementType == 'PAYMENT'}"
-                      th:action="@{/receptionist/bookings/details/{id}/check-out/payment-bill(id=${checkout.bookingDetailId})}"
-                      method="post"
-                      class="checkout-form transfer-bill-form">
-                    <div class="settlement-box transfer">
-                        <span>Chuyển khoản qua VNPay</span>
-                        <strong th:text="${#numbers.formatDecimal(checkout.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
-                        <p>Gửi bill thanh toán cho khách qua email. Khi VNPay báo thành công, khoản này được ghi nhận là chuyển khoản.</p>
+                <div th:if="${checkout.canCheckout and checkout.settlementType == 'PAYMENT'}"
+                     class="vietqr-modal"
+                     id="vietQrModal"
+                     aria-hidden="true">
+                    <div class="vietqr-backdrop" data-close-vietqr></div>
+                    <div class="vietqr-dialog" role="dialog" aria-modal="true" aria-labelledby="vietQrTitle">
+                        <button type="button" class="vietqr-close" data-close-vietqr aria-label="Đóng">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        <h3 id="vietQrTitle">Thanh toán chuyển khoản</h3>
+                        <div class="vietqr-content">
+                            <img th:src="${checkout.vietQrImageUrl}" alt="VietQR thanh toán checkout">
+                        </div>
+                        <p class="vietqr-note">Lễ tân chỉ xác nhận sau khi đã kiểm tra tiền vào tài khoản.</p>
+                        <button type="button" class="btn-dark checkout-submit" id="confirmTransferPayment">
+                            <i class="bi bi-check2-circle"></i>
+                            Xác nhận đã nhận chuyển khoản
+                        </button>
                     </div>
-                    <button type="submit" class="btn-outline checkout-submit">
-                        <i class="bi bi-envelope-paper"></i>
-                        Gửi bill thanh toán
-                    </button>
-                </form>
+                </div>
             </section>
         </div>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkoutForm = document.querySelector('.checkout-form');
+            const paymentMethod = document.getElementById('checkoutPaymentMethod');
+            const vietQrModal = document.getElementById('vietQrModal');
+            const confirmTransferPayment = document.getElementById('confirmTransferPayment');
+            let transferConfirmed = false;
+
+            if (!checkoutForm || !paymentMethod || !vietQrModal || !confirmTransferPayment) {
+                return;
+            }
+
+            checkoutForm.addEventListener('submit', function (event) {
+                if (paymentMethod.value === 'TRANSFER' && !transferConfirmed) {
+                    event.preventDefault();
+                    vietQrModal.classList.add('open');
+                    vietQrModal.setAttribute('aria-hidden', 'false');
+                }
+            });
+
+            confirmTransferPayment.addEventListener('click', function () {
+                transferConfirmed = true;
+                checkoutForm.submit();
+            });
+
+            vietQrModal.querySelectorAll('[data-close-vietqr]').forEach(function (element) {
+                element.addEventListener('click', function () {
+                    vietQrModal.classList.remove('open');
+                    vietQrModal.setAttribute('aria-hidden', 'true');
+                });
+            });
+        });
+    </script>
 </main>
 </body>
 </html>

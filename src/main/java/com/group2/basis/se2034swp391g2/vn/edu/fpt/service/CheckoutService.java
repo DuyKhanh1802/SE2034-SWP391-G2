@@ -5,14 +5,16 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckoutDetailResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.*;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -26,11 +28,17 @@ public class CheckoutService {
     private final BookingDetailRepository bookingDetailRepository;
     private final FolioItemRepository folioItemRepository;
     private final PaymentApplicationRepository paymentApplicationRepository;
-    private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final PaymentService paymentService;
-    private final VnPayService vnPayService;
-    private final MailService mailService;
+
+    @Value("${vietqr.bank-code:BIDV}")
+    private String vietQrBankCode;
+
+    @Value("${vietqr.account-number:3711308057}")
+    private String vietQrAccountNumber;
+
+    @Value("${vietqr.account-name:VHotel}")
+    private String vietQrAccountName;
 
     @Transactional(readOnly = true)
     public CheckoutDetailResponse getCheckoutDetail(Long bookingDetailId) {
@@ -54,63 +62,6 @@ public class CheckoutService {
                 .map(BookingDetail::getId)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Booking không còn phòng nào đang ở để checkout."));
-    }
-
-    @Transactional
-    public String sendCheckoutTransferBill(Long bookingDetailId, HttpServletRequest httpRequest) {
-        BookingDetail detail = getBookingDetail(bookingDetailId);
-        Booking booking = getActiveBooking(detail);
-        validateCheckoutTarget(detail, booking);
-        if (resolveStayStatus(detail, booking) != BookingDetailStatus.CHECKED_IN) {
-            throw new IllegalStateException("Chỉ có thể gửi bill thanh toán cho phòng đang ở trạng thái đã nhận phòng.");
-        }
-
-        if (booking.getGuestEmail() == null || booking.getGuestEmail().isBlank()) {
-            throw new IllegalArgumentException("Booking chưa có email khách hàng để gửi bill thanh toán.");
-        }
-
-        List<FolioItem> folioItems = folioItemRepository
-                .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
-        List<PaymentApplication> applications = paymentApplicationRepository.findByBookingDetailId(detail.getId());
-
-        BigDecimal totalAmount = calculateRoomFolioTotal(detail, folioItems);
-        BigDecimal paidAmount = calculateAppliedPaidAmount(applications);
-        BigDecimal balance = totalAmount.subtract(paidAmount).setScale(0, RoundingMode.HALF_UP);
-
-        if (balance.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Phòng không còn số dư cần thu, không cần gửi bill thanh toán.");
-        }
-
-        Payment pendingPayment = findReusablePendingTransferPayment(detail.getId(), balance);
-        if (pendingPayment == null) {
-            pendingPayment = paymentService.createPendingTransferPayment(
-                    booking,
-                    detail,
-                    PaymentType.BALANCE,
-                    balance,
-                    getCurrentStaffUser()
-            );
-        }
-
-        String roomNumber = detail.getRoom() == null ? "Chua phan phong" : detail.getRoom().getRoomNumber();
-        String paymentUrl = vnPayService.createPaymentUrl(
-                pendingPayment.getTransactionRef(),
-                balance,
-                "Thanh toan tra phong " + roomNumber + " " + pendingPayment.getTransactionRef(),
-                httpRequest
-        );
-
-        mailService.sendCheckoutPaymentBillEmail(
-                booking.getGuestEmail().trim(),
-                buildGuestName(booking),
-                booking.getBookingReference(),
-                detail.getRoom() == null ? "Chưa phân phòng" : detail.getRoom().getRoomNumber(),
-                formatMoney(balance),
-                paymentUrl,
-                pendingPayment.getTransactionRef()
-        );
-
-        return pendingPayment.getTransactionRef();
     }
 
     @Transactional
@@ -145,9 +96,6 @@ public class CheckoutService {
             }
             if (request.getPaymentMethod() == null) {
                 throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
-            }
-            if (request.getPaymentMethod() == PaymentMethod.TRANSFER) {
-                throw new IllegalArgumentException("Vui lòng gửi bill chuyển khoản và đợi thanh toán thành công trước khi xác nhận trả phòng.");
             }
             paymentService.createPayment(booking, detail, PaymentType.BALANCE, request.getPaymentMethod(), paymentAmount, currentStaff);
         } else if (balance.compareTo(BigDecimal.ZERO) < 0) {
@@ -229,6 +177,10 @@ public class CheckoutService {
                 .paymentStatusLabel(resolvePaymentStatusLabel(totalAmount, netPaid))
                 .canCheckout(canCheckout)
                 .blockReason(canCheckout ? null : resolveCheckoutBlockReason(detail, booking))
+                .vietQrImageUrl(buildVietQrImageUrl(booking, detail, payable))
+                .transferBankCode(vietQrBankCode)
+                .transferAccountNumber(vietQrAccountNumber)
+                .transferAccountName(vietQrAccountName)
                 .build();
     }
 
@@ -292,9 +244,6 @@ public class CheckoutService {
                 throw new IllegalArgumentException("Số tiền thanh toán checkout phải bằng số dư còn lại của phòng.");
             }
             validateReceptionistPaymentMethod(request.getPaymentMethod(), "thanh toán");
-            if (request.getPaymentMethod() == PaymentMethod.TRANSFER) {
-                throw new IllegalArgumentException("Vui lòng gửi bill chuyển khoản và đợi thanh toán thành công trước khi xác nhận trả phòng.");
-            }
             return;
         }
 
@@ -322,19 +271,6 @@ public class CheckoutService {
         if (method != PaymentMethod.CASH && method != PaymentMethod.TRANSFER) {
             throw new IllegalArgumentException("Checkout tại lễ tân chỉ hỗ trợ tiền mặt hoặc chuyển khoản.");
         }
-    }
-
-    private Payment findReusablePendingTransferPayment(Long bookingDetailId, BigDecimal balance) {
-        return paymentRepository.findAppliedPaymentsByBookingDetailIdAndTypeAndStatus(
-                        bookingDetailId,
-                        PaymentType.BALANCE,
-                        PaymentStatus.PENDING
-                )
-                .stream()
-                .filter(payment -> payment.getMethod() == PaymentMethod.TRANSFER)
-                .filter(payment -> money(payment.getAmount()).compareTo(balance) == 0)
-                .findFirst()
-                .orElse(null);
     }
 
     private void updateBookingCheckoutStatus(Booking booking) {
@@ -472,12 +408,49 @@ public class CheckoutService {
         return name.isBlank() ? booking.getGuestEmail() : name;
     }
 
-    private String formatMoney(BigDecimal value) {
-        return String.format("%,.0f VND", money(value));
-    }
-
     private BigDecimal money(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value.setScale(0, RoundingMode.HALF_UP);
+    }
+
+    private String buildVietQrImageUrl(Booking booking, BookingDetail detail, BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return null;
+        }
+
+        return "https://img.vietqr.io/image/"
+                + encodePath(vietQrBankCode)
+                + "-"
+                + encodePath(vietQrAccountNumber)
+                + "-compact2.png?amount="
+                + money(amount).toPlainString()
+                + "&addInfo="
+                + encodeQuery(buildTransferContent(booking, detail))
+                + "&accountName="
+                + encodeQuery(vietQrAccountName);
+    }
+
+    private String buildTransferContent(Booking booking, BookingDetail detail) {
+        String bookingReference = booking == null ? "" : booking.getBookingReference();
+        String roomNumber = detail == null || detail.getRoom() == null ? "" : detail.getRoom().getRoomNumber();
+        return normalizeTransferContent(bookingReference + " P" + roomNumber + " CHECKOUT");
+    }
+
+    private String normalizeTransferContent(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toUpperCase()
+                .replaceAll("[^A-Z0-9 ]", "")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private String encodeQuery(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
+    }
+
+    private String encodePath(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     private User getCurrentStaffUser() {
