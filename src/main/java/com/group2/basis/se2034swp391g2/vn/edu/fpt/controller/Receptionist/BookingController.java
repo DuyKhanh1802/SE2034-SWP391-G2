@@ -430,7 +430,7 @@ public class BookingController {
             model.addAttribute("request", new CheckoutRequest());
             model.addAttribute("paymentMethods", PaymentMethod.values());
             model.addAttribute("pageTitle", "Trả phòng");
-            return "CheckoutProcedure";
+            return "receptionist/CheckoutProcedure";
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receptionist/rooms";
