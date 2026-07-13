@@ -50,7 +50,7 @@
                 <!-- Booking status -->
                 <span class="detail-badge booking-badge"
                       th:classappend="${detail.bookingStatus.name() == 'CONFIRMED'} ? ' badge-confirmed' :
-                          (${detail.bookingStatus.name() == 'CHECKED_IN' or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_IN'} ? ' badge-checked-in' :
+                          (${detail.bookingStatus.name() == 'CHECKED_IN'} ? ' badge-checked-in' :
                           (${detail.bookingStatus.name() == 'CHECKED_OUT' or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT'} ? ' badge-checked-out' :
                           (${detail.bookingStatus.name() == 'PENDING'} ? ' badge-pending' :
                           (${detail.bookingStatus.name() == 'NO_SHOW'} ? ' badge-no-show' :
@@ -341,6 +341,16 @@
                                 <span class="detail-badge"
                                       th:classappend="${room.stayStatus == 'CHECKED_OUT'} ? ' badge-checked-out' : ' badge-checked-in'"
                                       th:text="${room.stayStatusLabel}">Đã nhận phòng</span>
+
+                                <small th:if="${room.actualCheckinAt != null}"
+                                       th:text="'Nhận thực tế: ' + ${#temporals.format(room.actualCheckinAt, 'dd/MM/yyyy HH:mm')}">
+                                    Nhận thực tế: 11/07/2026 14:00
+                                </small>
+
+                                <small th:if="${room.actualCheckoutAt != null}"
+                                       th:text="'Trả thực tế: ' + ${#temporals.format(room.actualCheckoutAt, 'dd/MM/yyyy HH:mm')}">
+                                    Trả thực tế: 12/07/2026 11:00
+                                </small>
 
                                 <a th:if="${room.stayStatus == 'CHECKED_IN'}"
                                    class="btn-detail primary"
@@ -700,7 +710,7 @@
                                 </div>
 
                                 <div class="payment-meta">
-                                    <span th:text="${payment.method}">Thẻ</span>
+                                    <span th:text="${payment.method}">Tiền mặt</span>
                                     <span>•</span>
                                     <span th:text="${payment.status}">Thành công</span>
                                     <span th:if="${payment.paidAt != null}">•</span>
@@ -957,7 +967,6 @@
                             <label class="form-label">Phương thức thanh toán</label>
                             <select name="method" class="form-select" required>
                                 <option value="CASH">Tiền mặt</option>
-                                <option value="CARD">Thẻ</option>
                                 <option value="TRANSFER">Chuyển khoản</option>
                             </select>
                         </div>

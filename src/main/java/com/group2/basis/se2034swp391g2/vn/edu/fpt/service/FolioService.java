@@ -334,6 +334,8 @@ public class FolioService {
                         ? "Chưa xác định"
                         : detail.getVariant().getVariantName())
                 .totalAmount(money(detail.getTotalAmount()))
+                .actualCheckinAt(detail.getActualCheckinAt())
+                .actualCheckoutAt(detail.getActualCheckoutAt())
                 .build();
     }
 

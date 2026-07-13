@@ -241,6 +241,43 @@ public class MailService {
         sendSimpleEmail(to, subject, body);
     }
 
+    public void sendCheckoutPaymentBillEmail(String toEmail,
+                                             String guestName,
+                                             String bookingReference,
+                                             String roomNumber,
+                                             String amount,
+                                             String paymentUrl,
+                                             String transactionRef) {
+        String subject = "[V'Hotel Hanoi] Bill thanh toán trả phòng";
+        String body = """
+                Xin chào %s,
+
+                V'Hotel Hanoi gửi quý khách bill thanh toán phần còn lại khi trả phòng.
+
+                Mã đặt phòng: %s
+                Phòng: %s
+                Số tiền cần thanh toán: %s
+                Mã giao dịch: %s
+
+                Quý khách vui lòng thanh toán qua liên kết VNPay dưới đây:
+                %s
+
+                Sau khi giao dịch thành công, hệ thống sẽ ghi nhận thanh toán chuyển khoản. Lễ tân sẽ xác nhận trả phòng tại quầy.
+
+                Trân trọng,
+                Đội ngũ V'Hotel Hanoi
+                """.formatted(
+                guestName,
+                bookingReference,
+                roomNumber,
+                amount,
+                transactionRef,
+                paymentUrl
+        );
+
+        sendSimpleEmail(toEmail, subject, body);
+    }
+
     private void sendSimpleEmail(String toEmail, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();

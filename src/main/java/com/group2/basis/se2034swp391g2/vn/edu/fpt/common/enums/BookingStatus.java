@@ -3,7 +3,6 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums;
 public enum BookingStatus {
     PENDING("Chờ xác nhận"),
     CONFIRMED("Đã xác nhận"),
-    PARTIALLY_CHECKED_IN("Nhận phòng một phần"),
     CHECKED_IN("Đã nhận phòng"),
     PARTIALLY_CHECKED_OUT("Trả phòng một phần"),
     CHECKED_OUT("Đã trả phòng"),

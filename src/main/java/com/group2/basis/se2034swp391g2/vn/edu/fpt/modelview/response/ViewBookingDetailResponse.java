@@ -94,6 +94,8 @@ public class ViewBookingDetailResponse {
 
         private String roomCode;
         private Instant roomCodeExpiresAt;
+        private Instant actualCheckinAt;
+        private Instant actualCheckoutAt;
         private LocalDate checkOutDate;
         private Long variantId;
         private String stayStatus;
