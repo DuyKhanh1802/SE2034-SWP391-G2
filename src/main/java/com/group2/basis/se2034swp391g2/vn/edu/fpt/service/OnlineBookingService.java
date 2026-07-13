@@ -2,6 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.*;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.PaymentCodeGenerator;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingConfirmRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.SelectedRoomServiceRequest;
@@ -416,7 +417,7 @@ public class OnlineBookingService {
         payment.setMethod(paymentMethod);
         payment.setPaymentType(PaymentType.DEPOSIT);
         payment.setStatus(PaymentStatus.PENDING);
-        payment.setTransactionRef(savedBooking.getBookingReference());
+        payment.setTransactionRef(generateUniquePaymentTransactionRef());
         payment.setCreatedAt(Instant.now());
         paymentRepository.save(payment);
 
@@ -531,109 +532,67 @@ public class OnlineBookingService {
 
 
     @Transactional
-    public Booking confirmVnPayPaymentSuccess(String bookingReference,
+    public Booking confirmVnPayPaymentSuccess(String transactionRef,
                                               String vnpTransactionNo) {
 
+        Payment payment = paymentRepository.findByTransactionRef(transactionRef)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giao dịch thanh toán VNPay."));
 
-        Booking booking = bookingRepository.findByBookingReference(bookingReference)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking theo mã giao dịch VNPay."));
-
+        Booking booking = payment.getBooking();
 
         if (booking.getDepositStatus() == DepositStatus.PAID) {
             return booking;
         }
 
-
         BigDecimal paidAmount = booking.getGrandTotal();
-
 
         if (paidAmount == null || paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
             paidAmount = booking.getTotalAmount();
         }
 
-
         if (paidAmount == null || paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Số tiền thanh toán không hợp lệ.");
         }
 
-
-        booking.setStatus(BookingStatus.PENDING);
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setDepositStatus(DepositStatus.PAID);
         booking.setDepositAmount(paidAmount);
 
-
         bookingRepository.save(booking);
-
-
-        java.util.Optional<Payment> pendingPayment =
-                paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
-                        booking.getId(),
-                        PaymentType.DEPOSIT,
-                        PaymentStatus.PENDING
-                );
-
-
-        Payment payment = pendingPayment.orElseGet(Payment::new);
-
-
-        if (payment.getId() == null) {
-            payment.setBooking(booking);
-            payment.setPaymentType(PaymentType.DEPOSIT);
-            payment.setCreatedAt(Instant.now());
-        }
-
 
         payment.setMethod(PaymentMethod.VNPAY);
         payment.setAmount(paidAmount);
         payment.setStatus(PaymentStatus.SUCCESS);
-
-
-        /*
-         * Để transactionRef = bookingReference vì mình dùng bookingReference làm vnp_TxnRef.
-         * vnpTransactionNo là mã bên VNPay, nếu muốn lưu riêng thì sau này thêm field vnp_transaction_no.
-         */
-        payment.setTransactionRef(booking.getBookingReference());
+        payment.setTransactionRef(transactionRef);
         payment.setPaidAt(Instant.now());
 
+        paymentRepository.save(payment);
 
         Payment savedPayment = paymentRepository.save(payment);
         cashTransactionService.createFromPayment(savedPayment);
 
-
         List<BookingDetail> details =
                 bookingDetailRepository.findDetailsWithRoomsByBookingId(booking.getId());
 
-
         mailService.sendBookingConfirmedEmail(booking, details);
-
 
         return booking;
     }
 
 
     @Transactional
-    public void markVnPayPaymentFailed(String bookingReference) {
-        Booking booking = bookingRepository.findByBookingReference(bookingReference)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking theo mã giao dịch VNPay."));
+    public void markVnPayPaymentFailed(String transactionRef) {
+        Payment payment = paymentRepository.findByTransactionRef(transactionRef)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giao dịch thanh toán VNPay."));
 
+        Booking booking = payment.getBooking();
 
         if (booking.getDepositStatus() == DepositStatus.PAID) {
             return;
         }
 
-
-        releasePromotionUsage(booking);
-
-
-        booking.setPromotion(null);
-
-
-        booking.setStatus(BookingStatus.PENDING);
-        booking.setDepositStatus(DepositStatus.UNPAID);
-        booking.setDepositAmount(BigDecimal.ZERO);
-
-
-        bookingRepository.save(booking);
+        payment.setStatus(PaymentStatus.FAILED);
+        paymentRepository.save(payment);
     }
 
 
@@ -1390,6 +1349,16 @@ public class OnlineBookingService {
 
         promotion.setUsageCount(usageCount);
         promotionRepository.save(promotion);
+    }
+
+    private String generateUniquePaymentTransactionRef() {
+        String transactionRef;
+
+        do {
+            transactionRef = PaymentCodeGenerator.generatePaymentRef();
+        } while (paymentRepository.existsByTransactionRef(transactionRef));
+
+        return transactionRef;
     }
 }
 

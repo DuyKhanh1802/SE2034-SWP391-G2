@@ -270,7 +270,7 @@ public class BookingService {
                 .build();
 
         Booking savedBooking = bookingRepository.save(booking);
-        
+
 
         long nights = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
 
@@ -853,18 +853,18 @@ public class BookingService {
     }
 
     private String generateRoomCode(){
-       String code;
+        String code;
 
-       do {
-           StringBuilder builder = new StringBuilder();
+        do {
+            StringBuilder builder = new StringBuilder();
 
-           for (int i = 0 ; i <ROOM_CODE_LENGTH; i++){
-               int index = (int) (Math.random() * ROOM_CODE_CHARS.length());
-               builder.append(ROOM_CODE_CHARS.charAt(index));
-           }
-           code = builder.toString();
-       } while (bookingDetailRepository.existsByRoomCode(code));
-       return  code;
+            for (int i = 0 ; i <ROOM_CODE_LENGTH; i++){
+                int index = (int) (Math.random() * ROOM_CODE_CHARS.length());
+                builder.append(ROOM_CODE_CHARS.charAt(index));
+            }
+            code = builder.toString();
+        } while (bookingDetailRepository.existsByRoomCode(code));
+        return  code;
     }
 
     private Instant generateRoomCodeExpiresAt(LocalDate checkOutDate){
@@ -950,6 +950,8 @@ public class BookingService {
             }
 
             detail.setRoomCodeExpiresAt(generateRoomCodeExpiresAt(booking.getCheckOutDate()));
+            detail.setStayStatus(BookingDetailStatus.CHECKED_IN);
+            detail.setActualCheckinAt(Instant.now());
 
             room.setStatus(RoomStatus.OCCUPIED);
         }
@@ -1161,29 +1163,29 @@ public class BookingService {
                 .map(item -> {
                     FolioItemStatus serviceStatus = getEffectiveServiceStatus(item);
                     return ViewBookingDetailResponse.ServiceLine.builder()
-                        .folioItemId(item.getId())
-                        .bookingDetailId(item.getBookingDetail() != null
-                                ? item.getBookingDetail().getId()
-                                : null)
-                        .roomNumber(item.getBookingDetail() != null
-                                && item.getBookingDetail().getRoom() != null
-                                ? item.getBookingDetail().getRoom().getRoomNumber()
-                                : "Chưa xác định")
-                        .serviceName(item.getDescription())
-                        .itemType(item.getItemType() != null ? item.getItemType().name() : "N/A")
-                        .serviceStatus(serviceStatus.name())
+                            .folioItemId(item.getId())
+                            .bookingDetailId(item.getBookingDetail() != null
+                                    ? item.getBookingDetail().getId()
+                                    : null)
+                            .roomNumber(item.getBookingDetail() != null
+                                    && item.getBookingDetail().getRoom() != null
+                                    ? item.getBookingDetail().getRoom().getRoomNumber()
+                                    : "Chưa xác định")
+                            .serviceName(item.getDescription())
+                            .itemType(item.getItemType() != null ? item.getItemType().name() : "N/A")
+                            .serviceStatus(serviceStatus.name())
                             .serviceStatusLabel(item.getService() == null
                                     && item.getItemType() == FolioItemType.ROOM_CHARGE
                                     ? "Đã ghi nhận"
                                     : serviceStatus.getLabel())
-                        .quantity(item.getQuantity())
-                        .unitPrice(item.getUnitPrice())
-                        .amount(item.getTotalAmount())
-                        .postedAt(item.getPostedAt())
-                        .postedBy(item.getPostedBy() != null
-                                ? item.getPostedBy().getFirstName() + " " + item.getPostedBy().getLastName()
-                                : "N/A")
-                        .build();
+                            .quantity(item.getQuantity())
+                            .unitPrice(item.getUnitPrice())
+                            .amount(item.getTotalAmount())
+                            .postedAt(item.getPostedAt())
+                            .postedBy(item.getPostedBy() != null
+                                    ? item.getPostedBy().getFirstName() + " " + item.getPostedBy().getLastName()
+                                    : "N/A")
+                            .build();
                 })
                 .toList();
 
@@ -1357,6 +1359,15 @@ public class BookingService {
 
     private BookingDetailStatus resolveDetailStayStatus(BookingDetail detail, Booking booking) {
         if (detail.getStayStatus() != null) {
+            // Backward compatibility for bookings checked in before detail status
+            // was updated by confirmCheckIn(). Without this, the UI keeps showing
+            // "Reserved" and hides the room move/check-out actions.
+            if (detail.getStayStatus() == BookingDetailStatus.RESERVED
+                    && booking.getStatus() == BookingStatus.CHECKED_IN
+                    && detail.getRoom() != null
+                    && detail.getRoom().getStatus() == RoomStatus.OCCUPIED) {
+                return BookingDetailStatus.CHECKED_IN;
+            }
             return detail.getStayStatus();
         }
 

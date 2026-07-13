@@ -10,5 +10,4 @@ import java.util.Optional;
 @Service
 public interface CountryRepository extends JpaRepository<Country, Long> {
     List<Country> findAllByOrderByCountryNameAsc();
-    List<Country> findByIsActiveTrueOrderByCountryNameAsc();
 }
