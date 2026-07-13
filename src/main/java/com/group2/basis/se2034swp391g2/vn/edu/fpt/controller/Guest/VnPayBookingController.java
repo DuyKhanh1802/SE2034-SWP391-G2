@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 
@@ -164,6 +165,27 @@ public class VnPayBookingController {
         boolean paidSuccess = "00".equals(responseCode)
                 && "00".equals(transactionStatus);
 
+        Payment payment = paymentRepository.findByTransactionRef(txnRef).orElse(null);
+        if (payment == null) {
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Không tìm thấy giao dịch thanh toán trong hệ thống.");
+            model.addAttribute("txnRef", txnRef);
+            return "guest/payment-result";
+        }
+
+        if (!isReturnedAmountValid(payment, params.get("vnp_Amount"))) {
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Số tiền VNPay trả về không khớp với giao dịch trong hệ thống.");
+            model.addAttribute("txnRef", txnRef);
+            return "guest/payment-result";
+        }
+
+        if (payment.getPaymentType() != PaymentType.DEPOSIT) {
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Giao dịch này không thuộc luồng thanh toán đặt phòng qua VNPay.");
+            model.addAttribute("txnRef", txnRef);
+            return "guest/payment-result";
+        }
 
         if (paidSuccess) {
             Booking booking =
@@ -195,6 +217,22 @@ public class VnPayBookingController {
     }
 
 
+
+    private boolean isReturnedAmountValid(Payment payment, String returnedAmount) {
+        if (payment == null || payment.getAmount() == null || returnedAmount == null || returnedAmount.isBlank()) {
+            return false;
+        }
+
+        try {
+            BigDecimal expected = payment.getAmount()
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(0, RoundingMode.HALF_UP);
+            BigDecimal actual = new BigDecimal(returnedAmount).setScale(0, RoundingMode.HALF_UP);
+            return expected.compareTo(actual) == 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
 
 }

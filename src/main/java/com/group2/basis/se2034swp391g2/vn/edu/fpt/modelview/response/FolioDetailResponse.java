@@ -56,6 +56,8 @@ public class FolioDetailResponse {
         private String roomNumber;
         private String roomName;
         private BigDecimal totalAmount;
+        private Instant actualCheckinAt;
+        private Instant actualCheckoutAt;
     }
 
     @Data

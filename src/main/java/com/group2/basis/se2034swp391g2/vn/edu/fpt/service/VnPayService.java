@@ -61,8 +61,6 @@ public class VnPayService {
     public String createPaymentUrl(String txnRef,
                                    BigDecimal amount,
                                    HttpServletRequest request) {
-
-
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         LocalDateTime expire = now.plusMinutes(15);
 

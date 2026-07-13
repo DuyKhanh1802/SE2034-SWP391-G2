@@ -1277,6 +1277,8 @@ public class BookingService {
                         .totalAmount(detail.getTotalAmount())
                         .roomCode(detail.getRoomCode())
                         .roomCodeExpiresAt(detail.getRoomCodeExpiresAt())
+                        .actualCheckinAt(detail.getActualCheckinAt())
+                        .actualCheckoutAt(detail.getActualCheckoutAt())
                         .checkOutDate(detail.getCheckOutDate())
                         .stayStatus(resolveDetailStayStatus(detail, booking).name())
                         .stayStatusLabel(resolveDetailStayStatus(detail, booking).getLabel())
@@ -1372,7 +1374,6 @@ public class BookingService {
         }
 
         if (booking.getStatus() == BookingStatus.CHECKED_IN
-                || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_IN
                 || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_OUT) {
             return BookingDetailStatus.CHECKED_IN;
         }

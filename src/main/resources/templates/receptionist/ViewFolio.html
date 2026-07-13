@@ -62,6 +62,8 @@
                         <tr>
                             <th>Phòng</th>
                             <th>Hạng phòng</th>
+                            <th>Nhận thực tế</th>
+                            <th>Trả thực tế</th>
                             <th class="text-end">Tổng</th>
                         </tr>
                         </thead>
@@ -69,6 +71,8 @@
                         <tr th:each="room : ${folio.rooms}">
                             <td th:text="${room.roomNumber != null ? 'Phòng ' + room.roomNumber : 'Chưa phân phòng'}">Phòng 101</td>
                             <td th:text="${room.roomName}">Deluxe</td>
+                            <td th:text="${room.actualCheckinAt != null ? #temporals.format(room.actualCheckinAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                            <td th:text="${room.actualCheckoutAt != null ? #temporals.format(room.actualCheckoutAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
                             <td class="text-end" th:text="${#numbers.formatDecimal(room.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</td>
                         </tr>
                         </tbody>

@@ -100,6 +100,13 @@
     background: #edf8f1;
 }
 
+.settlement-box p {
+    margin: 0;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
 .checkout-form select {
     width: 100%;
     min-height: 42px;
@@ -116,6 +123,68 @@
     width: 100%;
 }
 
+.vietqr-modal {
+    display: none;
+}
+
+.vietqr-modal.open {
+    display: block;
+}
+
+.vietqr-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(0, 0, 0, .45);
+}
+
+.vietqr-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 1060;
+    width: min(720px, calc(100vw - 32px));
+    max-height: calc(100vh - 24px);
+    overflow: hidden;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 1px solid #222;
+    padding: 24px 28px;
+}
+
+.vietqr-dialog h3 {
+    margin: 0 0 14px;
+    font-size: 28px;
+}
+
+.vietqr-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    border: 0;
+    background: transparent;
+    color: #111;
+    cursor: pointer;
+}
+
+.vietqr-content {
+    display: flex;
+    justify-content: center;
+}
+
+.vietqr-content img {
+    width: min(360px, 100%, calc(100vh - 245px));
+    height: auto;
+    border: 1px solid #e2e2e2;
+    object-fit: contain;
+}
+
+.vietqr-note {
+    margin: 14px 0;
+    color: #555;
+    font-size: 13px;
+}
+
 @media (max-width: 980px) {
     .checkout-grid {
         grid-template-columns: 1fr;
@@ -126,5 +195,13 @@
     .stay-range-inline {
         flex-wrap: wrap;
         white-space: normal;
+    }
+
+    .vietqr-dialog {
+        padding: 20px;
+    }
+
+    .vietqr-content img {
+        width: min(260px, 100%, calc(100vh - 230px));
     }
 }

@@ -6,12 +6,15 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequ
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckoutDetailResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -27,6 +30,15 @@ public class CheckoutService {
     private final PaymentApplicationRepository paymentApplicationRepository;
     private final UserRepository userRepository;
     private final PaymentService paymentService;
+
+    @Value("${vietqr.bank-code:BIDV}")
+    private String vietQrBankCode;
+
+    @Value("${vietqr.account-number:3711308057}")
+    private String vietQrAccountNumber;
+
+    @Value("${vietqr.account-name:VHotel}")
+    private String vietQrAccountName;
 
     @Transactional(readOnly = true)
     public CheckoutDetailResponse getCheckoutDetail(Long bookingDetailId) {
@@ -148,6 +160,8 @@ public class CheckoutService {
                 .roomCount(bookingDetails == null ? 1 : bookingDetails.size())
                 .checkInDate(detail.getCheckInDate())
                 .checkOutDate(detail.getCheckOutDate())
+                .actualCheckinAt(detail.getActualCheckinAt())
+                .actualCheckoutAt(detail.getActualCheckoutAt())
                 .bookingStatus(booking.getStatus() == null ? "" : booking.getStatus().name())
                 .bookingStatusLabel(booking.getStatus() == null ? "N/A" : booking.getStatus().getLabel())
                 .roomSubtotal(money(detail.getTotalAmount()))
@@ -163,6 +177,10 @@ public class CheckoutService {
                 .paymentStatusLabel(resolvePaymentStatusLabel(totalAmount, netPaid))
                 .canCheckout(canCheckout)
                 .blockReason(canCheckout ? null : resolveCheckoutBlockReason(detail, booking))
+                .vietQrImageUrl(buildVietQrImageUrl(booking, detail, payable))
+                .transferBankCode(vietQrBankCode)
+                .transferAccountNumber(vietQrAccountNumber)
+                .transferAccountName(vietQrAccountName)
                 .build();
     }
 
@@ -175,7 +193,6 @@ public class CheckoutService {
     private boolean canCheckoutTarget(BookingDetail detail, Booking booking) {
         BookingStatus bookingStatus = booking.getStatus();
         if (bookingStatus != BookingStatus.CHECKED_IN
-                && bookingStatus != BookingStatus.PARTIALLY_CHECKED_IN
                 && bookingStatus != BookingStatus.PARTIALLY_CHECKED_OUT) {
             return false;
         }
@@ -191,7 +208,6 @@ public class CheckoutService {
     private String resolveCheckoutBlockReason(BookingDetail detail, Booking booking) {
         BookingStatus bookingStatus = booking.getStatus();
         if (bookingStatus != BookingStatus.CHECKED_IN
-                && bookingStatus != BookingStatus.PARTIALLY_CHECKED_IN
                 && bookingStatus != BookingStatus.PARTIALLY_CHECKED_OUT) {
             return "Booking không ở trạng thái cho phép trả phòng.";
         }
@@ -252,8 +268,8 @@ public class CheckoutService {
         if (method == null) {
             throw new IllegalArgumentException("Vui lòng chọn phương thức " + actionLabel + ".");
         }
-        if (method == PaymentMethod.VNPAY) {
-            throw new IllegalArgumentException("Checkout tại lễ tân chưa xử lý qua cổng VNPAY, vui lòng chọn tiền mặt, thẻ hoặc chuyển khoản.");
+        if (method != PaymentMethod.CASH && method != PaymentMethod.TRANSFER) {
+            throw new IllegalArgumentException("Checkout tại lễ tân chỉ hỗ trợ tiền mặt hoặc chuyển khoản.");
         }
     }
 
@@ -303,7 +319,6 @@ public class CheckoutService {
             return detail.getStayStatus();
         }
         if (booking.getStatus() == BookingStatus.CHECKED_IN
-                || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_IN
                 || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_OUT) {
             return BookingDetailStatus.CHECKED_IN;
         }
@@ -395,6 +410,47 @@ public class CheckoutService {
 
     private BigDecimal money(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value.setScale(0, RoundingMode.HALF_UP);
+    }
+
+    private String buildVietQrImageUrl(Booking booking, BookingDetail detail, BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return null;
+        }
+
+        return "https://img.vietqr.io/image/"
+                + encodePath(vietQrBankCode)
+                + "-"
+                + encodePath(vietQrAccountNumber)
+                + "-compact2.png?amount="
+                + money(amount).toPlainString()
+                + "&addInfo="
+                + encodeQuery(buildTransferContent(booking, detail))
+                + "&accountName="
+                + encodeQuery(vietQrAccountName);
+    }
+
+    private String buildTransferContent(Booking booking, BookingDetail detail) {
+        String bookingReference = booking == null ? "" : booking.getBookingReference();
+        String roomNumber = detail == null || detail.getRoom() == null ? "" : detail.getRoom().getRoomNumber();
+        return normalizeTransferContent(bookingReference + " P" + roomNumber + " CHECKOUT");
+    }
+
+    private String normalizeTransferContent(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toUpperCase()
+                .replaceAll("[^A-Z0-9 ]", "")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private String encodeQuery(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
+    }
+
+    private String encodePath(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     private User getCurrentStaffUser() {
