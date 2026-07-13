@@ -95,9 +95,21 @@
     background: #fff0f0;
 }
 
+.settlement-box.transfer {
+    border-color: #bfd1e8;
+    background: #f4f8ff;
+}
+
 .settlement-box.settled {
     border-color: #b7d8c4;
     background: #edf8f1;
+}
+
+.settlement-box p {
+    margin: 0;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.5;
 }
 
 .checkout-form select {

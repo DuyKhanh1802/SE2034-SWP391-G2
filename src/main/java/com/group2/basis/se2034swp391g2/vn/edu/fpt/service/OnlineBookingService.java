@@ -287,7 +287,7 @@ public class OnlineBookingService {
     public BookingCompleteResult createPendingOnlineBookingForVnPay(BookingConfirmRequest request) {
         return createPendingOnlineBooking(
                 request,
-                PaymentMethod.VNPAY,
+                PaymentMethod.TRANSFER,
                 false
         );
     }
@@ -559,7 +559,7 @@ public class OnlineBookingService {
 
         bookingRepository.save(booking);
 
-        payment.setMethod(PaymentMethod.VNPAY);
+        payment.setMethod(PaymentMethod.TRANSFER);
         payment.setAmount(paidAmount);
         payment.setStatus(PaymentStatus.SUCCESS);
         payment.setTransactionRef(transactionRef);

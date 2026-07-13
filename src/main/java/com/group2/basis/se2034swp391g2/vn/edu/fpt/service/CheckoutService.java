@@ -5,6 +5,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckoutDetailResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -25,8 +26,11 @@ public class CheckoutService {
     private final BookingDetailRepository bookingDetailRepository;
     private final FolioItemRepository folioItemRepository;
     private final PaymentApplicationRepository paymentApplicationRepository;
+    private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final PaymentService paymentService;
+    private final VnPayService vnPayService;
+    private final MailService mailService;
 
     @Transactional(readOnly = true)
     public CheckoutDetailResponse getCheckoutDetail(Long bookingDetailId) {
@@ -50,6 +54,63 @@ public class CheckoutService {
                 .map(BookingDetail::getId)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Booking không còn phòng nào đang ở để checkout."));
+    }
+
+    @Transactional
+    public String sendCheckoutTransferBill(Long bookingDetailId, HttpServletRequest httpRequest) {
+        BookingDetail detail = getBookingDetail(bookingDetailId);
+        Booking booking = getActiveBooking(detail);
+        validateCheckoutTarget(detail, booking);
+        if (resolveStayStatus(detail, booking) != BookingDetailStatus.CHECKED_IN) {
+            throw new IllegalStateException("Chỉ có thể gửi bill thanh toán cho phòng đang ở trạng thái đã nhận phòng.");
+        }
+
+        if (booking.getGuestEmail() == null || booking.getGuestEmail().isBlank()) {
+            throw new IllegalArgumentException("Booking chưa có email khách hàng để gửi bill thanh toán.");
+        }
+
+        List<FolioItem> folioItems = folioItemRepository
+                .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
+        List<PaymentApplication> applications = paymentApplicationRepository.findByBookingDetailId(detail.getId());
+
+        BigDecimal totalAmount = calculateRoomFolioTotal(detail, folioItems);
+        BigDecimal paidAmount = calculateAppliedPaidAmount(applications);
+        BigDecimal balance = totalAmount.subtract(paidAmount).setScale(0, RoundingMode.HALF_UP);
+
+        if (balance.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Phòng không còn số dư cần thu, không cần gửi bill thanh toán.");
+        }
+
+        Payment pendingPayment = findReusablePendingTransferPayment(detail.getId(), balance);
+        if (pendingPayment == null) {
+            pendingPayment = paymentService.createPendingTransferPayment(
+                    booking,
+                    detail,
+                    PaymentType.BALANCE,
+                    balance,
+                    getCurrentStaffUser()
+            );
+        }
+
+        String roomNumber = detail.getRoom() == null ? "Chua phan phong" : detail.getRoom().getRoomNumber();
+        String paymentUrl = vnPayService.createPaymentUrl(
+                pendingPayment.getTransactionRef(),
+                balance,
+                "Thanh toan tra phong " + roomNumber + " " + pendingPayment.getTransactionRef(),
+                httpRequest
+        );
+
+        mailService.sendCheckoutPaymentBillEmail(
+                booking.getGuestEmail().trim(),
+                buildGuestName(booking),
+                booking.getBookingReference(),
+                detail.getRoom() == null ? "Chưa phân phòng" : detail.getRoom().getRoomNumber(),
+                formatMoney(balance),
+                paymentUrl,
+                pendingPayment.getTransactionRef()
+        );
+
+        return pendingPayment.getTransactionRef();
     }
 
     @Transactional
@@ -84,6 +145,9 @@ public class CheckoutService {
             }
             if (request.getPaymentMethod() == null) {
                 throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
+            }
+            if (request.getPaymentMethod() == PaymentMethod.TRANSFER) {
+                throw new IllegalArgumentException("Vui lòng gửi bill chuyển khoản và đợi thanh toán thành công trước khi xác nhận trả phòng.");
             }
             paymentService.createPayment(booking, detail, PaymentType.BALANCE, request.getPaymentMethod(), paymentAmount, currentStaff);
         } else if (balance.compareTo(BigDecimal.ZERO) < 0) {
@@ -148,6 +212,8 @@ public class CheckoutService {
                 .roomCount(bookingDetails == null ? 1 : bookingDetails.size())
                 .checkInDate(detail.getCheckInDate())
                 .checkOutDate(detail.getCheckOutDate())
+                .actualCheckinAt(detail.getActualCheckinAt())
+                .actualCheckoutAt(detail.getActualCheckoutAt())
                 .bookingStatus(booking.getStatus() == null ? "" : booking.getStatus().name())
                 .bookingStatusLabel(booking.getStatus() == null ? "N/A" : booking.getStatus().getLabel())
                 .roomSubtotal(money(detail.getTotalAmount()))
@@ -175,7 +241,6 @@ public class CheckoutService {
     private boolean canCheckoutTarget(BookingDetail detail, Booking booking) {
         BookingStatus bookingStatus = booking.getStatus();
         if (bookingStatus != BookingStatus.CHECKED_IN
-                && bookingStatus != BookingStatus.PARTIALLY_CHECKED_IN
                 && bookingStatus != BookingStatus.PARTIALLY_CHECKED_OUT) {
             return false;
         }
@@ -191,7 +256,6 @@ public class CheckoutService {
     private String resolveCheckoutBlockReason(BookingDetail detail, Booking booking) {
         BookingStatus bookingStatus = booking.getStatus();
         if (bookingStatus != BookingStatus.CHECKED_IN
-                && bookingStatus != BookingStatus.PARTIALLY_CHECKED_IN
                 && bookingStatus != BookingStatus.PARTIALLY_CHECKED_OUT) {
             return "Booking không ở trạng thái cho phép trả phòng.";
         }
@@ -228,6 +292,9 @@ public class CheckoutService {
                 throw new IllegalArgumentException("Số tiền thanh toán checkout phải bằng số dư còn lại của phòng.");
             }
             validateReceptionistPaymentMethod(request.getPaymentMethod(), "thanh toán");
+            if (request.getPaymentMethod() == PaymentMethod.TRANSFER) {
+                throw new IllegalArgumentException("Vui lòng gửi bill chuyển khoản và đợi thanh toán thành công trước khi xác nhận trả phòng.");
+            }
             return;
         }
 
@@ -252,9 +319,22 @@ public class CheckoutService {
         if (method == null) {
             throw new IllegalArgumentException("Vui lòng chọn phương thức " + actionLabel + ".");
         }
-        if (method == PaymentMethod.VNPAY) {
-            throw new IllegalArgumentException("Checkout tại lễ tân chưa xử lý qua cổng VNPAY, vui lòng chọn tiền mặt, thẻ hoặc chuyển khoản.");
+        if (method != PaymentMethod.CASH && method != PaymentMethod.TRANSFER) {
+            throw new IllegalArgumentException("Checkout tại lễ tân chỉ hỗ trợ tiền mặt hoặc chuyển khoản.");
         }
+    }
+
+    private Payment findReusablePendingTransferPayment(Long bookingDetailId, BigDecimal balance) {
+        return paymentRepository.findAppliedPaymentsByBookingDetailIdAndTypeAndStatus(
+                        bookingDetailId,
+                        PaymentType.BALANCE,
+                        PaymentStatus.PENDING
+                )
+                .stream()
+                .filter(payment -> payment.getMethod() == PaymentMethod.TRANSFER)
+                .filter(payment -> money(payment.getAmount()).compareTo(balance) == 0)
+                .findFirst()
+                .orElse(null);
     }
 
     private void updateBookingCheckoutStatus(Booking booking) {
@@ -303,7 +383,6 @@ public class CheckoutService {
             return detail.getStayStatus();
         }
         if (booking.getStatus() == BookingStatus.CHECKED_IN
-                || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_IN
                 || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_OUT) {
             return BookingDetailStatus.CHECKED_IN;
         }
@@ -391,6 +470,10 @@ public class CheckoutService {
         String name = ((booking.getGuestLastName() == null ? "" : booking.getGuestLastName()) + " "
                 + (booking.getGuestFirstName() == null ? "" : booking.getGuestFirstName())).trim();
         return name.isBlank() ? booking.getGuestEmail() : name;
+    }
+
+    private String formatMoney(BigDecimal value) {
+        return String.format("%,.0f VND", money(value));
     }
 
     private BigDecimal money(BigDecimal value) {
