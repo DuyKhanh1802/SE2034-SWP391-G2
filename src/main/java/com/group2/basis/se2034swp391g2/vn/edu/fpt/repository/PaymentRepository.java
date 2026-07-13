@@ -44,4 +44,19 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Object[]> findSuccessfulRefundTotalsByBookingIds(@Param("bookingIds") Collection<Long> bookingIds);
 
     Optional<Payment> findByTransactionRef(String transactionRef);
+
+    @Query("""
+    SELECT payment
+    FROM PaymentApplication application
+    JOIN application.payment payment
+    WHERE application.bookingDetail.id = :bookingDetailId
+      AND payment.paymentType = :paymentType
+      AND payment.status = :status
+    ORDER BY payment.createdAt DESC
+    """)
+    List<Payment> findAppliedPaymentsByBookingDetailIdAndTypeAndStatus(
+            @Param("bookingDetailId") Long bookingDetailId,
+            @Param("paymentType") PaymentType paymentType,
+            @Param("status") PaymentStatus status
+    );
 }

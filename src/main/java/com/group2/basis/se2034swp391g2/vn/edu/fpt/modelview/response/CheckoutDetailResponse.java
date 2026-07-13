@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Data
@@ -22,6 +23,8 @@ public class CheckoutDetailResponse {
     private Integer roomCount;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
+    private Instant actualCheckinAt;
+    private Instant actualCheckoutAt;
     private String bookingStatus;
     private String bookingStatusLabel;
     private BigDecimal roomSubtotal;

@@ -11,6 +11,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingConf
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.OnlineBookingService;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.VnPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 
@@ -35,6 +37,7 @@ public class VnPayBookingController {
     private final OnlineBookingService onlineBookingService;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
 
     @PostMapping("/payment/vnpay")
     public String createVnPayPayment(@ModelAttribute BookingConfirmRequest request,
@@ -164,6 +167,37 @@ public class VnPayBookingController {
         boolean paidSuccess = "00".equals(responseCode)
                 && "00".equals(transactionStatus);
 
+        Payment payment = paymentRepository.findByTransactionRef(txnRef).orElse(null);
+        if (payment == null) {
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Không tìm thấy giao dịch thanh toán trong hệ thống.");
+            model.addAttribute("txnRef", txnRef);
+            return "guest/payment-result";
+        }
+
+        if (!isReturnedAmountValid(payment, params.get("vnp_Amount"))) {
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Số tiền VNPay trả về không khớp với giao dịch trong hệ thống.");
+            model.addAttribute("txnRef", txnRef);
+            return "guest/payment-result";
+        }
+
+        if (payment != null && payment.getPaymentType() == PaymentType.BALANCE) {
+            if (paidSuccess) {
+                paymentService.completePendingTransferPayment(txnRef);
+                model.addAttribute("success", true);
+                model.addAttribute("message", "Thanh toán phần còn lại khi trả phòng đã thành công. Vui lòng quay lại quầy lễ tân để xác nhận trả phòng.");
+                model.addAttribute("txnRef", txnRef);
+                model.addAttribute("transactionNo", transactionNo);
+                return "guest/payment-result";
+            }
+
+            paymentService.markPendingTransferPaymentFailed(txnRef);
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Thanh toán không thành công. Mã lỗi: " + responseCode);
+            model.addAttribute("txnRef", txnRef);
+            return "guest/payment-result";
+        }
 
         if (paidSuccess) {
             Booking booking =
@@ -195,6 +229,22 @@ public class VnPayBookingController {
     }
 
 
+
+    private boolean isReturnedAmountValid(Payment payment, String returnedAmount) {
+        if (payment == null || payment.getAmount() == null || returnedAmount == null || returnedAmount.isBlank()) {
+            return false;
+        }
+
+        try {
+            BigDecimal expected = payment.getAmount()
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(0, RoundingMode.HALF_UP);
+            BigDecimal actual = new BigDecimal(returnedAmount).setScale(0, RoundingMode.HALF_UP);
+            return expected.compareTo(actual) == 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
 
 }

@@ -54,6 +54,14 @@
                             <span th:text="${#temporals.format(checkout.checkOutDate, 'dd/MM/yyyy')}">03/07/2026</span>
                         </strong>
                     </div>
+                    <div class="detail-item" th:if="${checkout.actualCheckinAt != null}">
+                        <span>Nhận phòng thực tế</span>
+                        <strong th:text="${#temporals.format(checkout.actualCheckinAt, 'dd/MM/yyyy HH:mm')}">01/07/2026 14:00</strong>
+                    </div>
+                    <div class="detail-item" th:if="${checkout.actualCheckoutAt != null}">
+                        <span>Trả phòng thực tế</span>
+                        <strong th:text="${#temporals.format(checkout.actualCheckoutAt, 'dd/MM/yyyy HH:mm')}">03/07/2026 11:00</strong>
+                    </div>
                     <div class="detail-item"><span>Tiền phòng</span><strong th:text="${#numbers.formatDecimal(checkout.roomSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item"><span>Dịch vụ thêm</span><strong th:text="${#numbers.formatDecimal(checkout.serviceSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item"><span>Phí dịch vụ</span><strong th:text="${#numbers.formatDecimal(checkout.serviceChargeTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
@@ -84,7 +92,7 @@
                         <label>Phương thức thanh toán</label>
                         <select name="paymentMethod" required>
                             <option th:each="method : ${paymentMethods}"
-                                    th:if="${method.name() != 'VNPAY'}"
+                                    th:if="${method.name() == 'CASH'}"
                                     th:value="${method.name()}"
                                     th:text="${method.label}">Cash</option>
                         </select>
@@ -97,7 +105,7 @@
                         <label>Phương thức hoàn tiền</label>
                         <select name="refundMethod">
                             <option th:each="method : ${paymentMethods}"
-                                    th:if="${method.name() != 'VNPAY'}"
+                                    th:if="${method.name() == 'CASH' or method.name() == 'TRANSFER'}"
                                     th:value="${method.name()}"
                                     th:text="${method.label}">Cash</option>
                         </select>
@@ -111,6 +119,21 @@
                     <button type="submit" class="btn-dark checkout-submit">
                         <i class="bi bi-check2-circle"></i>
                         Xác nhận trả phòng
+                    </button>
+                </form>
+
+                <form th:if="${checkout.canCheckout and checkout.settlementType == 'PAYMENT'}"
+                      th:action="@{/receptionist/bookings/details/{id}/check-out/payment-bill(id=${checkout.bookingDetailId})}"
+                      method="post"
+                      class="checkout-form transfer-bill-form">
+                    <div class="settlement-box transfer">
+                        <span>Chuyển khoản qua VNPay</span>
+                        <strong th:text="${#numbers.formatDecimal(checkout.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
+                        <p>Gửi bill thanh toán cho khách qua email. Khi VNPay báo thành công, khoản này được ghi nhận là chuyển khoản.</p>
+                    </div>
+                    <button type="submit" class="btn-outline checkout-submit">
+                        <i class="bi bi-envelope-paper"></i>
+                        Gửi bill thanh toán
                     </button>
                 </form>
             </section>

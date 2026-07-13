@@ -139,6 +139,10 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                   AND (
                     bd.stayStatus IS NULL
                     OR bd.stayStatus = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.CHECKED_IN
+                    OR (
+                      bd.stayStatus = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.RESERVED
+                      AND r.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus.OCCUPIED
+                    )
                   )
             ),
             (
@@ -154,6 +158,10 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                   AND (
                     bd.stayStatus IS NULL
                     OR bd.stayStatus = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.CHECKED_IN
+                    OR (
+                      bd.stayStatus = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.RESERVED
+                      AND r.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus.OCCUPIED
+                    )
                   )
             )
         )

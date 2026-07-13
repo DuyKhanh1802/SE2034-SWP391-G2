@@ -2,9 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums;
 
 public enum PaymentMethod {
     CASH("Tiền mặt"),
-    CARD("Thẻ"),
-    TRANSFER("Chuyển khoản"),
-    VNPAY("Cổng thanh toán VNPAY");
+    TRANSFER("Chuyển khoản");
 
     private final String label;
 
