@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 public class CashTransactionController {
@@ -96,6 +98,7 @@ public class CashTransactionController {
             CashTransaction transaction = cashTransactionService.getTransaction(id);
             model.addAttribute("transaction", transaction);
             model.addAttribute("inventoryReceipt", cashTransactionService.getInventoryReceiptForTransaction(transaction));
+            model.addAttribute("relatedPayment", cashTransactionService.getPaymentForTransaction(transaction));
             model.addAttribute("isPaymentTransaction", isPaymentCategory(transaction.getCategory()));
             model.addAttribute("isInventoryTransaction", transaction.getCategory() == CashTransactionCategory.INVENTORY_PURCHASE);
             // Chỉ hiện form hủy khi transaction đủ điều kiện hủy.
@@ -144,7 +147,11 @@ public class CashTransactionController {
     private void addCreateScreenAttributes(Model model, CashTransactionCreateRequest request) {
         model.addAttribute("voucher", request);
         model.addAttribute("transactionTypes", CashTransactionType.values());
-        model.addAttribute("paymentMethods", PaymentMethod.values());
+        model.addAttribute("paymentMethods", List.of(
+                PaymentMethod.CASH,
+                PaymentMethod.CARD,
+                PaymentMethod.TRANSFER
+        ));
     }
 
     private boolean isPaymentCategory(CashTransactionCategory category) {

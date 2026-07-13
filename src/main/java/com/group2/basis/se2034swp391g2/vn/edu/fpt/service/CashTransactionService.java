@@ -76,6 +76,17 @@ public class CashTransactionService {
     }
 
     @Transactional(readOnly = true)
+    public Payment getPaymentForTransaction(CashTransaction transaction) {
+        if (transaction == null
+                || !PAYMENT_CATEGORIES.contains(transaction.getCategory())
+                || transaction.getSourceId() == null) {
+            return null;
+        }
+
+        return paymentRepository.findDetailById(transaction.getSourceId()).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
     public CashTransactionListResponse getCashTransactionListResponse(CashTransactionRequest request) {
         if (request == null) {
             request = new CashTransactionRequest();
@@ -139,6 +150,7 @@ public class CashTransactionService {
                 null,
                 null,
                 PAYMENT_CATEGORIES,
+                VISIBLE_CATEGORIES,
                 null,
                 null,
                 keyword == null ? "" : keyword.trim()
@@ -164,6 +176,7 @@ public class CashTransactionService {
                 selectedCategory,
                 selectedPaymentMethod,
                 PAYMENT_CATEGORIES,
+                VISIBLE_CATEGORIES,
                 fromDateTime,
                 toDateTime,
                 keyword == null ? "" : keyword.trim()
@@ -324,7 +337,7 @@ public class CashTransactionService {
         CashTransactionCategory category = switch (payment.getPaymentType()) {
             case DEPOSIT -> CashTransactionCategory.DEPOSIT;
             case REFUND -> CashTransactionCategory.REFUND;
-            case BALANCE, FULL, INCIDENTAL -> CashTransactionCategory.BOOKING_PAYMENT;
+            case BALANCE -> CashTransactionCategory.BOOKING_PAYMENT;
         };
 
         CashTransaction transaction = CashTransaction.builder()
@@ -352,9 +365,7 @@ public class CashTransactionService {
         return switch (payment.getPaymentType()) {
             case DEPOSIT -> "Thu tiền đặt cọc cho booking " + bookingCode;
             case BALANCE -> "Thu phần tiền còn lại cho booking " + bookingCode;
-            case FULL -> "Thu toàn bộ tiền booking " + bookingCode;
             case REFUND -> "Hoàn tiền cho booking " + bookingCode;
-            case INCIDENTAL -> "Thu tiền phát sinh cho booking " + bookingCode;
         };
     }
 
@@ -433,6 +444,9 @@ public class CashTransactionService {
         if (request.getPaymentMethod() == null) {
             throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
         }
+        if (request.getPaymentMethod() == PaymentMethod.VNPAY) {
+            throw new IllegalArgumentException("Phiếu thu/chi thủ công không hỗ trợ cổng thanh toán VNPAY.");
+        }
         validateAmount(request.getAmount());
         if (request.getDescription() == null || request.getDescription().isBlank()) {
             throw new IllegalArgumentException("Vui lòng nhập nội dung phiếu.");
@@ -488,11 +502,11 @@ public class CashTransactionService {
         }
 
         // Lay phuong thuc thanh toan tu bang payments cho cac dong tien sinh tu payment.
-        return paymentRepository.findAllById(paymentIds)
+        return paymentRepository.findPaymentMethodsByIds(paymentIds)
                 .stream()
                 .collect(Collectors.toMap(
-                        Payment::getId,
-                        payment -> payment.getMethod().getLabel()
+                        row -> (Long) row[0],
+                        row -> ((PaymentMethod) row[1]).getLabel()
                 ));
     }
 

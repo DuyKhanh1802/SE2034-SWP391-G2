@@ -655,23 +655,6 @@
                     </div>
                 </div>
 
-                <div class="payment-action-row">
-
-
-
-                    <button type="button"
-                            class="btn-detail outline"
-                            data-bs-toggle="modal"
-                            data-bs-target="#fullPaymentModal"
-                            th:if="${detail.bookingStatus.name() == 'CONFIRMED'
-                            and detail.remainingEstimate != null
-                            and detail.remainingEstimate > 0}">
-                        <i class="bi bi-credit-card"></i>
-                        THU TOÀN BỘ
-                    </button>
-
-                </div>
-
                 <div class="payment-history-section"
                      th:if="${detail.payments != null and !#lists.isEmpty(detail.payments)}">
 
@@ -925,56 +908,6 @@
             </div>
         </div>
 
-
-        <div class="modal fade" id="fullPaymentModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <form class="modal-content"
-                      th:action="@{/receptionist/bookings/{id}/payments(id=${detail.bookingId})}"
-                      method="post">
-
-                    <div class="modal-header">
-                        <h5 class="modal-title">Thu full trước</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <input type="hidden" name="paymentType" value="FULL">
-
-                        <div class="mb-3">
-                            <label class="form-label">Số tiền thanh toán</label>
-                            <input type="number"
-                                   name="amount"
-                                   class="form-control"
-                                   th:value="${detail.remainingEstimate}"
-                                   min="1"
-                                   step="1000"
-                                   th:max="${detail.remainingEstimate}"
-                                   required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Phương thức thanh toán</label>
-                            <select name="method" class="form-select" required>
-                                <option value="CASH">Tiền mặt</option>
-                                <option value="CARD">Thẻ</option>
-                                <option value="TRANSFER">Chuyển khoản</option>
-                            </select>
-                        </div>
-
-                        <div class="alert alert-warning mb-0">
-                            Thu full trước chỉ áp dụng cho số tiền hiện tại. Nếu khách phát sinh dịch vụ sau đó,
-                            phần còn lại sẽ được thanh toán tại Checkout.
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-dark">Xác nhận thu full</button>
-                    </div>
-
-                </form>
-            </div>
-        </div>
 
         <div class="modal fade" id="cancelBookingModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">

@@ -46,6 +46,11 @@
                 <dd th:text="${transaction.documentCode}">PT</dd>
                 <dt>Nhóm</dt>
                 <dd class="detail-accent-text" th:text="${transaction.category.displayName}">Nhóm giao dịch</dd>
+                <dt th:if="${transaction.paymentMethod != null or relatedPayment != null}">Phương thức thanh toán</dt>
+                <dd th:if="${transaction.paymentMethod != null or relatedPayment != null}"
+                    th:text="${transaction.paymentMethod != null ? transaction.paymentMethod.label : (relatedPayment.method != null ? relatedPayment.method.label : 'Không có')}">
+                    Phương thức
+                </dd>
                 <dt>Thời gian</dt>
                 <dd th:text="${inventoryReceipt != null ? #temporals.format(inventoryReceipt.createdAt, 'dd/MM/yyyy HH:mm') : #temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</dd>
                 <dt>Người tạo</dt>
@@ -55,7 +60,7 @@
             </dl>
         </div>
         <div class="panel"
-             th:if="${(isPaymentTransaction and transaction.sourceId != null)
+             th:if="${(isPaymentTransaction and relatedPayment != null)
                      or (isInventoryTransaction and transaction.sourceId != null)
                      or transaction.originalTransaction != null
                      or (transaction.reversalTransaction != null and (transaction.status == null or transaction.status.name() != 'CANCELLED'))}">
@@ -63,19 +68,20 @@
                 Thông tin liên quan
             </h2>
             <dl class="detail-list">
-                <dt th:if="${isPaymentTransaction and transaction.sourceId != null}">
-                    Mã thanh toán
+                <dt th:if="${isPaymentTransaction and relatedPayment != null}">
+                    Mã booking
                 </dt>
-                <dd th:if="${isPaymentTransaction and transaction.sourceId != null}"
-                    th:text="${transaction.sourceId}">
+                <dd th:if="${isPaymentTransaction and relatedPayment != null}"
+                    th:text="${relatedPayment.booking != null ? relatedPayment.booking.bookingReference : 'Không có'}">
                     PAY
                 </dd>
 
-                <dt th:if="${isPaymentTransaction}">
-                    Mã booking
+                <dt th:if="${isPaymentTransaction and relatedPayment != null}">
+                    Mã tham chiếu thanh toán
                 </dt>
-                <dd th:if="${isPaymentTransaction}">
-                    Chưa liên kết
+                <dd th:if="${isPaymentTransaction and relatedPayment != null}"
+                    th:text="${relatedPayment.transactionRef ?: 'Không có'}">
+                    REF
                 </dd>
 
                 <dt th:if="${inventoryReceipt != null}">
