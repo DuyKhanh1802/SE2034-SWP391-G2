@@ -2001,14 +2001,10 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CONFIRMED);
 
-        bookingDetailRepository.saveAllAndFlush(details);
-        bookingRepository.saveAndFlush(booking);
+        bookingDetailRepository.saveAll(details);
+        bookingRepository.save(booking);
 
-
-        List<BookingDetail> confirmedDetails =
-                bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
-
-        mailService.sendBookingConfirmedEmail(booking, confirmedDetails);
+        mailService.sendBookingConfirmedEmail(booking, details);
     }
 
     @Transactional(readOnly = true)
