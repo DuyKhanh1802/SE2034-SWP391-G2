@@ -20,13 +20,4 @@ public class InventoryCategory {
             columnDefinition = "NVARCHAR(100)")
     private String name;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
-
-    @PrePersist
-    protected void onCreate() {
-        if (isActive == null) {
-            isActive = true;
-        }
-    }
 }

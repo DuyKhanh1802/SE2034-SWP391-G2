@@ -40,6 +40,9 @@ public class InventoryTransaction {
     @Column(name = "source_id")
     private Long sourceId;
 
+    @Column(name = "reason", length = 250, columnDefinition = "NVARCHAR(250)")
+    private String reason;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;

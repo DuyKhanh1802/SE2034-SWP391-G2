@@ -6,7 +6,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PriceDisplayMode;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
@@ -216,14 +215,12 @@ public class FolioService {
                 .description(description)
                 .itemType(itemType)
                 .serviceStatus(FolioItemStatus.COMPLETED)
-                .amount(normalizedAmount)
                 .baseAmount(normalizedAmount)
                 .serviceChargeRate(BigDecimal.ZERO)
                 .serviceChargeAmount(BigDecimal.ZERO)
                 .vatRate(BigDecimal.ZERO)
                 .vatAmount(BigDecimal.ZERO)
                 .totalAmount(normalizedAmount)
-                .priceDisplayMode(PriceDisplayMode.PLUS_PLUS)
                 .quantity(1)
                 .unitPrice(normalizedAmount)
                 .postedAt(Instant.now())
@@ -569,7 +566,7 @@ public class FolioService {
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal itemTotal = items.stream()
-                .map(FolioItem::getAmount)
+                .map(FolioItem::getTotalAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         return money(roomTotal.add(itemTotal));

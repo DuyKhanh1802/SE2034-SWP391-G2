@@ -33,7 +33,6 @@ public class GuestBookingService {
 
     private static final boolean TAX_ON_SERVICE_CHARGE = true;
 
-    private static final PriceDisplayMode DEFAULT_PRICE_DISPLAY_MODE = PriceDisplayMode.PLUS_PLUS;
     @Transactional(readOnly = true)
     public GuestMyBookingView getMyBooking(Long bookingDetailId) {
         BookingDetail detail = bookingDetailRepository.findById(bookingDetailId)
@@ -214,7 +213,6 @@ public class GuestBookingService {
             item.setUnitPrice(zeroIfNull(service.getPrice()));
             item.setPostedAt(Instant.now());
             item.setIsVoided(false);
-            item.setPriceDisplayMode(DEFAULT_PRICE_DISPLAY_MODE);
         } else {
             item.setQuantity(item.getQuantity() == null ? 1 : item.getQuantity() + 1);
         }
@@ -315,7 +313,6 @@ public class GuestBookingService {
                 .add(vatAmount);
 
         item.setBaseAmount(baseAmount);
-        item.setAmount(baseAmount);
 
         item.setServiceChargeRate(SERVICE_CHARGE_RATE);
         item.setServiceChargeAmount(serviceChargeAmount);
@@ -324,7 +321,6 @@ public class GuestBookingService {
         item.setVatAmount(vatAmount);
 
         item.setTotalAmount(totalAmount);
-        item.setPriceDisplayMode(DEFAULT_PRICE_DISPLAY_MODE);
     }
     private FolioItemType resolveFolioItemType(com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Service service) {
         if (service.getCategory() == null || service.getCategory().getType() == null) {

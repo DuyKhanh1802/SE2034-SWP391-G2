@@ -266,57 +266,11 @@ public class CheckoutService {
         if (allCheckedOut) {
             booking.setStatus(BookingStatus.CHECKED_OUT);
             booking.setActualCheckoutAt(Instant.now());
-            updateGuestLastStayAt(booking, booking.getActualCheckoutAt());
         } else {
             booking.setStatus(BookingStatus.PARTIALLY_CHECKED_OUT);
         }
 
         bookingRepository.save(booking);
-    }
-
-    private void updateGuestLastStayAt(Booking booking, Instant checkoutAt) {
-        User guest = resolveGuestUser(booking);
-        if (guest != null) {
-            booking.setGuest(guest);
-            guest.setLastStayAt(checkoutAt);
-        }
-    }
-
-    private User resolveGuestUser(Booking booking) {
-        User linkedGuest = booking.getGuest();
-        if (isGuestUser(linkedGuest)) {
-            return linkedGuest;
-        }
-
-        String email = normalizeLookup(booking.getGuestEmail());
-        if (email != null) {
-            User guestByEmail = userRepository.findByEmailAndIsDeletedFalse(email)
-                    .filter(this::isGuestUser)
-                    .orElse(null);
-            if (guestByEmail != null) {
-                return guestByEmail;
-            }
-        }
-
-        String phone = normalizeLookup(booking.getGuestPhone());
-        if (phone != null) {
-            return userRepository.findByPhoneAndIsDeletedFalse(phone)
-                    .filter(this::isGuestUser)
-                    .orElse(null);
-        }
-
-        return null;
-    }
-
-    private boolean isGuestUser(User user) {
-        return user != null && user.getUserType() == UserType.GUEST;
-    }
-
-    private String normalizeLookup(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return null;
-        }
-        return value.trim();
     }
 
     private BookingDetail getBookingDetail(Long bookingDetailId) {
@@ -356,7 +310,7 @@ public class CheckoutService {
     private BigDecimal calculateRoomFolioTotal(BookingDetail detail, List<FolioItem> folioItems) {
         return money(detail.getTotalAmount()).add(
                 folioItems.stream()
-                        .map(FolioItem::getAmount)
+                        .map(FolioItem::getTotalAmount)
                         .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add)
         ).setScale(0, RoundingMode.HALF_UP);

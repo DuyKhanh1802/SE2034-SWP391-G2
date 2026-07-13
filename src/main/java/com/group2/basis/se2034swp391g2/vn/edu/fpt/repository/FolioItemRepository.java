@@ -23,7 +23,7 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
     }
 
     @Query("""
-            SELECT f.description, COALESCE(SUM(f.quantity), 0), COALESCE(SUM(f.amount), 0)
+            SELECT f.description, COALESCE(SUM(f.quantity), 0), COALESCE(SUM(f.totalAmount), 0)
             FROM FolioItem f
             WHERE f.isVoided = false
             AND f.service IS NOT NULL
