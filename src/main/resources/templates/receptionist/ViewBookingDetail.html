@@ -50,10 +50,11 @@
                 <!-- Booking status -->
                 <span class="detail-badge booking-badge"
                       th:classappend="${detail.bookingStatus.name() == 'CONFIRMED'} ? ' badge-confirmed' :
-                          (${detail.bookingStatus.name() == 'CHECKED_IN'} ? ' badge-checked-in' :
-                          (${detail.bookingStatus.name() == 'CHECKED_OUT'} ? ' badge-checked-out' :
+                          (${detail.bookingStatus.name() == 'CHECKED_IN' or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_IN'} ? ' badge-checked-in' :
+                          (${detail.bookingStatus.name() == 'CHECKED_OUT' or detail.bookingStatus.name() == 'PARTIALLY_CHECKED_OUT'} ? ' badge-checked-out' :
                           (${detail.bookingStatus.name() == 'PENDING'} ? ' badge-pending' :
-                          (${detail.bookingStatus.name() == 'NO_SHOW'} ? ' badge-no-show' : ' badge-cancelled'))))"
+                          (${detail.bookingStatus.name() == 'NO_SHOW'} ? ' badge-no-show' :
+                          (${detail.bookingStatus.name() == 'CANCELLED'} ? ' badge-cancelled' : ' badge-pending')))))"
                       th:text="${detail.bookingStatus.label}">
         Đã nhận phòng
     </span>
