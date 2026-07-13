@@ -43,4 +43,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     """)
     List<Object[]> findSuccessfulRefundTotalsByBookingIds(@Param("bookingIds") Collection<Long> bookingIds);
 
+    Optional<Payment> findByTransactionRef(String transactionRef);
 }
