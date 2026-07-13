@@ -1,11 +1,15 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Guest;
 
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingConfirmRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingCompleteResult;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingConfirmView;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.OnlineBookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.VnPayService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +34,7 @@ public class VnPayBookingController {
     private final VnPayService vnPayService;
     private final OnlineBookingService onlineBookingService;
     private final BookingRepository bookingRepository;
-
+    private final PaymentRepository paymentRepository;
 
     @PostMapping("/payment/vnpay")
     public String createVnPayPayment(@ModelAttribute BookingConfirmRequest request,
@@ -99,7 +103,15 @@ public class VnPayBookingController {
             session.removeAttribute("BOOKING_EMAIL_VERIFIED_EMAIL");
 
 
-            String txnRef = booking.getBookingReference();
+            Payment pendingPayment = paymentRepository
+                    .findFirstByBookingIdAndPaymentTypeAndStatus(
+                            booking.getId(),
+                            PaymentType.DEPOSIT,
+                            PaymentStatus.PENDING
+                    )
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giao dịch thanh toán đang chờ."));
+
+            String txnRef = pendingPayment.getTransactionRef();
 
 
             String paymentUrl = vnPayService.createPaymentUrl(

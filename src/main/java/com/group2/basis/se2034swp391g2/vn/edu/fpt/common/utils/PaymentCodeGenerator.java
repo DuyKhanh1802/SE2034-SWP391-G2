@@ -44,4 +44,11 @@ public final class PaymentCodeGenerator {
 
         return code.toString();
     }
+
+    public static String generatePaymentRef() {
+        String datePart = LocalDate.now().format(DATE_FORMATTER);
+        String randomPart = generateRandomCode();
+
+        return "PM-" + datePart + "-" + randomPart;
+    }
 }
