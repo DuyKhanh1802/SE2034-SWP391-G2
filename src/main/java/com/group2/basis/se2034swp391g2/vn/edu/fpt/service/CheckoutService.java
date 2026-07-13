@@ -291,6 +291,15 @@ public class CheckoutService {
 
     private BookingDetailStatus resolveStayStatus(BookingDetail detail, Booking booking) {
         if (detail.getStayStatus() != null) {
+            // Older check-ins only updated the booking and room statuses, leaving
+            // the detail RESERVED. Treat those occupied details as checked in so
+            // they can still enter the checkout flow.
+            if (detail.getStayStatus() == BookingDetailStatus.RESERVED
+                    && booking.getStatus() == BookingStatus.CHECKED_IN
+                    && detail.getRoom() != null
+                    && detail.getRoom().getStatus() == RoomStatus.OCCUPIED) {
+                return BookingDetailStatus.CHECKED_IN;
+            }
             return detail.getStayStatus();
         }
         if (booking.getStatus() == BookingStatus.CHECKED_IN
