@@ -350,7 +350,7 @@ public class BookingController {
             model.addAttribute("bookingId", bookingId);
             model.addAttribute("request", bookingService.getBookingUpdateForm(bookingId));
             model.addAttribute("detail", bookingService.getBookingDetail(bookingId));
-            model.addAttribute("countries", countryRepository.findByIsActiveTrueOrderByCountryNameAsc());
+            model.addAttribute("countries", countryRepository.findAllByOrderByCountryNameAsc());
 
             return "receptionist/EditBooking";
 
@@ -376,7 +376,7 @@ public class BookingController {
             model.addAttribute("bookingId", bookingId);
             model.addAttribute("request", request);
             model.addAttribute("detail", bookingService.getBookingDetail(bookingId));
-            model.addAttribute("countries", countryRepository.findByIsActiveTrueOrderByCountryNameAsc());
+            model.addAttribute("countries", countryRepository.findAllByOrderByCountryNameAsc());
             model.addAttribute("errorMessage", e.getMessage());
 
             return "receptionist/EditBooking";
