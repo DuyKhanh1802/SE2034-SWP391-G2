@@ -61,15 +61,6 @@ public class VnPayService {
     public String createPaymentUrl(String txnRef,
                                    BigDecimal amount,
                                    HttpServletRequest request) {
-        return createPaymentUrl(txnRef, amount, "Thanh toan dat phong " + txnRef, request);
-    }
-
-    public String createPaymentUrl(String txnRef,
-                                   BigDecimal amount,
-                                   String orderInfo,
-                                   HttpServletRequest request) {
-
-
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         LocalDateTime expire = now.plusMinutes(15);
 
@@ -94,7 +85,7 @@ public class VnPayService {
 
 
         // Không dùng tiếng Việt có dấu, không dùng ký tự đặc biệt
-        params.put("vnp_OrderInfo", orderInfo);
+        params.put("vnp_OrderInfo", "Thanh toan dat phong " + txnRef);
 
 
         params.put("vnp_OrderType", "other");

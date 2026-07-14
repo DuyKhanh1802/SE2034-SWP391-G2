@@ -498,7 +498,7 @@ public class InventoryManagementService {
                 "INVENTORY_RECEIPT", savedReceipt.getId(), createdBy);
 
         cashTransactionService.createInventoryPurchase(totalCost,
-                "Chi nháº­p kho " + savedReceipt.getCode() + " - " + item.getName(),
+                "Chi nhập kho " + savedReceipt.getCode() + " - " + item.getName(),
                 savedReceipt.getId(),
                 paymentMethod,
                 createdBy);

@@ -6,6 +6,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.OccupancyRep
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.OccupancyReportResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.InventoryReportRowResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.InventoryReportSummaryResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RevenueReportResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportRowResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportSummaryResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FolioItemRepository;
@@ -14,6 +15,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CashTransactionService
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.InventoryManagementService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerOccupancyReportService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerInventoryReportService;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerRevenueReportService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerServiceReportService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import jakarta.servlet.http.HttpSession;
@@ -49,6 +51,7 @@ public class ManagerReportController {
     private final ManagerServiceReportService managerServiceReportService;
     private final ManagerOccupancyReportService managerOccupancyReportService;
     private final ManagerInventoryReportService managerInventoryReportService;
+    private final ManagerRevenueReportService managerRevenueReportService;
 
     @GetMapping("/manager/reports")
     public String showReports(Model model,
@@ -100,6 +103,37 @@ public class ManagerReportController {
         model.addAttribute("inventoryAlertItems", inventoryAlertItems);
 
         return "manager/reports";
+    }
+
+    @GetMapping("/manager/reports/revenue")
+    public String showRevenueReport(@RequestParam(required = false)
+                                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                    LocalDate fromDate,
+
+                                    @RequestParam(required = false)
+                                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                    LocalDate toDate,
+
+                                    @RequestParam(required = false, defaultValue = "netDesc")
+                                    String sortBy,
+
+                                    Model model,
+                                    Authentication authentication,
+                                    HttpSession session) {
+        addHeaderAttributes(model, authentication, session, "Báo cáo doanh thu");
+
+        RevenueReportResponse report = managerRevenueReportService.getRevenueReport(
+                fromDate,
+                toDate,
+                sortBy
+        );
+
+        model.addAttribute("report", report);
+        model.addAttribute("fromDate", report.getFromDate());
+        model.addAttribute("toDate", report.getToDate());
+        model.addAttribute("sortBy", sortBy);
+
+        return "manager/revenue-report";
     }
 
     @GetMapping("/manager/reports/services")

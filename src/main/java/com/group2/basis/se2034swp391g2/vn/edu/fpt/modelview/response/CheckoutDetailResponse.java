@@ -40,5 +40,9 @@ public class CheckoutDetailResponse {
     private String paymentStatusLabel;
     private boolean canCheckout;
     private String blockReason;
+    private String vietQrImageUrl;
+    private String transferBankCode;
+    private String transferAccountNumber;
+    private String transferAccountName;
 
 }

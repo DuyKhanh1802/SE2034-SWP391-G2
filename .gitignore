@@ -34,4 +34,4 @@ build/
 
 /scripts/
 /outputs/
-/outputs/
+/.codex-tmp/

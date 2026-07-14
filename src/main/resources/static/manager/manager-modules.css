@@ -21,6 +21,16 @@
     --manager-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
 }
 
+.page-container,
+.module-header,
+.panel,
+.metric-card,
+.transaction-filter,
+.module-table,
+.pagination-custom {
+    font-family: 'Manrope', Arial, sans-serif;
+}
+
 .module-header {
     display: flex;
     align-items: center;
@@ -508,6 +518,16 @@ button,
     color: var(--manager-primary);
 }
 
+.payment-method-chip.cash {
+    border-color: #168a6f;
+    color: #047857;
+}
+
+.payment-method-chip.transfer {
+    border-color: #2563eb;
+    color: #1d4ed8;
+}
+
 .payment-method-chip.empty {
     border-color: #cbd5e1;
     color: var(--manager-muted);
@@ -537,12 +557,14 @@ button,
 
 .detail-list {
     display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 12px;
+    grid-template-columns: minmax(220px, max-content) minmax(0, 1fr);
+    column-gap: 20px;
+    row-gap: 12px;
 }
 
 .detail-list dt {
     color: var(--manager-muted);
+    white-space: nowrap;
 }
 
 .detail-list dd {
@@ -1180,6 +1202,10 @@ button,
     grid-template-columns: 1fr 1fr 1.15fr 1fr auto;
 }
 
+.revenue-filter-form {
+    grid-template-columns: 1fr 1fr 1fr auto;
+}
+
 .report-filter-field {
     display: flex;
     flex-direction: column;
@@ -1269,6 +1295,18 @@ button,
     background: #eef2f7;
     color: #0f172a;
     transform: translateY(-1px);
+}
+
+.report-period-note {
+    margin: 12px 0 0;
+    color: var(--manager-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.report-period-note strong {
+    color: var(--manager-text);
+    font-weight: 800;
 }
 
 /* ---------- Service Report Table ---------- */
@@ -1366,6 +1404,35 @@ button,
 .compact-report-table th:nth-child(9),
 .compact-report-table td:nth-child(9) {
     width: 16%;
+}
+
+.revenue-report-table th:nth-child(1),
+.revenue-report-table td:nth-child(1) {
+    width: 5%;
+}
+
+.revenue-report-table th:nth-child(2),
+.revenue-report-table td:nth-child(2) {
+    width: 23%;
+}
+
+.revenue-report-table th:nth-child(3),
+.revenue-report-table td:nth-child(3) {
+    width: 14%;
+}
+
+.revenue-report-table th:nth-child(4),
+.revenue-report-table td:nth-child(4) {
+    width: 12%;
+}
+
+.revenue-report-table th:nth-child(5),
+.revenue-report-table td:nth-child(5),
+.revenue-report-table th:nth-child(6),
+.revenue-report-table td:nth-child(6),
+.revenue-report-table th:nth-child(7),
+.revenue-report-table td:nth-child(7) {
+    width: 15%;
 }
 
 .service-name-cell {

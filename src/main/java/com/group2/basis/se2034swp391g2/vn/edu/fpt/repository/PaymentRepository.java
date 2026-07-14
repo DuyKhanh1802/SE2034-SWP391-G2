@@ -24,6 +24,21 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     );
 
     @Query("""
+    SELECT p
+    FROM Payment p
+    LEFT JOIN FETCH p.booking
+    WHERE p.id = :id
+    """)
+    Optional<Payment> findDetailById(@Param("id") Long id);
+
+    @Query("""
+    SELECT p.id, p.method
+    FROM Payment p
+    WHERE p.id IN :paymentIds
+    """)
+    List<Object[]> findPaymentMethodsByIds(@Param("paymentIds") Collection<Long> paymentIds);
+
+    @Query("""
     SELECT p.booking.id, COALESCE(SUM(p.amount), 0)
     FROM Payment p
     WHERE p.booking.id IN :bookingIds
@@ -45,18 +60,4 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByTransactionRef(String transactionRef);
 
-    @Query("""
-    SELECT payment
-    FROM PaymentApplication application
-    JOIN application.payment payment
-    WHERE application.bookingDetail.id = :bookingDetailId
-      AND payment.paymentType = :paymentType
-      AND payment.status = :status
-    ORDER BY payment.createdAt DESC
-    """)
-    List<Payment> findAppliedPaymentsByBookingDetailIdAndTypeAndStatus(
-            @Param("bookingDetailId") Long bookingDetailId,
-            @Param("paymentType") PaymentType paymentType,
-            @Param("status") PaymentStatus status
-    );
 }

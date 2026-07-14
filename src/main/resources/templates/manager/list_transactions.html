@@ -116,7 +116,7 @@
                 </td>
                 <td>
                     <span class="payment-method-chip"
-                          th:classappend="${transaction.paymentMethodDisplayName == 'Chưa có'} ? ' empty' : ' has-method'"
+                          th:classappend="${transaction.paymentMethod == null} ? ' empty' : (${transaction.paymentMethod == 'CASH'} ? ' cash' : ' transfer')"
                           th:text="${transaction.paymentMethodDisplayName}">
                         Tiền mặt
                     </span>

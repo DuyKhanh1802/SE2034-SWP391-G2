@@ -27,6 +27,8 @@ public class CashTransactionResponse {
 
     private BigDecimal amount;
 
+    private String paymentMethod;
+
     private String paymentMethodDisplayName;
 
     private String statusDisplayName;

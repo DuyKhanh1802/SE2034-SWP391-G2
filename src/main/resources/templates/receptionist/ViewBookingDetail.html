@@ -666,23 +666,6 @@
                     </div>
                 </div>
 
-                <div class="payment-action-row">
-
-
-
-                    <button type="button"
-                            class="btn-detail outline"
-                            data-bs-toggle="modal"
-                            data-bs-target="#fullPaymentModal"
-                            th:if="${detail.bookingStatus.name() == 'CONFIRMED'
-                            and detail.remainingEstimate != null
-                            and detail.remainingEstimate > 0}">
-                        <i class="bi bi-credit-card"></i>
-                        THU TOÀN BỘ
-                    </button>
-
-                </div>
-
                 <div class="payment-history-section"
                      th:if="${detail.payments != null and !#lists.isEmpty(detail.payments)}">
 

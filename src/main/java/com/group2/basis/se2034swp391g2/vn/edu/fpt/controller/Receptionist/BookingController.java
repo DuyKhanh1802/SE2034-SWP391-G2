@@ -10,7 +10,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CheckoutService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
@@ -19,7 +18,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomMoveReason;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoomStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.RoomMoveRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.RoomMoveService;
-import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -384,32 +382,6 @@ public class BookingController {
         }
     }
 
-    @PostMapping("/{bookingId}/payments")
-    public String createAdvancePayment(@PathVariable Long bookingId,
-                                       @RequestParam PaymentType paymentType,
-                                       @RequestParam PaymentMethod method,
-                                       @RequestParam BigDecimal amount,
-                                       RedirectAttributes redirectAttributes) {
-        try {
-            if (paymentType != PaymentType.FULL) {
-                throw new IllegalArgumentException("Màn chi tiết đặt phòng chỉ cho phép thu toàn bộ số tiền còn lại.");
-            }
-
-            bookingService.collectBookingPayment(
-                    bookingId,
-                    paymentType,
-                    method,
-                    amount
-            );
-
-            redirectAttributes.addFlashAttribute("successMessage", "Lưu thanh toán thành công.");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-
-        return "redirect:/receptionist/bookings/view/" + bookingId;
-    }
-
     @GetMapping("/{bookingId}/check-out")
     public String showCheckout(@PathVariable Long bookingId,
                                RedirectAttributes redirectAttributes) {
@@ -436,27 +408,6 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receptionist/rooms";
         }
-    }
-
-    @PostMapping("/details/{bookingDetailId}/check-out/payment-bill")
-    public String sendCheckoutPaymentBill(@PathVariable Long bookingDetailId,
-                                          HttpServletRequest httpRequest,
-                                          RedirectAttributes redirectAttributes) {
-        try {
-            String transactionRef = checkoutService.sendCheckoutTransferBill(bookingDetailId, httpRequest);
-            redirectAttributes.addFlashAttribute(
-                    "successMessage",
-                    "Đã gửi bill thanh toán chuyển khoản cho khách. Mã giao dịch: " + transactionRef
-            );
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (DataAccessException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tạo bill thanh toán do lỗi ghi dữ liệu. Vui lòng thử lại.");
-        } catch (TransactionException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tạo bill thanh toán do lỗi giao dịch dữ liệu. Vui lòng thử lại.");
-        }
-
-        return "redirect:/receptionist/bookings/details/" + bookingDetailId + "/check-out";
     }
 
     @PostMapping("/details/{bookingDetailId}/check-out")
