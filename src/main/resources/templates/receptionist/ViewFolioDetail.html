@@ -10,14 +10,17 @@
         <div class="folio-header split">
             <div>
                 <div class="breadcrumb-line">
-                    <a th:href="@{/receptionist/bookings}">Bookings</a>
+                    <a th:href="@{/receptionist/folios}">Danh sách hoá đơn</a>
                     <i class="bi bi-chevron-right"></i>
-                    <a th:href="@{/receptionist/bookings/view/{id}(id=${folio.bookingId})}"
-                       th:text="${folio.bookingReference}">BK-2606295114</a>
+                    <span th:text="${folio.bookingReference}">BK-2606295114</span>
                     <i class="bi bi-chevron-right"></i>
-                    <span th:text="'Hoá đơn phòng ' + ${folio.roomNumber}">Hoá đơn phòng 101</span>
+                    <span th:text="${folio.roomNumber != null and folio.roomNumber != 'Không rõ'
+                            ? 'Hoá đơn phòng ' + folio.roomNumber
+                            : 'Chi tiết hoá đơn'}">Chi tiết hoá đơn</span>
                 </div>
-                <h1 th:text="'Hoá đơn phòng ' + ${folio.roomNumber}">Hoá đơn phòng 101</h1>
+                <h1 th:text="${folio.roomNumber != null and folio.roomNumber != 'Không rõ'
+                        ? 'Hoá đơn phòng ' + folio.roomNumber
+                        : 'Chi tiết hoá đơn'}">Chi tiết hoá đơn</h1>
                 <p>
                     <span th:text="${folio.guestName}">Nguyễn Văn A</span>
                     <span th:if="${folio.guestPhone != null}" th:text="' · ' + ${folio.guestPhone}"></span>
@@ -26,8 +29,7 @@
             </div>
 
             <div class="header-actions">
-                <a th:if="${folio.editable}"
-                   th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}"
+                <a th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}"
                    class="btn-dark">Chỉnh sửa</a>
             </div>
         </div>
@@ -95,7 +97,7 @@
 
         <section class="folio-panel full">
             <h2>Bảng kê chi phí</h2>
-            <div th:replace="~{receptionist/ViewFolio :: lineTable(${folio.invoiceCharges}, false)}"></div>
+            <div th:replace="~{receptionist/ViewFolioDetail :: lineTable(${folio.invoiceCharges}, false)}"></div>
         </section>
 
         <section class="folio-panel full">
