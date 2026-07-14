@@ -32,6 +32,12 @@
           th:href="@{/common/sidebar.css}">
 
     <link rel="stylesheet"
+          th:if="${#strings.startsWith(currentUri ?: '', '/system-admin')
+              or #strings.startsWith(currentUri ?: '', '/storekeeper/inventory')
+              or #strings.startsWith(currentUri ?: '', '/receptionist/folios')}"
+          th:href="@{/common/staff-pagination.css}">
+
+    <link rel="stylesheet"
           th:href="@{/common/header.css}">
 
     <link rel="stylesheet"
