@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -40,8 +39,6 @@ public class ManagerDashboardService {
         long stayingBookings = bookingRepository
                 .countByStatusAndIsDeletedFalseAndCheckInDateLessThanEqualAndCheckOutDateAfter(
                         BookingStatus.CHECKED_IN, today, today);
-        long lowStockCount = inventoryManagementService.countLowStockItems();
-
         List<InventoryItem> lowStockItems = inventoryManagementService.getLowStockItems().stream()
                 .limit(ALERT_ITEM_LIMIT)
                 .toList();
@@ -51,38 +48,8 @@ public class ManagerDashboardService {
                 occupiedRooms, availableRooms, maintenanceRooms, totalRooms,
                 percentage(occupiedRooms, totalRooms),
                 bookingRepository.countByCreatedAtBetween(startOfDay, endOfDay),
-                lowStockCount,
-                buildPriorities(pendingBookings, arrivals, availableRooms, maintenanceRooms, lowStockCount),
                 lowStockItems.stream().map(this::toLowStockItem).toList()
         );
-    }
-
-    private List<ManagerDashboardView.PriorityItem> buildPriorities(long pendingBookings,
-                                                                     long arrivals,
-                                                                     long availableRooms,
-                                                                     long maintenanceRooms,
-                                                                     long lowStockCount) {
-        List<ManagerDashboardView.PriorityItem> items = new ArrayList<>();
-
-        addPriority(items, pendingBookings > 0, "urgent", "fa-clock", "Booking chờ xác nhận",
-                pendingBookings + " booking cần được kiểm tra và xác nhận.", "/manager/reports");
-        addPriority(items, arrivals > availableRooms, "urgent", "fa-bed",
-                "Nguy cơ thiếu phòng sẵn sàng",
-                arrivals + " lượt đến nhưng chỉ còn " + availableRooms + " phòng trống.",
-                "/manager/reports/occupancy");
-        addPriority(items, maintenanceRooms > 0, "warning", "fa-screwdriver-wrench", "Phòng đang bảo trì",
-                maintenanceRooms + " phòng chưa thể đưa vào kinh doanh.", "/manager/reports/occupancy");
-        addPriority(items, lowStockCount > 0, "warning", "fa-box-open", "Vật tư dưới định mức",
-                lowStockCount + " mặt hàng cần kế hoạch bổ sung.", "/manager/reports/inventory");
-
-        return List.copyOf(items);
-    }
-
-    private void addPriority(List<ManagerDashboardView.PriorityItem> items, boolean condition,
-                             String level, String icon, String title, String description, String actionUrl) {
-        if (condition) {
-            items.add(new ManagerDashboardView.PriorityItem(level, icon, title, description, actionUrl));
-        }
     }
 
     private ManagerDashboardView.LowStockItem toLowStockItem(InventoryItem item) {

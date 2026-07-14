@@ -16,13 +16,8 @@ public record ManagerDashboardView(
         long totalRooms,
         long occupancyRate,
         long newBookings,
-        long lowStockCount,
-        List<PriorityItem> priorities,
         List<LowStockItem> lowStockItems
 ) {
-    public record PriorityItem(String level, String icon, String title, String description, String actionUrl) {
-    }
-
     public record LowStockItem(String code, String name, BigDecimal currentQuantity,
                                BigDecimal minimumQuantity, String unit) {
     }
