@@ -81,7 +81,7 @@ public class FolioController {
         try {
             model.addAttribute("pageTitle", "Chi tiết hoá đơn");
             model.addAttribute("folio", folioService.getFolioDetail(bookingId, bookingDetailId));
-            return "receptionist/ViewFolio";
+            return "receptionist/ViewFolioDetail";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receptionist/folios";

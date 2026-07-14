@@ -10,17 +10,20 @@
         <div class="folio-header split">
             <div>
                 <div class="breadcrumb-line">
-                    <a th:href="@{/receptionist/bookings}">Bookings</a>
+                    <a th:href="@{/receptionist/folios}">Danh sách hoá đơn</a>
                     <i class="bi bi-chevron-right"></i>
-                    <a th:href="@{/receptionist/bookings/view/{id}(id=${folio.bookingId})}"
-                       th:text="${folio.bookingReference}">BK-2606295114</a>
+                    <span th:text="${folio.bookingReference}">BK-2606295114</span>
                     <i class="bi bi-chevron-right"></i>
                     <a th:href="@{/receptionist/folios/{id}(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}"
-                       th:text="'Hoá đơn phòng ' + ${folio.roomNumber}">Hoá đơn phòng 101</a>
+                       th:text="${folio.roomNumber != null and folio.roomNumber != 'Không rõ'
+                            ? 'Hoá đơn phòng ' + folio.roomNumber
+                            : 'Chi tiết hoá đơn'}">Chi tiết hoá đơn</a>
                     <i class="bi bi-chevron-right"></i>
                     <span>Chỉnh sửa</span>
                 </div>
-                <h1 th:text="'Điều chỉnh hoá đơn phòng ' + ${folio.roomNumber}">Điều chỉnh hoá đơn phòng 101</h1>
+                <h1 th:text="${folio.roomNumber != null and folio.roomNumber != 'Không rõ'
+                        ? 'Điều chỉnh hoá đơn phòng ' + folio.roomNumber
+                        : 'Điều chỉnh hoá đơn'}">Điều chỉnh hoá đơn</h1>
             </div>
         </div>
 
