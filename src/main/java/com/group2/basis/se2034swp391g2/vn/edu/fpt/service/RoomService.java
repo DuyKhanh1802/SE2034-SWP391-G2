@@ -30,7 +30,8 @@ import java.util.Set;
 public class RoomService {
 
     private static final int TOTAL_FLOORS = 6;
-    private static final int ROOMS_PER_FLOOR = 16;
+    private static final int ADD_ROOM_TOTAL_FLOORS = 4;
+    private static final int ADD_ROOM_ROOMS_PER_FLOOR = 18;
     private static final int MAX_NOTE_LENGTH = 500;
 
     private static final int DEFAULT_PAGE_SIZE = 5;
@@ -135,15 +136,16 @@ public class RoomService {
 
         List<Map<String, Object>> options = new ArrayList<>();
 
-        for (int floor = 1; floor <= TOTAL_FLOORS; floor++) {
-            for (int roomIndex = 1; roomIndex <= ROOMS_PER_FLOOR; roomIndex++) {
+        for (int floor = 1; floor <= ADD_ROOM_TOTAL_FLOORS; floor++) {
+            for (int roomIndex = 1; roomIndex <= ADD_ROOM_ROOMS_PER_FLOOR; roomIndex++) {
                 String roomNumber = floor + String.format("%02d", roomIndex);
 
                 if (!existingRoomNumbers.contains(roomNumber)) {
                     options.add(Map.of(
                             "roomNumber", roomNumber,
                             "floor", floor,
-                            "roomTypeName", getRoomTypeNameByFloor(floor)
+                            "roomTypeName", getRoomTypeNameByRoomIndex(roomIndex),
+                            "viewType", getViewTypeByFloor(floor).name()
                     ));
                 }
             }
@@ -160,15 +162,24 @@ public class RoomService {
     }
 
     public String getRoomTypeNameForDisplay(String roomNumber) {
-        Integer floor = getFloorForDisplay(roomNumber);
+        String normalizedRoomNumber = normalizeRoomNumber(roomNumber);
+        validateRoomNumberInHotelRange(normalizedRoomNumber);
 
-        return getRoomTypeNameByFloor(floor);
+        return getRoomTypeNameByRoomIndex(getRoomIndexFromRoomNumber(normalizedRoomNumber));
+    }
+
+    public ViewType getViewTypeForDisplay(String roomNumber) {
+        return getViewTypeByFloor(getFloorForDisplay(roomNumber));
     }
 
     public List<RoomTypeVariant> getRoomTypeVariantsByRoomNumber(String roomNumber) {
         String roomTypeName = getRoomTypeNameForDisplay(roomNumber);
+        ViewType viewType = getViewTypeForDisplay(roomNumber);
 
-        return getRoomTypeVariantsByRoomTypeName(roomTypeName);
+        return getRoomTypeVariantsByRoomTypeName(roomTypeName)
+                .stream()
+                .filter(variant -> variant.getViewType() == viewType)
+                .toList();
     }
 
     public List<RoomTypeVariant> getRoomTypeVariantsByRoomTypeName(String roomTypeName) {
@@ -224,10 +235,11 @@ public class RoomService {
         validateRoomNumberNotExists(normalizedRoomNumber);
 
         int floor = getFloorFromRoomNumber(normalizedRoomNumber);
-        String expectedRoomTypeName = getRoomTypeNameByFloor(floor);
+        String expectedRoomTypeName = getRoomTypeNameByRoomIndex(getRoomIndexFromRoomNumber(normalizedRoomNumber));
+        ViewType expectedViewType = getViewTypeByFloor(floor);
 
         RoomTypeVariant variant = validateAndGetRoomTypeVariant(variantId);
-        validateVariantMatchesRoomType(variant, expectedRoomTypeName);
+        validateVariantMatchesRoomConfiguration(variant, expectedRoomTypeName, expectedViewType);
 
         validateInitialRoomStatus(status);
 
@@ -441,12 +453,18 @@ public class RoomService {
         return variant;
     }
 
-    private void validateVariantMatchesRoomType(RoomTypeVariant variant, String expectedRoomTypeName) {
+    private void validateVariantMatchesRoomConfiguration(RoomTypeVariant variant,
+                                                         String expectedRoomTypeName,
+                                                         ViewType expectedViewType) {
         String actualRoomTypeName = variant.getRoomType().getName();
 
         if (actualRoomTypeName == null
                 || !actualRoomTypeName.trim().equalsIgnoreCase(expectedRoomTypeName)) {
-            throw new IllegalArgumentException("Loại phòng chi tiết không phù hợp với hạng phòng của tầng đã chọn.");
+            throw new IllegalArgumentException("Loại phòng chi tiết không phù hợp với hạng phòng của số phòng đã chọn.");
+        }
+
+        if (variant.getViewType() != expectedViewType) {
+            throw new IllegalArgumentException("Hướng phòng không phù hợp với tầng của số phòng đã chọn.");
         }
     }
 
@@ -474,15 +492,25 @@ public class RoomService {
         return value;
     }
 
-    private String getRoomTypeNameByFloor(int floor) {
+    private String getRoomTypeNameByRoomIndex(int roomIndex) {
+        return switch ((roomIndex - 1) / 3) {
+            case 0 -> "Standard Room";
+            case 1 -> "Superior Room";
+            case 2 -> "Deluxe Room";
+            case 3 -> "Executive Room";
+            case 4 -> "Family Room";
+            case 5 -> "Suite Room";
+            default -> throw new IllegalArgumentException("Số thứ tự phòng phải nằm trong phạm vi từ 01 đến 18.");
+        };
+    }
+
+    private ViewType getViewTypeByFloor(int floor) {
         return switch (floor) {
-            case 1 -> "Standard Room";
-            case 2 -> "Superior Room";
-            case 3 -> "Deluxe Room";
-            case 4 -> "Executive Room";
-            case 5 -> "Family Room";
-            case 6 -> "Suite Room";
-            default -> throw new IllegalArgumentException("Tầng phải nằm trong phạm vi từ 1 đến 6.");
+            case 1 -> ViewType.GARDEN;
+            case 2 -> ViewType.CITY;
+            case 3 -> ViewType.SEA;
+            case 4 -> ViewType.POOL;
+            default -> throw new IllegalArgumentException("Tầng phải nằm trong phạm vi từ 1 đến 4.");
         };
     }
 
@@ -496,15 +524,21 @@ public class RoomService {
         int roomIndex = number % 100;
 
         return floor >= 1
-                && floor <= TOTAL_FLOORS
+                && floor <= ADD_ROOM_TOTAL_FLOORS
                 && roomIndex >= 1
-                && roomIndex <= ROOMS_PER_FLOOR;
+                && roomIndex <= ADD_ROOM_ROOMS_PER_FLOOR;
     }
 
     private Integer getFloorFromRoomNumber(String roomNumber) {
         int number = Integer.parseInt(roomNumber);
 
         return number / 100;
+    }
+
+    private Integer getRoomIndexFromRoomNumber(String roomNumber) {
+        int number = Integer.parseInt(roomNumber);
+
+        return number % 100;
     }
 
     private String normalizeNote(String note) {

@@ -4,8 +4,10 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 
+
 <body>
 <main layout:fragment="content">
+
 
     <!-- PAGE TITLE -->
     <section class="welcome-section room-page-title">
@@ -16,11 +18,13 @@
         </p>
     </section>
 
+
     <!-- ERROR MESSAGE -->
     <div th:if="${errorMessage}" class="error-toast">
         <i class="fa-solid fa-circle-exclamation"></i>
         <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
     </div>
+
 
     <!-- SUCCESS MESSAGE -->
     <div th:if="${successMessage}" class="success-toast">
@@ -28,19 +32,24 @@
         <span th:text="${successMessage}">Thêm phòng thành công.</span>
     </div>
 
+
     <!-- FORM CARD -->
     <section class="room-form-card">
+
 
         <div class="form-heading">
             <span>QUẢN LÝ PHÒNG</span>
             <h3>Thông tin phòng</h3>
         </div>
 
+
         <form th:action="@{/hotel-admin/list-room/add}"
               method="post"
               id="addRoomForm">
 
+
             <div class="row g-4">
+
 
                 <!-- SỐ PHÒNG -->
                 <div class="col-md-6">
@@ -48,30 +57,36 @@
                         Số phòng <span class="text-danger">*</span>
                     </label>
 
+
                     <select name="roomNumber"
                             id="roomNumber"
                             class="form-select room-input"
                             required>
                         <option value="">Chọn số phòng</option>
 
+
                         <option th:each="option : ${roomNumberOptions}"
                                 th:value="${option['roomNumber']}"
                                 th:text="${option['roomNumber']}"
                                 th:selected="${roomNumber != null and roomNumber == option['roomNumber']}"
                                 th:attr="data-floor=${option['floor']},
-                                         data-room-type=${option['roomTypeName']}">
+                                        data-room-type=${option['roomTypeName']},
+                                        data-view-type=${option['viewType']}">
                             101
                         </option>
                     </select>
+
 
                     <div class="form-text">
                         Chỉ hiển thị các số phòng còn trống trong phạm vi khách sạn.
                     </div>
                 </div>
 
+
                 <!-- TẦNG -->
                 <div class="col-md-6">
                     <label class="form-label">Tầng</label>
+
 
                     <input type="text"
                            id="floorDisplay"
@@ -81,17 +96,34 @@
                            readonly>
                 </div>
 
+
                 <!-- HẠNG PHÒNG -->
                 <div class="col-md-6">
                     <label class="form-label">Hạng phòng</label>
 
+
                     <input type="text"
                            id="roomTypeDisplay"
                            class="form-control room-input"
-                           placeholder="Hệ thống tự xác định theo tầng"
+                           placeholder="Hệ thống tự xác định theo số phòng"
                            th:value="${roomTypeName}"
                            readonly>
                 </div>
+
+
+                <!-- HƯỚNG PHÒNG -->
+                <div class="col-md-6">
+                    <label class="form-label">Hướng phòng</label>
+
+
+                    <input type="text"
+                           id="viewTypeDisplay"
+                           class="form-control room-input"
+                           placeholder="Hệ thống tự xác định theo tầng"
+                           th:value="${viewType}"
+                           readonly>
+                </div>
+
 
                 <!-- LOẠI PHÒNG CHI TIẾT -->
                 <div class="col-md-6">
@@ -99,25 +131,30 @@
                         Loại phòng chi tiết <span class="text-danger">*</span>
                     </label>
 
+
                     <select name="variantId"
                             id="variantId"
                             class="form-select room-input"
                             required>
                         <option value="">Chọn loại phòng chi tiết</option>
 
+
                         <option th:each="variant : ${roomTypeVariants}"
                                 th:value="${variant.id}"
                                 th:selected="${selectedVariantId != null and selectedVariantId == variant.id}"
                                 th:text="${variant.variantName}"
-                                th:attr="data-room-type=${variant.roomType != null ? variant.roomType.name : ''}">
+                                th:attr="data-room-type=${variant.roomType != null ? variant.roomType.name : ''},
+                                        data-view-type=${variant.viewType != null ? variant.viewType.name() : ''}">
                             Standard Room - hướng biển
                         </option>
                     </select>
 
+
                     <div class="form-text">
-                        Chỉ hiển thị loại phòng chi tiết phù hợp với hạng phòng đã xác định.
+                        Chỉ hiển thị loại phòng chi tiết khớp với cả hạng phòng và hướng phòng đã xác định.
                     </div>
                 </div>
+
 
                 <!-- TRẠNG THÁI -->
                 <div class="col-md-6">
@@ -125,29 +162,34 @@
                         Trạng thái <span class="text-danger">*</span>
                     </label>
 
+
                     <select name="status"
                             id="status"
                             class="form-select room-input"
                             required>
                         <option value="">Chọn trạng thái</option>
 
+
                         <option th:each="status : ${roomStatuses}"
                                 th:value="${status}"
                                 th:selected="${selectedStatus != null and selectedStatus == status}"
                                 th:text="${status.name() == 'AVAILABLE' ? 'Còn trống' :
-                                         (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status)}">
+                                        (status.name() == 'MAINTENANCE' ? 'Bảo trì' : status)}">
                             Còn trống
                         </option>
                     </select>
+
 
                     <div class="form-text">
                         Trạng thái ban đầu chỉ được là Còn trống hoặc Bảo trì.
                     </div>
                 </div>
 
+
                 <!-- GHI CHÚ -->
                 <div class="col-md-12">
                     <label class="form-label">Ghi chú</label>
+
 
                     <textarea name="note"
                               id="note"
@@ -157,17 +199,21 @@
                               placeholder="Ví dụ: Phòng gần thang máy, phòng cần kiểm tra điều hòa..."
                               th:text="${note}"></textarea>
 
+
                     <div class="form-text">
                         Tối đa 500 ký tự. Nếu trạng thái là Bảo trì, bắt buộc nhập lý do bảo trì.
                     </div>
                 </div>
 
+
             </div>
+
 
             <div class="form-actions">
                 <a th:href="@{/hotel-admin/list-room}" class="cancel-btn">
                     Hủy
                 </a>
+
 
                 <button type="submit"
                         id="saveRoomButton"
@@ -177,11 +223,15 @@
                 </button>
             </div>
 
+
         </form>
+
 
     </section>
 
+
     <script th:src="@{/js/AddRoom.js}"></script>
+
 
 </main>
 </body>
