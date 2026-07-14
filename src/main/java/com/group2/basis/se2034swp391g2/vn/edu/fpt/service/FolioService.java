@@ -143,14 +143,17 @@ public class FolioService {
                         .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add))
                 .serviceSubtotal(bookingDetailId == null ? money(booking.getServiceSubtotal()) : items.stream()
+                        .filter(this::isChargeableFolioItem)
                         .map(FolioItem::getBaseAmount)
                         .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add))
                 .serviceChargeTotal(bookingDetailId == null ? money(booking.getServiceChargeTotal()) : items.stream()
+                        .filter(this::isChargeableFolioItem)
                         .map(FolioItem::getServiceChargeAmount)
                         .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add))
                 .vatTotal(bookingDetailId == null ? money(booking.getVatTotal()) : items.stream()
+                        .filter(this::isChargeableFolioItem)
                         .map(FolioItem::getVatAmount)
                         .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add))
@@ -311,7 +314,7 @@ public class FolioService {
 
     private String buildRoomSummary(BookingDetail detail) {
         String variantName = detail.getVariant() == null ? "Phòng" : detail.getVariant().getVariantName();
-        String roomNumber = detail.getRoom() == null ? "Chưa phân phòng" : "Phòng " + detail.getRoom().getRoomNumber();
+        String roomNumber = detail.getRoom() == null ? "Không rõ" : "Phòng " + detail.getRoom().getRoomNumber();
         return roomNumber + " - " + variantName;
     }
 
@@ -323,7 +326,7 @@ public class FolioService {
                 .filter(roomNumber -> !roomNumber.isBlank())
                 .distinct()
                 .reduce((left, right) -> left + ", " + right)
-                .orElse("Chưa phân phòng");
+                .orElse("Không rõ");
     }
 
     private FolioDetailResponse.RoomLine toRoomLine(BookingDetail detail) {
@@ -568,10 +571,15 @@ public class FolioService {
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal itemTotal = items.stream()
+                .filter(this::isChargeableFolioItem)
                 .map(FolioItem::getTotalAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         return money(roomTotal.add(itemTotal));
+    }
+
+    private boolean isChargeableFolioItem(FolioItem item) {
+        return item.getService() == null || item.getServiceStatus() != FolioItemStatus.CANCELLED;
     }
 
     private BigDecimal calculateBalance(BigDecimal totalAmount, BigDecimal paidAmount) {

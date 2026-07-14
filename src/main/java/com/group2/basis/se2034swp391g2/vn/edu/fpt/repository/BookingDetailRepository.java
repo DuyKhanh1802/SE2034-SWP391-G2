@@ -93,6 +93,14 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
     JOIN FETCH v.roomType rt
     WHERE b.isDeleted = false
       AND (
+          bd.stayStatus IN (
+              com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.CHECKED_IN,
+              com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.CHECKED_OUT
+          )
+          OR bd.actualCheckinAt IS NOT NULL
+          OR bd.actualCheckoutAt IS NOT NULL
+      )
+      AND (
           :keyword = ''
           OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))
           OR (r.roomNumber IS NOT NULL AND LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%')))
@@ -155,6 +163,14 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
     JOIN bd.booking b
     LEFT JOIN bd.room r
     WHERE b.isDeleted = false
+      AND (
+          bd.stayStatus IN (
+              com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.CHECKED_IN,
+              com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingDetailStatus.CHECKED_OUT
+          )
+          OR bd.actualCheckinAt IS NOT NULL
+          OR bd.actualCheckoutAt IS NOT NULL
+      )
       AND (
           :keyword = ''
           OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :keyword, '%'))

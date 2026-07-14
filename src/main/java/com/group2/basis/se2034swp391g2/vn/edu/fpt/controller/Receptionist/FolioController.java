@@ -23,7 +23,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.IntStream;
+
+import static com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.PaginationUtils.buildVisiblePages;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/receptionist/folios")
@@ -69,32 +71,6 @@ public class FolioController {
         model.addAttribute("showTrailingEllipsis", !visiblePages.isEmpty() && visiblePages.getLast() < folioPage.getTotalPages() - 1);
 
         return "receptionist/ListFolio";
-    }
-
-    private List<Integer> buildVisiblePages(int currentPage, int totalPages) {
-        if (totalPages <= 0) {
-            return List.of();
-        }
-
-        if (totalPages <= 5) {
-            return IntStream.range(0, totalPages).boxed().toList();
-        }
-
-        int start;
-        int end;
-
-        if (currentPage <= 2) {
-            start = 0;
-            end = 3;
-        } else if (currentPage >= totalPages - 3) {
-            start = totalPages - 4;
-            end = totalPages - 1;
-        } else {
-            start = currentPage - 1;
-            end = currentPage + 2;
-        }
-
-        return IntStream.rangeClosed(start, end).boxed().toList();
     }
 
     @GetMapping("/{bookingId}")
