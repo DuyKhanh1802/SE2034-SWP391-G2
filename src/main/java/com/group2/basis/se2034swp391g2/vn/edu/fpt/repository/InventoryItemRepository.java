@@ -53,6 +53,27 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
                                     Pageable pageable);
 
     @Query("""
+            SELECT i
+            FROM InventoryItem i
+            WHERE i.isDeleted = false
+            AND (
+                :keyword IS NULL
+                OR LOWER(i.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            )
+            AND (:categoryId IS NULL OR i.category.id = :categoryId)
+            AND (
+                :stockStatus IS NULL
+                OR (:stockStatus = 'OUT_OF_STOCK' AND i.currentQuantity = 0)
+                OR (:stockStatus = 'LOW' AND i.currentQuantity > 0 AND i.currentQuantity <= i.minimumQuantity)
+                OR (:stockStatus = 'NORMAL' AND i.currentQuantity > i.minimumQuantity)
+            )
+            ORDER BY i.id ASC
+            """)
+    List<InventoryItem> searchItemsForExpiryFilter(@Param("keyword") String keyword,
+                                                   @Param("categoryId") Long categoryId,
+                                                   @Param("stockStatus") String stockStatus);
+
+    @Query("""
             SELECT COUNT(i)
             FROM InventoryItem i
             WHERE i.isDeleted = false

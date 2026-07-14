@@ -13,26 +13,6 @@
     <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"></div>
 
     <section class="inventory-card">
-        <div class="inventory-toolbar mb-4">
-            <div>
-                <h2>Danh sách hàng hóa</h2>
-            </div>
-            <div class="toolbar-actions">
-                <a class="inventory-btn-outline" th:href="@{/storekeeper/inventory/history}">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử kho
-                </a>
-                <button class="inventory-btn-outline" type="button" data-bs-toggle="modal" data-bs-target="#itemImportModal">
-                    <i class="fa-solid fa-file-import"></i> Import danh sách hàng hóa
-                </button>
-                <button class="inventory-btn-outline" type="button" data-bs-toggle="modal" data-bs-target="#receiptImportModal">
-                    <i class="fa-solid fa-boxes-packing"></i> Import lô hàng nhập
-                </button>
-                <button class="inventory-btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal">
-                    <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
-                </button>
-            </div>
-        </div>
-
         <form class="inventory-filters" method="get" th:action="@{/storekeeper/inventory}">
             <label class="search-control">
                 <i class="fa-solid fa-magnifying-glass text-secondary"></i>
@@ -51,9 +31,31 @@
                 <option value="LOW" th:selected="${stockStatus == 'LOW'}">Sắp hết hàng</option>
                 <option value="NORMAL" th:selected="${stockStatus == 'NORMAL'}">Tồn kho ổn định</option>
             </select>
+            <select class="filter-control" name="expiryStatus">
+                <option value="ALL" th:selected="${expiryStatus == null or expiryStatus == 'ALL'}">Tất cả HSD</option>
+                <option value="EXPIRING_SOON" th:selected="${expiryStatus == 'EXPIRING_SOON'}">Sắp hết hạn</option>
+                <option value="EXPIRED" th:selected="${expiryStatus == 'EXPIRED'}">Đã hết hạn</option>
+                <option value="VALID" th:selected="${expiryStatus == 'VALID'}">Còn hạn</option>
+                <option value="NONE" th:selected="${expiryStatus == 'NONE'}">Không khai báo HSD</option>
+            </select>
             <input type="hidden" name="size" th:value="${pageSize}">
             <button class="inventory-btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc</button>
+            <a class="inventory-btn-outline filter-reset" th:href="@{/storekeeper/inventory}">
+                <i class="fa-solid fa-xmark"></i> Xoá lọc
+            </a>
         </form>
+
+        <div class="toolbar-actions inventory-actions-row">
+            <button class="inventory-btn-outline" type="button" data-bs-toggle="modal" data-bs-target="#itemImportModal">
+                <i class="fa-solid fa-file-import"></i> Import danh sách hàng hóa
+            </button>
+            <button class="inventory-btn-outline" type="button" data-bs-toggle="modal" data-bs-target="#receiptImportModal">
+                <i class="fa-solid fa-boxes-packing"></i> Import lô hàng nhập
+            </button>
+            <button class="inventory-btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#receiptModal">
+                <i class="fa-solid fa-file-circle-plus"></i> Lập phiếu nhập
+            </button>
+        </div>
 
         <div th:if="${!#lists.isEmpty(lowStockItemCodes)}" class="inventory-alert warning mt-3 mb-0">
             Có hàng hoá sắp hết hoặc đã hết hàng, cần nhập thêm:
@@ -138,17 +140,23 @@
 
         <div class="pagination-row">
             <p>
-                <span th:text="${totalElements}">0</span> hàng hóa
+                Hiển thị
+                <span th:text="${currentPage * pageSize + 1}">1</span>
+                -
+                <span th:text="${currentPage * pageSize + #lists.size(items)}">10</span>
+                trên tổng số
+                <span th:text="${totalElements}">0</span>
+                hàng hóa
             </p>
             <nav th:if="${totalPages > 1}" aria-label="Phân trang kho hàng">
                 <div class="pagination-buttons">
-                    <a th:href="@{/storekeeper/inventory(page=0,size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                    <a th:href="@{/storekeeper/inventory(page=0,size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus},expiryStatus=${expiryStatus})}"
                        th:classappend="${currentPage == 0} ? ' disabled'"
                        title="Trang đầu">
                         <i class="fa-solid fa-angles-left"></i>
                     </a>
 
-                    <a th:href="@{/storekeeper/inventory(page=${currentPage - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                    <a th:href="@{/storekeeper/inventory(page=${currentPage - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus},expiryStatus=${expiryStatus})}"
                        th:classappend="${currentPage == 0} ? ' disabled'"
                        title="Trang trước">
                         <i class="fa-solid fa-chevron-left"></i>
@@ -157,20 +165,20 @@
                     <span th:if="${showLeadingEllipsis}" class="pagination-ellipsis">...</span>
 
                     <a th:each="pageNumber : ${visiblePages}"
-                       th:href="@{/storekeeper/inventory(page=${pageNumber},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                       th:href="@{/storekeeper/inventory(page=${pageNumber},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus},expiryStatus=${expiryStatus})}"
                        th:text="${pageNumber + 1}"
                        th:classappend="${pageNumber == currentPage} ? ' active'">
                     </a>
 
                     <span th:if="${showTrailingEllipsis}" class="pagination-ellipsis">...</span>
 
-                    <a th:href="@{/storekeeper/inventory(page=${currentPage + 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                    <a th:href="@{/storekeeper/inventory(page=${currentPage + 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus},expiryStatus=${expiryStatus})}"
                        th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
                        title="Trang sau">
                         <i class="fa-solid fa-chevron-right"></i>
                     </a>
 
-                    <a th:href="@{/storekeeper/inventory(page=${totalPages - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus})}"
+                    <a th:href="@{/storekeeper/inventory(page=${totalPages - 1},size=${pageSize},keyword=${keyword},categoryId=${selectedCategoryId},stockStatus=${stockStatus},expiryStatus=${expiryStatus})}"
                        th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
                        title="Trang cuối">
                         <i class="fa-solid fa-angles-right"></i>

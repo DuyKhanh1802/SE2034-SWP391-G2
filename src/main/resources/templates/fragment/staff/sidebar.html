@@ -89,10 +89,17 @@
     <!-- STOREKEEPER -->
     <ul class="sidebar-menu" sec:authorize="hasRole('STOREKEEPER')">
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/storekeeper/inventory')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri ?: '', '/storekeeper/inventory') and !#strings.startsWith(currentUri ?: '', '/storekeeper/inventory/history')} ? 'active' : ''">
             <a th:href="@{/storekeeper/inventory}">
                 <i class="fas fa-boxes-stacked"></i>
                 <span>Quản lý kho hàng</span>
+            </a>
+        </li>
+        <li
+            th:classappend="${#strings.startsWith(currentUri ?: '', '/storekeeper/inventory/history')} ? 'active' : ''">
+            <a th:href="@{/storekeeper/inventory/history}">
+                <i class="fas fa-clock-rotate-left"></i>
+                <span>Lịch sử kho</span>
             </a>
         </li>
     </ul>

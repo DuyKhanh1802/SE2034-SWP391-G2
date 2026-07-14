@@ -66,6 +66,10 @@
                 <i class="fa-solid fa-filter"></i>
                 Lọc
             </button>
+            <a class="user-btn-outline filter-reset" th:href="@{/system-admin/list-user}">
+                <i class="fa-solid fa-xmark"></i>
+                Xoá lọc
+            </a>
         </form>
     </section>
 
@@ -161,7 +165,13 @@
 
         <div class="pagination-row" th:if="${totalPages > 1}">
             <p>
-                <span th:text="${totalElements}">0</span> tài khoản
+                Hiển thị
+                <span th:text="${currentPageIndex * pageSize + 1}">1</span>
+                -
+                <span th:text="${currentPageIndex * pageSize + #lists.size(users)}">10</span>
+                trên tổng số
+                <span th:text="${totalElements}">0</span>
+                tài khoản
             </p>
 
             <nav aria-label="Phân trang người dùng">

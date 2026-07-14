@@ -61,7 +61,7 @@
                 </div>
                 <div>
                     <label>Số tiền</label>
-                    <input type="number" th:field="*{amount}" step="1000" placeholder="Âm là giảm trừ" required>
+                    <input class="no-number-spinner" type="number" th:field="*{amount}" step="1000" placeholder="Âm là giảm trừ" required>
                 </div>
                 <div>
                     <label>Lý do</label>
@@ -121,6 +121,13 @@
                                     <i class="fa-regular fa-trash-can"></i>
                                 </button>
                             </form>
+                            <button th:unless="${line.voidable}"
+                                    type="button"
+                                    class="inline-void-disabled"
+                                    title="Chỉ có thể huỷ dòng điều chỉnh hoặc giảm trừ"
+                                    disabled>
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
                         </td>
                     </tr>
                     <tr th:if="${folio.invoiceCharges == null or #lists.isEmpty(folio.invoiceCharges)}">

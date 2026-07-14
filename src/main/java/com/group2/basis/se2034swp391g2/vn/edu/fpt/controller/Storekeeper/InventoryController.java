@@ -27,7 +27,8 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.IntStream;
+
+import static com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.PaginationUtils.buildVisiblePages;
 
 @Controller
 @RequiredArgsConstructor
@@ -43,16 +44,18 @@ public class InventoryController {
                             @RequestParam(required = false) String keyword,
                             @RequestParam(required = false) Long categoryId,
                             @RequestParam(defaultValue = "ALL") String stockStatus,
+                            @RequestParam(defaultValue = "ALL") String expiryStatus,
                             @RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size) {
         addHeaderAttributes(model, authentication, session, "Quản lý kho hàng");
         Page<InventoryItem> itemPage = inventoryManagementService.getItems(
-                keyword, categoryId, stockStatus, page, size);
+                keyword, categoryId, stockStatus, expiryStatus, page, size);
         model.addAttribute("items", itemPage.getContent());
         model.addAttribute("categories", inventoryManagementService.getCategories());
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedCategoryId", categoryId);
         model.addAttribute("stockStatus", stockStatus);
+        model.addAttribute("expiryStatus", expiryStatus);
         model.addAttribute("currentPage", itemPage.getNumber());
         model.addAttribute("totalPages", itemPage.getTotalPages());
         model.addAttribute("totalElements", itemPage.getTotalElements());
@@ -76,32 +79,6 @@ public class InventoryController {
         model.addAttribute("inventoryVatRate", inventoryManagementService.getInventoryVatRate());
         model.addAttribute("today", LocalDate.now());
         return "storekeeper/InventoryList";
-    }
-
-    private List<Integer> buildVisiblePages(int currentPage, int totalPages) {
-        if (totalPages <= 0) {
-            return List.of();
-        }
-
-        if (totalPages <= 5) {
-            return IntStream.range(0, totalPages).boxed().toList();
-        }
-
-        int start;
-        int end;
-
-        if (currentPage <= 2) {
-            start = 0;
-            end = 3;
-        } else if (currentPage >= totalPages - 3) {
-            start = totalPages - 4;
-            end = totalPages - 1;
-        } else {
-            start = currentPage - 1;
-            end = currentPage + 2;
-        }
-
-        return IntStream.rangeClosed(start, end).boxed().toList();
     }
 
     @GetMapping("/storekeeper/inventory/{id}/edit")
@@ -360,6 +337,10 @@ public class InventoryController {
             model.addAttribute("pageSize", transactionPage.getSize());
             model.addAttribute("hasPrevious", transactionPage.hasPrevious());
             model.addAttribute("hasNext", transactionPage.hasNext());
+            List<Integer> visiblePages = buildVisiblePages(transactionPage.getNumber(), transactionPage.getTotalPages());
+            model.addAttribute("visiblePages", visiblePages);
+            model.addAttribute("showLeadingEllipsis", !visiblePages.isEmpty() && visiblePages.getFirst() > 0);
+            model.addAttribute("showTrailingEllipsis", !visiblePages.isEmpty() && visiblePages.getLast() < transactionPage.getTotalPages() - 1);
             return "storekeeper/InventoryHistory";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
