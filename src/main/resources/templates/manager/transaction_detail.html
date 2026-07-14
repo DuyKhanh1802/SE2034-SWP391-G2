@@ -56,7 +56,13 @@
                 <dt>Người tạo</dt>
                 <dd th:text="${inventoryReceipt != null ? (inventoryReceipt.createdBy != null ? inventoryReceipt.createdBy.email : 'Hệ thống') : (transaction.createdBy != null ? transaction.createdBy.email : 'Hệ thống')}">manager</dd>
                 <dt>Nội dung</dt>
-                <dd th:text="${inventoryReceipt != null ? (inventoryReceipt.note ?: transaction.description) : (transaction.description ?: 'Không có')}">Nội dung</dd>
+                <dd th:text="${inventoryReceipt != null
+                        ? 'Chi nhập kho ' + inventoryReceipt.code + (inventoryReceipt.item != null ? ' - ' + inventoryReceipt.item.name : '')
+                        : ((transaction.category.name() == 'BOOKING_PAYMENT' and relatedPayment != null and relatedPayment.booking != null)
+                            ? 'Thanh toán check-out cho booking ' + relatedPayment.booking.bookingReference
+                            : (transaction.description ?: 'Không có'))}">
+                    Nội dung
+                </dd>
             </dl>
         </div>
         <div class="panel"

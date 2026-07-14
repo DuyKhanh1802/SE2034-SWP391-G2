@@ -18,7 +18,7 @@
         </div>
 
         <div class="report-overview-actions">
-            <a th:href="@{/manager/reports/occupancy}" class="report-soft-btn report-soft-btn-light">
+            <a th:href="@{/manager/reports/revenue}" class="report-soft-btn report-soft-btn-light">
                 <i class="fa-solid fa-sack-dollar"></i>
                 Báo cáo doanh thu
             </a>
@@ -109,6 +109,52 @@
 
     <!-- REPORT SNAPSHOTS -->
     <section class="report-overview-grid report-overview-grid-spaced">
+        <!-- REVENUE REPORT SNAPSHOT -->
+        <div class="report-snapshot-card">
+            <div class="report-snapshot-header">
+                <div>
+                    <span>Revenue Snapshot</span>
+                    <h2>Báo cáo doanh thu</h2>
+                    <p>Tóm tắt doanh thu, chi phí và chênh lệch dòng tiền từ các giao dịch đã hoàn tất.</p>
+                </div>
+
+                <a th:href="@{/manager/reports/revenue}" class="report-mini-link">
+                    Xem chi tiết
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="report-occupancy-simple">
+                <div class="report-occupancy-row main">
+                    <span>Doanh thu tháng hiện tại</span>
+                    <strong th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </strong>
+                </div>
+
+                <div class="report-occupancy-row">
+                    <span>Doanh thu hôm nay</span>
+                    <strong th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </strong>
+                </div>
+
+                <div class="report-occupancy-row">
+                    <span>Tổng thu đã ghi nhận</span>
+                    <strong th:text="${#numbers.formatDecimal(totalIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </strong>
+                </div>
+
+                <div class="report-occupancy-row">
+                    <span>Tổng chi đã ghi nhận</span>
+                    <strong th:text="${#numbers.formatDecimal(totalExpense, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                        0 VND
+                    </strong>
+                </div>
+            </div>
+        </div>
+
         <!-- OCCUPANCY REPORT SNAPSHOT -->
         <div class="report-snapshot-card">
             <div class="report-snapshot-header">

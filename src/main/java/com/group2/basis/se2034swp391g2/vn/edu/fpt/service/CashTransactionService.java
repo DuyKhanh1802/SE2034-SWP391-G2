@@ -38,7 +38,6 @@ public class CashTransactionService {
     private static final List<CashTransactionCategory> VISIBLE_CATEGORIES = List.of(
             CashTransactionCategory.BOOKING_PAYMENT,
             CashTransactionCategory.DEPOSIT,
-            CashTransactionCategory.REFUND,
             CashTransactionCategory.MANUAL_INCOME,
             CashTransactionCategory.MANUAL_EXPENSE,
             CashTransactionCategory.INVENTORY_PURCHASE,
@@ -115,7 +114,7 @@ public class CashTransactionService {
         filteredTransactions = filteredTransactions.stream()
                 .filter(transaction -> VISIBLE_CATEGORIES.contains(transaction.getCategory()))
                 .toList();
-        Map<Long, String> paymentMethodMap = getPaymentMethodMap(filteredTransactions);
+        Map<Long, PaymentMethod> paymentMethodMap = getPaymentMethodMap(filteredTransactions);
 
         List<CashTransactionResponse> allTransactions = filteredTransactions
                 .stream()
@@ -364,7 +363,7 @@ public class CashTransactionService {
 
         return switch (payment.getPaymentType()) {
             case DEPOSIT -> "Thu tiền đặt cọc cho booking " + bookingCode;
-            case BALANCE -> "Thu phần tiền còn lại cho booking " + bookingCode;
+            case BALANCE -> "Thanh toán check-out cho booking " + bookingCode;
             case REFUND -> "Hoàn tiền cho booking " + bookingCode;
         };
     }
@@ -444,9 +443,6 @@ public class CashTransactionService {
         if (request.getPaymentMethod() == null) {
             throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
         }
-        if (request.getPaymentMethod() == PaymentMethod.VNPAY) {
-            throw new IllegalArgumentException("Phiếu thu/chi thủ công không hỗ trợ cổng thanh toán VNPAY.");
-        }
         validateAmount(request.getAmount());
         if (request.getDescription() == null || request.getDescription().isBlank()) {
             throw new IllegalArgumentException("Vui lòng nhập nội dung phiếu.");
@@ -489,7 +485,7 @@ public class CashTransactionService {
         return transactions.subList(startIndex, endIndex);
     }
 
-    private Map<Long, String> getPaymentMethodMap(List<CashTransaction> transactions) {
+    private Map<Long, PaymentMethod> getPaymentMethodMap(List<CashTransaction> transactions) {
         List<Long> paymentIds = transactions.stream()
                 .filter(transaction -> PAYMENT_CATEGORIES.contains(transaction.getCategory()))
                 .map(CashTransaction::getSourceId)
@@ -506,17 +502,18 @@ public class CashTransactionService {
                 .stream()
                 .collect(Collectors.toMap(
                         row -> (Long) row[0],
-                        row -> ((PaymentMethod) row[1]).getLabel()
+                        row -> (PaymentMethod) row[1]
                 ));
     }
 
-    private CashTransactionResponse toResponse(CashTransaction transaction, Map<Long, String> paymentMethodMap) {
-        String paymentMethodDisplayName = "Chưa có";
+    private CashTransactionResponse toResponse(CashTransaction transaction, Map<Long, PaymentMethod> paymentMethodMap) {
+        PaymentMethod paymentMethod = transaction.getPaymentMethod();
         if (transaction.getPaymentMethod() != null) {
-            paymentMethodDisplayName = transaction.getPaymentMethod().getLabel();
+            paymentMethod = transaction.getPaymentMethod();
         } else if (PAYMENT_CATEGORIES.contains(transaction.getCategory()) && transaction.getSourceId() != null) {
-            paymentMethodDisplayName = paymentMethodMap.getOrDefault(transaction.getSourceId(), "Chưa có");
+            paymentMethod = paymentMethodMap.get(transaction.getSourceId());
         }
+        String paymentMethodDisplayName = paymentMethod == null ? "Chưa có" : paymentMethod.getLabel();
 
         return CashTransactionResponse.builder()
                 .id(transaction.getId())
@@ -527,6 +524,7 @@ public class CashTransactionService {
                 .category(transaction.getCategory().name())
                 .categoryDisplayName(transaction.getCategory().getDisplayName())
                 .amount(transaction.getAmount())
+                .paymentMethod(paymentMethod == null ? null : paymentMethod.name())
                 .paymentMethodDisplayName(paymentMethodDisplayName)
                 .statusDisplayName(resolveStatus(transaction).getDisplayName())
                 .build();

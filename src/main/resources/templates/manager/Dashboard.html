@@ -5,82 +5,220 @@
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-    <section class="hero">
-        <p>MANAGER OVERVIEW</p>
-        <h1>Tổng quan vận hành</h1>
-    </section>
-
-    <section class="kpi-grid">
-        <div class="kpi-card">
-            <p>Doanh thu hôm nay</p>
-            <h2 th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</h2>
-            <span>Dòng tiền thu trong ngày</span>
-        </div>
-
-        <div class="kpi-card">
-            <p>Doanh thu tháng</p>
-            <h2 th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</h2>
-            <span>Tổng thu tháng hiện tại</span>
-        </div>
-
-        <div class="kpi-card">
-            <p>Booking mới hôm nay</p>
-            <h2 th:text="${newBookingsToday}">0</h2>
-            <span>Lượt đặt phòng mới</span>
-        </div>
-
-        <div class="kpi-card">
-            <p>Phòng đang ở</p>
-            <h2 th:text="${occupiedRooms + ' / ' + totalRooms}">0 / 0</h2>
-            <span th:text="${occupancyRate + '% lấp phòng'}">0% lấp phòng</span>
-        </div>
-
-        <div class="kpi-card warning">
-            <p>Cảnh báo tồn kho thấp</p>
-            <h2 th:text="${lowStockCount}">0</h2>
-            <span>Hàng hóa cần chú ý</span>
-        </div>
-    </section>
-
-    <section class="bottom-grid">
+    <section class="manager-dashboard-hero">
         <div>
-            <h3 class="bottom-title">
-                <i class="fa-solid fa-bell-concierge"></i>
-                Dịch vụ bán chạy
-            </h3>
-            <div class="order-box" th:each="serviceStat : ${topServices}">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5 th:text="${serviceStat[0]}">Dịch vụ</h5>
-                        <p th:text="'Số lượng: ' + ${serviceStat[1]}">Số lượng: 0</p>
+            <span>Manager Overview</span>
+            <h1>Tổng quan vận hành</h1>
+            <p>Theo dõi nhanh doanh thu, công suất phòng, booking trong ngày và các cảnh báo cần chú ý.</p>
+        </div>
+
+        <div class="dashboard-today">
+            <span>Hôm nay</span>
+            <strong th:text="${#temporals.format(today, 'dd/MM/yyyy')}">14/07/2026</strong>
+        </div>
+    </section>
+
+    <section class="dashboard-kpi-grid">
+        <div class="dashboard-kpi-card income">
+            <div class="dashboard-kpi-icon">
+                <i class="fa-solid fa-sack-dollar"></i>
+            </div>
+            <span>Doanh thu hôm nay</span>
+            <strong th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+            <p>Dòng tiền thu trong ngày</p>
+        </div>
+
+        <div class="dashboard-kpi-card">
+            <div class="dashboard-kpi-icon">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
+            <span>Doanh thu tháng</span>
+            <strong th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+            <p>Tổng thu tháng hiện tại</p>
+        </div>
+
+        <div class="dashboard-kpi-card occupancy">
+            <div class="dashboard-kpi-icon">
+                <i class="fa-solid fa-bed"></i>
+            </div>
+            <span>Công suất phòng</span>
+            <strong th:text="${occupancyRate + '%'}">0%</strong>
+            <p th:text="${occupiedRooms + ' / ' + totalRooms + ' phòng đang sử dụng'}">0 / 0 phòng đang sử dụng</p>
+        </div>
+
+        <div class="dashboard-kpi-card warning">
+            <div class="dashboard-kpi-icon">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+            <span>Cảnh báo tồn kho</span>
+            <strong th:text="${lowStockCount}">0</strong>
+            <p>Mặt hàng thấp hơn ngưỡng tối thiểu</p>
+        </div>
+    </section>
+
+    <section class="dashboard-main-grid">
+        <div class="dashboard-panel dashboard-room-panel">
+            <div class="dashboard-panel-header">
+                <div>
+                    <span>Room Operation</span>
+                    <h2>Tình hình phòng</h2>
+                </div>
+                <a th:href="@{/manager/reports/occupancy}">Xem báo cáo</a>
+            </div>
+
+            <div class="room-status-grid">
+                <div>
+                    <span>Đang ở</span>
+                    <strong th:text="${occupiedRooms}">0</strong>
+                </div>
+                <div>
+                    <span>Còn trống</span>
+                    <strong th:text="${availableRooms}">0</strong>
+                </div>
+                <div>
+                    <span>Bảo trì</span>
+                    <strong th:text="${maintenanceRooms}">0</strong>
+                </div>
+            </div>
+
+            <div class="dashboard-progress">
+                <div th:style="'width:' + ${occupancyRate} + '%'"></div>
+            </div>
+
+            <div class="operation-list">
+                <div>
+                    <span>Booking mới hôm nay</span>
+                    <strong th:text="${newBookingsToday}">0</strong>
+                </div>
+                <div>
+                    <span>Booking đang lưu trú</span>
+                    <strong th:text="${checkedInBookings}">0</strong>
+                </div>
+                <div>
+                    <span>Dự kiến check-in hôm nay</span>
+                    <strong th:text="${todayCheckIns}">0</strong>
+                </div>
+                <div>
+                    <span>Dự kiến check-out hôm nay</span>
+                    <strong th:text="${todayCheckOuts}">0</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-panel dashboard-cash-panel">
+            <div class="dashboard-panel-header">
+                <div>
+                    <span>Cash Flow</span>
+                    <h2>Dòng tiền</h2>
+                </div>
+                <a th:href="@{/manager/transactions}">Xem lịch sử</a>
+            </div>
+
+            <div class="cash-summary-list">
+                <div>
+                    <span>Tổng thu đã ghi nhận</span>
+                    <strong class="income-text"
+                            th:text="${#numbers.formatDecimal(totalIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </div>
+                <div>
+                    <span>Tổng chi đã ghi nhận</span>
+                    <strong class="expense-text"
+                            th:text="${#numbers.formatDecimal(totalExpense, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </div>
+                <div>
+                    <span>Chênh lệch thu chi</span>
+                    <strong th:class="${netCashFlow.compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? 'income-text' : 'expense-text'"
+                            th:text="${#numbers.formatDecimal(netCashFlow, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-secondary-grid">
+        <div class="dashboard-panel">
+            <div class="dashboard-panel-header">
+                <div>
+                    <span>Service Performance</span>
+                    <h2>Dịch vụ bán chạy</h2>
+                </div>
+                <a th:href="@{/manager/reports/services}">Xem báo cáo</a>
+            </div>
+
+            <div class="dashboard-empty" th:if="${#lists.isEmpty(topServices)}">
+                Chưa có dữ liệu dịch vụ.
+            </div>
+
+            <div class="dashboard-list" th:if="${!#lists.isEmpty(topServices)}">
+                <div class="dashboard-list-row" th:each="serviceStat, iter : ${topServices}">
+                    <div class="dashboard-rank" th:text="${iter.index + 1}">1</div>
+                    <div class="dashboard-row-main">
+                        <strong th:text="${serviceStat[0]}">Dịch vụ</strong>
+                        <span>
+                            Đã bán
+                            <b th:text="${serviceStat[1]}">0</b>
+                            lượt
+                        </span>
                     </div>
-                    <span th:text="${#numbers.formatDecimal(serviceStat[2], 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</span>
+                    <strong class="income-text"
+                            th:text="${#numbers.formatDecimal(serviceStat[2], 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
                 </div>
-            </div>
-            <div class="order-box" th:if="${#lists.isEmpty(topServices)}">
-                <p>Chưa có dữ liệu dịch vụ.</p>
             </div>
         </div>
 
-        <div>
-            <h3 class="bottom-title">
-                <i class="fa-solid fa-money-bill-transfer"></i>
-                Giao dịch gần đây
-            </h3>
-            <div class="incident-item" th:each="transaction : ${recentTransactions}">
+        <div class="dashboard-panel">
+            <div class="dashboard-panel-header">
                 <div>
-                    <h5 th:text="${transaction.documentCode}">PT-0000</h5>
-                    <p th:text="${transaction.category + ' - ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
-                        Giao dịch
-                    </p>
+                    <span>Inventory Alerts</span>
+                    <h2>Cảnh báo kho</h2>
                 </div>
-                <a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a>
+                <a th:href="@{/manager/reports/inventory}">Xem báo cáo</a>
             </div>
-            <div class="incident-item" th:if="${#lists.isEmpty(recentTransactions)}">
-                <div>
-                    <h5>Chưa có giao dịch</h5>
-                    <p>Dòng tiền sẽ xuất hiện khi có payment, nhập kho hoặc phiếu thủ công.</p>
+
+            <div class="dashboard-empty" th:if="${#lists.isEmpty(lowStockItems)}">
+                Không có mặt hàng tồn thấp.
+            </div>
+
+            <div class="dashboard-list" th:if="${!#lists.isEmpty(lowStockItems)}">
+                <div class="dashboard-list-row" th:each="item : ${lowStockItems}">
+                    <div class="dashboard-rank warning">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="dashboard-row-main">
+                        <strong th:text="${item.name}">Vật tư</strong>
+                        <span th:text="${item.code}">ITEM</span>
+                    </div>
+                    <strong th:text="${#numbers.formatDecimal(item.currentQuantity, 0, 'POINT', 2, 'COMMA') + ' / ' + #numbers.formatDecimal(item.minimumQuantity, 0, 'POINT', 2, 'COMMA')}">
+                        0 / 0
+                    </strong>
                 </div>
+            </div>
+        </div>
+
+        <div class="dashboard-panel dashboard-wide-panel">
+            <div class="dashboard-panel-header">
+                <div>
+                    <span>Recent Cash Transactions</span>
+                    <h2>Giao dịch gần đây</h2>
+                </div>
+                <a th:href="@{/manager/transactions}">Xem tất cả</a>
+            </div>
+
+            <div class="dashboard-empty" th:if="${#lists.isEmpty(recentTransactions)}">
+                Chưa có giao dịch dòng tiền.
+            </div>
+
+            <div class="dashboard-transaction-list" th:if="${!#lists.isEmpty(recentTransactions)}">
+                <a class="dashboard-transaction-row"
+                   th:each="transaction : ${recentTransactions}"
+                   th:href="@{/manager/transactions/{id}(id=${transaction.id})}">
+                    <div>
+                        <strong th:text="${transaction.documentCode}">PT-0001</strong>
+                        <span th:text="${transaction.category.displayName}">Nhóm giao dịch</span>
+                    </div>
+                    <span th:text="${transaction.paymentMethod != null ? transaction.paymentMethod.label : 'Chưa có'}">Tiền mặt</span>
+                    <strong th:class="${transaction.type.name() == 'INCOME'} ? 'income-text' : 'expense-text'"
+                            th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </a>
             </div>
         </div>
     </section>

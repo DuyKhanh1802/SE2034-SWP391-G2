@@ -149,7 +149,6 @@ public class CashTransactionController {
         model.addAttribute("transactionTypes", CashTransactionType.values());
         model.addAttribute("paymentMethods", List.of(
                 PaymentMethod.CASH,
-                PaymentMethod.CARD,
                 PaymentMethod.TRANSFER
         ));
     }
