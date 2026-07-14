@@ -7,12 +7,11 @@
     <section class="manager-dashboard-hero">
         <div>
             <span>Daily Operations</span>
-            <h1>Điều hành hôm nay</h1>
+            <h1>
+                Điều hành hôm nay
+                <small th:text="${'— ' + #temporals.format(dashboard.today, 'dd/MM/yyyy')}">— 14/07/2026</small>
+            </h1>
             <p>Tập trung vào khách đến, khách rời, phòng sẵn sàng và các việc cần quản lý xử lý trong ca.</p>
-        </div>
-        <div class="dashboard-today">
-            <span>Ngày vận hành</span>
-            <strong th:text="${#temporals.format(dashboard.today, 'dd/MM/yyyy')}">14/07/2026</strong>
         </div>
     </section>
 
@@ -67,26 +66,6 @@
             </div>
         </article>
 
-        <article class="dashboard-panel priority-panel">
-            <header class="dashboard-panel-header">
-                <div><span>Manager Attention</span><h2>Ưu tiên cần xử lý</h2></div>
-            </header>
-            <div class="dashboard-empty" th:if="${#lists.isEmpty(dashboard.priorities)}">
-                <i class="fa-solid fa-circle-check"></i>
-                <span>Chưa có cảnh báo vận hành cần xử lý.</span>
-            </div>
-            <div class="priority-list" th:if="${!#lists.isEmpty(dashboard.priorities)}">
-                <a th:each="item : ${dashboard.priorities}" th:href="${item.actionUrl}"
-                   class="priority-row" th:classappend="${item.level}">
-                    <i class="fa-solid" th:classappend="${item.icon}"></i>
-                    <div><strong th:text="${item.title}">Cảnh báo</strong><span th:text="${item.description}">Mô tả</span></div>
-                    <i class="fa-solid fa-chevron-right"></i>
-                </a>
-            </div>
-        </article>
-    </section>
-
-    <section class="dashboard-bottom-grid">
         <article class="dashboard-panel">
             <header class="dashboard-panel-header">
                 <div><span>Stock Support</span><h2>Vật tư ảnh hưởng vận hành</h2></div>
@@ -101,15 +80,6 @@
                     <span>Còn <b th:text="${item.currentQuantity + ' ' + item.unit}">0</b></span>
                     <span>Định mức <b th:text="${item.minimumQuantity + ' ' + item.unit}">0</b></span>
                 </div>
-            </div>
-        </article>
-        <article class="dashboard-panel quick-panel">
-            <header class="dashboard-panel-header"><div><span>Quick Access</span><h2>Tra cứu nhanh</h2></div></header>
-            <div class="quick-links">
-                <a th:href="@{/manager/transactions}"><i class="fa-solid fa-money-bill-transfer"></i><span>Lịch sử giao dịch</span></a>
-                <a th:href="@{/manager/reports}"><i class="fa-solid fa-chart-pie"></i><span>Trung tâm báo cáo</span></a>
-                <a th:href="@{/manager/reports/occupancy}"><i class="fa-solid fa-bed"></i><span>Báo cáo công suất</span></a>
-                <a th:href="@{/manager/reports/inventory}"><i class="fa-solid fa-boxes-stacked"></i><span>Báo cáo tồn kho</span></a>
             </div>
         </article>
     </section>
