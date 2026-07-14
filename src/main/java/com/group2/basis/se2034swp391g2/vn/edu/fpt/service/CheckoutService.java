@@ -76,6 +76,9 @@ public class CheckoutService {
         if (resolveStayStatus(detail, booking) != BookingDetailStatus.CHECKED_IN) {
             throw new IllegalStateException("Chỉ có thể trả phòng cho phòng đang ở trạng thái đã nhận phòng.");
         }
+        if (hasRequestedServices(detail)) {
+            throw new IllegalStateException("Vui lòng xử lý toàn bộ dịch vụ đang chờ trước khi checkout.");
+        }
 
         List<FolioItem> folioItems = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
@@ -143,7 +146,7 @@ public class CheckoutService {
         BigDecimal balance = totalAmount.subtract(netPaid).setScale(0, RoundingMode.HALF_UP);
         BigDecimal payable = balance.max(BigDecimal.ZERO);
         BigDecimal refundable = balance.compareTo(BigDecimal.ZERO) < 0 ? balance.abs() : BigDecimal.ZERO;
-        boolean canCheckout = canCheckoutTarget(detail, booking);
+        boolean canCheckout = canCheckoutTarget(detail, booking) && !hasRequestedServices(detail);
         Room room = detail.getRoom();
         RoomTypeVariant variant = detail.getVariant();
 
@@ -154,7 +157,7 @@ public class CheckoutService {
                 .guestName(buildGuestName(booking))
                 .guestPhone(booking.getGuestPhone())
                 .guestEmail(booking.getGuestEmail())
-                .roomNumber(room == null ? "Chưa phân phòng" : room.getRoomNumber())
+                .roomNumber(room == null ? "Không rõ" : room.getRoomNumber())
                 .roomTypeName(variant != null && variant.getRoomType() != null ? variant.getRoomType().getName() : "N/A")
                 .variantName(variant == null ? "N/A" : variant.getVariantName())
                 .roomCount(bookingDetails == null ? 1 : bookingDetails.size())
@@ -214,6 +217,10 @@ public class CheckoutService {
 
         if (resolveStayStatus(detail, booking) != BookingDetailStatus.CHECKED_IN) {
             return "Chỉ có thể trả phòng cho phòng đang ở trạng thái đã nhận phòng.";
+        }
+
+        if (hasRequestedServices(detail)) {
+            return "Vui lòng xử lý toàn bộ dịch vụ đang chờ trước khi checkout.";
         }
 
         Room room = detail.getRoom();
@@ -334,6 +341,7 @@ public class CheckoutService {
     private BigDecimal calculateRoomFolioTotal(BookingDetail detail, List<FolioItem> folioItems) {
         return money(detail.getTotalAmount()).add(
                 folioItems.stream()
+                        .filter(this::isChargeableFolioItem)
                         .map(FolioItem::getTotalAmount)
                         .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -342,6 +350,7 @@ public class CheckoutService {
 
     private BigDecimal calculateFolioSubtotal(List<FolioItem> folioItems) {
         return folioItems.stream()
+                .filter(this::isChargeableFolioItem)
                 .map(FolioItem::getBaseAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -350,6 +359,7 @@ public class CheckoutService {
 
     private BigDecimal calculateFolioServiceCharge(List<FolioItem> folioItems) {
         return folioItems.stream()
+                .filter(this::isChargeableFolioItem)
                 .map(FolioItem::getServiceChargeAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -358,10 +368,23 @@ public class CheckoutService {
 
     private BigDecimal calculateFolioVat(List<FolioItem> folioItems) {
         return folioItems.stream()
+                .filter(this::isChargeableFolioItem)
                 .map(FolioItem::getVatAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(0, RoundingMode.HALF_UP);
+    }
+
+    private boolean hasRequestedServices(BookingDetail detail) {
+        return detail.getId() != null
+                && folioItemRepository.existsUnresolvedService(
+                detail.getId(),
+                FolioItemStatus.REQUESTED
+        );
+    }
+
+    private boolean isChargeableFolioItem(FolioItem item) {
+        return item.getService() == null || item.getServiceStatus() != FolioItemStatus.CANCELLED;
     }
 
     private BigDecimal calculateAppliedPaidAmount(List<PaymentApplication> applications) {

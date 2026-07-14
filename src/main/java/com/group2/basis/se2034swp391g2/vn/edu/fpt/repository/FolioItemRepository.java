@@ -67,6 +67,17 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
 
     List<FolioItem> findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(Long bookingDetailId);
 
+    @Query("""
+            SELECT COUNT(f) > 0
+            FROM FolioItem f
+            WHERE f.bookingDetail.id = :bookingDetailId
+              AND f.service IS NOT NULL
+              AND f.isVoided = false
+              AND (f.serviceStatus IS NULL OR f.serviceStatus = :serviceStatus)
+            """)
+    boolean existsUnresolvedService(@Param("bookingDetailId") Long bookingDetailId,
+                                    @Param("serviceStatus") FolioItemStatus serviceStatus);
+
     Optional<FolioItem> findByBookingDetail_IdAndService_IdAndIsVoidedFalse(Long bookingDetailId, Long serviceId);
 
     Optional<FolioItem> findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(Long folioItemId, Long bookingDetailId);

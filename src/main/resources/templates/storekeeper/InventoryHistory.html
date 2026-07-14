@@ -13,7 +13,9 @@
 
     <section class="inventory-card inventory-toolbar">
         <div><h2>Nhật ký nhập xuất</h2></div>
-        <a class="inventory-btn-outline" th:href="@{/storekeeper/inventory}"><i class="fa-solid fa-arrow-left"></i> Danh sách hàng hóa</a>
+        <a class="inventory-btn-outline" th:href="@{/storekeeper/inventory}">
+            <i class="fa-solid fa-arrow-left"></i> Danh sách hàng hóa
+        </a>
     </section>
 
     <section class="inventory-card">
@@ -37,10 +39,18 @@
                             th:text="${typeOption.name() == 'IN' ? 'Nhập kho' : (typeOption.name() == 'OUT' ? 'Xuất kho' : (typeOption.name() == 'DISPOSAL' ? 'Xuất hủy' : 'Điều chỉnh'))}"></option>
                 </select>
             </div>
-            <div><label>Từ ngày</label><input class="filter-control" type="date" name="dateFrom" th:value="${dateFrom}"></div>
-            <div><label>Đến ngày</label><input class="filter-control" type="date" name="dateTo" th:value="${dateTo}"></div>
+            <div>
+                <label>Từ ngày</label>
+                <input class="filter-control" type="date" name="dateFrom" th:value="${dateFrom}">
+            </div>
+            <div>
+                <label>Đến ngày</label>
+                <input class="filter-control" type="date" name="dateTo" th:value="${dateTo}">
+            </div>
             <input type="hidden" name="size" th:value="${pageSize}">
-            <button class="inventory-btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Lọc lịch sử</button>
+            <button class="inventory-btn-primary" type="submit">
+                <i class="fa-solid fa-filter"></i> Lọc lịch sử
+            </button>
         </form>
     </section>
 
@@ -72,31 +82,60 @@
                               th:text="${transaction.sourceType == 'RECEIPT_OPENING' ? 'Nhập tồn khởi tạo' : (transaction.type.name() == 'IN' ? 'Nhập kho' : (transaction.type.name() == 'OUT' ? 'Xuất kho' : (transaction.type.name() == 'DISPOSAL' ? 'Xuất hủy' : 'Điều chỉnh')))}"></span>
                     </td>
                     <td><strong th:text="${@inventoryQuantityFormatter.format(transaction.quantity) + ' ' + transaction.item.unit}"></strong></td>
-                    <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + transaction.item.unit : '—'}"></td>
+                    <td th:text="${transaction.remainingQuantity != null ? @inventoryQuantityFormatter.format(transaction.remainingQuantity) + ' ' + transaction.item.unit : '-'}"></td>
                     <td th:text="${transaction.sourceLabel}"></td>
                     <td th:text="${transaction.createdBy != null
                         ? ((transaction.createdBy.lastName ?: '') + ' ' + (transaction.createdBy.firstName ?: '')).trim()
                         : 'Hệ thống'}"></td>
-                    <td th:text="${transaction.reason ?: '—'}"></td>
+                    <td th:text="${transaction.reason ?: '-'}"></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="8" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td></tr>
+                <tr th:if="${#lists.isEmpty(transactions)}">
+                    <td colspan="8" class="text-center py-5 text-muted">Chưa có biến động kho phù hợp.</td>
+                </tr>
                 </tbody>
             </table>
         </div>
-        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
-            <div class="text-muted small"><span th:text="${totalElements}">0</span> giao dịch</div>
-            <nav th:if="${totalPages > 1}">
-                <ul class="pagination mb-0">
-                    <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
-                        <a class="page-link" th:href="@{/storekeeper/inventory/history(page=${currentPage - 1},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"><i class="fa-solid fa-chevron-left"></i></a>
-                    </li>
-                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${pageNumber == currentPage} ? ' active'">
-                        <a class="page-link" th:href="@{/storekeeper/inventory/history(page=${pageNumber},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}" th:text="${pageNumber + 1}"></a>
-                    </li>
-                    <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
-                        <a class="page-link" th:href="@{/storekeeper/inventory/history(page=${currentPage + 1},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"><i class="fa-solid fa-chevron-right"></i></a>
-                    </li>
-                </ul>
+
+        <div class="pagination-row" th:if="${totalElements > 0}">
+            <p>
+                Hiển thị
+                <span th:text="${currentPage * pageSize + 1}">1</span>
+                -
+                <span th:text="${currentPage * pageSize + #lists.size(transactions)}">15</span>
+                trên tổng số
+                <span th:text="${totalElements}">0</span>
+                giao dịch
+            </p>
+            <nav th:if="${totalPages > 1}" aria-label="Phân trang lịch sử kho">
+                <div class="pagination-buttons">
+                    <a th:href="@{/storekeeper/inventory/history(page=0,size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"
+                       th:classappend="${currentPage == 0} ? ' disabled'"
+                       title="Trang đầu">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </a>
+                    <a th:href="@{/storekeeper/inventory/history(page=${currentPage - 1},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"
+                       th:classappend="${currentPage == 0} ? ' disabled'"
+                       title="Trang trước">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+                    <span th:if="${showLeadingEllipsis}" class="pagination-ellipsis">...</span>
+                    <a th:each="pageNumber : ${visiblePages}"
+                       th:href="@{/storekeeper/inventory/history(page=${pageNumber},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == currentPage} ? ' active'">
+                    </a>
+                    <span th:if="${showTrailingEllipsis}" class="pagination-ellipsis">...</span>
+                    <a th:href="@{/storekeeper/inventory/history(page=${currentPage + 1},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"
+                       th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
+                       title="Trang sau">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                    <a th:href="@{/storekeeper/inventory/history(page=${totalPages - 1},size=${pageSize},itemId=${selectedItemId},type=${selectedType},dateFrom=${dateFrom},dateTo=${dateTo})}"
+                       th:classappend="${currentPage + 1 >= totalPages} ? ' disabled'"
+                       title="Trang cuối">
+                        <i class="fa-solid fa-angles-right"></i>
+                    </a>
+                </div>
             </nav>
         </div>
     </section>

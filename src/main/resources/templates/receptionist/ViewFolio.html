@@ -69,7 +69,7 @@
                         </thead>
                         <tbody>
                         <tr th:each="room : ${folio.rooms}">
-                            <td th:text="${room.roomNumber != null ? 'Phòng ' + room.roomNumber : 'Chưa phân phòng'}">Phòng 101</td>
+                            <td th:text="${room.roomNumber != null ? 'Phòng ' + room.roomNumber : 'Không rõ'}">Phòng 101</td>
                             <td th:text="${room.roomName}">Deluxe</td>
                             <td th:text="${room.actualCheckinAt != null ? #temporals.format(room.actualCheckinAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
                             <td th:text="${room.actualCheckoutAt != null ? #temporals.format(room.actualCheckoutAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
@@ -107,6 +107,7 @@
                         <th>Mã giao dịch</th>
                         <th>Loại</th>
                         <th>Phương thức</th>
+                        <th>Ngày thanh toán</th>
                         <th>Trạng thái</th>
                         <th class="text-end">Số tiền</th>
                     </tr>
@@ -116,11 +117,12 @@
                         <td th:text="${payment.transactionRef != null ? payment.transactionRef : 'Chưa có mã'}"></td>
                         <td th:text="${payment.paymentType}"></td>
                         <td th:text="${payment.method}"></td>
+                        <td th:text="${payment.paidAt != null ? #temporals.format(payment.paidAt, 'dd/MM/yyyy HH:mm') : '-'}"></td>
                         <td th:text="${payment.status}"></td>
                         <td class="text-end" th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></td>
                     </tr>
                     <tr th:if="${folio.payments == null or #lists.isEmpty(folio.payments)}">
-                        <td colspan="5" class="empty-row">Chưa có giao dịch thanh toán.</td>
+                        <td colspan="6" class="empty-row">Chưa có giao dịch thanh toán.</td>
                     </tr>
                     </tbody>
                 </table>
