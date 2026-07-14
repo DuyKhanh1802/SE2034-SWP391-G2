@@ -38,7 +38,6 @@ public class CashTransactionService {
     private static final List<CashTransactionCategory> VISIBLE_CATEGORIES = List.of(
             CashTransactionCategory.BOOKING_PAYMENT,
             CashTransactionCategory.DEPOSIT,
-            CashTransactionCategory.REFUND,
             CashTransactionCategory.MANUAL_INCOME,
             CashTransactionCategory.MANUAL_EXPENSE,
             CashTransactionCategory.INVENTORY_PURCHASE,
@@ -76,6 +75,17 @@ public class CashTransactionService {
     }
 
     @Transactional(readOnly = true)
+    public Payment getPaymentForTransaction(CashTransaction transaction) {
+        if (transaction == null
+                || !PAYMENT_CATEGORIES.contains(transaction.getCategory())
+                || transaction.getSourceId() == null) {
+            return null;
+        }
+
+        return paymentRepository.findDetailById(transaction.getSourceId()).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
     public CashTransactionListResponse getCashTransactionListResponse(CashTransactionRequest request) {
         if (request == null) {
             request = new CashTransactionRequest();
@@ -104,7 +114,7 @@ public class CashTransactionService {
         filteredTransactions = filteredTransactions.stream()
                 .filter(transaction -> VISIBLE_CATEGORIES.contains(transaction.getCategory()))
                 .toList();
-        Map<Long, String> paymentMethodMap = getPaymentMethodMap(filteredTransactions);
+        Map<Long, PaymentMethod> paymentMethodMap = getPaymentMethodMap(filteredTransactions);
 
         List<CashTransactionResponse> allTransactions = filteredTransactions
                 .stream()
@@ -139,6 +149,7 @@ public class CashTransactionService {
                 null,
                 null,
                 PAYMENT_CATEGORIES,
+                VISIBLE_CATEGORIES,
                 null,
                 null,
                 keyword == null ? "" : keyword.trim()
@@ -164,6 +175,7 @@ public class CashTransactionService {
                 selectedCategory,
                 selectedPaymentMethod,
                 PAYMENT_CATEGORIES,
+                VISIBLE_CATEGORIES,
                 fromDateTime,
                 toDateTime,
                 keyword == null ? "" : keyword.trim()
@@ -324,7 +336,7 @@ public class CashTransactionService {
         CashTransactionCategory category = switch (payment.getPaymentType()) {
             case DEPOSIT -> CashTransactionCategory.DEPOSIT;
             case REFUND -> CashTransactionCategory.REFUND;
-            case BALANCE, FULL, INCIDENTAL -> CashTransactionCategory.BOOKING_PAYMENT;
+            case BALANCE -> CashTransactionCategory.BOOKING_PAYMENT;
         };
 
         CashTransaction transaction = CashTransaction.builder()
@@ -351,10 +363,8 @@ public class CashTransactionService {
 
         return switch (payment.getPaymentType()) {
             case DEPOSIT -> "Thu tiền đặt cọc cho booking " + bookingCode;
-            case BALANCE -> "Thu phần tiền còn lại cho booking " + bookingCode;
-            case FULL -> "Thu toàn bộ tiền booking " + bookingCode;
+            case BALANCE -> "Thanh toán check-out cho booking " + bookingCode;
             case REFUND -> "Hoàn tiền cho booking " + bookingCode;
-            case INCIDENTAL -> "Thu tiền phát sinh cho booking " + bookingCode;
         };
     }
 
@@ -475,7 +485,7 @@ public class CashTransactionService {
         return transactions.subList(startIndex, endIndex);
     }
 
-    private Map<Long, String> getPaymentMethodMap(List<CashTransaction> transactions) {
+    private Map<Long, PaymentMethod> getPaymentMethodMap(List<CashTransaction> transactions) {
         List<Long> paymentIds = transactions.stream()
                 .filter(transaction -> PAYMENT_CATEGORIES.contains(transaction.getCategory()))
                 .map(CashTransaction::getSourceId)
@@ -488,21 +498,22 @@ public class CashTransactionService {
         }
 
         // Lay phuong thuc thanh toan tu bang payments cho cac dong tien sinh tu payment.
-        return paymentRepository.findAllById(paymentIds)
+        return paymentRepository.findPaymentMethodsByIds(paymentIds)
                 .stream()
                 .collect(Collectors.toMap(
-                        Payment::getId,
-                        payment -> payment.getMethod().getLabel()
+                        row -> (Long) row[0],
+                        row -> (PaymentMethod) row[1]
                 ));
     }
 
-    private CashTransactionResponse toResponse(CashTransaction transaction, Map<Long, String> paymentMethodMap) {
-        String paymentMethodDisplayName = "Chưa có";
+    private CashTransactionResponse toResponse(CashTransaction transaction, Map<Long, PaymentMethod> paymentMethodMap) {
+        PaymentMethod paymentMethod = transaction.getPaymentMethod();
         if (transaction.getPaymentMethod() != null) {
-            paymentMethodDisplayName = transaction.getPaymentMethod().getLabel();
+            paymentMethod = transaction.getPaymentMethod();
         } else if (PAYMENT_CATEGORIES.contains(transaction.getCategory()) && transaction.getSourceId() != null) {
-            paymentMethodDisplayName = paymentMethodMap.getOrDefault(transaction.getSourceId(), "Chưa có");
+            paymentMethod = paymentMethodMap.get(transaction.getSourceId());
         }
+        String paymentMethodDisplayName = paymentMethod == null ? "Chưa có" : paymentMethod.getLabel();
 
         return CashTransactionResponse.builder()
                 .id(transaction.getId())
@@ -513,6 +524,7 @@ public class CashTransactionService {
                 .category(transaction.getCategory().name())
                 .categoryDisplayName(transaction.getCategory().getDisplayName())
                 .amount(transaction.getAmount())
+                .paymentMethod(paymentMethod == null ? null : paymentMethod.name())
                 .paymentMethodDisplayName(paymentMethodDisplayName)
                 .statusDisplayName(resolveStatus(transaction).getDisplayName())
                 .build();

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/staff-layout}">
+<body>
+<main layout:fragment="content">
+
+    <section class="module-header">
+        <div>
+            <p>Reports</p>
+            <h1>Báo cáo doanh thu</h1>
+            <span class="report-unit-note">
+                Theo dõi tổng thu, tổng chi và chênh lệch dòng tiền theo từng nhóm giao dịch.
+            </span>
+        </div>
+
+        <a th:href="@{/manager/reports}" class="btn-secondary-action">
+            <i class="fa-solid fa-arrow-left"></i>
+            Quay lại báo cáo tổng
+        </a>
+    </section>
+
+    <div th:if="${report.errorMessage}" class="alert alert-danger" th:text="${report.errorMessage}">
+        Ngày bắt đầu không được sau ngày kết thúc.
+    </div>
+
+    <section class="panel report-filter-panel">
+        <div class="report-filter-header">
+            <h2>Bộ lọc báo cáo</h2>
+        </div>
+
+        <form th:action="@{/manager/reports/revenue}" method="get" class="transaction-filter report-filter-form revenue-filter-form">
+            <div class="report-filter-field">
+                <label for="fromDate">Từ ngày</label>
+                <input id="fromDate"
+                       name="fromDate"
+                       type="date"
+                       th:value="${fromDate}">
+            </div>
+
+            <div class="report-filter-field">
+                <label for="toDate">Đến ngày</label>
+                <input id="toDate"
+                       name="toDate"
+                       type="date"
+                       th:value="${toDate}">
+            </div>
+
+            <div class="report-filter-field">
+                <label for="sortBy">Sắp xếp</label>
+                <select id="sortBy" name="sortBy">
+                    <option value="netDesc" th:selected="${sortBy == null or sortBy == 'netDesc'}">
+                        Chênh lệch thu chi cao nhất
+                    </option>
+                    <option value="incomeDesc" th:selected="${sortBy == 'incomeDesc'}">
+                        Tổng thu cao nhất
+                    </option>
+                    <option value="expenseDesc" th:selected="${sortBy == 'expenseDesc'}">
+                        Tổng chi cao nhất
+                    </option>
+                    <option value="countDesc" th:selected="${sortBy == 'countDesc'}">
+                        Nhiều giao dịch nhất
+                    </option>
+                    <option value="categoryAsc" th:selected="${sortBy == 'categoryAsc'}">
+                        Nhóm giao dịch A-Z
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-actions cute-filter-actions">
+                <button type="submit" class="cute-btn cute-btn-filter">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Lọc</span>
+                </button>
+
+                <a th:href="@{/manager/reports/revenue}" class="cute-btn cute-btn-reset">
+                    Đặt lại
+                </a>
+            </div>
+        </form>
+
+        <p class="report-period-note">
+            Kỳ báo cáo:
+            <strong th:text="${#temporals.format(report.fromDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(report.toDate, 'dd/MM/yyyy')}">
+                01/07/2026 - 31/07/2026
+            </strong>
+        </p>
+    </section>
+
+    <section class="metric-grid">
+        <div class="metric-card detail-metric metric-income">
+            <span>Tổng thu</span>
+            <strong class="text-income"
+                    th:text="${#numbers.formatDecimal(report.summary.totalIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                0 VND
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric metric-expense">
+            <span>Tổng chi</span>
+            <strong class="text-expense"
+                    th:text="${#numbers.formatDecimal(report.summary.totalExpense, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                0 VND
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric"
+             th:classappend="${report.summary.netAmount.compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? ' metric-income' : ' metric-expense'">
+            <span>Chênh lệch thu chi</span>
+            <strong th:class="${report.summary.netAmount.compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? 'text-income' : 'text-expense'"
+                    th:text="${#numbers.formatDecimal(report.summary.netAmount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
+                0 VND
+            </strong>
+        </div>
+
+        <div class="metric-card detail-metric">
+            <span>Số giao dịch</span>
+            <strong th:text="${report.summary.transactionCount}">
+                0
+            </strong>
+        </div>
+    </section>
+
+    <section class="panel report-table-panel">
+        <div class="module-header report-section-header">
+            <div>
+                <p>Revenue Summary</p>
+                <h1>Chi tiết doanh thu theo nhóm giao dịch</h1>
+                <span class="report-unit-note">Chỉ tính các giao dịch hoàn tất trong kỳ báo cáo.</span>
+            </div>
+        </div>
+
+        <div class="report-table-wrap">
+            <table class="module-table compact-report-table revenue-report-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nhóm giao dịch</th>
+                    <th>Loại phiếu</th>
+                    <th>Số giao dịch</th>
+                    <th>Tổng thu</th>
+                    <th>Tổng chi</th>
+                    <th>Chênh lệch</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:if="${#lists.isEmpty(report.rows)}">
+                    <td colspan="7" class="empty-table-cell">
+                        Không có dữ liệu doanh thu trong khoảng thời gian này.
+                    </td>
+                </tr>
+
+                <tr th:each="row, iter : ${report.rows}">
+                    <td th:text="${iter.index + 1}">
+                        1
+                    </td>
+
+                    <td class="service-name-cell" th:text="${row.category.displayName}">
+                        Đặt cọc
+                    </td>
+
+                    <td th:text="${row.type.displayName}">
+                        Phiếu thu
+                    </td>
+
+                    <td th:text="${row.transactionCount}">
+                        0
+                    </td>
+
+                    <td class="money-text income"
+                        th:text="${#numbers.formatDecimal(row.incomeAmount, 0, 'POINT', 0, 'COMMA')}">
+                        0
+                    </td>
+
+                    <td class="money-text expense"
+                        th:text="${#numbers.formatDecimal(row.expenseAmount, 0, 'POINT', 0, 'COMMA')}">
+                        0
+                    </td>
+
+                    <td class="money-text"
+                        th:classappend="${row.netAmount.compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? ' income' : ' expense'"
+                        th:text="${#numbers.formatDecimal(row.netAmount, 0, 'POINT', 0, 'COMMA')}">
+                        0
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

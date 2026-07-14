@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.repository;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionCategory;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.CashTransactionType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.CashTransaction;
@@ -54,6 +55,7 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
             SELECT ct
             FROM CashTransaction ct
             WHERE (:type IS NULL OR ct.type = :type)
+            AND ct.category IN :visibleCategories
             AND (:category IS NULL OR ct.category = :category)
             AND (:paymentMethod IS NULL OR (
                 ct.paymentMethod = :paymentMethod
@@ -78,6 +80,7 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
                                  @Param("category") CashTransactionCategory category,
                                  @Param("paymentMethod") PaymentMethod paymentMethod,
                                  @Param("paymentCategories") List<CashTransactionCategory> paymentCategories,
+                                 @Param("visibleCategories") List<CashTransactionCategory> visibleCategories,
                                  @Param("fromDate") Instant fromDate,
                                  @Param("toDate") Instant toDate,
                                  @Param("keyword") String keyword);
@@ -99,4 +102,18 @@ public interface CashTransactionRepository extends JpaRepository<CashTransaction
     BigDecimal sumByTypeBetween(@Param("type") CashTransactionType type,
                                 @Param("from") Instant from,
                                 @Param("to") Instant to);
+
+    @Query("""
+            SELECT ct
+            FROM CashTransaction ct
+            WHERE ct.status = :status
+            AND ct.category IN :categories
+            AND ct.createdAt >= :from
+            AND ct.createdAt < :to
+            ORDER BY ct.createdAt DESC
+            """)
+    List<CashTransaction> findRevenueReportTransactions(@Param("status") CashTransactionStatus status,
+                                                        @Param("categories") List<CashTransactionCategory> categories,
+                                                        @Param("from") Instant from,
+                                                        @Param("to") Instant to);
 }

@@ -1,88 +1,87 @@
 <!DOCTYPE html>
-<html lang="vi"
-      xmlns:th="http://www.thymeleaf.org"
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 <body>
 <main layout:fragment="content">
-    <section class="hero">
-        <p>MANAGER OVERVIEW</p>
-        <h1>Tổng quan vận hành</h1>
-    </section>
-
-    <section class="kpi-grid">
-        <div class="kpi-card">
-            <p>Doanh thu hôm nay</p>
-            <h2 th:text="${#numbers.formatDecimal(todayRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</h2>
-            <span>Dòng tiền thu trong ngày</span>
-        </div>
-
-        <div class="kpi-card">
-            <p>Doanh thu tháng</p>
-            <h2 th:text="${#numbers.formatDecimal(monthRevenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</h2>
-            <span>Tổng thu tháng hiện tại</span>
-        </div>
-
-        <div class="kpi-card">
-            <p>Booking mới hôm nay</p>
-            <h2 th:text="${newBookingsToday}">0</h2>
-            <span>Lượt đặt phòng mới</span>
-        </div>
-
-        <div class="kpi-card">
-            <p>Phòng đang ở</p>
-            <h2 th:text="${occupiedRooms + ' / ' + totalRooms}">0 / 0</h2>
-            <span th:text="${occupancyRate + '% lấp phòng'}">0% lấp phòng</span>
-        </div>
-
-        <div class="kpi-card warning">
-            <p>Cảnh báo tồn kho thấp</p>
-            <h2 th:text="${lowStockCount}">0</h2>
-            <span>Hàng hóa cần chú ý</span>
+    <section class="manager-dashboard-hero">
+        <div>
+            <span>Daily Operations</span>
+            <h1>
+                Điều hành hôm nay
+                <small th:text="${'— ' + #temporals.format(dashboard.today, 'dd/MM/yyyy')}">— 14/07/2026</small>
+            </h1>
+            <p>Tập trung vào khách đến, khách rời, phòng sẵn sàng và các việc cần quản lý xử lý trong ca.</p>
         </div>
     </section>
 
-    <section class="bottom-grid">
-        <div>
-            <h3 class="bottom-title">
-                <i class="fa-solid fa-bell-concierge"></i>
-                Dịch vụ bán chạy
-            </h3>
-            <div class="order-box" th:each="serviceStat : ${topServices}">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5 th:text="${serviceStat[0]}">Dịch vụ</h5>
-                        <p th:text="'Số lượng: ' + ${serviceStat[1]}">Số lượng: 0</p>
-                    </div>
-                    <span th:text="${#numbers.formatDecimal(serviceStat[2], 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</span>
-                </div>
-            </div>
-            <div class="order-box" th:if="${#lists.isEmpty(topServices)}">
-                <p>Chưa có dữ liệu dịch vụ.</p>
-            </div>
-        </div>
+    <section class="dashboard-kpi-grid">
+        <article class="dashboard-kpi-card arrival">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span>Khách đến hôm nay</span>
+            <strong th:text="${dashboard.arrivals}">0</strong>
+            <p>Booking đã xác nhận cần check-in</p>
+        </article>
+        <article class="dashboard-kpi-card departure">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Khách rời hôm nay</span>
+            <strong th:text="${dashboard.departures}">0</strong>
+            <p>Booking đang ở cần check-out</p>
+        </article>
+        <article class="dashboard-kpi-card staying">
+            <i class="fa-solid fa-person-shelter"></i>
+            <span>Đang lưu trú</span>
+            <strong th:text="${dashboard.stayingBookings}">0</strong>
+            <p>Booking đang phục vụ tại khách sạn</p>
+        </article>
+        <article class="dashboard-kpi-card pending">
+            <i class="fa-solid fa-hourglass-half"></i>
+            <span>Chờ xác nhận</span>
+            <strong th:text="${dashboard.pendingBookings}">0</strong>
+            <p>Booking đang chờ xử lý</p>
+        </article>
+    </section>
 
-        <div>
-            <h3 class="bottom-title">
-                <i class="fa-solid fa-money-bill-transfer"></i>
-                Giao dịch gần đây
-            </h3>
-            <div class="incident-item" th:each="transaction : ${recentTransactions}">
-                <div>
-                    <h5 th:text="${transaction.documentCode}">PT-0000</h5>
-                    <p th:text="${transaction.category + ' - ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">
-                        Giao dịch
-                    </p>
-                </div>
-                <a th:href="@{/manager/transactions/{id}(id=${transaction.id})}">Chi tiết</a>
+    <section class="dashboard-main-grid">
+        <article class="dashboard-panel">
+            <header class="dashboard-panel-header">
+                <div><span>Room Readiness</span><h2>Khả năng phục vụ phòng</h2></div>
+                <a th:href="@{/manager/reports/occupancy}">Chi tiết công suất</a>
+            </header>
+            <div class="room-status-grid">
+                <div><span>Đang có khách</span><strong th:text="${dashboard.occupiedRooms}">0</strong></div>
+                <div><span>Sẵn sàng bán</span><strong th:text="${dashboard.availableRooms}">0</strong></div>
+                <div><span>Đang bảo trì</span><strong th:text="${dashboard.maintenanceRooms}">0</strong></div>
             </div>
-            <div class="incident-item" th:if="${#lists.isEmpty(recentTransactions)}">
-                <div>
-                    <h5>Chưa có giao dịch</h5>
-                    <p>Dòng tiền sẽ xuất hiện khi có payment, nhập kho hoặc phiếu thủ công.</p>
+            <div class="dashboard-progress"><div th:style="'width:' + ${dashboard.occupancyRate} + '%' "></div></div>
+            <div class="room-caption">
+                <span th:text="${dashboard.occupancyRate + '% công suất hiện tại'}">0% công suất hiện tại</span>
+                <span th:text="${dashboard.totalRooms + ' phòng đang quản lý'}">0 phòng đang quản lý</span>
+            </div>
+            <div class="shift-summary">
+                <div><span>Booking mới nhận hôm nay</span><strong th:text="${dashboard.newBookings}">0</strong></div>
+                <div><span>Chênh lệch đến / phòng trống</span>
+                    <strong th:text="${dashboard.availableRooms - dashboard.arrivals}">0</strong>
                 </div>
             </div>
-        </div>
+        </article>
+
+        <article class="dashboard-panel">
+            <header class="dashboard-panel-header">
+                <div><span>Stock Support</span><h2>Vật tư ảnh hưởng vận hành</h2></div>
+                <a th:href="@{/manager/reports/inventory}">Xem kho</a>
+            </header>
+            <div class="dashboard-empty" th:if="${#lists.isEmpty(dashboard.lowStockItems)}">
+                <i class="fa-solid fa-box"></i><span>Vật tư đang ở mức an toàn.</span>
+            </div>
+            <div class="stock-list" th:if="${!#lists.isEmpty(dashboard.lowStockItems)}">
+                <div class="stock-row" th:each="item : ${dashboard.lowStockItems}">
+                    <div><strong th:text="${item.name}">Vật tư</strong><span th:text="${item.code}">IT-0001</span></div>
+                    <span>Còn <b th:text="${item.currentQuantity + ' ' + item.unit}">0</b></span>
+                    <span>Định mức <b th:text="${item.minimumQuantity + ' ' + item.unit}">0</b></span>
+                </div>
+            </div>
+        </article>
     </section>
 </main>
 </body>

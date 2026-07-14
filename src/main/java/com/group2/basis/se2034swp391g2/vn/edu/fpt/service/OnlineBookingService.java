@@ -79,6 +79,7 @@ public class OnlineBookingService {
     private final ServiceRepository serviceRepository;
     private final PromotionRepository promotionRepository;
     private final PaymentRepository paymentRepository;
+    private final CashTransactionService cashTransactionService;
     private final FolioItemRepository folioItemRepository;
 
 
@@ -566,6 +567,9 @@ public class OnlineBookingService {
         payment.setPaidAt(Instant.now());
 
         paymentRepository.save(payment);
+
+        Payment savedPayment = paymentRepository.save(payment);
+        cashTransactionService.createFromPayment(savedPayment);
 
         List<BookingDetail> details =
                 bookingDetailRepository.findDetailsWithRoomsByBookingId(booking.getId());

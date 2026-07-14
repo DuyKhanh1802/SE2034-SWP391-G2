@@ -28,9 +28,7 @@ public final class PaymentCodeGenerator {
         return switch (paymentType) {
             case DEPOSIT -> "ĐC";
             case BALANCE -> "CL";
-            case FULL -> "TT";
             case REFUND -> "HT";
-            case INCIDENTAL -> "PS";
         };
     }
 

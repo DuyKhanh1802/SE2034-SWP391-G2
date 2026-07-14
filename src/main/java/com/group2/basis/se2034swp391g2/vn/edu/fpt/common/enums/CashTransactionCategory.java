@@ -4,7 +4,6 @@ public enum CashTransactionCategory {
     BOOKING_PAYMENT("Thanh toán check-out"),
     DEPOSIT("Đặt cọc"),
     REFUND("Hoàn tiền"),
-    CAPITAL_INJECTION("Rót vốn"),
     MANUAL_INCOME("Thu thủ công"),
     MANUAL_EXPENSE("Chi thủ công"),
     INVENTORY_PURCHASE("Chi nhập kho"),

@@ -10,7 +10,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CheckoutService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PaymentService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.PromotionService;
@@ -381,32 +380,6 @@ public class BookingController {
 
             return "receptionist/EditBooking";
         }
-    }
-
-    @PostMapping("/{bookingId}/payments")
-    public String createAdvancePayment(@PathVariable Long bookingId,
-                                       @RequestParam PaymentType paymentType,
-                                       @RequestParam PaymentMethod method,
-                                       @RequestParam BigDecimal amount,
-                                       RedirectAttributes redirectAttributes) {
-        try {
-            if (paymentType != PaymentType.FULL) {
-                throw new IllegalArgumentException("Màn chi tiết đặt phòng chỉ cho phép thu toàn bộ số tiền còn lại.");
-            }
-
-            bookingService.collectBookingPayment(
-                    bookingId,
-                    paymentType,
-                    method,
-                    amount
-            );
-
-            redirectAttributes.addFlashAttribute("successMessage", "Lưu thanh toán thành công.");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-
-        return "redirect:/receptionist/bookings/view/" + bookingId;
     }
 
     @GetMapping("/{bookingId}/check-out")
