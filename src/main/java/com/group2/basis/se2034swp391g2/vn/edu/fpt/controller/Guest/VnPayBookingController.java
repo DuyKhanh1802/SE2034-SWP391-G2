@@ -43,41 +43,6 @@ public class VnPayBookingController {
                                      HttpSession session,
                                      HttpServletRequest httpRequest) {
         try {
-            Boolean emailVerified =
-                    (Boolean) session.getAttribute("BOOKING_EMAIL_VERIFIED");
-
-
-            String verifiedEmail =
-                    (String) session.getAttribute("BOOKING_EMAIL_VERIFIED_EMAIL");
-
-
-            String requestEmail = request.getGuestEmail() != null
-                    ? request.getGuestEmail().trim().toLowerCase()
-                    : "";
-
-
-            if (emailVerified == null
-                    || !emailVerified
-                    || verifiedEmail == null
-                    || !verifiedEmail.equals(requestEmail)) {
-
-
-                BookingConfirmView confirmView =
-                        onlineBookingService.prepareConfirmView(request);
-
-
-                model.addAttribute("request", request);
-                model.addAttribute("confirmView", confirmView);
-                model.addAttribute(
-                        "errorMessage",
-                        "Vui lòng xác thực email bằng mã OTP trước khi xác nhận đặt phòng."
-                );
-
-
-                return "guest/BookingConfirm";
-            }
-
-
             BookingCompleteResult result =
                     onlineBookingService.createPendingOnlineBookingForVnPay(request);
 
@@ -98,12 +63,6 @@ public class VnPayBookingController {
             if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException("Tổng tiền thanh toán không hợp lệ.");
             }
-
-
-            session.removeAttribute("BOOKING_EMAIL_VERIFIED");
-            session.removeAttribute("BOOKING_EMAIL_VERIFIED_EMAIL");
-
-
             Payment pendingPayment = paymentRepository
                     .findFirstByBookingIdAndPaymentTypeAndStatus(
                             booking.getId(),

@@ -16,42 +16,7 @@
     <link rel="stylesheet" th:href="@{/guest/BookingConfirm.css}">
 </head>
 
-<div class="otp-modal" id="bookingOtpModal">
-    <div class="otp-modal-backdrop"></div>
 
-    <div class="otp-modal-card">
-        <button type="button" class="otp-close-btn" id="closeBookingOtpModal">×</button>
-
-        <h2>Xác thực email</h2>
-
-        <p>
-            Mã OTP đã được gửi đến email của quý khách.
-            Vui lòng nhập mã gồm 6 chữ số để tiếp tục đặt phòng.
-        </p>
-
-
-        <div class="otp-countdown-box" id="otpCountdownBox">
-            <span>Mã OTP sẽ tự động được gửi lại sau</span>
-            <strong id="otpCountdownText">30s</strong>
-        </div>
-        <input type="text"
-               id="bookingOtpInput"
-               maxlength="6"
-               placeholder="Nhập mã OTP">
-
-        <p class="otp-message" id="bookingOtpMessage"></p>
-
-        <button type="button" class="otp-confirm-btn" id="verifyBookingOtpBtn">
-            Xác thực OTP
-        </button>
-
-        <button type="button" class="otp-resend-btn" id="resendBookingOtpBtn">
-            Gửi lại mã OTP
-        </button>
-    </div>
-</div>
-
-<script th:src="@{/js/bookingConfirmOtp.js}"></script>
 <body>
 
 <div class="booking-top-bar">
@@ -155,12 +120,6 @@
                         <div class="form-group">
                             <div class="email-label-row">
                                 <label>Email <b>*</b></label>
-
-                                <button type="button"
-                                        class="send-otp-btn"
-                                        id="sendBookingOtpBtn">
-                                    Gửi OTP
-                                </button>
                             </div>
 
                             <input type="email"
@@ -170,9 +129,6 @@
                                    placeholder="example@gmail.com"
                                    required>
 
-                            <p class="email-verify-message" id="emailVerifyMessage">
-                                Vui lòng xác thực email trước khi xác nhận đặt phòng.
-                            </p>
                         </div>
 
                         <div class="form-group full">
@@ -219,7 +175,7 @@
                     </label>
                 </section>
 
-                <button type="submit" class="confirm-btn" id="confirmBookingBtn" disabled>
+                <button type="submit" class="confirm-btn" id="confirmBookingBtn" >
                     Xác nhận đặt phòng
                 </button>
             </form>

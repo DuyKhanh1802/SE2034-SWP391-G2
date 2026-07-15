@@ -242,39 +242,9 @@ public class BookingPageController {
             HttpSession session
     ) {
         try {
-            Boolean emailVerified =
-                    (Boolean) session.getAttribute("BOOKING_EMAIL_VERIFIED");
-
-            String verifiedEmail =
-                    (String) session.getAttribute("BOOKING_EMAIL_VERIFIED_EMAIL");
-
-            String requestEmail = request.getGuestEmail() != null
-                    ? request.getGuestEmail().trim().toLowerCase()
-                    : "";
-
-            if (emailVerified == null
-                    || !emailVerified
-                    || verifiedEmail == null
-                    || !verifiedEmail.equals(requestEmail)) {
-
-                BookingConfirmView confirmView =
-                        onlineBookingService.prepareConfirmView(request);
-
-                model.addAttribute("request", request);
-                model.addAttribute("confirmView", confirmView);
-                model.addAttribute(
-                        "errorMessage",
-                        "Vui lòng xác thực email bằng mã OTP trước khi xác nhận đặt phòng."
-                );
-
-                return "guest/BookingConfirm";
-            }
-
             BookingCompleteResult result =
                     onlineBookingService.completeOnlineBooking(request);
 
-            session.removeAttribute("BOOKING_EMAIL_VERIFIED");
-            session.removeAttribute("BOOKING_EMAIL_VERIFIED_EMAIL");
 
             redirectAttributes.addAttribute(
                     "bookingReference",
@@ -308,103 +278,6 @@ public class BookingPageController {
         return "guest/BookingSuccess";
     }
 
-    @PostMapping("/send-email-otp")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> sendBookingEmailOtp(
-            @RequestParam String email,
-            HttpSession session
-    ) {
-        Map<String, Object> response = new HashMap<>();
-
-        if (email == null || email.isBlank()) {
-            response.put("success", false);
-            response.put("message", "Vui lòng nhập email trước khi gửi mã OTP.");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        String normalizedEmail = email.trim().toLowerCase();
-
-        if (!normalizedEmail.matches("^[A-Za-z0-9._%+-]+@gmail\\.com$")) {
-            response.put("success", false);
-            response.put("message", "Email phải đúng định dạng Gmail, ví dụ: example@gmail.com.");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        String otp = generateBookingOtp();
-
-        session.setAttribute("BOOKING_EMAIL_OTP", otp);
-        session.setAttribute("BOOKING_EMAIL_OTP_EMAIL", normalizedEmail);
-        session.setAttribute("BOOKING_EMAIL_OTP_EXPIRE_AT", Instant.now().plusSeconds(300));
-
-        mailService.sendBookingEmailVerificationOtpEmail(normalizedEmail, otp);
-
-        response.put("success", true);
-        response.put("message", "Mã OTP đã được gửi về email của quý khách. Vui lòng kiểm tra hộp thư.");
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/verify-email-otp")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> verifyBookingEmailOtp(
-            @RequestParam String email,
-            @RequestParam String otp,
-            HttpSession session
-    ) {
-        Map<String, Object> response = new HashMap<>();
-
-        String savedOtp =
-                (String) session.getAttribute("BOOKING_EMAIL_OTP");
-
-        String savedEmail =
-                (String) session.getAttribute("BOOKING_EMAIL_OTP_EMAIL");
-
-        Instant expireAt =
-                (Instant) session.getAttribute("BOOKING_EMAIL_OTP_EXPIRE_AT");
-
-        if (savedOtp == null || savedEmail == null || expireAt == null) {
-            response.put("success", false);
-            response.put("message", "Mã OTP không tồn tại hoặc đã hết hạn. Vui lòng gửi lại mã.");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        if (Instant.now().isAfter(expireAt)) {
-            session.removeAttribute("BOOKING_EMAIL_OTP");
-            session.removeAttribute("BOOKING_EMAIL_OTP_EMAIL");
-            session.removeAttribute("BOOKING_EMAIL_OTP_EXPIRE_AT");
-
-            response.put("success", false);
-            response.put("message", "Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        String normalizedEmail = email.trim().toLowerCase();
-
-        if (!savedEmail.equals(normalizedEmail)) {
-            response.put("success", false);
-            response.put("message", "Email xác thực không khớp với email đã gửi OTP.");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        if (otp == null || !savedOtp.equals(otp.trim())) {
-            response.put("success", false);
-            response.put("message", "Mã OTP không chính xác.");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        session.setAttribute("BOOKING_EMAIL_VERIFIED", true);
-        session.setAttribute("BOOKING_EMAIL_VERIFIED_EMAIL", normalizedEmail);
-
-        session.removeAttribute("BOOKING_EMAIL_OTP");
-        session.removeAttribute("BOOKING_EMAIL_OTP_EMAIL");
-        session.removeAttribute("BOOKING_EMAIL_OTP_EXPIRE_AT");
-
-        response.put("success", true);
-        response.put("message", "Xác thực email thành công.");
-
-        return ResponseEntity.ok(response);
-    }
-
     private String renderBookingConfirm(
             BookingConfirmRequest request,
             Model model
@@ -424,11 +297,5 @@ public class BookingPageController {
 
             return "guest/BookingConfirm";
         }
-    }
-
-    private String generateBookingOtp() {
-        SecureRandom random = new SecureRandom();
-        int number = random.nextInt(900000) + 100000;
-        return String.valueOf(number);
     }
 }
