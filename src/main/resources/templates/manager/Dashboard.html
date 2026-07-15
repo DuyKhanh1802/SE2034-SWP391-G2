@@ -6,12 +6,12 @@
 <main layout:fragment="content">
     <section class="manager-dashboard-hero">
         <div>
-            <span>Daily Operations</span>
+            <span>Hotel Management Overview</span>
             <h1>
-                Điều hành hôm nay
+                Tổng quan
                 <small th:text="${'— ' + #temporals.format(dashboard.today, 'dd/MM/yyyy')}">— 14/07/2026</small>
             </h1>
-            <p>Tập trung vào khách đến, khách rời, phòng sẵn sàng và các việc cần quản lý xử lý trong ca.</p>
+            <p>Tổng hợp nhanh tình hình vận hành, tài chính, phòng, dịch vụ và vật tư để quản lý nắm bắt toàn cảnh khách sạn.</p>
         </div>
     </section>
 
@@ -80,6 +80,86 @@
                     <span>Còn <b th:text="${item.currentQuantity + ' ' + item.unit}">0</b></span>
                     <span>Định mức <b th:text="${item.minimumQuantity + ' ' + item.unit}">0</b></span>
                 </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="dashboard-secondary-grid">
+        <article class="dashboard-panel">
+            <header class="dashboard-panel-header">
+                <div><span>Cash Flow Snapshot</span><h2>Tổng quan thu chi</h2></div>
+                <a th:href="@{/manager/reports/revenue}">Báo cáo doanh thu</a>
+            </header>
+            <div class="finance-summary-grid">
+                <div class="finance-highlight">
+                    <span>Tổng thu hôm nay</span>
+                    <strong class="income-text"
+                            th:text="${#numbers.formatDecimal(dashboard.todayIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </div>
+                <div>
+                    <span>Tổng chi hôm nay</span>
+                    <strong class="expense-text"
+                            th:text="${#numbers.formatDecimal(dashboard.todayExpense, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </div>
+                <div>
+                    <span>Tổng thu tháng này</span>
+                    <strong class="income-text"
+                            th:text="${#numbers.formatDecimal(dashboard.monthIncome, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </div>
+                <div>
+                    <span>Tổng chi tháng này</span>
+                    <strong class="expense-text"
+                            th:text="${#numbers.formatDecimal(dashboard.monthExpense, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </div>
+            </div>
+            <div class="net-cash-flow">
+                <span>Chênh lệch thu chi tháng này</span>
+                <strong th:class="${dashboard.monthNetCashFlow.compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? 'income-text' : 'expense-text'"
+                        th:text="${#numbers.formatDecimal(dashboard.monthNetCashFlow, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+            </div>
+        </article>
+
+        <article class="dashboard-panel">
+            <header class="dashboard-panel-header">
+                <div><span>Service Performance</span><h2>Dịch vụ nổi bật</h2></div>
+                <a th:href="@{/manager/reports/services}">Báo cáo dịch vụ</a>
+            </header>
+            <div class="dashboard-empty" th:if="${#lists.isEmpty(dashboard.topServices)}">
+                <i class="fa-regular fa-chart-bar"></i><span>Chưa có dữ liệu dịch vụ.</span>
+            </div>
+            <div class="dashboard-list" th:if="${!#lists.isEmpty(dashboard.topServices)}">
+                <div class="dashboard-list-row" th:each="service, iter : ${dashboard.topServices}">
+                    <div class="dashboard-rank" th:text="${iter.index + 1}">1</div>
+                    <div class="dashboard-row-main">
+                        <strong th:text="${service.name}">Dịch vụ</strong>
+                        <span>Đã bán <b th:text="${service.quantity}">0</b> lượt</span>
+                    </div>
+                    <strong class="income-text"
+                            th:text="${#numbers.formatDecimal(service.revenue, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </div>
+            </div>
+        </article>
+
+        <article class="dashboard-panel dashboard-wide-panel">
+            <header class="dashboard-panel-header">
+                <div><span>Recent Cash Transactions</span><h2>Giao dịch gần đây</h2></div>
+                <a th:href="@{/manager/transactions}">Xem lịch sử giao dịch</a>
+            </header>
+            <div class="dashboard-empty" th:if="${#lists.isEmpty(dashboard.recentTransactions)}">
+                <i class="fa-solid fa-receipt"></i><span>Chưa có giao dịch được ghi nhận.</span>
+            </div>
+            <div class="dashboard-transaction-list" th:if="${!#lists.isEmpty(dashboard.recentTransactions)}">
+                <a class="dashboard-transaction-row" th:each="transaction : ${dashboard.recentTransactions}"
+                   th:href="@{/manager/transactions/{id}(id=${transaction.id})}">
+                    <div class="transaction-code">
+                        <strong th:text="${transaction.documentCode}">PT-0001</strong>
+                        <span th:text="${transaction.category}">Nhóm giao dịch</span>
+                    </div>
+                    <span th:text="${transaction.paymentMethod}">Tiền mặt</span>
+                    <span th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">16/07/2026 10:30</span>
+                    <strong th:class="${transaction.type == 'INCOME'} ? 'income-text' : 'expense-text'"
+                            th:text="${#numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA') + ' VND'}">0 VND</strong>
+                </a>
             </div>
         </article>
     </section>

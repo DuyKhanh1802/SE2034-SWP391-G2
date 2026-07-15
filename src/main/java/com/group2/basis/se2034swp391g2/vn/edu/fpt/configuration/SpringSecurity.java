@@ -76,7 +76,7 @@ public class SpringSecurity {
 
                         .requestMatchers("/manager/dashboard")
                         .hasRole(RoleName.MANAGER.name())
-                        .requestMatchers(HttpMethod.GET, "/manager/reports", "/manager/reports/**")
+                        .requestMatchers(HttpMethod.GET, "/manager/reports/**")
                         .hasRole(RoleName.MANAGER.name())
                         .requestMatchers(HttpMethod.GET, "/manager/**")
                         .hasRole(RoleName.MANAGER.name())

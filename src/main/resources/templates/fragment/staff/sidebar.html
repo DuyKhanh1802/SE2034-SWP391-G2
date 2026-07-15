@@ -77,11 +77,28 @@
                 <span>Lịch sử giao dịch</span>
             </a>
         </li>
-        <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/reports')} ? 'active' : ''">
-            <a th:href="@{/manager/reports}">
-                <i class="fas fa-chart-pie"></i>
-                <span>Báo cáo</span>
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/reports/revenue')} ? 'active' : ''">
+            <a th:href="@{/manager/reports/revenue}">
+                <i class="fas fa-sack-dollar"></i>
+                <span>Báo cáo doanh thu</span>
+            </a>
+        </li>
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/reports/occupancy')} ? 'active' : ''">
+            <a th:href="@{/manager/reports/occupancy}">
+                <i class="fas fa-bed"></i>
+                <span>Báo cáo công suất</span>
+            </a>
+        </li>
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/reports/services')} ? 'active' : ''">
+            <a th:href="@{/manager/reports/services}">
+                <i class="fas fa-concierge-bell"></i>
+                <span>Báo cáo dịch vụ</span>
+            </a>
+        </li>
+        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/reports/inventory')} ? 'active' : ''">
+            <a th:href="@{/manager/reports/inventory}">
+                <i class="fas fa-boxes-stacked"></i>
+                <span>Báo cáo tồn kho</span>
             </a>
         </li>
     </ul>

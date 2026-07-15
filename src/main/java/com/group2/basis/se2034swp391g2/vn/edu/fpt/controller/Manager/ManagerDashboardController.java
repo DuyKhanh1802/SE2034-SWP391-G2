@@ -17,7 +17,7 @@ public class ManagerDashboardController {
 
     @GetMapping("/manager/dashboard")
     public String showDashboard(Model model, Authentication authentication, HttpSession session) {
-        model.addAttribute("pageTitle", "Điều hành hôm nay");
+        model.addAttribute("pageTitle", "Tổng quan");
         model.addAttribute("currentUser", profileService.resolveCurrentUser(authentication, session));
         model.addAttribute("dashboard", managerDashboardService.getDashboard());
         return "manager/Dashboard";
