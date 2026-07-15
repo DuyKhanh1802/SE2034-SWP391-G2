@@ -4,10 +4,13 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/staff-layout}">
 
+
 <body>
 <main layout:fragment="content">
 
+
     <section class="variant-management-page">
+
 
         <div class="variant-page-header">
             <div>
@@ -15,13 +18,39 @@
                 <h1>Hạng phòng / Variant</h1>
                 <p>Danh sách các biến thể hạng phòng đang có trong khách sạn.</p>
             </div>
+
+
+            <div class="variant-header-actions">
+                <button type="button"
+                        class="variant-btn variant-btn-dark"
+                        data-bs-toggle="modal"
+                        data-bs-target="#variantImportModal">
+                    <i class="fa-solid fa-file-import"></i>
+                    Import Room Variant
+                </button>
+            </div>
         </div>
 
+
+        <div th:if="${successMessage}" class="variant-alert variant-alert-success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}">Import thành công.</span>
+        </div>
+
+
+        <div th:if="${errorMessage}" class="variant-alert variant-alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Import thất bại.</span>
+        </div>
+
+
         <div class="variant-card">
+
 
             <form th:action="@{/hotel-admin/room-type-variants}"
                   method="get"
                   class="variant-filter-form">
+
 
                 <div class="variant-form-group">
                     <label>Tìm kiếm</label>
@@ -30,6 +59,7 @@
                            th:value="${keyword}"
                            placeholder="Tên variant hoặc hạng phòng">
                 </div>
+
 
                 <div class="variant-form-group">
                     <label>Hướng nhìn</label>
@@ -43,11 +73,13 @@
                     </select>
                 </div>
 
+
                 <div class="variant-filter-actions">
                     <button type="submit" class="variant-btn variant-btn-dark">
                         <i class="fas fa-search"></i>
                         Tìm kiếm
                     </button>
+
 
                     <a th:href="@{/hotel-admin/room-type-variants}"
                        class="variant-btn variant-btn-light">
@@ -55,6 +87,7 @@
                     </a>
                 </div>
             </form>
+
 
             <div class="variant-table-wrapper">
                 <table class="variant-table">
@@ -64,6 +97,7 @@
                         <th>Tên variant</th>
                         <th>Hạng phòng cha</th>
                         <th>Hướng nhìn</th>
+                        <th>Dịch vụ đi kèm</th>
                         <th>Giá / đêm</th>
                         <th>Sức chứa</th>
                         <th>Người lớn</th>
@@ -73,15 +107,18 @@
                     </tr>
                     </thead>
 
+
                     <tbody>
                     <tr th:if="${#lists.isEmpty(variants)}">
-                        <td colspan="10" class="variant-empty-row">
+                        <td colspan="11" class="variant-empty-row">
                             Chưa có dữ liệu variant.
                         </td>
                     </tr>
 
+
                     <tr th:each="variant, stat : ${variants}">
                         <td th:text="${currentPage * 5 + stat.index + 1}">1</td>
+
 
                         <td>
                             <div class="variant-name" th:text="${variant.variantName}">
@@ -89,52 +126,77 @@
                             </div>
                             <span class="variant-sub"
                                   th:text="${variant.roomSize != null ? variant.roomSize + ' m²' : 'Chưa có diện tích'}">
-                                35 m²
-                            </span>
+                               35 m²
+                           </span>
                         </td>
+
 
                         <td th:text="${variant.roomType != null ? variant.roomType.name : 'N/A'}">
                             Deluxe Room
                         </td>
 
+
                         <td class="variant-view-text" th:text="${variant.viewType}">
                             CITY
                         </td>
 
+
                         <td>
-                            <span class="variant-price"
-                                  th:text="${#numbers.formatDecimal(variant.pricePerNight, 0, 'COMMA', 0, 'POINT') + ' VND'}">
-                                2,200,000 VND
-                            </span>
+                            <div class="variant-service-list"
+                                 th:with="serviceLabels=${variantServiceLabels[variant.id]}">
+                               <span th:if="${serviceLabels == null or #lists.isEmpty(serviceLabels)}"
+                                     class="variant-service-empty">
+                                   Chưa cấu hình
+                               </span>
+                                <span th:each="serviceLabel : ${serviceLabels}"
+                                      class="variant-service-chip"
+                                      th:text="${serviceLabel}">
+                                   Bữa sáng kiểu Âu x1
+                               </span>
+                            </div>
                         </td>
+
+
+                        <td>
+                           <span class="variant-price"
+                                 th:text="${#numbers.formatDecimal(variant.pricePerNight, 0, 'COMMA', 0, 'POINT') + ' VND'}">
+                               2,200,000 VND
+                           </span>
+                        </td>
+
 
                         <td th:text="${variant.capacity}">3</td>
 
+
                         <td th:text="${variant.maxAdults}">3</td>
+
 
                         <td th:text="${variant.maxChildren}">1</td>
 
-                        <td>
-                            <span th:if="${variant.allowExtraBed}" class="variant-extra-text yes">
-                                Có
-                            </span>
-                            <span th:unless="${variant.allowExtraBed}" class="variant-extra-text no">
-                                Không
-                            </span>
-                        </td>
 
                         <td>
-                            <span th:if="${!variant.isDeleted}" class="variant-status-text active">
-                                Đang dùng
-                            </span>
+                           <span th:if="${variant.allowExtraBed}" class="variant-extra-text yes">
+                               Có
+                           </span>
+                            <span th:unless="${variant.allowExtraBed}" class="variant-extra-text no">
+                               Không
+                           </span>
+                        </td>
+
+
+                        <td>
+                           <span th:if="${!variant.isDeleted}" class="variant-status-text active">
+                               Đang dùng
+                           </span>
                             <span th:if="${variant.isDeleted}" class="variant-status-text deleted">
-                                Đã xóa
-                            </span>
+                               Đã xóa
+                           </span>
                         </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
+
 
             <div class="variant-pagination" th:if="${totalPages > 1}">
                 <a th:if="${currentPage > 0}"
@@ -143,9 +205,11 @@
                     Trước
                 </a>
 
+
                 <span th:text="${currentPage + 1} + ' / ' + ${totalPages}">
-                    1 / 1
-                </span>
+                   1 / 1
+               </span>
+
 
                 <a th:if="${currentPage + 1 < totalPages}"
                    th:href="@{/hotel-admin/room-type-variants(page=${currentPage + 1}, keyword=${keyword}, viewType=${selectedViewType})}">
@@ -154,10 +218,64 @@
                 </a>
             </div>
 
+
         </div>
 
+
+        <div class="modal fade" id="variantImportModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content variant-import-modal">
+                    <form th:action="@{/hotel-admin/room-type-variants/import}"
+                          method="post"
+                          enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <div>
+                                <p class="variant-eyebrow">EXCEL IMPORT</p>
+                                <h2 class="modal-title">Thêm Room Variant từ Excel</h2>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+
+
+                        <div class="modal-body">
+                            <label class="variant-import-label" for="variantExcelFile">File dữ liệu (.xlsx)</label>
+                            <input id="variantExcelFile"
+                                   class="variant-import-file"
+                                   type="file"
+                                   name="file"
+                                   accept=".xlsx"
+                                   required>
+
+
+                            <div class="variant-import-note">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <div>
+                                    <strong>Import theo một transaction</strong>
+                                    <p>Nếu có bất kỳ dòng nào sai, toàn bộ file sẽ không được ghi. Sheet <strong>Variant Services</strong> là danh sách dịch vụ hiện hành: dịch vụ bị bỏ khỏi Excel sẽ được vô hiệu hóa khi import lại.</p>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="modal-footer">
+                            <button type="button" class="variant-btn variant-btn-light" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="variant-btn variant-btn-dark">
+                                <i class="fa-solid fa-file-import"></i>
+                                Import dữ liệu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
     </section>
+
 
 </main>
 </body>
 </html>
+

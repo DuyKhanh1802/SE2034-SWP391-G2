@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.HotelAdmin;
 
+
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ViewType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.RoomTypeVariant;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
@@ -13,19 +14,25 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 
 @Controller
 @RequestMapping("/hotel-admin/room-type-variants")
 public class HotelAdminRoomTypeVariantController {
 
+
     private final RoomTypeVariantManagementService roomTypeVariantManagementService;
     private final ProfileService profileService;
+
 
     public HotelAdminRoomTypeVariantController(RoomTypeVariantManagementService roomTypeVariantManagementService,
                                                ProfileService profileService) {
         this.roomTypeVariantManagementService = roomTypeVariantManagementService;
         this.profileService = profileService;
     }
+
 
     private void addLayoutData(Model model,
                                Authentication authentication,
@@ -34,10 +41,12 @@ public class HotelAdminRoomTypeVariantController {
                                String pageTitle) {
         User currentUser = profileService.resolveCurrentUser(authentication, session);
 
+
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("currentUri", request.getRequestURI());
         model.addAttribute("pageTitle", pageTitle);
     }
+
 
     @GetMapping
     public String listRoomTypeVariants(@RequestParam(defaultValue = "0") int page,
@@ -48,15 +57,19 @@ public class HotelAdminRoomTypeVariantController {
                                        HttpSession session,
                                        HttpServletRequest request) {
 
+
         addLayoutData(model, authentication, session, request, "Hạng phòng / Variant");
 
+
         int pageSize = 5;
+
 
         Page<RoomTypeVariant> variantPage = roomTypeVariantManagementService.searchVariants(
                 keyword,
                 viewType,
                 PageRequest.of(page, pageSize)
         );
+
 
         model.addAttribute("variants", variantPage.getContent());
         model.addAttribute("currentPage", page);
@@ -65,7 +78,42 @@ public class HotelAdminRoomTypeVariantController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedViewType", viewType);
         model.addAttribute("viewTypes", ViewType.values());
+        model.addAttribute(
+                "variantServiceLabels",
+                roomTypeVariantManagementService.getIncludedServiceLabels(
+                        variantPage.getContent().stream().map(RoomTypeVariant::getId).toList()
+                )
+        );
+
 
         return "hotel_admin/ListRoomTypeVariant";
     }
+
+
+    @PostMapping("/import")
+    public String importRoomTypeVariants(@RequestParam("file") MultipartFile file,
+                                         Authentication authentication,
+                                         HttpSession session,
+                                         RedirectAttributes redirectAttributes) {
+        try {
+            User currentUser = profileService.resolveCurrentUser(authentication, session);
+            RoomTypeVariantManagementService.VariantImportResult result =
+                    roomTypeVariantManagementService.importFromExcel(file, currentUser);
+
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Đã đồng bộ Room Variant: tạo mới " + result.createdCount()
+                            + ", cập nhật " + result.updatedCount()
+                            + ", lưu " + result.imageCount()
+                            + " ảnh và " + result.serviceCount() + " dịch vụ đang áp dụng."
+            );
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+
+        return "redirect:/hotel-admin/room-type-variants";
+    }
 }
+
