@@ -106,9 +106,8 @@ public class FolioService {
                     .toList();
         }
 
-        BigDecimal totalAmount = bookingDetailId == null
-                ? money(booking.getGrandTotal())
-                : calculateRoomScopedTotal(details, items);
+        FolioTotals totals = calculateFolioTotals(details, items);
+        BigDecimal totalAmount = totals.totalAmount();
         BigDecimal paidAmount = bookingDetailId == null
                 ? calculatePaidAmount(payments)
                 : calculateAppliedPaidAmount(applications);
@@ -138,25 +137,10 @@ public class FolioService {
                 .checkInDate(booking.getCheckInDate())
                 .checkOutDate(booking.getCheckOutDate())
                 .bookingStatus(booking.getStatus() == null ? "" : booking.getStatus().name())
-                .roomSubtotal(bookingDetailId == null ? money(booking.getRoomSubtotal()) : details.stream()
-                        .map(BookingDetail::getTotalAmount)
-                        .filter(Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .serviceSubtotal(bookingDetailId == null ? money(booking.getServiceSubtotal()) : items.stream()
-                        .filter(this::isChargeableFolioItem)
-                        .map(FolioItem::getBaseAmount)
-                        .filter(Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .serviceChargeTotal(bookingDetailId == null ? money(booking.getServiceChargeTotal()) : items.stream()
-                        .filter(this::isChargeableFolioItem)
-                        .map(FolioItem::getServiceChargeAmount)
-                        .filter(Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .vatTotal(bookingDetailId == null ? money(booking.getVatTotal()) : items.stream()
-                        .filter(this::isChargeableFolioItem)
-                        .map(FolioItem::getVatAmount)
-                        .filter(Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .roomSubtotal(totals.roomSubtotal())
+                .serviceSubtotal(totals.serviceSubtotal())
+                .serviceChargeTotal(totals.serviceChargeTotal())
+                .vatTotal(totals.vatTotal())
                 .discountAmount(bookingDetailId == null ? money(booking.getDiscountAmount()) : BigDecimal.ZERO)
                 .totalAmount(totalAmount)
                 .paidAmount(paidAmount)
@@ -290,7 +274,7 @@ public class FolioService {
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
         List<PaymentApplication> applications = paymentApplicationRepository.findByBookingDetailId(detail.getId());
 
-        BigDecimal totalAmount = calculateRoomScopedTotal(List.of(detail), items);
+        BigDecimal totalAmount = calculateFolioTotals(List.of(detail), items).totalAmount();
         BigDecimal paidAmount = calculateAppliedPaidAmount(applications);
         BigDecimal balanceAmount = calculateBalance(totalAmount, paidAmount);
         PaymentState paymentState = resolvePaymentState(totalAmount, paidAmount);
@@ -423,7 +407,7 @@ public class FolioService {
 
         List<FolioItem> currentRoomItems = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
-        BigDecimal currentRoomTotal = calculateRoomScopedTotal(List.of(detail), currentRoomItems);
+        BigDecimal currentRoomTotal = calculateFolioTotals(List.of(detail), currentRoomItems).totalAmount();
         if (amount.abs().compareTo(currentRoomTotal) > 0) {
             throw new IllegalArgumentException("Số tiền giảm trừ không được lớn hơn tổng tiền hiện tại của phòng.");
         }
@@ -565,17 +549,40 @@ public class FolioService {
         return netPaid.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : money(netPaid);
     }
 
-    private BigDecimal calculateRoomScopedTotal(List<BookingDetail> details, List<FolioItem> items) {
-        BigDecimal roomTotal = details.stream()
+    private FolioTotals calculateFolioTotals(List<BookingDetail> details, List<FolioItem> items) {
+        BigDecimal roomSubtotal = details.stream()
                 .map(BookingDetail::getTotalAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal itemTotal = items.stream()
+
+        List<FolioItem> chargeableItems = items.stream()
                 .filter(this::isChargeableFolioItem)
+                .toList();
+
+        BigDecimal serviceSubtotal = chargeableItems.stream()
+                .map(FolioItem::getBaseAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal serviceChargeTotal = chargeableItems.stream()
+                .map(FolioItem::getServiceChargeAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal vatTotal = chargeableItems.stream()
+                .map(FolioItem::getVatAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal itemTotal = chargeableItems.stream()
                 .map(FolioItem::getTotalAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return money(roomTotal.add(itemTotal));
+
+        return new FolioTotals(
+                money(roomSubtotal),
+                money(serviceSubtotal),
+                money(serviceChargeTotal),
+                money(vatTotal),
+                money(roomSubtotal.add(itemTotal))
+        );
     }
 
     private boolean isChargeableFolioItem(FolioItem item) {
@@ -611,5 +618,12 @@ public class FolioService {
     }
 
     private record PaymentState(String status, String label) {
+    }
+
+    private record FolioTotals(BigDecimal roomSubtotal,
+                               BigDecimal serviceSubtotal,
+                               BigDecimal serviceChargeTotal,
+                               BigDecimal vatTotal,
+                               BigDecimal totalAmount) {
     }
 }
