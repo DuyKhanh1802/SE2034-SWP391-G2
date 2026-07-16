@@ -554,7 +554,7 @@ public class OnlineBookingService {
             throw new IllegalArgumentException("Số tiền thanh toán không hợp lệ.");
         }
 
-        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setStatus(BookingStatus.PENDING);
         booking.setDepositStatus(DepositStatus.PAID);
         booking.setDepositAmount(paidAmount);
 
