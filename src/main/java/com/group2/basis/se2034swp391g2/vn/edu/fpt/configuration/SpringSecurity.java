@@ -43,9 +43,8 @@ public class SpringSecurity {
                                 "/images/**",
                                 "/system_admin/**",
                                 "/hotel_admin/**",
-                                "/guest/**",
-                                "/page/booking/send-email-otp",
-                                "/page/booking/verify-email-otp"
+                                "/guest/**"
+
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/profile/*.css").permitAll()
@@ -77,7 +76,7 @@ public class SpringSecurity {
 
                         .requestMatchers("/manager/dashboard")
                         .hasRole(RoleName.MANAGER.name())
-                        .requestMatchers(HttpMethod.GET, "/manager/reports", "/manager/reports/**")
+                        .requestMatchers(HttpMethod.GET, "/manager/reports/**")
                         .hasRole(RoleName.MANAGER.name())
                         .requestMatchers(HttpMethod.GET, "/manager/**")
                         .hasRole(RoleName.MANAGER.name())

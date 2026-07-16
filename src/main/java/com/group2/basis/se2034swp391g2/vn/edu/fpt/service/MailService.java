@@ -295,32 +295,7 @@ public class MailService {
         }
     }
 
-    public void sendBookingEmailVerificationOtpEmail(String toEmail, String otp) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
 
-            message.setFrom(fromEmail);
-            message.setTo(toEmail);
-            message.setSubject("V'Hotel Hanoi - Mã xác thực email đặt phòng");
-
-            message.setText(
-                    "Xin chào,\n\n" +
-                            "Quý khách đang thực hiện xác thực email để tiếp tục đặt phòng tại V'Hotel Hanoi.\n\n" +
-                            "Mã OTP xác thực email của quý khách là: " + otp + "\n\n" +
-                            "Mã OTP có hiệu lực trong vòng 5 phút.\n\n" +
-                            "Vui lòng không chia sẻ mã này cho bất kỳ ai.\n\n" +
-                            "Nếu quý khách không thực hiện yêu cầu này, vui lòng bỏ qua email.\n\n" +
-                            "Trân trọng,\n" +
-                            "Đội ngũ V'Hotel Hanoi"
-            );
-
-            mailSender.send(message);
-
-        } catch (MailException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Gửi email OTP xác thực đặt phòng thất bại: " + e.getMessage(), e);
-        }
-    }
 
     public void sendRegisterVerificationOtpEmail(String toEmail, String guestName, String otp) {
         try {

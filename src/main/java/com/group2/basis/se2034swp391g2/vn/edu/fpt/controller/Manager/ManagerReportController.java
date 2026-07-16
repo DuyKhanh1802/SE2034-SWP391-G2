@@ -1,6 +1,5 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Manager;
 
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.InventoryItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.OccupancyReportRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.OccupancyReportResponse;
@@ -9,9 +8,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.InventoryRe
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RevenueReportResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportRowResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportSummaryResponse;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FolioItemRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.ServiceCategoryRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.CashTransactionService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.InventoryManagementService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerOccupancyReportService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerInventoryReportService;
@@ -20,7 +17,6 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ManagerServiceReportSe
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.ProfileService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -29,7 +25,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -41,69 +36,14 @@ public class ManagerReportController {
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private static final int SERVICE_REPORT_PAGE_SIZE = 5;
     private static final int INVENTORY_REPORT_PAGE_SIZE = 5;
-    private static final int OVERVIEW_ITEM_LIMIT = 5;
 
     private final ProfileService profileService;
-    private final CashTransactionService cashTransactionService;
     private final InventoryManagementService inventoryManagementService;
-    private final FolioItemRepository folioItemRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final ManagerServiceReportService managerServiceReportService;
     private final ManagerOccupancyReportService managerOccupancyReportService;
     private final ManagerInventoryReportService managerInventoryReportService;
     private final ManagerRevenueReportService managerRevenueReportService;
-
-    @GetMapping("/manager/reports")
-    public String showReports(Model model,
-                              Authentication authentication,
-                              HttpSession session) {
-        addHeaderAttributes(model, authentication, session, "Báo cáo");
-
-        LocalDate today = LocalDate.now(APP_ZONE);
-
-        OccupancyReportResponse occupancyReport = managerOccupancyReportService.getOccupancyReport(null, null);
-
-        List<InventoryItem> inventoryItems = inventoryManagementService.getItemsForSelection();
-
-        BigDecimal inventoryTotalValue = inventoryItems.stream()
-                .map(item -> {
-                    BigDecimal currentQuantity = item.getCurrentQuantity() == null
-                            ? BigDecimal.ZERO
-                            : item.getCurrentQuantity();
-
-                    BigDecimal unitCost = item.getUnitCost() == null
-                            ? BigDecimal.ZERO
-                            : item.getUnitCost();
-
-                    return currentQuantity.multiply(unitCost);
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        List<InventoryItem> inventoryAlertItems = inventoryManagementService.getLowStockItems()
-                .stream()
-                .limit(OVERVIEW_ITEM_LIMIT)
-                .toList();
-
-        model.addAttribute("todayRevenue", cashTransactionService.getIncomeForDay(today));
-        model.addAttribute("monthRevenue", cashTransactionService.getIncomeForMonth(today));
-        model.addAttribute("totalIncome", cashTransactionService.getTotalIncome());
-        model.addAttribute("totalExpense", cashTransactionService.getTotalExpense());
-        model.addAttribute("occupancyRate", occupancyReport.getSummary().getOccupancyRate());
-        model.addAttribute("occupancyUsedNights", occupancyReport.getSummary().getOccupiedRoomNights());
-        model.addAttribute("occupancyAvailableNights", occupancyReport.getSummary().getAvailableRoomNights());
-        model.addAttribute("occupancyBestVariant", occupancyReport.getSummary().getBestPerformingVariant());
-        model.addAttribute("occupancyBookingCount", occupancyReport.getSummary().getBookingCount());
-        model.addAttribute("occupancyTotalRooms", occupancyReport.getSummary().getTotalRooms());
-        model.addAttribute("topServices", folioItemRepository.findTopServiceSales(PageRequest.of(0, OVERVIEW_ITEM_LIMIT)));
-
-        model.addAttribute("inventoryTotalItems", inventoryItems.size());
-        model.addAttribute("inventoryTotalValue", inventoryTotalValue);
-        model.addAttribute("inventoryLowStockCount", inventoryManagementService.countLowStockItems());
-        model.addAttribute("inventoryExpiringSoonCount", inventoryManagementService.getExpiringSoonItemCodes().size());
-        model.addAttribute("inventoryAlertItems", inventoryAlertItems);
-
-        return "manager/reports";
-    }
 
     @GetMapping("/manager/reports/revenue")
     public String showRevenueReport(@RequestParam(required = false)
