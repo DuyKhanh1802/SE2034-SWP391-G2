@@ -20,23 +20,4 @@ public interface PaymentApplicationRepository extends JpaRepository<PaymentAppli
             """)
     BigDecimal sumAppliedAmountByPaymentId(@Param("paymentId") Long paymentId);
 
-    @Query("""
-            SELECT COALESCE(SUM(application.amount), 0)
-            FROM PaymentApplication application
-            JOIN application.payment payment
-            WHERE application.bookingDetail.id = :bookingDetailId
-              AND payment.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-              AND payment.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
-            """)
-    BigDecimal sumSuccessfulCollectionByBookingDetailId(@Param("bookingDetailId") Long bookingDetailId);
-
-    @Query("""
-            SELECT COALESCE(SUM(application.amount), 0)
-            FROM PaymentApplication application
-            JOIN application.payment payment
-            WHERE application.bookingDetail.id = :bookingDetailId
-              AND payment.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-              AND payment.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
-            """)
-    BigDecimal sumSuccessfulRefundByBookingDetailId(@Param("bookingDetailId") Long bookingDetailId);
 }

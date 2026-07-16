@@ -65,71 +65,6 @@ public class PaymentService {
         return savedPayment;
     }
 
-    @Transactional
-    public Payment createRefundPayment(Booking booking,
-                                       Payment originalPayment,
-                                       BigDecimal refundAmount,
-                                       User currentStaff) {
-
-        return createRefundPayment(
-                booking,
-                originalPayment,
-                originalPayment == null ? null : originalPayment.getMethod(),
-                refundAmount,
-                currentStaff
-        );
-    }
-
-    @Transactional
-    public Payment createRefundPayment(Booking booking,
-                                       Payment originalPayment,
-                                       PaymentMethod refundMethod,
-                                       BigDecimal refundAmount,
-                                       User currentStaff) {
-
-        if (originalPayment == null) {
-            throw new IllegalArgumentException("Không tìm thấy giao dịch gốc để hoàn tiền.");
-        }
-
-        validatePaymentInput(
-                booking,
-                PaymentType.REFUND,
-                refundMethod,
-                refundAmount,
-                currentStaff
-        );
-
-        Payment refundPayment = Payment.builder()
-                .booking(booking)
-                .paymentType(PaymentType.REFUND)
-                .method(refundMethod)
-                .amount(refundAmount)
-                .status(PaymentStatus.SUCCESS)
-                .transactionRef(generateUniqueTransactionRef(PaymentType.REFUND))
-                .processedBy(currentStaff)
-                .paidAt(Instant.now())
-                .originalPayment(originalPayment)
-                .build();
-
-        Payment savedRefundPayment = paymentRepository.save(refundPayment);
-
-        cashTransactionService.createFromPayment(savedRefundPayment);
-
-        return savedRefundPayment;
-    }
-
-    @Transactional
-    public Payment createRefundPayment(Booking booking,
-                                       BookingDetail bookingDetail,
-                                       Payment originalPayment,
-                                       PaymentMethod refundMethod,
-                                       BigDecimal refundAmount,
-                                       User currentStaff) {
-        Payment savedRefundPayment = createRefundPayment(booking, originalPayment, refundMethod, refundAmount, currentStaff);
-        createApplication(savedRefundPayment, booking, bookingDetail, refundAmount);
-        return savedRefundPayment;
-    }
-
     private void createApplication(Payment payment,
                                    Booking booking,
                                    BookingDetail bookingDetail,
@@ -189,6 +124,9 @@ public class PaymentService {
 
         if (paymentType == null) {
             throw new IllegalArgumentException("Loại thanh toán không được để trống.");
+        }
+        if (paymentType == PaymentType.REFUND) {
+            throw new IllegalArgumentException("Hệ thống không hỗ trợ giao dịch hoàn tiền.");
         }
 
         if (method == null) {

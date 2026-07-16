@@ -16,7 +16,6 @@ import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -88,10 +87,9 @@ public class CheckoutService {
         BigDecimal paidAmount = calculateAppliedPaidAmount(applications);
         BigDecimal balance = totalAmount.subtract(paidAmount).setScale(0, RoundingMode.HALF_UP);
         BigDecimal paymentAmount = money(request.getPaymentAmount());
-        BigDecimal refundAmount = money(request.getRefundAmount());
         User currentStaff = getCurrentStaffUser();
 
-        validateSettlementRequest(balance, paymentAmount, refundAmount, request);
+        validateSettlementRequest(balance, paymentAmount, request.getPaymentMethod());
 
         if (balance.compareTo(BigDecimal.ZERO) > 0) {
             if (paymentAmount.compareTo(balance) != 0) {
@@ -101,23 +99,7 @@ public class CheckoutService {
                 throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
             }
             paymentService.createPayment(booking, detail, PaymentType.BALANCE, request.getPaymentMethod(), paymentAmount, currentStaff);
-        } else if (balance.compareTo(BigDecimal.ZERO) < 0) {
-            BigDecimal expectedRefund = balance.abs();
-            if (refundAmount.compareTo(expectedRefund) != 0) {
-                throw new IllegalArgumentException("Số tiền hoàn phải bằng số tiền khách đã trả dư cho phòng.");
-            }
-            Payment originalPayment = applications.stream()
-                    .map(PaymentApplication::getPayment)
-                    .filter(Objects::nonNull)
-                    .filter(payment -> payment.getStatus() == PaymentStatus.SUCCESS)
-                    .filter(payment -> payment.getPaymentType() != PaymentType.REFUND)
-                    .max(Comparator.comparing(Payment::getPaidAt, Comparator.nullsLast(Comparator.naturalOrder())))
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giao dịch gốc của phòng để hoàn tiền."));
-            if (request.getRefundMethod() == null) {
-                throw new IllegalArgumentException("Vui lòng chọn phương thức hoàn tiền.");
-            }
-            paymentService.createRefundPayment(booking, detail, originalPayment, request.getRefundMethod(), expectedRefund, currentStaff);
-        } else if (paymentAmount.compareTo(BigDecimal.ZERO) > 0 || refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+        } else if (paymentAmount.compareTo(BigDecimal.ZERO) > 0) {
             throw new IllegalArgumentException("Phòng đã cân bằng thanh toán, không cần ghi thêm giao dịch.");
         }
 
@@ -145,7 +127,6 @@ public class CheckoutService {
         BigDecimal netPaid = calculateAppliedPaidAmount(applications);
         BigDecimal balance = totalAmount.subtract(netPaid).setScale(0, RoundingMode.HALF_UP);
         BigDecimal payable = balance.max(BigDecimal.ZERO);
-        BigDecimal refundable = balance.compareTo(BigDecimal.ZERO) < 0 ? balance.abs() : BigDecimal.ZERO;
         boolean canCheckout = canCheckoutTarget(detail, booking) && !hasRequestedServices(detail);
         Room room = detail.getRoom();
         RoomTypeVariant variant = detail.getVariant();
@@ -175,7 +156,6 @@ public class CheckoutService {
                 .totalAmount(totalAmount)
                 .paidAmount(netPaid)
                 .balanceAmount(payable)
-                .refundAmount(refundable)
                 .settlementType(resolveSettlementType(balance))
                 .paymentStatusLabel(resolvePaymentStatusLabel(totalAmount, netPaid))
                 .canCheckout(canCheckout)
@@ -233,47 +213,27 @@ public class CheckoutService {
 
     private void validateSettlementRequest(BigDecimal balance,
                                            BigDecimal paymentAmount,
-                                           BigDecimal refundAmount,
-                                           CheckoutRequest request) {
-        if (paymentAmount.compareTo(BigDecimal.ZERO) < 0 || refundAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Số tiền thanh toán hoặc hoàn tiền không được âm.");
-        }
-
-        if (paymentAmount.compareTo(BigDecimal.ZERO) > 0 && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
-            throw new IllegalArgumentException("Không thể vừa thu thêm vừa hoàn tiền trong cùng một lần checkout.");
+                                           PaymentMethod paymentMethod) {
+        if (paymentAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Số tiền thanh toán không được âm.");
         }
 
         if (balance.compareTo(BigDecimal.ZERO) > 0) {
-            if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
-                throw new IllegalArgumentException("Phòng còn thiếu tiền, không thể ghi hoàn tiền.");
-            }
             if (paymentAmount.compareTo(balance) != 0) {
                 throw new IllegalArgumentException("Số tiền thanh toán checkout phải bằng số dư còn lại của phòng.");
             }
-            validateReceptionistPaymentMethod(request.getPaymentMethod(), "thanh toán");
+            validateReceptionistPaymentMethod(paymentMethod);
             return;
         }
 
-        if (balance.compareTo(BigDecimal.ZERO) < 0) {
-            BigDecimal expectedRefund = balance.abs();
-            if (paymentAmount.compareTo(BigDecimal.ZERO) > 0) {
-                throw new IllegalArgumentException("Phòng đang dư tiền, không thể ghi thu thêm.");
-            }
-            if (refundAmount.compareTo(expectedRefund) != 0) {
-                throw new IllegalArgumentException("Số tiền hoàn phải bằng số tiền khách đã trả dư cho phòng.");
-            }
-            validateReceptionistPaymentMethod(request.getRefundMethod(), "hoàn tiền");
-            return;
-        }
-
-        if (paymentAmount.compareTo(BigDecimal.ZERO) > 0 || refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+        if (paymentAmount.compareTo(BigDecimal.ZERO) > 0) {
             throw new IllegalArgumentException("Phòng đã cân bằng thanh toán, không cần ghi thêm giao dịch.");
         }
     }
 
-    private void validateReceptionistPaymentMethod(PaymentMethod method, String actionLabel) {
+    private void validateReceptionistPaymentMethod(PaymentMethod method) {
         if (method == null) {
-            throw new IllegalArgumentException("Vui lòng chọn phương thức " + actionLabel + ".");
+            throw new IllegalArgumentException("Vui lòng chọn phương thức thanh toán.");
         }
         if (method != PaymentMethod.CASH && method != PaymentMethod.TRANSFER) {
             throw new IllegalArgumentException("Checkout tại lễ tân chỉ hỗ trợ tiền mặt hoặc chuyển khoản.");
@@ -408,9 +368,6 @@ public class CheckoutService {
     private String resolveSettlementType(BigDecimal balance) {
         if (balance.compareTo(BigDecimal.ZERO) > 0) {
             return "PAYMENT";
-        }
-        if (balance.compareTo(BigDecimal.ZERO) < 0) {
-            return "REFUND";
         }
         return "SETTLED";
     }
