@@ -483,8 +483,8 @@ public class BookingService {
     }
 
     @Transactional
-    public void confirmServiceServed(Long bookingId, Long folioItemId) {
-        FolioItem folioItem = getServiceFolioItem(bookingId, folioItemId);
+    public void confirmServiceServed(Long bookingId, Long bookingDetailId, Long folioItemId) {
+        FolioItem folioItem = getServiceFolioItem(bookingId, bookingDetailId, folioItemId);
         FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
 
         if (currentStatus == FolioItemStatus.COMPLETED) {
@@ -508,8 +508,8 @@ public class BookingService {
     }
 
     @Transactional
-    public void markServiceNotUsedNoRefund(Long bookingId, Long folioItemId) {
-        FolioItem folioItem = getServiceFolioItem(bookingId, folioItemId);
+    public void markServiceNotUsedNoRefund(Long bookingId, Long bookingDetailId, Long folioItemId) {
+        FolioItem folioItem = getServiceFolioItem(bookingId, bookingDetailId, folioItemId);
         FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
 
         if (currentStatus == FolioItemStatus.COMPLETED) {
@@ -527,8 +527,8 @@ public class BookingService {
     }
 
     @Transactional
-    public void cancelRequestedService(Long bookingId, Long folioItemId) {
-        FolioItem folioItem = getServiceFolioItem(bookingId, folioItemId);
+    public void cancelRequestedService(Long bookingId, Long bookingDetailId, Long folioItemId) {
+        FolioItem folioItem = getServiceFolioItem(bookingId, bookingDetailId, folioItemId);
         FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
 
         if (currentStatus == FolioItemStatus.COMPLETED) {
@@ -545,24 +545,41 @@ public class BookingService {
         folioItemRepository.save(folioItem);
     }
 
-    private FolioItem getServiceFolioItem(Long bookingId, Long folioItemId) {
-        if (bookingId == null || folioItemId == null) {
+    private FolioItem getServiceFolioItem(Long bookingId, Long bookingDetailId, Long folioItemId) {
+        if (bookingId == null || bookingId <= 0
+                || bookingDetailId == null || bookingDetailId <= 0
+                || folioItemId == null || folioItemId <= 0) {
             throw new IllegalArgumentException("Thiếu thông tin dịch vụ cần xử lý.");
         }
 
-        FolioItem folioItem = folioItemRepository.findById(folioItemId)
+        BookingDetail detail = bookingDetailRepository.findByIdForUpdate(bookingDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng trong booking."));
+
+        FolioItem folioItem = folioItemRepository.findServiceItemForUpdate(folioItemId, bookingDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ trong booking."));
 
         if (Boolean.TRUE.equals(folioItem.getIsVoided())
                 || folioItem.getBooking() == null
                 || !bookingId.equals(folioItem.getBooking().getId())
+                || detail.getBooking() == null
+                || !bookingId.equals(detail.getBooking().getId())
                 || folioItem.getService() == null) {
             throw new IllegalArgumentException("Dịch vụ không thuộc booking này hoặc đã bị hủy chứng từ.");
         }
 
         Booking booking = folioItem.getBooking();
-        if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+        if (booking.getStatus() != BookingStatus.CHECKED_IN
+                && booking.getStatus() != BookingStatus.PARTIALLY_CHECKED_OUT) {
             throw new IllegalArgumentException("Chỉ có thể xử lý dịch vụ sau khi khách đã nhận phòng.");
+        }
+
+        BookingDetailStatus stayStatus = detail.getStayStatus();
+        boolean legacyCheckedInDetail = stayStatus == null
+                && detail.getActualCheckinAt() != null
+                && detail.getActualCheckoutAt() == null;
+        if (detail.getActualCheckoutAt() != null
+                || (stayStatus != BookingDetailStatus.CHECKED_IN && !legacyCheckedInDetail)) {
+            throw new IllegalArgumentException("Chỉ có thể xử lý dịch vụ của phòng đang có khách.");
         }
 
         return folioItem;

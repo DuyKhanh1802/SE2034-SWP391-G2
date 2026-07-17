@@ -15,4 +15,5 @@ public class GuestSelectedServiceView {
     private BigDecimal unitPrice;
     private BigDecimal totalAmount;
     private FolioItemStatus status;
+    private boolean editable;
 }

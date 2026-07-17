@@ -5,11 +5,13 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingDeta
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.RoomResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistDashboardView;
 import org.springframework.data.domain.Pageable;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.BookingStatus;
+import jakarta.persistence.LockModeType;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,6 +20,10 @@ import java.util.Optional;
 import java.util.Collection;
 
 public interface BookingDetailRepository extends JpaRepository<BookingDetail, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT bd FROM BookingDetail bd WHERE bd.id = :id")
+    Optional<BookingDetail> findByIdForUpdate(@Param("id") Long id);
 
     boolean existsByRoomCode(String roomCode);
 

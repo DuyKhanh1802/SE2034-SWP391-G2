@@ -80,6 +80,31 @@
     border: 1px solid #d2ccc5;
 }
 
+.profile-avatar {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.profile-notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+    display: inline-flex;
+    min-width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border: 2px solid #f8f8f8;
+    border-radius: 9px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+}
+
 .profile-menu {
     display: none;
     position: absolute;
@@ -146,6 +171,194 @@
     opacity: 1;
 }
 
+.notification-menu-item {
+    position: relative;
+}
+
+.notification-toggle > span:first-of-type {
+    flex: 1;
+    text-align: left;
+}
+
+.notification-menu-count {
+    display: inline-flex;
+    min-width: 22px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.notification-chevron {
+    margin-left: 5px;
+    color: #777;
+    font-size: 10px;
+    transition: transform 0.2s ease;
+}
+
+.notification-menu-item.is-open .notification-chevron {
+    transform: rotate(-90deg);
+}
+
+.notification-submenu {
+    display: none;
+    position: absolute;
+    top: -10px;
+    right: calc(100% + 10px);
+    width: min(370px, calc(100vw - 32px));
+    max-height: min(560px, calc(100vh - 110px));
+    overflow-y: auto;
+    border: 1px solid #d8d8d8;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+}
+
+.notification-menu-item.is-open .notification-submenu {
+    display: block;
+}
+
+.notification-submenu-header,
+.notification-section-title,
+.notification-submenu-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.notification-submenu-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e4e4e4;
+    background: #fff;
+}
+
+.notification-submenu-header strong {
+    font-size: 15px;
+}
+
+.notification-submenu-header span {
+    color: #777;
+    font-size: 11px;
+}
+
+.notification-section + .notification-section {
+    border-top: 1px solid #e4e4e4;
+}
+
+.notification-section-title {
+    padding: 11px 16px 7px;
+    color: #666;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.notification-section-title strong {
+    color: #222;
+    font-size: 11px;
+}
+
+.notification-entry {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 16px;
+    color: #222;
+    text-decoration: none;
+}
+
+.notification-entry:hover {
+    background: #f4f4f4;
+    color: #111;
+}
+
+.notification-entry-icon {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d8d8d8;
+    color: #333;
+    font-size: 12px;
+}
+
+.notification-entry-icon.service {
+    color: #8a6500;
+}
+
+.notification-entry-icon.booking {
+    color: #245b85;
+}
+
+.notification-entry-content {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.notification-entry-content strong,
+.notification-entry-content span,
+.notification-entry-content small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.notification-entry-content strong {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.notification-entry-content span {
+    color: #555;
+    font-size: 11px;
+}
+
+.notification-entry-content small {
+    color: #888;
+    font-size: 10px;
+}
+
+.notification-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 28px 16px;
+    color: #666;
+    font-size: 12px;
+}
+
+.notification-submenu-footer {
+    position: sticky;
+    bottom: 0;
+    padding: 11px 16px;
+    border-top: 1px solid #e4e4e4;
+    background: #fff;
+}
+
+.notification-submenu-footer a {
+    color: #222;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.notification-submenu-footer a:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 768px) {
     .topbar {
         height: auto;
@@ -165,5 +378,16 @@
 
     .profile-dropdown-btn span {
         display: none;
+    }
+
+    .profile-dropdown-btn .profile-avatar,
+    .profile-dropdown-btn .profile-notification-badge {
+        display: inline-flex;
+    }
+
+    .notification-submenu {
+        top: calc(100% + 8px);
+        right: 0;
+        max-height: calc(100vh - 150px);
     }
 }
