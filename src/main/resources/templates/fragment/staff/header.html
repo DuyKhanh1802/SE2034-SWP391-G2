@@ -11,10 +11,15 @@
                 type="button"
                 aria-expanded="false">
 
-            <img th:src="${currentUser != null and currentUser.avatarUrl != null
-                            ? currentUser.avatarUrl
-                            : 'https://i.pravatar.cc/40'}"
-                 alt="profile">
+            <span class="profile-avatar">
+                <img th:src="${currentUser != null and currentUser.avatarUrl != null
+                                ? currentUser.avatarUrl
+                                : 'https://i.pravatar.cc/40'}"
+                     alt="profile">
+                <span class="profile-notification-badge"
+                      th:if="${receptionistNotifications != null and receptionistNotifications.totalCount() > 0}"
+                      th:text="${receptionistNotifications.totalCount() > 99 ? '99+' : receptionistNotifications.totalCount()}">3</span>
+            </span>
 
             <span th:text="${currentUserDisplayName != null ? currentUserDisplayName : 'Tài khoản'}">
                 Tài khoản
@@ -29,11 +34,77 @@
                 </a>
             </li>
 
-            <li>
-                <a class="dropdown-item" href="#">
+            <li class="notification-menu-item"
+                sec:authorize="hasRole('RECEPTIONIST')"
+                th:if="${receptionistNotifications != null}">
+                <button class="dropdown-item notification-toggle"
+                        type="button"
+                        aria-expanded="false"
+                        aria-controls="staffNotificationSubmenu">
                     <i class="fa-regular fa-bell me-2"></i>
-                    Thông báo
-                </a>
+                    <span>Thông báo</span>
+                    <span class="notification-menu-count"
+                          th:if="${receptionistNotifications.totalCount() > 0}"
+                          th:text="${receptionistNotifications.totalCount() > 99 ? '99+' : receptionistNotifications.totalCount()}">3</span>
+                    <i class="fa-solid fa-chevron-left notification-chevron"></i>
+                </button>
+
+                <div class="notification-submenu" id="staffNotificationSubmenu">
+                    <div class="notification-submenu-header">
+                        <strong>Thông báo</strong>
+                        <span th:text="${receptionistNotifications.totalCount()} + ' đang chờ'">3 đang chờ</span>
+                    </div>
+
+                    <div class="notification-empty"
+                         th:if="${receptionistNotifications.totalCount() == 0}">
+                        <i class="fa-regular fa-circle-check"></i>
+                        <span>Không có công việc mới.</span>
+                    </div>
+
+                    <section class="notification-section"
+                             th:if="${receptionistNotifications.pendingServiceCount() > 0}">
+                        <div class="notification-section-title">
+                            <span>Dịch vụ chờ phục vụ</span>
+                            <strong th:text="${receptionistNotifications.pendingServiceCount()}">2</strong>
+                        </div>
+                        <a class="notification-entry"
+                           th:each="item : ${receptionistNotifications.pendingServices()}"
+                           th:href="@{/receptionist/folios/{bookingId}/edit(bookingId=${item.bookingId()}, bookingDetailId=${item.bookingDetailId()})}">
+                            <span class="notification-entry-icon service"><i class="fa-solid fa-bell-concierge"></i></span>
+                            <span class="notification-entry-content">
+                                <strong th:text="${item.serviceName()}">Set sáng kiểu Mỹ</strong>
+                                <span th:text="${item.roomNumber() != null
+                                        ? 'Phòng ' + item.roomNumber() + ' · SL ' + item.quantity()
+                                        : item.bookingReference() + ' · SL ' + item.quantity()}">Phòng 302 · SL 1</span>
+                                <small th:text="${#temporals.format(item.postedAt(), 'dd/MM/yyyy HH:mm')}">17/07/2026 08:30</small>
+                            </span>
+                        </a>
+                    </section>
+
+                    <section class="notification-section"
+                             th:if="${receptionistNotifications.pendingBookingCount() > 0}">
+                        <div class="notification-section-title">
+                            <span>Booking chờ xác nhận</span>
+                            <strong th:text="${receptionistNotifications.pendingBookingCount()}">1</strong>
+                        </div>
+                        <a class="notification-entry"
+                           th:each="item : ${receptionistNotifications.pendingBookings()}"
+                           th:href="@{/receptionist/bookings/view/{id}(id=${item.bookingId()})}">
+                            <span class="notification-entry-icon booking"><i class="fa-regular fa-calendar-check"></i></span>
+                            <span class="notification-entry-content">
+                                <strong th:text="${item.bookingReference()}">BK-2607165193</strong>
+                                <span th:text="${item.guestName()}">Nguyễn Văn A</span>
+                                <small th:text="${#temporals.format(item.checkInDate(), 'dd/MM/yyyy')}">18/07/2026</small>
+                            </span>
+                        </a>
+                    </section>
+
+                    <div class="notification-submenu-footer"
+                         th:if="${receptionistNotifications.totalCount() > 0}">
+                        <a th:href="@{/receptionist/folios}">Danh sách hoá đơn</a>
+                        <a th:href="@{/receptionist/bookings(status='PENDING')}">Booking chờ</a>
+                    </div>
+                </div>
             </li>
 
             <li>

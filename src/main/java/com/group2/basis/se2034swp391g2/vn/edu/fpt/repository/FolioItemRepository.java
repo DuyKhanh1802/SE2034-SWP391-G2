@@ -2,6 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.repository;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistNotificationView;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportRowResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -79,6 +80,49 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
             """)
     boolean existsUnresolvedService(@Param("bookingDetailId") Long bookingDetailId,
                                     @Param("serviceStatus") FolioItemStatus serviceStatus);
+
+    @Query("""
+            SELECT COUNT(f)
+            FROM FolioItem f
+            JOIN f.booking b
+            JOIN f.bookingDetail bd
+            WHERE f.service IS NOT NULL
+              AND f.isVoided = false
+              AND (f.serviceStatus IS NULL OR f.serviceStatus = :serviceStatus)
+              AND b.isDeleted = false
+              AND bd.actualCheckinAt IS NOT NULL
+              AND bd.actualCheckoutAt IS NULL
+            """)
+    long countActiveServiceRequests(@Param("serviceStatus") FolioItemStatus serviceStatus);
+
+    @Query("""
+            SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistNotificationView$ServiceRequestRow(
+                f.id,
+                b.id,
+                bd.id,
+                b.bookingReference,
+                CONCAT(b.guestLastName, ' ', b.guestFirstName),
+                r.roomNumber,
+                f.description,
+                f.quantity,
+                f.postedAt
+            )
+            FROM FolioItem f
+            JOIN f.booking b
+            JOIN f.bookingDetail bd
+            LEFT JOIN bd.room r
+            WHERE f.service IS NOT NULL
+              AND f.isVoided = false
+              AND (f.serviceStatus IS NULL OR f.serviceStatus = :serviceStatus)
+              AND b.isDeleted = false
+              AND bd.actualCheckinAt IS NOT NULL
+              AND bd.actualCheckoutAt IS NULL
+            ORDER BY f.postedAt DESC, f.id DESC
+            """)
+    List<ReceptionistNotificationView.ServiceRequestRow> findRecentActiveServiceRequests(
+            @Param("serviceStatus") FolioItemStatus serviceStatus,
+            Pageable pageable
+    );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
