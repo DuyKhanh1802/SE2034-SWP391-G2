@@ -30,6 +30,8 @@ public class GuestBookingService {
     private static final BigDecimal SERVICE_CHARGE_RATE = BigDecimal.valueOf(0.05);
     private static final BigDecimal VAT_RATE = BigDecimal.valueOf(0.08);
     private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
+    private static final BigDecimal MAX_SERVICE_PRICE = new BigDecimal("100000000");
+    private static final int MAX_SERVICE_QUANTITY = 99;
 
     private static final boolean TAX_ON_SERVICE_CHARGE = true;
 
@@ -132,7 +134,7 @@ public class GuestBookingService {
                         detail.getId()
                 );
 
-        view.setSelectedServices(mapSelectedServices(selectedItems));
+        view.setSelectedServices(mapSelectedServices(selectedItems, detail.getActualCheckinAt()));
 
         return view;
 
@@ -179,12 +181,15 @@ public class GuestBookingService {
     }
     @Transactional
     public void addService(Long bookingDetailId, Long serviceId) {
-        BookingDetail detail = bookingDetailRepository.findById(bookingDetailId)
+        validatePositiveId(bookingDetailId, "Phiên phòng không hợp lệ.");
+        validatePositiveId(serviceId, "Dịch vụ không hợp lệ.");
+
+        BookingDetail detail = bookingDetailRepository.findByIdForUpdate(bookingDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin phòng"));
 
         Booking booking = detail.getBooking();
 
-        validateCanModifyService(booking);
+        validateCanModifyService(detail, booking);
 
         if (booking == null || Boolean.TRUE.equals(booking.getIsDeleted())) {
             throw new IllegalArgumentException("Booking không hợp lệ");
@@ -197,25 +202,19 @@ public class GuestBookingService {
         if (Boolean.TRUE.equals(service.getIsDeleted()) || !Boolean.TRUE.equals(service.getIsAvailable())) {
             throw new IllegalArgumentException("Dịch vụ không khả dụng");
         }
+        validateServicePrice(service.getPrice());
 
-        FolioItem item = folioItemRepository
-                .findByBookingDetail_IdAndService_IdAndIsVoidedFalse(bookingDetailId, serviceId)
-                .orElse(null);
-
-        if (item == null) {
-            item = new FolioItem();
-            item.setBooking(booking);
-            item.setBookingDetail(detail);
-            item.setService(service);
-            item.setDescription(service.getName());
-            item.setItemType(resolveFolioItemType(service));
-            item.setQuantity(1);
-            item.setUnitPrice(zeroIfNull(service.getPrice()));
-            item.setPostedAt(Instant.now());
-            item.setIsVoided(false);
-        } else {
-            item.setQuantity(item.getQuantity() == null ? 1 : item.getQuantity() + 1);
-        }
+        FolioItem item = new FolioItem();
+        item.setBooking(booking);
+        item.setBookingDetail(detail);
+        item.setService(service);
+        item.setDescription(service.getName());
+        item.setItemType(resolveFolioItemType(service));
+        item.setServiceStatus(FolioItemStatus.REQUESTED);
+        item.setQuantity(1);
+        item.setUnitPrice(zeroIfNull(service.getPrice()));
+        item.setPostedAt(Instant.now());
+        item.setIsVoided(false);
 
         recalculateFolioItem(item);
         folioItemRepository.save(item);
@@ -225,7 +224,11 @@ public class GuestBookingService {
     public void increaseService(Long bookingDetailId, Long folioItemId) {
         FolioItem item = getValidGuestServiceItem(bookingDetailId, folioItemId);
 
-        item.setQuantity(item.getQuantity() == null ? 1 : item.getQuantity() + 1);
+        int currentQuantity = normalizeCurrentQuantity(item);
+        if (currentQuantity >= MAX_SERVICE_QUANTITY) {
+            throw new IllegalArgumentException("Số lượng mỗi order không được vượt quá 99.");
+        }
+        item.setQuantity(currentQuantity + 1);
 
         recalculateFolioItem(item);
         folioItemRepository.save(item);
@@ -235,10 +238,10 @@ public class GuestBookingService {
     public void decreaseService(Long bookingDetailId, Long folioItemId) {
         FolioItem item = getValidGuestServiceItem(bookingDetailId, folioItemId);
 
-        Integer currentQuantity = item.getQuantity() == null ? 1 : item.getQuantity();
+        int currentQuantity = normalizeCurrentQuantity(item);
 
         if (currentQuantity <= 1) {
-            return;
+            throw new IllegalArgumentException("Số lượng dịch vụ tối thiểu là 1. Hãy xoá order nếu không còn nhu cầu.");
         }
 
         item.setQuantity(currentQuantity - 1);
@@ -259,39 +262,87 @@ public class GuestBookingService {
     }
 
     private FolioItem getValidGuestServiceItem(Long bookingDetailId, Long folioItemId) {
-        if (bookingDetailId == null || bookingDetailId <= 0) {
-            throw new IllegalArgumentException("Phiên phòng không hợp lệ.");
-        }
+        validatePositiveId(bookingDetailId, "Phiên phòng không hợp lệ.");
+        validatePositiveId(folioItemId, "Dịch vụ đã chọn không hợp lệ.");
 
-        if (folioItemId == null || folioItemId <= 0) {
-            throw new IllegalArgumentException("Dịch vụ đã chọn không hợp lệ.");
-        }
+        BookingDetail detail = bookingDetailRepository.findByIdForUpdate(bookingDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin phòng."));
 
         FolioItem item = folioItemRepository
-                .findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(
-                        folioItemId,
-                        bookingDetailId
-                )
+                .findServiceItemForUpdate(folioItemId, bookingDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ đã chọn."));
 
         Booking booking = item.getBooking();
 
-        if (booking == null && item.getBookingDetail() != null) {
-            booking = item.getBookingDetail().getBooking();
+        if (booking == null) {
+            booking = detail.getBooking();
         }
 
-        validateCanModifyService(booking);
+        validateCanModifyService(detail, booking);
+
+        FolioItemStatus serviceStatus = item.getServiceStatus() == null
+                ? FolioItemStatus.REQUESTED
+                : item.getServiceStatus();
+        if (serviceStatus != FolioItemStatus.REQUESTED) {
+            throw new IllegalStateException("Chỉ có thể chỉnh sửa dịch vụ đang chờ phục vụ.");
+        }
+        validateGuestOrderCreatedAfterCheckIn(item, detail);
 
         return item;
     }
 
-    private void validateCanModifyService(Booking booking) {
+    private void validateCanModifyService(BookingDetail detail, Booking booking) {
         if (booking == null || Boolean.TRUE.equals(booking.getIsDeleted())) {
             throw new IllegalArgumentException("Booking không hợp lệ.");
         }
 
-        if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+        if (booking.getStatus() != BookingStatus.CHECKED_IN
+                && booking.getStatus() != BookingStatus.PARTIALLY_CHECKED_OUT) {
             throw new IllegalArgumentException("Chỉ có thể thêm hoặc chỉnh sửa dịch vụ trong thời gian đang lưu trú.");
+        }
+
+        if (detail == null || detail.getBooking() == null || !booking.getId().equals(detail.getBooking().getId())) {
+            throw new IllegalArgumentException("Thông tin phòng không thuộc booking này.");
+        }
+
+        BookingDetailStatus stayStatus = detail.getStayStatus();
+        boolean legacyCheckedInDetail = stayStatus == null
+                && detail.getActualCheckinAt() != null
+                && detail.getActualCheckoutAt() == null;
+        if (detail.getActualCheckoutAt() != null
+                || (stayStatus != BookingDetailStatus.CHECKED_IN && !legacyCheckedInDetail)) {
+            throw new IllegalStateException("Chỉ có thể thêm hoặc chỉnh sửa dịch vụ cho phòng đang có khách.");
+        }
+    }
+
+    private void validatePositiveId(Long value, String message) {
+        if (value == null || value <= 0) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private void validateServicePrice(BigDecimal price) {
+        if (price == null
+                || price.scale() > 0
+                || price.compareTo(BigDecimal.ZERO) <= 0
+                || price.compareTo(MAX_SERVICE_PRICE) > 0) {
+            throw new IllegalStateException("Giá dịch vụ không hợp lệ. Vui lòng liên hệ lễ tân.");
+        }
+    }
+
+    private int normalizeCurrentQuantity(FolioItem item) {
+        Integer quantity = item.getQuantity();
+        if (quantity == null || quantity < 1 || quantity > MAX_SERVICE_QUANTITY) {
+            throw new IllegalStateException("Số lượng dịch vụ hiện tại không hợp lệ.");
+        }
+        return quantity;
+    }
+
+    private void validateGuestOrderCreatedAfterCheckIn(FolioItem item, BookingDetail detail) {
+        Instant actualCheckinAt = detail.getActualCheckinAt();
+        if (actualCheckinAt != null
+                && (item.getPostedAt() == null || item.getPostedAt().isBefore(actualCheckinAt))) {
+            throw new IllegalStateException("Dịch vụ đặt trước không thể chỉnh sửa sau khi khách nhận phòng.");
         }
     }
     private void recalculateFolioItem(FolioItem item) {
@@ -448,7 +499,7 @@ public class GuestBookingService {
                 .collect(Collectors.joining(", "));
     }
 
-    private List<GuestSelectedServiceView> mapSelectedServices(List<FolioItem> items) {
+    private List<GuestSelectedServiceView> mapSelectedServices(List<FolioItem> items, Instant actualCheckinAt) {
         List<GuestSelectedServiceView> result = new ArrayList<>();
 
         if (items == null) {
@@ -474,6 +525,13 @@ public class GuestBookingService {
             view.setQuantity(item.getQuantity());
             view.setUnitPrice(item.getUnitPrice());
             view.setTotalAmount(item.getTotalAmount());
+            FolioItemStatus status = item.getServiceStatus() == null
+                    ? FolioItemStatus.REQUESTED
+                    : item.getServiceStatus();
+            view.setStatus(status);
+            view.setEditable(status == FolioItemStatus.REQUESTED
+                    && item.getPostedAt() != null
+                    && (actualCheckinAt == null || !item.getPostedAt().isBefore(actualCheckinAt)));
 
             result.add(view);
         }

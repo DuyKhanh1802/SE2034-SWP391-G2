@@ -5,9 +5,11 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportRowResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 
 import java.time.Instant;
 import java.util.List;
@@ -78,7 +80,15 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
     boolean existsUnresolvedService(@Param("bookingDetailId") Long bookingDetailId,
                                     @Param("serviceStatus") FolioItemStatus serviceStatus);
 
-    Optional<FolioItem> findByBookingDetail_IdAndService_IdAndIsVoidedFalse(Long bookingDetailId, Long serviceId);
-
-    Optional<FolioItem> findByIdAndBookingDetail_IdAndServiceIsNotNullAndIsVoidedFalse(Long folioItemId, Long bookingDetailId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT f
+            FROM FolioItem f
+            WHERE f.id = :folioItemId
+              AND f.bookingDetail.id = :bookingDetailId
+              AND f.service IS NOT NULL
+              AND f.isVoided = false
+            """)
+    Optional<FolioItem> findServiceItemForUpdate(@Param("folioItemId") Long folioItemId,
+                                                 @Param("bookingDetailId") Long bookingDetailId);
 }

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.Instant;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/guest")
@@ -52,7 +54,7 @@ public class MyBookingController {
 
             return "guest/my_booking";
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             session.removeAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
 
             redirectAttributes.addFlashAttribute(
@@ -99,7 +101,7 @@ public class MyBookingController {
                     "Đã thêm dịch vụ vào booking của bạn."
             );
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
                     e.getMessage()
@@ -143,7 +145,7 @@ public class MyBookingController {
                     "Đã tăng số lượng dịch vụ."
             );
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
                     e.getMessage()
@@ -187,7 +189,7 @@ public class MyBookingController {
                     "Đã giảm số lượng dịch vụ."
             );
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
                     e.getMessage()
@@ -231,7 +233,7 @@ public class MyBookingController {
                     "Đã xóa dịch vụ khỏi booking của bạn."
             );
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
                     e.getMessage()
@@ -252,7 +254,13 @@ public class MyBookingController {
             return null;
         }
 
-        return (GuestRoomSession) value;
+        GuestRoomSession guestRoomSession = (GuestRoomSession) value;
+        if (guestRoomSession.getRoomCodeExpiresAt() != null
+                && !guestRoomSession.getRoomCodeExpiresAt().isAfter(Instant.now())) {
+            session.removeAttribute(GuestSessionAdvice.GUEST_ROOM_SESSION);
+            return null;
+        }
+        return guestRoomSession;
     }
 
     private String normalizeCategory(String category) {

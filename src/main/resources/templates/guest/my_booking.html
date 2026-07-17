@@ -305,14 +305,16 @@
                         <div class="quantity-box">
                             <form th:action="@{/guest/services/decrease}" method="post">
                                 <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
-                                <button type="submit" th:disabled="${item.quantity <= 1}">−</button>
+                                <button type="submit"
+                                        th:disabled="${item.quantity <= 1 or !item.editable}">−</button>
                             </form>
 
                             <span th:text="${item.quantity}">1</span>
 
                             <form th:action="@{/guest/services/increase}" method="post">
                                 <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
-                                <button type="submit">+</button>
+                                <button type="submit"
+                                        th:disabled="${item.quantity >= 99 or !item.editable}">+</button>
                             </form>
                         </div>
                     </td>
@@ -333,15 +335,16 @@
 
                     <td>
     <span class="status-text"
-          th:text="${item.status != null ? item.status : 'REQUEST'}">
-        REQUEST
+          th:text="${item.status != null ? item.status.label : 'Chờ phục vụ'}">
+        Chờ phục vụ
     </span>
                     </td>
 
                     <td>
                         <form th:action="@{/guest/services/remove}" method="post">
                             <input type="hidden" name="folioItemId" th:value="${item.folioItemId}">
-                            <button class="delete-button" type="submit" title="Xóa dịch vụ">
+                            <button class="delete-button" type="submit" title="Xóa dịch vụ"
+                                    th:disabled="${!item.editable}">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </form>
