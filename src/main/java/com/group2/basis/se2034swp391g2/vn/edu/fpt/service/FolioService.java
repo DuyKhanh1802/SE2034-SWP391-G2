@@ -76,11 +76,6 @@ public class FolioService {
     }
 
     @Transactional(readOnly = true)
-    public FolioDetailResponse getFolioDetail(Long bookingId) {
-        return getFolioDetail(bookingId, null);
-    }
-
-    @Transactional(readOnly = true)
     public FolioDetailResponse getFolioDetail(Long bookingId, Long bookingDetailId) {
         Booking booking = getActiveBooking(bookingId);
         List<BookingDetail> details = bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
@@ -118,8 +113,10 @@ public class FolioService {
                 .map(this::toRoomLine)
                 .toList();
 
+        boolean canManageServices = booking.getStatus() == BookingStatus.CHECKED_IN
+                || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_OUT;
         List<FolioDetailResponse.FolioLine> lines = items.stream()
-                .map(item -> toFolioLine(item, isEditableBooking(booking)))
+                .map(item -> toFolioLine(item, isEditableBooking(booking), canManageServices))
                 .toList();
 
         List<FolioDetailResponse.PaymentLine> paymentLines = payments.stream()
@@ -326,30 +323,46 @@ public class FolioService {
                 .build();
     }
 
-    private FolioDetailResponse.FolioLine toFolioLine(FolioItem item, boolean editableBooking) {
+    private FolioDetailResponse.FolioLine toFolioLine(FolioItem item,
+                                                      boolean editableBooking,
+                                                      boolean canManageServices) {
         FolioItemStatus status = item.getServiceStatus() == null
                 ? FolioItemStatus.REQUESTED
                 : item.getServiceStatus();
+        boolean serviceItem = item.getService() != null;
+        BookingDetailStatus stayStatus = item.getBookingDetail() == null
+                ? null
+                : item.getBookingDetail().getStayStatus();
+        boolean legacyCheckedInDetail = item.getBookingDetail() != null
+                && stayStatus == null
+                && item.getBookingDetail().getActualCheckinAt() != null
+                && item.getBookingDetail().getActualCheckoutAt() == null;
+        boolean activeRoom = item.getBookingDetail() != null
+                && item.getBookingDetail().getActualCheckoutAt() == null
+                && (stayStatus == BookingDetailStatus.CHECKED_IN || legacyCheckedInDetail);
         boolean voidable = editableBooking
                 && (item.getItemType() == FolioItemType.ADJUSTMENT || item.getItemType() == FolioItemType.DISCOUNT);
 
         return FolioDetailResponse.FolioLine.builder()
                 .folioItemId(item.getId())
-                .bookingDetailId(item.getBookingDetail() == null ? null : item.getBookingDetail().getId())
                 .roomNumber(item.getBookingDetail() != null && item.getBookingDetail().getRoom() != null
                         ? item.getBookingDetail().getRoom().getRoomNumber()
                         : "Chung")
                 .description(item.getDescription())
                 .itemType(item.getItemType() == null ? "N/A" : item.getItemType().name())
-                .statusLabel(status.getLabel())
+                .serviceStatus(serviceItem ? status.name() : null)
+                .statusLabel(serviceItem ? status.getLabel() : null)
                 .quantity(item.getQuantity())
                 .unitPrice(money(item.getUnitPrice()))
-                .baseAmount(money(item.getBaseAmount()))
                 .serviceChargeAmount(money(item.getServiceChargeAmount()))
                 .vatAmount(money(item.getVatAmount()))
                 .totalAmount(money(item.getTotalAmount()))
-                .postedAt(item.getPostedAt())
                 .adjustmentReason(item.getAdjustmentReason())
+                .serviceItem(serviceItem)
+                .serviceActionable(serviceItem
+                        && status == FolioItemStatus.REQUESTED
+                        && canManageServices
+                        && activeRoom)
                 .voidable(voidable)
                 .build();
     }

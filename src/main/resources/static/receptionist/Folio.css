@@ -73,14 +73,6 @@
     padding: 24px;
 }
 
-.detail-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 18px;
-}
-
 .folio-panel h2 {
     margin: 5px 0 0;
     font-family: 'Cormorant Garamond', serif;
@@ -92,17 +84,8 @@
     margin-bottom: 16px;
 }
 
-.eyebrow {
-    color: #777;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
 .header-actions,
-.folio-actions,
-.detail-actions {
+.folio-actions {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -112,8 +95,7 @@
 .btn-outline,
 .btn-dark,
 .filter-reset,
-.folio-filter button,
-.adjustment-form button {
+.folio-filter button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -151,15 +133,13 @@
 }
 
 .btn-dark,
-.folio-filter button,
-.adjustment-form button {
+.folio-filter button {
     background: #111;
     color: #fff;
 }
 
 .btn-dark:hover,
-.folio-filter button:hover,
-.adjustment-form button:hover {
+.folio-filter button:hover {
     background: #333;
     color: #fff;
 }
@@ -178,7 +158,7 @@
 }
 
 .filter-field label,
-.adjustment-form label,
+.adjustment-modal-form label,
 .detail-item span {
     display: block;
     color: #777;
@@ -190,8 +170,7 @@
 
 .filter-field input,
 .filter-field select,
-.adjustment-form input,
-.adjustment-form select {
+.adjustment-modal-form input {
     width: 100%;
     min-height: 42px;
     border: 1px solid #d8d8d8;
@@ -206,8 +185,7 @@
 
 .filter-field input:focus,
 .filter-field select:focus,
-.adjustment-form input:focus,
-.adjustment-form select:focus {
+.adjustment-modal-form input:focus {
     border-color: #111;
 }
 
@@ -227,6 +205,10 @@
     width: 100%;
     margin: 0;
     border-collapse: collapse;
+}
+
+.compact-table {
+    overflow-x: auto;
 }
 
 .folio-table th,
@@ -300,7 +282,6 @@
 .payment-badge.unpaid,
 .summary-status.unpaid { color: #c0392b; }
 
-.action-btn,
 .folio-actions a {
     display: inline-flex;
     width: 31px;
@@ -312,7 +293,6 @@
     color: #222;
 }
 
-.action-btn:hover,
 .folio-actions a:hover {
     border-color: #111;
     background: #111;
@@ -401,19 +381,6 @@
     font-weight: 800;
 }
 
-.adjustment-form {
-    display: grid;
-    grid-template-columns: minmax(190px, .9fr) minmax(260px, 1.2fr) minmax(150px, .7fr) minmax(220px, 1fr) auto;
-    gap: 12px;
-    align-items: end;
-}
-
-.adjustment-form > div {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
 .inline-void-form {
     display: inline-flex;
     margin: 0;
@@ -446,6 +413,124 @@
     background: #fff;
 }
 
+.folio-adjustment-modal .modal-content {
+    border: 1px solid #d8d8d8;
+    border-radius: 0;
+}
+
+.folio-adjustment-modal .modal-header,
+.folio-adjustment-modal .modal-footer {
+    padding: 18px 22px;
+    border-color: #e4e4e4;
+}
+
+.folio-adjustment-modal .modal-title {
+    margin: 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 500;
+}
+
+.adjustment-modal-form .modal-body {
+    display: grid;
+    gap: 16px;
+    padding: 22px;
+}
+
+.adjustment-modal-form .modal-body > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.folio-adjustment-modal .modal-footer {
+    gap: 8px;
+}
+
+.service-status {
+    display: inline-flex;
+    align-items: center;
+    color: #555;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.service-status-requested {
+    color: #8a6500;
+}
+
+.service-status-completed {
+    color: #2f7d32;
+}
+
+.service-status-cancelled {
+    color: #a1261c;
+}
+
+.invoice-charge-table th,
+.invoice-charge-table .service-status-cell,
+.invoice-charge-table .folio-action-cell {
+    text-align: center !important;
+}
+
+.service-status-empty {
+    color: #999;
+}
+
+.folio-service-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: 6px;
+    width: 118px;
+    margin: 0 auto;
+}
+
+.folio-service-actions form {
+    margin: 0;
+}
+
+.folio-service-actions button {
+    display: inline-flex;
+    width: 100%;
+    min-height: 31px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px 9px;
+    border: 1px solid #777;
+    background: #fff;
+    color: #333;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.folio-service-actions .service-action-confirm {
+    border-color: #2f7d32;
+    color: #2f7d32;
+}
+
+.folio-service-actions .service-action-cancel {
+    border-color: #b42318;
+    color: #b42318;
+}
+
+.folio-service-actions button:hover {
+    background: #f3f3f3;
+}
+
+.folio-service-actions button:disabled,
+.folio-service-actions button:disabled:hover {
+    border-color: #cfcfcf;
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+    opacity: .5;
+}
+
 .strong-money {
     font-weight: 700;
 }
@@ -456,11 +541,16 @@
     color: #777 !important;
 }
 
-.locked-note {
-    margin: 0;
-    color: #555;
-    font-size: 14px;
-    line-height: 1.7;
+.folio-header .locked-note {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    max-width: none;
+    margin-top: 10px;
+    color: #a1261c;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
 }
 
 .folio-alert {
@@ -493,14 +583,12 @@
 }
 
 @media (max-width: 1200px) {
-    .folio-header.split,
-    .detail-header {
+    .folio-header.split {
         align-items: flex-start;
         flex-direction: column;
     }
 
-    .folio-filter,
-    .adjustment-form {
+    .folio-filter {
         grid-template-columns: 1fr 1fr;
     }
 
@@ -511,7 +599,6 @@
 
 @media (max-width: 760px) {
     .folio-filter,
-    .adjustment-form,
     .folio-grid,
     .summary-grid {
         grid-template-columns: 1fr;
