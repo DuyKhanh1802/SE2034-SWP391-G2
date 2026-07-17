@@ -53,6 +53,24 @@
 
                 profile.classList.toggle("is-open");
                 button.setAttribute("aria-expanded", profile.classList.contains("is-open"));
+
+                if (!profile.classList.contains("is-open")) {
+                    profile.querySelectorAll(".notification-menu-item.is-open").forEach(function (item) {
+                        item.classList.remove("is-open");
+                        item.querySelector(".notification-toggle").setAttribute("aria-expanded", "false");
+                    });
+                }
+            });
+        });
+
+        document.querySelectorAll(".notification-toggle").forEach(function (button) {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const menuItem = button.closest(".notification-menu-item");
+                menuItem.classList.toggle("is-open");
+                button.setAttribute("aria-expanded", menuItem.classList.contains("is-open"));
             });
         });
 
@@ -64,6 +82,10 @@
             document.querySelectorAll(".staff-profile.is-open").forEach(function (profile) {
                 profile.classList.remove("is-open");
                 profile.querySelector(".profile-dropdown-btn").setAttribute("aria-expanded", "false");
+                profile.querySelectorAll(".notification-menu-item.is-open").forEach(function (item) {
+                    item.classList.remove("is-open");
+                    item.querySelector(".notification-toggle").setAttribute("aria-expanded", "false");
+                });
             });
         });
     });
