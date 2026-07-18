@@ -18,10 +18,4 @@ public class BookingSuccessView {
 
     private BigDecimal amount;
 
-    private String bankName;
-    private String accountNumber;
-    private String accountName;
-
-    private String transferContent;
-    private String qrImageUrl;
 }
