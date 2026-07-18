@@ -353,11 +353,34 @@
     color: #ffffff;
 }
 
+.room-card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+}
+
+.room-card-actions .btn-edit-status {
+    min-width: 0;
+    padding: 0 8px;
+}
+
+.room-folio-action,
 .checkout-room-action {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
+}
+
+.checkout-room-action {
+    background: #ffffff;
+    color: #111827;
+}
+
+.checkout-room-action:hover {
+    background: #111827;
+    color: #ffffff;
 }
 
 /* OCCUPIED chip */

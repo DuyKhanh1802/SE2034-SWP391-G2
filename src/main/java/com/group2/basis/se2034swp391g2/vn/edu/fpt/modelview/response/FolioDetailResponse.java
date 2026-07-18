@@ -66,19 +66,19 @@ public class FolioDetailResponse {
     @Builder
     public static class FolioLine {
         private Long folioItemId;
-        private Long bookingDetailId;
         private String roomNumber;
         private String description;
         private String itemType;
+        private String serviceStatus;
         private String statusLabel;
         private Integer quantity;
         private BigDecimal unitPrice;
-        private BigDecimal baseAmount;
         private BigDecimal serviceChargeAmount;
         private BigDecimal vatAmount;
         private BigDecimal totalAmount;
-        private Instant postedAt;
         private String adjustmentReason;
+        private boolean serviceItem;
+        private boolean serviceActionable;
         private boolean voidable;
     }
 
