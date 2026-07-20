@@ -43,7 +43,7 @@
                 <span class="detail-badge deposit-badge"
                       th:classappend="${detail.depositStatus.name() == 'PAID'} ? ' badge-paid' :
                           (${detail.depositStatus.name() == 'UNPAID'} ? ' badge-unpaid' :
-                          (${detail.depositStatus.name() == 'REFUNDED'} ? ' badge-refunded' : ' badge-forfeited'))"
+                          ' badge-forfeited')"
                       th:text="${detail.depositStatus.label}">
         Đã thanh toán cọc
     </span>
@@ -598,7 +598,7 @@
                         <td>
                             <span class="service-status"
                                   th:classappend="${service.serviceStatus == 'COMPLETED'} ? ' service-status-completed' :
-                                      (${service.serviceStatus == 'CANCELLED' or service.serviceStatus == 'NOT_USED_NO_REFUND'} ? ' service-status-cancelled' : ' service-status-requested')"
+                                      (${service.serviceStatus == 'CANCELLED' or service.serviceStatus == 'NOT_USED'} ? ' service-status-cancelled' : ' service-status-requested')"
                                   th:text="${service.serviceStatusLabel}">
                                 Chờ phục vụ
                             </span>
@@ -681,7 +681,6 @@
                             </div>
 
                             <div class="payment-history-amount"
-                                 th:classappend="${payment.paymentType == 'Hoàn tiền'} ? ' refund-amount' : ''"
                                  th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                                 6,356,070 VND
                             </div>

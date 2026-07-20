@@ -34,7 +34,6 @@ public class CheckoutDetailResponse {
     private BigDecimal discountAmount;
     private BigDecimal totalAmount;
     private BigDecimal paidAmount;
-    private BigDecimal refundAmount;
     private BigDecimal balanceAmount;
     private String settlementType;
     private String paymentStatusLabel;

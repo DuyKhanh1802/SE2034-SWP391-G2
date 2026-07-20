@@ -523,43 +523,20 @@ public class FolioService {
     }
 
     private BigDecimal calculatePaidAmount(List<Payment> payments) {
-        BigDecimal collected = payments.stream()
+        return money(payments.stream()
                 .filter(payment -> payment.getStatus() == PaymentStatus.SUCCESS)
-                .filter(payment -> payment.getPaymentType() != PaymentType.REFUND)
                 .map(Payment::getAmount)
                 .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal refunded = payments.stream()
-                .filter(payment -> payment.getStatus() == PaymentStatus.SUCCESS)
-                .filter(payment -> payment.getPaymentType() == PaymentType.REFUND)
-                .map(Payment::getAmount)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal netPaid = collected.subtract(refunded);
-        return netPaid.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : money(netPaid);
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
     private BigDecimal calculateAppliedPaidAmount(List<PaymentApplication> applications) {
-        BigDecimal collected = applications.stream()
+        return money(applications.stream()
                 .filter(application -> application.getPayment() != null)
                 .filter(application -> application.getPayment().getStatus() == PaymentStatus.SUCCESS)
-                .filter(application -> application.getPayment().getPaymentType() != PaymentType.REFUND)
                 .map(PaymentApplication::getAmount)
                 .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal refunded = applications.stream()
-                .filter(application -> application.getPayment() != null)
-                .filter(application -> application.getPayment().getStatus() == PaymentStatus.SUCCESS)
-                .filter(application -> application.getPayment().getPaymentType() == PaymentType.REFUND)
-                .map(PaymentApplication::getAmount)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal netPaid = collected.subtract(refunded);
-        return netPaid.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : money(netPaid);
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
     private FolioTotals calculateFolioTotals(List<BookingDetail> details, List<FolioItem> items) {
