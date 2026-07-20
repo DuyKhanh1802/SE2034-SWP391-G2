@@ -22,7 +22,7 @@
                     <a th:href="@{/receptionist/bookings/view/{id}(id=${checkInInfo.bookingId})}"
                        th:text="${checkInInfo.bookingReference}">BK-2606295114</a>
                     <i class="bi bi-chevron-right"></i>
-                    <span>Nhận phòng</span>
+                    <a th:href="@{/receptionist/bookings/{id}/check-in(id=${checkInInfo.bookingId})}">Nhận phòng</a>
                 </div>
 
                 <p class="eyebrow">Quy trình nhận phòng</p>

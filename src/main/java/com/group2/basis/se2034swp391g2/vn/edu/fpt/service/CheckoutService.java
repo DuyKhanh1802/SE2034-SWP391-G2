@@ -69,7 +69,7 @@ public class CheckoutService {
             throw new IllegalArgumentException("Thiếu thông tin trả phòng.");
         }
 
-        BookingDetail detail = getBookingDetail(bookingDetailId);
+        BookingDetail detail = getBookingDetailForUpdate(bookingDetailId);
         Booking booking = getActiveBooking(detail);
         validateCheckoutTarget(detail, booking);
         if (resolveStayStatus(detail, booking) != BookingDetailStatus.CHECKED_IN) {
@@ -261,6 +261,14 @@ public class CheckoutService {
             throw new IllegalArgumentException("Thiếu mã phòng cần checkout.");
         }
         return bookingDetailRepository.findById(bookingDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng trong booking."));
+    }
+
+    private BookingDetail getBookingDetailForUpdate(Long bookingDetailId) {
+        if (bookingDetailId == null || bookingDetailId <= 0) {
+            throw new IllegalArgumentException("Thiếu mã phòng cần checkout.");
+        }
+        return bookingDetailRepository.findByIdForUpdate(bookingDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng trong booking."));
     }
 

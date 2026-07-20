@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Receptionist;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.FolioAdjustmentRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioDetailResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioListResponse;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.BookingService;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.FolioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -32,6 +33,7 @@ import static com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.Pagination
 public class FolioController {
 
     private final FolioService folioService;
+    private final BookingService bookingService;
 
     @GetMapping
     public String listFolios(@RequestParam(required = false) String keyword,
@@ -145,5 +147,51 @@ public class FolioController {
             return "redirect:/receptionist/folios/" + bookingId + "/edit?bookingDetailId=" + bookingDetailId;
         }
         return "redirect:/receptionist/folios/" + bookingId + "/edit";
+    }
+
+    @PostMapping("/{bookingId}/items/{folioItemId}/confirm-service")
+    public String confirmService(@PathVariable Long bookingId,
+                                 @PathVariable Long folioItemId,
+                                 @RequestParam Long bookingDetailId,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.confirmServiceServed(bookingId, bookingDetailId, folioItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xác nhận phục vụ dịch vụ và ghi nhận tiêu hao kho.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return editRedirect(bookingId, bookingDetailId);
+    }
+
+    @PostMapping("/{bookingId}/items/{folioItemId}/not-used")
+    public String markServiceNotUsed(@PathVariable Long bookingId,
+                                     @PathVariable Long folioItemId,
+                                     @RequestParam Long bookingDetailId,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.markServiceNotUsedNoRefund(bookingId, bookingDetailId, folioItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã ghi nhận dịch vụ không sử dụng và không hoàn tiền.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return editRedirect(bookingId, bookingDetailId);
+    }
+
+    @PostMapping("/{bookingId}/items/{folioItemId}/cancel-service")
+    public String cancelService(@PathVariable Long bookingId,
+                                @PathVariable Long folioItemId,
+                                @RequestParam Long bookingDetailId,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.cancelRequestedService(bookingId, bookingDetailId, folioItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã huỷ dịch vụ chờ phục vụ.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return editRedirect(bookingId, bookingDetailId);
+    }
+
+    private String editRedirect(Long bookingId, Long bookingDetailId) {
+        return "redirect:/receptionist/folios/" + bookingId + "/edit?bookingDetailId=" + bookingDetailId;
     }
 }

@@ -77,7 +77,7 @@ public class AuthService {
         user.setCountry(country);
 
         user.setUserType(UserType.GUEST);
-        user.setApprovalStatus(ApprovalStatus.APPROVED);
+        user.setApprovalStatus(ApprovalStatus.PENDING);
 
         /*
          * Quan trọng:

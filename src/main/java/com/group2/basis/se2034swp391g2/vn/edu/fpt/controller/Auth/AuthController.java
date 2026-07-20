@@ -127,7 +127,7 @@ public class AuthController {
 
                 redirectAttributes.addFlashAttribute(
                         "successMessage",
-                        "Xác thực email thành công. Quý khách có thể đăng nhập."
+                        "Xác thực email thành công. Tài khoản đang chờ Quản trị viên duyệt trước khi đăng nhập."
                 );
 
                 return "redirect:/auth/login";
@@ -137,7 +137,7 @@ public class AuthController {
 
                 redirectAttributes.addFlashAttribute(
                         "successMessage",
-                        "Tài khoản đã được xác thực trước đó. Quý khách có thể đăng nhập."
+                        "Tài khoản đã được xác thực email và đang chờ Quản trị viên duyệt trước khi đăng nhập."
                 );
 
                 return "redirect:/auth/login";

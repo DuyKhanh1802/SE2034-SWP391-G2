@@ -27,7 +27,6 @@ public class BookingConfirmView {
 
     private PriceSummary priceSummary;
 
-    private BankTransferInfo bankTransferInfo;
 
     @Data
     @NoArgsConstructor
@@ -75,14 +74,4 @@ public class BookingConfirmView {
         private BigDecimal grandTotal;
     }
 
-    @Data
-    @NoArgsConstructor
-    public static class BankTransferInfo {
-        private String bankName;
-        private String accountNumber;
-        private String accountName;
-        private String transferContent;
-        private BigDecimal amount;
-        private String qrImageUrl;
-    }
 }
