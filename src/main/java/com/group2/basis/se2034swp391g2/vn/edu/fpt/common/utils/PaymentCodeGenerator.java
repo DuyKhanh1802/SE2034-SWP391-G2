@@ -28,7 +28,6 @@ public final class PaymentCodeGenerator {
         return switch (paymentType) {
             case DEPOSIT -> "ĐC";
             case BALANCE -> "CL";
-            case REFUND -> throw new IllegalArgumentException("Hệ thống không hỗ trợ giao dịch hoàn tiền.");
         };
     }
 

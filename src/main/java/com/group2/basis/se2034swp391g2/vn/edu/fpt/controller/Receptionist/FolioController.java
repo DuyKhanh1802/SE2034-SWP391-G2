@@ -169,8 +169,8 @@ public class FolioController {
                                      @RequestParam Long bookingDetailId,
                                      RedirectAttributes redirectAttributes) {
         try {
-            bookingService.markServiceNotUsedNoRefund(bookingId, bookingDetailId, folioItemId);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã ghi nhận dịch vụ không sử dụng và không hoàn tiền.");
+            bookingService.markServiceNotUsed(bookingId, bookingDetailId, folioItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã ghi nhận dịch vụ không sử dụng.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

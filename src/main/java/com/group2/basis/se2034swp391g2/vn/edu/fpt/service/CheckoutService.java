@@ -356,21 +356,13 @@ public class CheckoutService {
     }
 
     private BigDecimal calculateAppliedPaidAmount(List<PaymentApplication> applications) {
-        BigDecimal collected = applications.stream()
+        return applications.stream()
                 .filter(application -> application.getPayment() != null)
                 .filter(application -> application.getPayment().getStatus() == PaymentStatus.SUCCESS)
-                .filter(application -> application.getPayment().getPaymentType() != PaymentType.REFUND)
                 .map(PaymentApplication::getAmount)
                 .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal refunded = applications.stream()
-                .filter(application -> application.getPayment() != null)
-                .filter(application -> application.getPayment().getStatus() == PaymentStatus.SUCCESS)
-                .filter(application -> application.getPayment().getPaymentType() == PaymentType.REFUND)
-                .map(PaymentApplication::getAmount)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return collected.subtract(refunded).setScale(0, RoundingMode.HALF_UP);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(0, RoundingMode.HALF_UP);
     }
 
     private String resolveSettlementType(BigDecimal balance) {

@@ -125,9 +125,6 @@ public class PaymentService {
         if (paymentType == null) {
             throw new IllegalArgumentException("Loại thanh toán không được để trống.");
         }
-        if (paymentType == PaymentType.REFUND) {
-            throw new IllegalArgumentException("Hệ thống không hỗ trợ giao dịch hoàn tiền.");
-        }
 
         if (method == null) {
             throw new IllegalArgumentException("Phương thức thanh toán không được để trống.");

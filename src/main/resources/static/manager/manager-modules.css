@@ -463,11 +463,6 @@ button,
     color: #26734d;
 }
 
-.category-chip.refund {
-    background: #fff1f1;
-    color: #a13c3c;
-}
-
 .category-chip.inventory {
     background: #fff8e6;
     color: #8a5a12;

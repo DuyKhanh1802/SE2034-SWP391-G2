@@ -321,10 +321,6 @@ public class CashTransactionService {
         if (payment == null || payment.getStatus() != PaymentStatus.SUCCESS) {
             throw new IllegalArgumentException("Payment must be successful to create cash transaction.");
         }
-        if (payment.getPaymentType() == PaymentType.REFUND) {
-            throw new IllegalArgumentException("Hệ thống không hỗ trợ giao dịch hoàn tiền.");
-        }
-
         if (payment.getId() != null && cashTransactionRepository.existsBySourceIdAndCategoryIn(
                 payment.getId(), PAYMENT_CATEGORIES)) {
             return cashTransactionRepository.findFirstBySourceIdAndCategoryIn(
@@ -335,7 +331,6 @@ public class CashTransactionService {
 
         CashTransactionCategory category = switch (payment.getPaymentType()) {
             case DEPOSIT -> CashTransactionCategory.DEPOSIT;
-            case REFUND -> throw new IllegalArgumentException("Hệ thống không hỗ trợ giao dịch hoàn tiền.");
             case BALANCE -> CashTransactionCategory.BOOKING_PAYMENT;
         };
 
@@ -364,7 +359,6 @@ public class CashTransactionService {
         return switch (payment.getPaymentType()) {
             case DEPOSIT -> "Thu tiền đặt cọc cho booking " + bookingCode;
             case BALANCE -> "Thanh toán check-out cho booking " + bookingCode;
-            case REFUND -> throw new IllegalArgumentException("Hệ thống không hỗ trợ giao dịch hoàn tiền.");
         };
     }
 
