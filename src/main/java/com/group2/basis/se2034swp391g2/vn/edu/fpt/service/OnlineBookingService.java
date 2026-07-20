@@ -48,8 +48,6 @@ public class OnlineBookingService {
     private static final int MAX_PHONE_LENGTH = 20;
     private static final int MAX_SPECIAL_REQUEST_LENGTH = 500;
     private static final int MAX_BOOKING_NIGHTS = 30;
-    private static final String BANK_BIN = "970418";
-
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
@@ -236,23 +234,6 @@ public class OnlineBookingService {
         priceSummary.setGrandTotal(grandTotal);
 
 
-        BookingConfirmView.BankTransferInfo bankTransferInfo = new BookingConfirmView.BankTransferInfo();
-
-
-        bankTransferInfo.setBankName(BANK_NAME);
-        bankTransferInfo.setAccountNumber(BANK_ACCOUNT_NUMBER);
-        bankTransferInfo.setAccountName(BANK_ACCOUNT_NAME);
-        bankTransferInfo.setTransferContent(request.getBookingReference());
-        bankTransferInfo.setAmount(grandTotal);
-        String qrImageUrl = buildVietQrUrl(
-                BANK_BIN,
-                BANK_ACCOUNT_NUMBER,
-                grandTotal,
-                request.getBookingReference(),
-                BANK_ACCOUNT_NAME
-        );
-        bankTransferInfo.setQrImageUrl(qrImageUrl);
-
 
         BookingConfirmView confirmView = new BookingConfirmView();
 
@@ -267,8 +248,6 @@ public class OnlineBookingService {
         confirmView.setPromoCode(request.getPromoCode());
         confirmView.setRooms(roomLines);
         confirmView.setPriceSummary(priceSummary);
-        confirmView.setBankTransferInfo(bankTransferInfo);
-
 
         return confirmView;
     }
@@ -804,45 +783,19 @@ public class OnlineBookingService {
         Booking booking = bookingRepository.findByBookingReference(bookingReference)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking."));
 
-
         BigDecimal amount = booking.getGrandTotal();
-
 
         if (amount == null) {
             amount = booking.getTotalAmount();
         }
 
-
-        String transferContent = booking.getBookingReference();
-
-
-        String qrImageUrl = buildVietQrUrl(
-                BANK_BIN,
-                BANK_ACCOUNT_NUMBER,
-                amount,
-                transferContent,
-                BANK_ACCOUNT_NAME
-        );
-
-
         BookingSuccessView view = new BookingSuccessView();
-
 
         view.setBookingReference(booking.getBookingReference());
         view.setCheckInDate(booking.getCheckInDate());
         view.setCheckOutDate(booking.getCheckOutDate());
         view.setTotalRooms(booking.getTotalRooms());
-
-
         view.setAmount(amount);
-
-
-        view.setBankName(BANK_NAME);
-        view.setAccountNumber(BANK_ACCOUNT_NUMBER);
-        view.setAccountName(BANK_ACCOUNT_NAME);
-        view.setTransferContent(transferContent);
-        view.setQrImageUrl(qrImageUrl);
-
 
         return view;
     }
@@ -1224,39 +1177,6 @@ public class OnlineBookingService {
     }
 
 
-    private String buildVietQrUrl(
-            String bankBin,
-            String accountNumber,
-            BigDecimal amount,
-            String transferContent,
-            String accountName
-    ) {
-        String safeAmount = "0";
-
-
-        if (amount != null) {
-            safeAmount = amount.setScale(0, RoundingMode.HALF_UP).toPlainString();
-        }
-
-
-        String encodedContent = URLEncoder.encode(
-                transferContent == null ? "" : transferContent,
-                StandardCharsets.UTF_8
-        );
-
-
-        String encodedAccountName = URLEncoder.encode(
-                accountName == null ? "" : accountName,
-                StandardCharsets.UTF_8
-        );
-
-
-        return "https://img.vietqr.io/image/"
-                + bankBin + "-" + accountNumber + "-compact2.png"
-                + "?amount=" + safeAmount
-                + "&addInfo=" + encodedContent
-                + "&accountName=" + encodedAccountName;
-    }
 
 
     private Promotion consumePromotionForBooking(Long promotionId, String guestEmail) {
