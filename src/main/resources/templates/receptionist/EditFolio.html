@@ -29,7 +29,7 @@
                         : 'Điều chỉnh hoá đơn'}">Điều chỉnh hoá đơn</h1>
                 <p class="locked-note" th:unless="${folio.editable}">
                     <i class="bi bi-lock-fill"></i>
-                    Hoá đơn đã khoá vì booking đã trả phòng, huỷ hoặc no-show và không thể chỉnh sửa.
+                    Folio phòng đã khoá vì phòng đã trả, bị huỷ hoặc booking không còn cho phép chỉnh sửa.
                 </p>
             </div>
 
@@ -87,18 +87,18 @@
                         <input type="hidden" th:field="*{bookingDetailId}">
                         <div>
                             <label for="description">Mô tả</label>
-                            <input type="text" th:field="*{description}"
-                                   placeholder="Ví dụ: Phụ thu minibar, giảm giá xử lý sự cố" required>
+                            <input id="description" type="text" th:field="*{description}"
+                                   maxlength="200" placeholder="Ví dụ: Phụ thu minibar, giảm giá xử lý sự cố" required>
                         </div>
                         <div>
                             <label for="amount">Số tiền</label>
-                            <input class="no-number-spinner" type="number"
+                            <input id="amount" class="no-number-spinner" type="number"
                                    th:field="*{amount}" step="1000" placeholder="Âm là giảm trừ" required>
                         </div>
                         <div>
                             <label for="adjustmentReason">Lý do</label>
-                            <input type="text" th:field="*{adjustmentReason}"
-                                   placeholder="Ghi chú nội bộ">
+                            <input id="adjustmentReason" type="text" th:field="*{adjustmentReason}"
+                                   maxlength="300" placeholder="Nhập lý do điều chỉnh" required>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -185,16 +185,15 @@
                                     </button>
                                 </form>
                             </div>
-                            <form th:if="${line.voidable}"
-                                  th:action="@{/receptionist/folios/{bookingId}/items/{folioItemId}/void(bookingId=${folio.bookingId},folioItemId=${line.folioItemId})}"
-                                  method="post"
-                                  class="inline-void-form">
-                                <input type="hidden" name="bookingDetailId" th:value="${folio.bookingDetailId}">
-                                <input type="hidden" name="voidedReason" value="Huỷ điều chỉnh từ màn Edit Folio">
-                                <button type="submit" title="Huỷ điều chỉnh">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
-                            </form>
+                            <button th:if="${line.voidable}"
+                                    type="button"
+                                    class="inline-void-trigger"
+                                    title="Huỷ điều chỉnh"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#voidAdjustmentModal"
+                                    th:attr="data-void-action=@{/receptionist/folios/{bookingId}/items/{folioItemId}/void(bookingId=${folio.bookingId},folioItemId=${line.folioItemId})},data-line-description=${line.description}">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
                             <button th:if="${!line.serviceItem and !line.voidable}"
                                     type="button"
                                     class="inline-void-disabled"
@@ -211,7 +210,59 @@
                 </table>
             </div>
         </section>
+
+        <div class="modal fade folio-adjustment-modal"
+             th:if="${folio.editable}"
+             id="voidAdjustmentModal"
+             tabindex="-1"
+             aria-labelledby="voidAdjustmentModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form id="voidAdjustmentForm" class="modal-content adjustment-modal-form" method="post">
+                    <input th:if="${_csrf != null}" type="hidden"
+                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <div class="modal-header">
+                        <h2 class="modal-title" id="voidAdjustmentModalLabel">Huỷ điều chỉnh</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="bookingDetailId" th:value="${folio.bookingDetailId}">
+                        <p class="void-adjustment-description" id="voidAdjustmentDescription"></p>
+                        <div>
+                            <label for="voidedReason">Lý do huỷ</label>
+                            <input id="voidedReason" name="voidedReason" type="text" maxlength="200"
+                                   placeholder="Nhập lý do huỷ điều chỉnh" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn-dark">Xác nhận huỷ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </section>
 </main>
+
+<th:block layout:fragment="scripts">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.getElementById("voidAdjustmentModal");
+            const form = document.getElementById("voidAdjustmentForm");
+            const description = document.getElementById("voidAdjustmentDescription");
+
+            if (!modal || !form) {
+                return;
+            }
+
+            modal.addEventListener("show.bs.modal", function (event) {
+                const trigger = event.relatedTarget;
+                form.action = trigger.dataset.voidAction;
+                description.textContent = trigger.dataset.lineDescription || "";
+                form.elements.voidedReason.value = "";
+            });
+        });
+    </script>
+</th:block>
 </body>
 </html>

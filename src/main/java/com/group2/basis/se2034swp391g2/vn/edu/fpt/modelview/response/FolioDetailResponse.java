@@ -28,9 +28,10 @@ public class FolioDetailResponse {
     private String bookingStatus;
     private BigDecimal roomSubtotal;
     private BigDecimal serviceSubtotal;
+    private BigDecimal adjustmentTotal;
+    private BigDecimal folioDiscountTotal;
     private BigDecimal serviceChargeTotal;
     private BigDecimal vatTotal;
-    private BigDecimal discountAmount;
     private BigDecimal totalAmount;
     private BigDecimal paidAmount;
     private BigDecimal balanceAmount;

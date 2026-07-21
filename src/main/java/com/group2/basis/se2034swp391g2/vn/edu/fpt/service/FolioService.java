@@ -11,6 +11,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.PaymentApplication;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.FolioAdjustmentRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioDetailResponse;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.FolioListResponse;
@@ -19,9 +20,12 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.FolioItemRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentApplicationRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +51,7 @@ public class FolioService {
     private final FolioItemRepository folioItemRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentApplicationRepository paymentApplicationRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public Page<FolioListResponse> searchFolios(String keyword,
@@ -115,8 +120,11 @@ public class FolioService {
 
         boolean canManageServices = booking.getStatus() == BookingStatus.CHECKED_IN
                 || booking.getStatus() == BookingStatus.PARTIALLY_CHECKED_OUT;
+        boolean editable = bookingDetailId != null
+                && isEditableBooking(booking)
+                && details.stream().allMatch(this::isEditableBookingDetail);
         List<FolioDetailResponse.FolioLine> lines = items.stream()
-                .map(item -> toFolioLine(item, isEditableBooking(booking), canManageServices))
+                .map(item -> toFolioLine(item, editable, canManageServices))
                 .toList();
 
         List<FolioDetailResponse.PaymentLine> paymentLines = payments.stream()
@@ -136,15 +144,16 @@ public class FolioService {
                 .bookingStatus(booking.getStatus() == null ? "" : booking.getStatus().name())
                 .roomSubtotal(totals.roomSubtotal())
                 .serviceSubtotal(totals.serviceSubtotal())
+                .adjustmentTotal(totals.adjustmentTotal())
+                .folioDiscountTotal(totals.folioDiscountTotal())
                 .serviceChargeTotal(totals.serviceChargeTotal())
                 .vatTotal(totals.vatTotal())
-                .discountAmount(bookingDetailId == null ? money(booking.getDiscountAmount()) : BigDecimal.ZERO)
                 .totalAmount(totalAmount)
                 .paidAmount(paidAmount)
                 .balanceAmount(balanceAmount)
                 .paymentStatus(paymentState.status())
                 .paymentStatusLabel(paymentState.label())
-                .editable(isEditableBooking(booking))
+                .editable(editable)
                 .rooms(rooms)
                 .invoiceCharges(lines)
                 .payments(paymentLines)
@@ -153,9 +162,6 @@ public class FolioService {
 
     @Transactional
     public void addAdjustment(Long bookingId, FolioAdjustmentRequest request) {
-        Booking booking = getActiveBooking(bookingId);
-        validateEditableBooking(booking);
-
         if (request == null) {
             throw new IllegalArgumentException("Thiếu thông tin điều chỉnh.");
         }
@@ -164,30 +170,27 @@ public class FolioService {
             throw new IllegalArgumentException("Vui lòng chọn phòng áp dụng điều chỉnh.");
         }
 
-        BigDecimal normalizedAmount = validateAndNormalizeAdjustmentAmount(request.getAmount(), booking);
+        BookingDetail detail = getBookingDetailForUpdate(request.getBookingDetailId());
+        Booking booking = getActiveBookingForUpdate(bookingId);
+        validateBookingDetailOwnership(booking, detail);
+        validateEditableBooking(booking);
+        validateEditableBookingDetail(detail);
+
+        BigDecimal normalizedAmount = validateAndNormalizeAdjustmentAmount(request.getAmount());
         String description = validateAndNormalizeRequiredText(
                 request.getDescription(),
                 "Vui lòng nhập mô tả điều chỉnh.",
                 DESCRIPTION_MAX_LENGTH,
                 "Mô tả điều chỉnh"
         );
-        String adjustmentReason = validateAndNormalizeOptionalText(
+        String adjustmentReason = validateAndNormalizeRequiredText(
                 request.getAdjustmentReason(),
+                "Vui lòng nhập lý do điều chỉnh.",
                 ADJUSTMENT_REASON_MAX_LENGTH,
                 "Lý do điều chỉnh"
         );
-
-        BookingDetail detail = null;
-        if (request.getBookingDetailId() != null) {
-            detail = bookingDetailRepository.findById(request.getBookingDetailId())
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng được chọn."));
-            if (detail.getBooking() == null || !booking.getId().equals(detail.getBooking().getId())) {
-                throw new IllegalArgumentException("Phòng được chọn không thuộc booking này.");
-            }
-        }
-
-        validateEditableBookingDetail(detail);
-        validateNegativeAdjustmentWithinRoomTotal(normalizedAmount, detail);
+        validateRoomTotalAfterAdjustment(normalizedAmount, detail);
+        User currentStaff = getCurrentStaffUser();
 
         FolioItemType itemType = normalizedAmount.compareTo(BigDecimal.ZERO) < 0
                 ? FolioItemType.DISCOUNT
@@ -208,6 +211,7 @@ public class FolioService {
                 .quantity(1)
                 .unitPrice(normalizedAmount)
                 .postedAt(Instant.now())
+                .postedBy(currentStaff)
                 .adjustmentReason(adjustmentReason)
                 .isVoided(false)
                 .build();
@@ -218,16 +222,17 @@ public class FolioService {
 
     @Transactional
     public void voidAdjustment(Long bookingId, Long bookingDetailId, Long folioItemId, String reason) {
-        Booking booking = getActiveBooking(bookingId);
-        validateEditableBooking(booking);
-        BookingDetail detail = getBookingDetailForFolio(booking, bookingDetailId);
-        validateEditableBookingDetail(detail);
-
         if (folioItemId == null) {
             throw new IllegalArgumentException("Thiếu mã dòng folio cần huỷ.");
         }
 
-        FolioItem item = folioItemRepository.findById(folioItemId)
+        BookingDetail detail = getBookingDetailForUpdate(bookingDetailId);
+        Booking booking = getActiveBookingForUpdate(bookingId);
+        validateBookingDetailOwnership(booking, detail);
+        validateEditableBooking(booking);
+        validateEditableBookingDetail(detail);
+
+        FolioItem item = folioItemRepository.findByIdForUpdate(folioItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng folio."));
 
         if (item.getBooking() == null || !booking.getId().equals(item.getBooking().getId())) {
@@ -246,18 +251,23 @@ public class FolioService {
             throw new IllegalArgumentException("Chỉ có thể huỷ các dòng điều chỉnh hoặc giảm trừ.");
         }
 
-        String normalizedReason = validateAndNormalizeOptionalText(
+        String normalizedReason = validateAndNormalizeRequiredText(
                 reason,
+                "Vui lòng nhập lý do huỷ điều chỉnh.",
                 VOIDED_REASON_MAX_LENGTH,
                 "Lý do huỷ dòng folio"
         );
 
+        BigDecimal reverseAmount = money(item.getTotalAmount()).negate();
+        validateRoomTotalAfterAdjustment(reverseAmount, detail);
+        User currentStaff = getCurrentStaffUser();
+
         item.setIsVoided(true);
         item.setVoidedAt(Instant.now());
-        item.setVoidedReason(normalizedReason == null ? "Huỷ điều chỉnh folio" : normalizedReason);
+        item.setVoidedBy(currentStaff);
+        item.setVoidedReason(normalizedReason);
         folioItemRepository.save(item);
 
-        BigDecimal reverseAmount = money(item.getTotalAmount()).negate();
         applyAmountToBooking(booking, reverseAmount, item.getItemType());
     }
 
@@ -387,6 +397,15 @@ public class FolioService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking."));
     }
 
+    private Booking getActiveBookingForUpdate(Long bookingId) {
+        if (bookingId == null || bookingId <= 0) {
+            throw new IllegalArgumentException("Thiếu mã booking.");
+        }
+
+        return bookingRepository.findByIdAndIsDeletedFalseForUpdate(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking."));
+    }
+
     private void validateEditableBooking(Booking booking) {
         if (!isEditableBooking(booking)) {
             throw new IllegalStateException("Chỉ có thể chỉnh folio trước khi booking trả phòng, huỷ hoặc no-show.");
@@ -394,35 +413,51 @@ public class FolioService {
     }
 
     private void validateEditableBookingDetail(BookingDetail detail) {
-        BookingDetailStatus stayStatus = detail.getStayStatus();
-        if (stayStatus == BookingDetailStatus.CHECKED_OUT || stayStatus == BookingDetailStatus.CANCELLED) {
+        if (!isEditableBookingDetail(detail)) {
             throw new IllegalStateException("Không thể chỉnh hoá đơn của phòng đã trả, đã huỷ hoặc no-show.");
         }
     }
 
-    private BookingDetail getBookingDetailForFolio(Booking booking, Long bookingDetailId) {
-        if (bookingDetailId == null) {
+    private boolean isEditableBookingDetail(BookingDetail detail) {
+        if (detail == null || detail.getActualCheckoutAt() != null) {
+            return false;
+        }
+        BookingDetailStatus stayStatus = detail.getStayStatus();
+        return stayStatus != BookingDetailStatus.CHECKED_OUT
+                && stayStatus != BookingDetailStatus.CANCELLED;
+    }
+
+    private BookingDetail getBookingDetailForUpdate(Long bookingDetailId) {
+        if (bookingDetailId == null || bookingDetailId <= 0) {
             throw new IllegalArgumentException("Thiếu phòng áp dụng điều chỉnh.");
         }
 
-        BookingDetail detail = bookingDetailRepository.findById(bookingDetailId)
+        return bookingDetailRepository.findByIdForUpdate(bookingDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng được chọn."));
+    }
+
+    private void validateBookingDetailOwnership(Booking booking, BookingDetail detail) {
         if (detail.getBooking() == null || !booking.getId().equals(detail.getBooking().getId())) {
             throw new IllegalArgumentException("Phòng được chọn không thuộc booking này.");
         }
-        return detail;
     }
 
-    private void validateNegativeAdjustmentWithinRoomTotal(BigDecimal amount, BookingDetail detail) {
-        if (amount.compareTo(BigDecimal.ZERO) >= 0) {
-            return;
-        }
-
+    private void validateRoomTotalAfterAdjustment(BigDecimal amount, BookingDetail detail) {
         List<FolioItem> currentRoomItems = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
         BigDecimal currentRoomTotal = calculateFolioTotals(List.of(detail), currentRoomItems).totalAmount();
-        if (amount.abs().compareTo(currentRoomTotal) > 0) {
+        BigDecimal newTotal = currentRoomTotal.add(money(amount));
+        if (newTotal.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Số tiền giảm trừ không được lớn hơn tổng tiền hiện tại của phòng.");
+        }
+
+        BigDecimal paidAmount = calculateAppliedPaidAmount(
+                paymentApplicationRepository.findByBookingDetailId(detail.getId())
+        );
+        if (newTotal.compareTo(paidAmount) < 0) {
+            throw new IllegalArgumentException(
+                    "Tổng hoá đơn sau điều chỉnh không được thấp hơn số tiền phòng đã thanh toán. Vui lòng xử lý hoàn tiền trước."
+            );
         }
     }
 
@@ -454,7 +489,7 @@ public class FolioService {
         return normalizedStatus;
     }
 
-    private BigDecimal validateAndNormalizeAdjustmentAmount(BigDecimal amount, Booking booking) {
+    private BigDecimal validateAndNormalizeAdjustmentAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
             throw new IllegalArgumentException("Số tiền điều chỉnh phải khác 0.");
         }
@@ -466,12 +501,17 @@ public class FolioService {
         if (normalizedAmount.abs().compareTo(MAX_ADJUSTMENT_ABS_AMOUNT) > 0) {
             throw new IllegalArgumentException("Số tiền điều chỉnh không được vượt quá 1,000,000,000 VND.");
         }
-        if (normalizedAmount.compareTo(BigDecimal.ZERO) < 0
-                && normalizedAmount.abs().compareTo(money(booking.getGrandTotal())) > 0) {
-            throw new IllegalArgumentException("Số tiền giảm trừ không được lớn hơn tổng tiền hiện tại của hoá đơn.");
+        return normalizedAmount;
+    }
+
+    private User getCurrentStaffUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Không xác định được nhân viên đang thực hiện điều chỉnh.");
         }
 
-        return normalizedAmount;
+        return userRepository.findByEmailAndIsDeletedFalse(authentication.getName())
+                .orElseThrow(() -> new IllegalStateException("Không tìm thấy thông tin nhân viên đang đăng nhập."));
     }
 
     private String validateAndNormalizeRequiredText(String value,
@@ -550,8 +590,21 @@ public class FolioService {
                 .toList();
 
         BigDecimal serviceSubtotal = chargeableItems.stream()
+                .filter(item -> item.getService() != null)
                 .map(FolioItem::getBaseAmount)
                 .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal adjustmentTotal = chargeableItems.stream()
+                .filter(item -> item.getService() == null)
+                .filter(item -> item.getItemType() != FolioItemType.DISCOUNT)
+                .map(FolioItem::getBaseAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal folioDiscountTotal = chargeableItems.stream()
+                .filter(item -> item.getItemType() == FolioItemType.DISCOUNT)
+                .map(FolioItem::getTotalAmount)
+                .filter(Objects::nonNull)
+                .map(BigDecimal::abs)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal serviceChargeTotal = chargeableItems.stream()
                 .map(FolioItem::getServiceChargeAmount)
@@ -569,6 +622,8 @@ public class FolioService {
         return new FolioTotals(
                 money(roomSubtotal),
                 money(serviceSubtotal),
+                money(adjustmentTotal),
+                money(folioDiscountTotal),
                 money(serviceChargeTotal),
                 money(vatTotal),
                 money(roomSubtotal.add(itemTotal))
@@ -612,6 +667,8 @@ public class FolioService {
 
     private record FolioTotals(BigDecimal roomSubtotal,
                                BigDecimal serviceSubtotal,
+                               BigDecimal adjustmentTotal,
+                               BigDecimal folioDiscountTotal,
                                BigDecimal serviceChargeTotal,
                                BigDecimal vatTotal,
                                BigDecimal totalAmount) {
