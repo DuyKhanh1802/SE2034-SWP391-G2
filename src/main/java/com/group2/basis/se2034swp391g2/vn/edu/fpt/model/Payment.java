@@ -53,10 +53,6 @@ public class Payment {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "original_payment_id")
-    private Payment originalPayment;
-
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();

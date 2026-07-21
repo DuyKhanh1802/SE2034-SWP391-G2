@@ -493,7 +493,7 @@ public class BookingService {
         if (currentStatus == FolioItemStatus.CANCELLED) {
             throw new IllegalArgumentException("Không thể xác nhận dịch vụ đã hủy.");
         }
-        if (currentStatus == FolioItemStatus.NOT_USED_NO_REFUND) {
+        if (currentStatus == FolioItemStatus.NOT_USED) {
             throw new IllegalArgumentException("Không thể xác nhận dịch vụ khách đã báo không sử dụng.");
         }
         inventoryManagementService.consumeForService(
@@ -508,7 +508,7 @@ public class BookingService {
     }
 
     @Transactional
-    public void markServiceNotUsedNoRefund(Long bookingId, Long bookingDetailId, Long folioItemId) {
+    public void markServiceNotUsed(Long bookingId, Long bookingDetailId, Long folioItemId) {
         FolioItem folioItem = getServiceFolioItem(bookingId, bookingDetailId, folioItemId);
         FolioItemStatus currentStatus = getEffectiveServiceStatus(folioItem);
 
@@ -518,11 +518,11 @@ public class BookingService {
         if (currentStatus == FolioItemStatus.CANCELLED) {
             throw new IllegalArgumentException("Dịch vụ này đã được hủy.");
         }
-        if (currentStatus == FolioItemStatus.NOT_USED_NO_REFUND) {
-            throw new IllegalArgumentException("Dịch vụ này đã được ghi nhận không sử dụng và không hoàn tiền.");
+        if (currentStatus == FolioItemStatus.NOT_USED) {
+            throw new IllegalArgumentException("Dịch vụ này đã được ghi nhận không sử dụng.");
         }
 
-        folioItem.setServiceStatus(FolioItemStatus.NOT_USED_NO_REFUND);
+        folioItem.setServiceStatus(FolioItemStatus.NOT_USED);
         folioItemRepository.save(folioItem);
     }
 
@@ -537,8 +537,8 @@ public class BookingService {
         if (currentStatus == FolioItemStatus.CANCELLED) {
             throw new IllegalArgumentException("Dịch vụ này đã được hủy.");
         }
-        if (currentStatus == FolioItemStatus.NOT_USED_NO_REFUND) {
-            throw new IllegalArgumentException("Dịch vụ này đã được ghi nhận không sử dụng và không hoàn tiền.");
+        if (currentStatus == FolioItemStatus.NOT_USED) {
+            throw new IllegalArgumentException("Dịch vụ này đã được ghi nhận không sử dụng.");
         }
 
         folioItem.setServiceStatus(FolioItemStatus.CANCELLED);
@@ -1249,7 +1249,6 @@ public class BookingService {
 
         BigDecimal depositPaid = payments.stream()
                 .filter(payment -> payment.getStatus() == PaymentStatus.SUCCESS)
-                .filter(payment -> payment.getPaymentType() != PaymentType.REFUND)
                 .map(Payment::getAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

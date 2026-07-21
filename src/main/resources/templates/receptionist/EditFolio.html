@@ -153,7 +153,7 @@
                             <span th:if="${line.serviceItem}"
                                   class="service-status"
                                   th:classappend="${line.serviceStatus == 'COMPLETED'} ? ' service-status-completed' :
-                                      (${line.serviceStatus == 'CANCELLED' or line.serviceStatus == 'NOT_USED_NO_REFUND'}
+                                      (${line.serviceStatus == 'CANCELLED' or line.serviceStatus == 'NOT_USED'}
                                           ? ' service-status-cancelled' : ' service-status-requested')"
                                   th:text="${line.statusLabel}">Chờ phục vụ</span>
                             <span th:unless="${line.serviceItem}" class="service-status-empty">-</span>

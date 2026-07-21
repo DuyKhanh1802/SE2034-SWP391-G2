@@ -274,15 +274,6 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
                           FROM Payment p
                           WHERE p.booking = b
                             AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-                            AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
-                      ), 0)
-                      -
-                      COALESCE((
-                          SELECT SUM(p.amount)
-                          FROM Payment p
-                          WHERE p.booking = b
-                            AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-                            AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
                       ), 0)
                   ) >= COALESCE(b.grandTotal, 0)
               )
@@ -296,15 +287,6 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
                       FROM Payment p
                       WHERE p.booking = b
                         AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-                        AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
-                  ), 0)
-                  -
-                  COALESCE((
-                      SELECT SUM(p.amount)
-                      FROM Payment p
-                      WHERE p.booking = b
-                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-                        AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
                   ), 0)
               ) = 0
           )
@@ -316,15 +298,6 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
                       FROM Payment p
                       WHERE p.booking = b
                         AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-                        AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
-                  ), 0)
-                  -
-                  COALESCE((
-                      SELECT SUM(p.amount)
-                      FROM Payment p
-                      WHERE p.booking = b
-                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-                        AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
                   ), 0)
               ) > 0
               AND (
@@ -333,15 +306,6 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
                       FROM Payment p
                       WHERE p.booking = b
                         AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-                        AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
-                  ), 0)
-                  -
-                  COALESCE((
-                      SELECT SUM(p.amount)
-                      FROM Payment p
-                      WHERE p.booking = b
-                        AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-                        AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
                   ), 0)
               ) < COALESCE(b.grandTotal, 0)
           )
@@ -383,8 +347,7 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
               AND (
                   COALESCE(b.grandTotal, 0) = 0
                   OR (
-                      COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                      - COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                      COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
                   ) >= COALESCE(b.grandTotal, 0)
               )
           )
@@ -392,19 +355,16 @@ AND (:checkOut IS NULL OR b.checkOutDate <= :checkOut)
               :paymentStatus = 'UNPAID'
               AND COALESCE(b.grandTotal, 0) > 0
               AND (
-                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
               ) = 0
           )
           OR (
               :paymentStatus = 'PARTIAL'
               AND (
-                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
               ) > 0
               AND (
-                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  COALESCE((SELECT SUM(p.amount) FROM Payment p WHERE p.booking = b AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
               ) < COALESCE(b.grandTotal, 0)
           )
       )

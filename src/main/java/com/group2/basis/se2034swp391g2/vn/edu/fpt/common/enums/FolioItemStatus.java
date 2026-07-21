@@ -4,7 +4,7 @@ public enum FolioItemStatus {
     REQUESTED("Chờ phục vụ"),
     COMPLETED("Đã phục vụ"),
     CANCELLED("Đã hủy"),
-    NOT_USED_NO_REFUND("Không sử dụng - không hoàn tiền");
+    NOT_USED("Không sử dụng");
 
     private final String label;
 

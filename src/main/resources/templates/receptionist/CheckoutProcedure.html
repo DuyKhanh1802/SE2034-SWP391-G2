@@ -75,7 +75,6 @@
                     <div class="detail-item total"><span>Tổng tiền</span><strong th:text="${#numbers.formatDecimal(checkout.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item"><span>Đã thanh toán</span><strong th:text="${#numbers.formatDecimal(checkout.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item" th:if="${checkout.settlementType == 'PAYMENT'}"><span>Còn lại</span><strong th:text="${#numbers.formatDecimal(checkout.balanceAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
-                    <div class="detail-item" th:if="${checkout.settlementType == 'REFUND'}"><span>Cần hoàn tiền</span><strong th:text="${#numbers.formatDecimal(checkout.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong></div>
                     <div class="detail-item" th:if="${checkout.settlementType == 'SETTLED'}"><span>Còn lại</span><strong>Đã cân bằng</strong></div>
                 </div>
             </section>
@@ -96,19 +95,6 @@
                         <input type="hidden" name="paymentAmount" th:value="${checkout.balanceAmount}">
                         <label>Phương thức thanh toán</label>
                         <select name="paymentMethod" id="checkoutPaymentMethod" required>
-                            <option th:each="method : ${paymentMethods}"
-                                    th:if="${method.name() == 'CASH' or method.name() == 'TRANSFER'}"
-                                    th:value="${method.name()}"
-                                    th:text="${method.label}">Cash</option>
-                        </select>
-                    </div>
-
-                    <div th:if="${checkout.settlementType == 'REFUND'}" class="settlement-box refund">
-                        <span>Hoàn tiền cho khách</span>
-                        <strong th:text="${#numbers.formatDecimal(checkout.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</strong>
-                        <input type="hidden" name="refundAmount" th:value="${checkout.refundAmount}">
-                        <label>Phương thức hoàn tiền</label>
-                        <select name="refundMethod">
                             <option th:each="method : ${paymentMethods}"
                                     th:if="${method.name() == 'CASH' or method.name() == 'TRANSFER'}"
                                     th:value="${method.name()}"

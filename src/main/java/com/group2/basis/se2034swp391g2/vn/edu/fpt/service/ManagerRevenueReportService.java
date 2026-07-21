@@ -29,7 +29,6 @@ public class ManagerRevenueReportService {
     private static final List<CashTransactionCategory> REVENUE_REPORT_CATEGORIES = List.of(
             CashTransactionCategory.DEPOSIT,
             CashTransactionCategory.BOOKING_PAYMENT,
-            CashTransactionCategory.REFUND,
             CashTransactionCategory.MANUAL_INCOME,
             CashTransactionCategory.MANUAL_EXPENSE,
             CashTransactionCategory.INVENTORY_PURCHASE
@@ -182,7 +181,7 @@ public class ManagerRevenueReportService {
         private RowAccumulator(CashTransactionCategory category) {
             this.category = category;
             this.type = switch (category) {
-                case REFUND, MANUAL_EXPENSE, INVENTORY_PURCHASE -> CashTransactionType.EXPENSE;
+                case MANUAL_EXPENSE, INVENTORY_PURCHASE -> CashTransactionType.EXPENSE;
                 default -> CashTransactionType.INCOME;
             };
         }

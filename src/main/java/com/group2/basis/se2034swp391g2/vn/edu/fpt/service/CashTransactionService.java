@@ -32,8 +32,7 @@ public class CashTransactionService {
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private static final List<CashTransactionCategory> PAYMENT_CATEGORIES = List.of(
             CashTransactionCategory.DEPOSIT,
-            CashTransactionCategory.BOOKING_PAYMENT,
-            CashTransactionCategory.REFUND
+            CashTransactionCategory.BOOKING_PAYMENT
     );
     private static final List<CashTransactionCategory> VISIBLE_CATEGORIES = List.of(
             CashTransactionCategory.BOOKING_PAYMENT,
@@ -322,20 +321,16 @@ public class CashTransactionService {
         if (payment == null || payment.getStatus() != PaymentStatus.SUCCESS) {
             throw new IllegalArgumentException("Payment must be successful to create cash transaction.");
         }
-
         if (payment.getId() != null && cashTransactionRepository.existsBySourceIdAndCategoryIn(
                 payment.getId(), PAYMENT_CATEGORIES)) {
             return cashTransactionRepository.findFirstBySourceIdAndCategoryIn(
                     payment.getId(), PAYMENT_CATEGORIES).orElseThrow();
         }
 
-        CashTransactionType type = payment.getPaymentType() == PaymentType.REFUND
-                ? CashTransactionType.EXPENSE
-                : CashTransactionType.INCOME;
+        CashTransactionType type = CashTransactionType.INCOME;
 
         CashTransactionCategory category = switch (payment.getPaymentType()) {
             case DEPOSIT -> CashTransactionCategory.DEPOSIT;
-            case REFUND -> CashTransactionCategory.REFUND;
             case BALANCE -> CashTransactionCategory.BOOKING_PAYMENT;
         };
 
@@ -364,7 +359,6 @@ public class CashTransactionService {
         return switch (payment.getPaymentType()) {
             case DEPOSIT -> "Thu tiền đặt cọc cho booking " + bookingCode;
             case BALANCE -> "Thanh toán check-out cho booking " + bookingCode;
-            case REFUND -> "Hoàn tiền cho booking " + bookingCode;
         };
     }
 

@@ -9,6 +9,4 @@ import java.math.BigDecimal;
 public class CheckoutRequest {
     private BigDecimal paymentAmount = BigDecimal.ZERO;
     private PaymentMethod paymentMethod;
-    private BigDecimal refundAmount = BigDecimal.ZERO;
-    private PaymentMethod refundMethod;
 }

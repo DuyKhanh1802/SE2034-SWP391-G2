@@ -38,26 +38,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     """)
     List<Object[]> findPaymentMethodsByIds(@Param("paymentIds") Collection<Long> paymentIds);
 
-    @Query("""
-    SELECT p.booking.id, COALESCE(SUM(p.amount), 0)
-    FROM Payment p
-    WHERE p.booking.id IN :bookingIds
-      AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-      AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
-    GROUP BY p.booking.id
-    """)
-    List<Object[]> findSuccessfulCollectionTotalsByBookingIds(@Param("bookingIds") Collection<Long> bookingIds);
-
-    @Query("""
-    SELECT p.booking.id, COALESCE(SUM(p.amount), 0)
-    FROM Payment p
-    WHERE p.booking.id IN :bookingIds
-      AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS
-      AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND
-    GROUP BY p.booking.id
-    """)
-    List<Object[]> findSuccessfulRefundTotalsByBookingIds(@Param("bookingIds") Collection<Long> bookingIds);
-
     Optional<Payment> findByTransactionRef(String transactionRef);
 
 }

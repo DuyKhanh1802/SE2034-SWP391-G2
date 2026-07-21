@@ -156,6 +156,6 @@ public class CashTransactionController {
     private boolean isPaymentCategory(CashTransactionCategory category) {
         return category == CashTransactionCategory.DEPOSIT
                 || category == CashTransactionCategory.BOOKING_PAYMENT
-                || category == CashTransactionCategory.REFUND;
+                ;
     }
 }

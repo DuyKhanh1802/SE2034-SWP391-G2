@@ -90,11 +90,6 @@
     background: #fff9e8;
 }
 
-.settlement-box.refund {
-    border-color: #e0b5b5;
-    background: #fff0f0;
-}
-
 .settlement-box.settled {
     border-color: #b7d8c4;
     background: #edf8f1;

@@ -43,7 +43,7 @@
                     <span class="detail-badge deposit-badge"
                           th:classappend="${detail.depositStatus.name() == 'PAID'} ? ' badge-paid' :
                               (${detail.depositStatus.name() == 'UNPAID'} ? ' badge-unpaid' :
-                              (${detail.depositStatus.name() == 'REFUNDED'} ? ' badge-refunded' : ' badge-forfeited'))"
+                              ' badge-forfeited')"
                           th:text="${detail.depositStatus.label}">
                         Đã thanh toán cọc
                     </span>

@@ -131,8 +131,7 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
                   COALESCE(bd.totalAmount, 0)
                   + COALESCE((SELECT SUM(fi.totalAmount) FROM FolioItem fi WHERE fi.bookingDetail = bd AND fi.isVoided = false), 0)
               ) <= (
-                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
               )
           )
           OR (
@@ -142,19 +141,16 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
                   + COALESCE((SELECT SUM(fi.totalAmount) FROM FolioItem fi WHERE fi.bookingDetail = bd AND fi.isVoided = false), 0)
               ) > 0
               AND (
-                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
               ) = 0
           )
           OR (
               :paymentStatus = 'PARTIAL'
               AND (
-                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
               ) > 0
               AND (
-                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
+                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
               ) < (
                   COALESCE(bd.totalAmount, 0)
                   + COALESCE((SELECT SUM(fi.totalAmount) FROM FolioItem fi WHERE fi.bookingDetail = bd AND fi.isVoided = false), 0)
@@ -199,21 +195,17 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Lo
           OR (
               :paymentStatus = 'PAID'
               AND (COALESCE(bd.totalAmount, 0) + COALESCE((SELECT SUM(fi.totalAmount) FROM FolioItem fi WHERE fi.bookingDetail = bd AND fi.isVoided = false), 0)) <=
-                  (COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0))
+                  COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0)
           )
           OR (
               :paymentStatus = 'UNPAID'
               AND (COALESCE(bd.totalAmount, 0) + COALESCE((SELECT SUM(fi.totalAmount) FROM FolioItem fi WHERE fi.bookingDetail = bd AND fi.isVoided = false), 0)) > 0
-              AND (COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)) = 0
+              AND COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0) = 0
           )
           OR (
               :paymentStatus = 'PARTIAL'
-              AND (COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)) > 0
-              AND (COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType <> com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)
-                  - COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS AND p.paymentType = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType.REFUND), 0)) <
+              AND COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0) > 0
+              AND COALESCE((SELECT SUM(application.amount) FROM PaymentApplication application JOIN application.payment p WHERE application.bookingDetail = bd AND p.status = com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus.SUCCESS), 0) <
                   (COALESCE(bd.totalAmount, 0) + COALESCE((SELECT SUM(fi.totalAmount) FROM FolioItem fi WHERE fi.bookingDetail = bd AND fi.isVoided = false), 0))
           )
       )
