@@ -381,12 +381,7 @@
     font-weight: 800;
 }
 
-.inline-void-form {
-    display: inline-flex;
-    margin: 0;
-}
-
-.inline-void-form button,
+.inline-void-trigger,
 .inline-void-disabled {
     display: inline-flex;
     width: 31px;
@@ -398,8 +393,15 @@
     color: #b42318;
 }
 
-.inline-void-form button:hover {
+.inline-void-trigger:hover {
     background: #fff1f0;
+}
+
+.void-adjustment-description {
+    margin: 0;
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .inline-void-disabled {

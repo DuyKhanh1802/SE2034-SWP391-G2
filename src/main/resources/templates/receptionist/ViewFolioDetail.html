@@ -40,7 +40,8 @@
                     <i class="bi bi-box-arrow-right"></i>
                     Checkout
                 </a>
-                <a th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}"
+                <a th:if="${folio.bookingDetailId != null}"
+                   th:href="@{/receptionist/folios/{id}/edit(id=${folio.bookingId}, bookingDetailId=${folio.bookingDetailId})}"
                    class="btn-outline">
                     <i class="bi bi-pencil-square"></i>
                     Chỉnh sửa
@@ -101,9 +102,10 @@
                 <div class="price-lines">
                     <div><span>Tiền phòng</span><strong th:text="${#numbers.formatDecimal(folio.roomSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                     <div><span>Dịch vụ thêm</span><strong th:text="${#numbers.formatDecimal(folio.serviceSubtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                    <div><span>Phụ thu / điều chỉnh</span><strong th:text="${#numbers.formatDecimal(folio.adjustmentTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                     <div><span>Phí dịch vụ</span><strong th:text="${#numbers.formatDecimal(folio.serviceChargeTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                     <div><span>VAT</span><strong th:text="${#numbers.formatDecimal(folio.vatTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
-                    <div><span>Giảm giá</span><strong th:text="'- ' + ${#numbers.formatDecimal(folio.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                    <div><span>Giảm trừ folio</span><strong th:text="'- ' + ${#numbers.formatDecimal(folio.folioDiscountTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                     <div class="total"><span>Tổng thanh toán</span><strong th:text="${#numbers.formatDecimal(folio.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                 </div>
             </section>

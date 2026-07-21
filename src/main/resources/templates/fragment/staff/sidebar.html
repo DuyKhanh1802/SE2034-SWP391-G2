@@ -10,7 +10,7 @@
     <!-- SYSTEM ADMIN -->
     <ul class="sidebar-menu" sec:authorize="hasRole('SYSTEM_ADMIN')">
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/system-admin/list-user')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/system-admin/list-user')} ? 'active' : ''">
             <a th:href="@{/system-admin/list-user}">
                 <i class="fas fa-users"></i>
                 <span>Quản lý người dùng</span>
@@ -21,7 +21,7 @@
     <!-- HOTEL ADMIN -->
     <ul class="sidebar-menu" sec:authorize="hasRole('HOTEL_ADMIN')">
         <li
-            th:classappend="${#strings.equals(currentUri ?: '', '/hotel-admin/dashboard')} ? 'active' : ''">
+            th:classappend="${#strings.equals(currentUri, '/hotel-admin/dashboard')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/dashboard}">
                 <i class="fas fa-chart-line"></i>
                 <span>Dashboard</span>
@@ -29,7 +29,7 @@
         </li>
 
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/list-room') or #strings.startsWith(currentUri ?: '', '/hotel-admin/rooms')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/hotel-admin/list-room') or #strings.startsWith(currentUri, '/hotel-admin/rooms')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/list-room}">
                 <i class="fas fa-bed"></i>
                 <span>Quản lý phòng</span>
@@ -37,7 +37,7 @@
         </li>
 
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/room-type-variants')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/hotel-admin/room-type-variants')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/room-type-variants}">
                 <i class="fas fa-layer-group"></i>
                 <span>Hạng phòng / Variant</span>
@@ -45,7 +45,7 @@
         </li>
 
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/services')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/hotel-admin/services')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/services}">
                 <i class="fas fa-concierge-bell"></i>
                 <span>Quản lý dịch vụ</span>
@@ -53,7 +53,7 @@
         </li>
 
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/hotel-admin/promotions')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/hotel-admin/promotions')} ? 'active' : ''">
             <a th:href="@{/hotel-admin/promotions}">
                 <i class="fas fa-tags"></i>
                 <span>Quản lý khuyến mãi</span>
@@ -64,38 +64,38 @@
     <!-- MANAGER -->
     <ul class="sidebar-menu" sec:authorize="hasRole('MANAGER')">
         <li
-            th:classappend="${#strings.equals(currentUri ?: '', '/manager/dashboard')} ? 'active' : ''">
+            th:classappend="${#strings.equals(currentUri, '/manager/dashboard')} ? 'active' : ''">
             <a th:href="@{/manager/dashboard}">
                 <i class="fas fa-chart-line"></i>
                 <span>Tổng quan</span>
             </a>
         </li>
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/manager/transactions')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/manager/transactions')} ? 'active' : ''">
             <a th:href="@{/manager/transactions}">
                 <i class="fas fa-money-bill-transfer"></i>
                 <span>Lịch sử giao dịch</span>
             </a>
         </li>
-        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/reports/revenue')} ? 'active' : ''">
+        <li th:classappend="${#strings.equals(currentUri, '/manager/reports/revenue')} ? 'active' : ''">
             <a th:href="@{/manager/reports/revenue}">
                 <i class="fas fa-sack-dollar"></i>
                 <span>Báo cáo doanh thu</span>
             </a>
         </li>
-        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/reports/occupancy')} ? 'active' : ''">
+        <li th:classappend="${#strings.equals(currentUri, '/manager/reports/occupancy')} ? 'active' : ''">
             <a th:href="@{/manager/reports/occupancy}">
                 <i class="fas fa-bed"></i>
                 <span>Báo cáo công suất</span>
             </a>
         </li>
-        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/reports/services')} ? 'active' : ''">
+        <li th:classappend="${#strings.equals(currentUri, '/manager/reports/services')} ? 'active' : ''">
             <a th:href="@{/manager/reports/services}">
                 <i class="fas fa-concierge-bell"></i>
                 <span>Báo cáo dịch vụ</span>
             </a>
         </li>
-        <li th:classappend="${#strings.equals(currentUri ?: '', '/manager/reports/inventory')} ? 'active' : ''">
+        <li th:classappend="${#strings.equals(currentUri, '/manager/reports/inventory')} ? 'active' : ''">
             <a th:href="@{/manager/reports/inventory}">
                 <i class="fas fa-boxes-stacked"></i>
                 <span>Báo cáo tồn kho</span>
@@ -106,14 +106,14 @@
     <!-- STOREKEEPER -->
     <ul class="sidebar-menu" sec:authorize="hasRole('STOREKEEPER')">
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/storekeeper/inventory') and !#strings.startsWith(currentUri ?: '', '/storekeeper/inventory/history')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/storekeeper/inventory') and !#strings.startsWith(currentUri, '/storekeeper/inventory/history')} ? 'active' : ''">
             <a th:href="@{/storekeeper/inventory}">
                 <i class="fas fa-boxes-stacked"></i>
                 <span>Quản lý kho hàng</span>
             </a>
         </li>
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/storekeeper/inventory/history')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/storekeeper/inventory/history')} ? 'active' : ''">
             <a th:href="@{/storekeeper/inventory/history}">
                 <i class="fas fa-clock-rotate-left"></i>
                 <span>Lịch sử kho</span>
@@ -124,33 +124,33 @@
     <!-- RECEPTIONIST -->
     <ul class="sidebar-menu" sec:authorize="hasRole('RECEPTIONIST')">
         <li
-            th:classappend="${#strings.equals(currentUri ?: '', '/receptionist/dashboard')} ? 'active' : ''">
+            th:classappend="${#strings.equals(currentUri, '/receptionist/dashboard')} ? 'active' : ''">
             <a th:href="@{/receptionist/dashboard}">
                 <i class="fas fa-chart-line"></i>
                 <span>Tổng quan</span>
             </a>
         </li>
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/rooms')} ? 'active' : ''">
+        <li th:classappend="${#strings.startsWith(currentUri, '/receptionist/rooms')} ? 'active' : ''">
             <a th:href="@{/receptionist/rooms}">
                 <i class="fas fa-bed"></i>
                 <span>Sơ đồ phòng</span>
             </a>
         </li>
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/bookings')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/receptionist/bookings')} ? 'active' : ''">
             <a th:href="@{/receptionist/bookings}">
                 <i class="fas fa-calendar-check"></i>
                 <span>Quản lý đặt phòng</span>
             </a>
         </li>
         <li
-            th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/check-in')} ? 'active' : ''">
+            th:classappend="${#strings.startsWith(currentUri, '/receptionist/check-in')} ? 'active' : ''">
             <a th:href="@{/receptionist/check-in}">
                 <i class="fas fa-right-to-bracket"></i>
                 <span>Thủ tục nhận phòng</span>
             </a>
         </li>
-        <li th:classappend="${#strings.startsWith(currentUri ?: '', '/receptionist/folios')} ? 'active' : ''">
+        <li th:classappend="${#strings.startsWith(currentUri, '/receptionist/folios')} ? 'active' : ''">
             <a th:href="@{/receptionist/folios}">
                 <i class="fas fa-file-invoice-dollar"></i>
                 <span>Danh sách hoá đơn</span>
