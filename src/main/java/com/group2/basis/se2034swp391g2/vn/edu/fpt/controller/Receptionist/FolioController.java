@@ -95,6 +95,10 @@ public class FolioController {
                             @RequestParam(required = false) Long bookingDetailId,
                             Model model,
                             RedirectAttributes redirectAttributes) {
+        if (bookingDetailId == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng chọn folio của một phòng để chỉnh sửa.");
+            return "redirect:/receptionist/folios/" + bookingId;
+        }
         try {
             FolioDetailResponse folio = folioService.getFolioDetail(bookingId, bookingDetailId);
             FolioAdjustmentRequest request = new FolioAdjustmentRequest();

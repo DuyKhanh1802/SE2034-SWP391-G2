@@ -37,6 +37,7 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
     List<Object[]> findTopServiceSalesExcludingStatus(@Param("excludedStatus") FolioItemStatus excludedStatus,
                                                       Pageable pageable);
 
+    @SuppressWarnings("JpaQlInspection")
     @Query("""
             SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ServiceReportRowResponse(
                 s.id,
@@ -95,6 +96,7 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
             """)
     long countActiveServiceRequests(@Param("serviceStatus") FolioItemStatus serviceStatus);
 
+    @SuppressWarnings("JpaQlInspection")
     @Query("""
             SELECT new com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.ReceptionistNotificationView$ServiceRequestRow(
                 f.id,
@@ -135,4 +137,8 @@ public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
             """)
     Optional<FolioItem> findServiceItemForUpdate(@Param("folioItemId") Long folioItemId,
                                                  @Param("bookingDetailId") Long bookingDetailId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT f FROM FolioItem f WHERE f.id = :folioItemId")
+    Optional<FolioItem> findByIdForUpdate(@Param("folioItemId") Long folioItemId);
 }
