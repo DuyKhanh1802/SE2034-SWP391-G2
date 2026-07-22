@@ -559,13 +559,14 @@ a {
 
 .room-table th:nth-child(5),
 .room-table td:nth-child(5) {
-    width: 140px;
+    width: 82px;
+    text-align: center;
 }
 
 .room-table th:nth-child(6),
 .room-table td:nth-child(6) {
-    width: 88px;
-    text-align: right;
+    width: 64px;
+    text-align: center;
 }
 
 .room-table th:nth-child(7),
@@ -637,11 +638,13 @@ a {
 ========================= */
 
 .room-actions {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
+    display: table-cell;
     white-space: nowrap;
+}
+
+.room-actions > .room-icon-btn,
+.room-actions > .toggle-operating-form {
+    margin: 0 2px;
 }
 
 .room-icon-btn {

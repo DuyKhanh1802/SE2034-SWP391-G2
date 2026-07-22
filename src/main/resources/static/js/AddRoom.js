@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const noteTextarea = document.getElementById('note');
     const saveRoomButton = document.getElementById('saveRoomButton');
     const addRoomForm = document.getElementById('addRoomForm');
+    let toastTimer;
 
 
     if (!roomNumberSelect || !floorDisplay || !roomTypeDisplay || !viewTypeDisplay || !variantSelect) {
@@ -54,6 +55,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         return labels[viewType] || viewType || '';
+    }
+
+
+    function showErrorToast(message) {
+        let toast = document.getElementById('addRoomClientToast');
+
+
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'addRoomClientToast';
+            toast.className = 'client-toast';
+            toast.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span></span>';
+            document.body.appendChild(toast);
+        }
+
+
+        toast.querySelector('span').textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+            toast.classList.remove('show');
+        }, 3000);
     }
 
 
@@ -172,9 +195,25 @@ document.addEventListener('DOMContentLoaded', function () {
             const note = noteTextarea ? noteTextarea.value.trim() : '';
 
 
+            if (!variantSelect.value) {
+                event.preventDefault();
+                showErrorToast('Không được để loại phòng trống.');
+                variantSelect.focus();
+                return;
+            }
+
+
+            if (!selectedStatus) {
+                event.preventDefault();
+                showErrorToast('Không được để trạng thái trống.');
+                statusSelect.focus();
+                return;
+            }
+
+
             if (selectedStatus === 'MAINTENANCE' && note.length === 0) {
                 event.preventDefault();
-                alert('Vui lòng nhập lý do bảo trì.');
+                showErrorToast('Vui lòng nhập lý do bảo trì.');
                 noteTextarea.focus();
                 return;
             }
@@ -182,11 +221,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (note.length > 500) {
                 event.preventDefault();
-                alert('Số ký tự đã vượt quá giới hạn cho phép.');
+                showErrorToast('Số ký tự đã vượt quá giới hạn cho phép.');
                 noteTextarea.focus();
             }
         });
     }
+
+
+    document.querySelectorAll('.error-toast, .success-toast').forEach(function (toast) {
+        setTimeout(function () {
+            toast.remove();
+        }, 3000);
+    });
 
 
     resetRoomDetailFields();
