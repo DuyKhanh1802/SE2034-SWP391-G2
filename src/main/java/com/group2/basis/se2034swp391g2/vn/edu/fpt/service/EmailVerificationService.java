@@ -1,5 +1,6 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.EmailVerificationResult;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.EmailVerificationToken;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
@@ -17,6 +18,7 @@ public class EmailVerificationService {
 
     private static final int OTP_EXPIRE_MINUTES = 5;
     private static final int MAX_ATTEMPT = 5;
+    private static final String VERIFIED_TOKEN_MARKER = "VERIFIED";
 
     private final EmailVerificationTokenRepository tokenRepository;
     private final UserRepository userRepository;
@@ -83,7 +85,9 @@ public class EmailVerificationService {
             return EmailVerificationResult.DELETED_USER;
         }
 
-        if (Boolean.TRUE.equals(user.getIsActive())) {
+        if (user.getApprovalStatus() != ApprovalStatus.PENDING
+                || isEmailVerified(user)
+                || Boolean.TRUE.equals(user.getIsActive())) {
             return EmailVerificationResult.ALREADY_VERIFIED;
         }
 
@@ -126,11 +130,7 @@ public class EmailVerificationService {
             return EmailVerificationResult.INVALID_OTP;
         }
 
-        user.setIsActive(true);
-        user.setUpdatedAt(Instant.now());
-        userRepository.save(user);
-
-        markTokenAsUsed(verificationToken);
+        markTokenAsVerified(verificationToken);
 
         return EmailVerificationResult.SUCCESS;
     }
@@ -164,15 +164,33 @@ public class EmailVerificationService {
             throw new IllegalArgumentException("Tài khoản đã bị xóa hoặc vô hiệu hóa.");
         }
 
-        if (Boolean.TRUE.equals(user.getIsActive())) {
-            throw new IllegalArgumentException("Tài khoản đã được xác thực.");
+        if (user.getApprovalStatus() != ApprovalStatus.PENDING) {
+            throw new IllegalArgumentException("Tài khoản đã được xử lý phê duyệt.");
         }
+
+        if (isEmailVerified(user)) {
+            throw new IllegalArgumentException("Email đã được xác thực và tài khoản đang chờ duyệt.");
+        }
+
+        if (Boolean.TRUE.equals(user.getIsActive())) {
+            throw new IllegalArgumentException("Tài khoản đã được kích hoạt.");
+        }
+    }
+
+    public boolean isEmailVerified(User user) {
+        return user != null
+                && tokenRepository.existsByUserAndIsUsedTrueAndToken(user, VERIFIED_TOKEN_MARKER);
     }
 
     private void markTokenAsUsed(EmailVerificationToken verificationToken) {
         verificationToken.setIsUsed(true);
         verificationToken.setUsedAt(Instant.now());
         tokenRepository.save(verificationToken);
+    }
+
+    private void markTokenAsVerified(EmailVerificationToken verificationToken) {
+        verificationToken.setToken(VERIFIED_TOKEN_MARKER);
+        markTokenAsUsed(verificationToken);
     }
 
     private String generateOtp() {

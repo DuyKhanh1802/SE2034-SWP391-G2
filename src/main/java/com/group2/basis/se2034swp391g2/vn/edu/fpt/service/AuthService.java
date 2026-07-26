@@ -79,11 +79,7 @@ public class AuthService {
         user.setUserType(UserType.GUEST);
         user.setApprovalStatus(ApprovalStatus.PENDING);
 
-        /*
-         * Quan trọng:
-         * Tài khoản mới đăng ký chưa được đăng nhập ngay.
-         * Sau khi nhập đúng OTP thì EmailVerificationService mới set isActive = true.
-         */
+        // Tài khoản chỉ được kích hoạt sau khi System Admin phê duyệt.
         user.setIsActive(false);
         user.setIsDeleted(false);
 
@@ -119,6 +115,14 @@ public class AuthService {
 
         if (Boolean.TRUE.equals(existingUser.getIsActive())) {
             throw new IllegalArgumentException("Email đã tồn tại trong hệ thống.");
+        }
+
+        if (existingUser.getApprovalStatus() != ApprovalStatus.PENDING) {
+            throw new IllegalArgumentException("Email đã tồn tại trong hệ thống.");
+        }
+
+        if (emailVerificationService.isEmailVerified(existingUser)) {
+            throw new IllegalArgumentException("Email đã được xác thực và tài khoản đang chờ duyệt.");
         }
 
         /*

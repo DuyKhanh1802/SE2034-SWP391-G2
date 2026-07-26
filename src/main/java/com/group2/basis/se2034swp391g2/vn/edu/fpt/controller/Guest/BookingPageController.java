@@ -217,7 +217,12 @@ public class BookingPageController {
             @RequestParam(defaultValue = "1") Integer roomCount,
             @RequestParam(required = false) String roomGuests,
             @RequestParam(required = false) String promoCode,
-
+            @RequestParam(required = false) String bookingReference,
+            @RequestParam(required = false) String guestFirstName,
+            @RequestParam(required = false) String guestLastName,
+            @RequestParam(required = false) String guestPhone,
+            @RequestParam(required = false) String guestEmail,
+            @RequestParam(required = false) String specialRequests,
             Model model
     ) {
         BookingConfirmRequest request = new BookingConfirmRequest();
@@ -230,6 +235,13 @@ public class BookingPageController {
         request.setRoomCount(roomCount);
         request.setRoomGuests(roomGuests);
         request.setPromoCode(promoCode);
+        request.setBookingReference(bookingReference);
+        request.setGuestFirstName(guestFirstName);
+        request.setGuestLastName(guestLastName);
+        request.setGuestPhone(guestPhone);
+        request.setGuestEmail(guestEmail);
+        request.setSpecialRequests(specialRequests);
+        request.setPaymentAcknowledged(true);
 
         return renderBookingConfirm(request, model);
     }
