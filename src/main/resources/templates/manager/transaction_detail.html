@@ -12,8 +12,12 @@
         <a class="btn-secondary-action" th:href="@{/manager/transactions}">Quay lại</a>
     </section>
 
-    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"
+         data-auto-dismiss-alert></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"
+         data-auto-dismiss-alert></div>
+    <div id="cancellationErrorMessage" class="alert alert-danger" style="display: none;"
+         data-auto-dismiss-reusable></div>
 
     <!-- Ba thông tin chính để manager nhìn nhanh phiếu thu/chi. -->
     <section class="transaction-summary">
@@ -146,8 +150,10 @@
     <section class="panel cancel-panel" th:if="${canCancel}">
         <h2>Hủy phiếu thu/chi thủ công</h2>
         <form class="form-panel"
+              id="cancellationForm"
               th:action="@{/manager/transactions/{id}/cancel(id=${transaction.id})}"
-              method="post">
+              method="post"
+              novalidate>
             <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <label for="cancellationReason">Lý do hủy</label>
             <textarea id="cancellationReason"
@@ -160,6 +166,7 @@
             </div>
         </form>
     </section>
+    <script th:src="@{/js/cashTransactionDetail.js}"></script>
 </main>
 </body>
 </html>

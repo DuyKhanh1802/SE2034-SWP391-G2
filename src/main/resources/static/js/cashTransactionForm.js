@@ -8,55 +8,48 @@ document.addEventListener("DOMContentLoaded", function () {
     const amountInput = document.getElementById("amount");
     const paymentMethodInput = document.getElementById("paymentMethod");
     const descriptionInput = document.getElementById("description");
+    const clientErrorMessage = document.getElementById("clientErrorMessage");
 
-    function setAmountMessage() {
-        if (!amountInput.value) {
-            amountInput.setCustomValidity("Vui lòng nhập số tiền.");
-            return;
-        }
-        if (Number(amountInput.value) <= 0) {
-            amountInput.setCustomValidity("Số tiền phải lớn hơn 0.");
-            return;
-        }
-        amountInput.setCustomValidity("");
+    function showFormError(input, message) {
+        clientErrorMessage.textContent = message;
+        clientErrorMessage.style.display = "block";
+        input.focus();
+        window.autoDismissAlert(clientErrorMessage);
     }
 
-    function setPaymentMethodMessage() {
-        if (!paymentMethodInput.value) {
-            paymentMethodInput.setCustomValidity("Vui lòng chọn phương thức thanh toán.");
-            return;
-        }
-        paymentMethodInput.setCustomValidity("");
+    function clearFormError() {
+        clientErrorMessage.textContent = "";
+        clientErrorMessage.style.display = "none";
     }
-
-    function setDescriptionMessage() {
-        if (!descriptionInput.value.trim()) {
-            descriptionInput.setCustomValidity("Vui lòng nhập nội dung phiếu.");
-            return;
-        }
-        descriptionInput.setCustomValidity("");
-    }
-
-    amountInput.addEventListener("input", setAmountMessage);
-    paymentMethodInput.addEventListener("change", setPaymentMethodMessage);
-    descriptionInput.addEventListener("input", setDescriptionMessage);
-    amountInput.addEventListener("invalid", setAmountMessage);
-    paymentMethodInput.addEventListener("invalid", setPaymentMethodMessage);
-    descriptionInput.addEventListener("invalid", setDescriptionMessage);
-
-    // Gan san loi nhac tieng Viet de popup cua trinh duyet khong hien tieng Anh.
-    setAmountMessage();
-    setPaymentMethodMessage();
-    setDescriptionMessage();
 
     voucherForm.addEventListener("submit", function (event) {
-        setAmountMessage();
-        setPaymentMethodMessage();
-        setDescriptionMessage();
+        clearFormError();
 
-        if (!voucherForm.checkValidity()) {
+        if (!amountInput.value.trim()) {
             event.preventDefault();
-            voucherForm.reportValidity();
+            showFormError(amountInput, "Vui lòng nhập số tiền.");
+            return;
         }
+
+        const amount = Number(amountInput.value);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            event.preventDefault();
+            showFormError(amountInput, "Số tiền phải lớn hơn 0.");
+            return;
+        }
+
+        if (!paymentMethodInput.value) {
+            event.preventDefault();
+            showFormError(paymentMethodInput, "Vui lòng chọn phương thức thanh toán.");
+            return;
+        }
+
+        if (!descriptionInput.value.trim()) {
+            event.preventDefault();
+            showFormError(descriptionInput, "Vui lòng nhập nội dung phiếu.");
+            return;
+        }
+
+        descriptionInput.value = descriptionInput.value.trim();
     });
 });

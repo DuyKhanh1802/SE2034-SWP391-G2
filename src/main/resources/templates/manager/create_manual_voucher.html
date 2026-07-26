@@ -11,13 +11,17 @@
         </div>
     </section>
 
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"
+         data-auto-dismiss-alert></div>
+    <div id="clientErrorMessage" class="alert alert-danger" style="display: none;"
+         data-auto-dismiss-reusable></div>
 
     <form class="panel form-panel"
           id="cashTransactionForm"
           th:action="@{/manager/transactions/create}"
           th:object="${voucher}"
-          method="post">
+          method="post"
+          novalidate>
         <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <h2>Thông tin phiếu</h2>
 
