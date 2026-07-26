@@ -9,8 +9,10 @@
         <p>Cập nhật thông tin, ngưỡng cảnh báo và quản lý các quy tắc tiêu hao liên quan.</p>
     </section>
 
-    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"
+         data-auto-dismiss-alert></div>
+    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"
+         data-auto-dismiss-alert></div>
 
     <section class="inventory-card detail-header">
         <div><span class="eyebrow" th:text="${item.code}"></span><h2 th:text="${item.name}"></h2></div>

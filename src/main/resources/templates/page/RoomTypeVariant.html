@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<script th:src="@{/js/guest-auto-dismiss-alert.js}"></script>
+<script th:src="@{/js/auto-dismiss-alert.js}"></script>
 <head>
     <meta charset="UTF-8">
     <title>Chọn phòng | V'Hotel</title>
@@ -116,11 +116,11 @@
                     </div>
                 </button>
             </div>
-            <div th:if="${errorMessage}" class="alert alert-danger">
+            <div th:if="${errorMessage}" class="alert alert-danger" data-auto-dismiss-alert>
                 <span th:text="${errorMessage}"></span>
             </div>
 
-            <div th:if="${searchWarning}" class="alert alert-warning">
+            <div th:if="${searchWarning}" class="alert alert-warning" data-auto-dismiss-alert>
                 <span th:text="${searchWarning}"></span>
             </div>
             <div class="booking-panel date-panel" id="datePanel">

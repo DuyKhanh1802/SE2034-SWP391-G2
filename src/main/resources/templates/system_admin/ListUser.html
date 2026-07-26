@@ -13,7 +13,8 @@
         <p>Danh sách tài khoản khách hàng và nhân viên. Theo dõi vai trò, trạng thái tài khoản và tình trạng duyệt.</p>
     </section>
 
-    <div th:if="${errorMessage}" class="user-alert warning" th:text="${errorMessage}">
+    <div th:if="${errorMessage}" class="user-alert warning" th:text="${errorMessage}"
+         data-auto-dismiss-alert>
         Không thể thực hiện thao tác.
     </div>
 

@@ -9,8 +9,10 @@
         <p>Theo dõi số lượng tồn, ngưỡng tối thiểu và thực hiện các nghiệp vụ nhập kho trên một màn hình.</p>
     </section>
 
-    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"
+         data-auto-dismiss-alert></div>
+    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"
+         data-auto-dismiss-alert></div>
 
     <section class="inventory-card">
         <form class="inventory-filters" method="get" th:action="@{/storekeeper/inventory}">

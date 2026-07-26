@@ -21,11 +21,13 @@
             </a>
         </div>
 
-        <div th:if="${successMessage}" class="user-alert success" th:text="${successMessage}">
+        <div th:if="${successMessage}" class="user-alert success" th:text="${successMessage}"
+             data-auto-dismiss-alert>
             Đã cập nhật thành công.
         </div>
 
-        <div th:if="${errorMessage}" class="user-alert warning" th:text="${errorMessage}">
+        <div th:if="${errorMessage}" class="user-alert warning" th:text="${errorMessage}"
+             data-auto-dismiss-alert>
             Có lỗi xảy ra.
         </div>
 

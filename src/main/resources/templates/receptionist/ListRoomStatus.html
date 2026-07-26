@@ -14,8 +14,10 @@
             <p>Theo dõi và cập nhật trạng thái vận hành phòng.</p>
         </div>
 
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"
+             data-auto-dismiss-alert></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"
+             data-auto-dismiss-alert></div>
 
         <form method="get"
               th:action="@{/receptionist/rooms}"

@@ -9,8 +9,10 @@
         <p>Thông tin tồn kho, chi phí bình quân và các liên kết tiêu hao của hàng hóa.</p>
     </section>
 
-    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="inventory-alert success" th:text="${successMessage}"
+         data-auto-dismiss-alert></div>
+    <div th:if="${errorMessage}" class="inventory-alert warning" th:text="${errorMessage}"
+         data-auto-dismiss-alert></div>
 
     <section class="inventory-card detail-header">
         <div>

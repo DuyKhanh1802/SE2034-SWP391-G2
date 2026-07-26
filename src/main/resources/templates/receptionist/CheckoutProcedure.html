@@ -6,8 +6,10 @@
 <body>
 <main layout:fragment="content">
     <section class="checkout-page">
-        <div th:if="${successMessage}" class="alert alert-success mb-3" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-danger mb-3" th:text="${errorMessage}"></div>
+        <div th:if="${successMessage}" class="alert alert-success mb-3" th:text="${successMessage}"
+             data-auto-dismiss-alert></div>
+        <div th:if="${errorMessage}" class="alert alert-danger mb-3" th:text="${errorMessage}"
+             data-auto-dismiss-alert></div>
 
         <div class="folio-header split">
             <div>

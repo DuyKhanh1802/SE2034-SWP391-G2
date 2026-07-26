@@ -41,8 +41,10 @@
             </div>
         </div>
 
-        <div th:if="${successMessage}" class="folio-alert success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="folio-alert warning" th:text="${errorMessage}"></div>
+        <div th:if="${successMessage}" class="folio-alert success" th:text="${successMessage}"
+             data-auto-dismiss-alert></div>
+        <div th:if="${errorMessage}" class="folio-alert warning" th:text="${errorMessage}"
+             data-auto-dismiss-alert></div>
 
         <div class="summary-grid">
             <div>

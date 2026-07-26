@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<script th:src="@{/js/guest-auto-dismiss-alert.js}"></script>
+<script th:src="@{/js/auto-dismiss-alert.js}"></script>
 <head>
     <meta charset="UTF-8">
     <title>Xác nhận đặt phòng | V'Hotel</title>
@@ -56,7 +56,7 @@
         <!-- LEFT: GUEST FORM -->
         <div class="confirm-left">
 
-            <div th:if="${errorMessage}" class="alert-error">
+            <div th:if="${errorMessage}" class="alert-error" data-auto-dismiss-alert>
                 <p th:text="${errorMessage}">Có lỗi xảy ra.</p>
             </div>
 

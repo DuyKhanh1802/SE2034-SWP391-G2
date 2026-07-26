@@ -10,7 +10,7 @@
     <link rel="stylesheet" th:href="@{/guest/my_booking.css}">
 </head>
 
-<script th:src="@{/js/guest-auto-dismiss-alert.js}"></script>
+<script th:src="@{/js/auto-dismiss-alert.js}"></script>
 <body>
 
 <div class="guest-booking-page">
@@ -24,12 +24,12 @@
         <p>Thông tin đặt phòng và các dịch vụ trong thời gian lưu trú của bạn.</p>
     </header>
 
-    <div th:if="${errorMessage}" class="guest-alert guest-alert-error">
+    <div th:if="${errorMessage}" class="guest-alert guest-alert-error" data-auto-dismiss-alert>
         <i class="fa-solid fa-circle-exclamation"></i>
         <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
     </div>
 
-    <div th:if="${successMessage}" class="guest-alert guest-alert-success">
+    <div th:if="${successMessage}" class="guest-alert guest-alert-success" data-auto-dismiss-alert>
         <i class="fa-solid fa-circle-check"></i>
         <span th:text="${successMessage}">Thao tác thành công.</span>
     </div>

@@ -6,8 +6,10 @@
 <body>
 <main layout:fragment="content">
     <section class="folio-page">
-        <div th:if="${successMessage}" class="folio-alert success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="folio-alert warning" th:text="${errorMessage}"></div>
+        <div th:if="${successMessage}" class="folio-alert success" th:text="${successMessage}"
+             data-auto-dismiss-alert></div>
+        <div th:if="${errorMessage}" class="folio-alert warning" th:text="${errorMessage}"
+             data-auto-dismiss-alert></div>
 
         <section class="folio-toolbar">
             <form th:action="@{/receptionist/folios}" method="get" class="folio-filter">
