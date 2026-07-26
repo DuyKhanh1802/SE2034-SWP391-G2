@@ -106,11 +106,21 @@ public class UserServiceImpl implements UserService {
     public void updateUser(Long id, AccountUpdateRequest request) {
         User existingUser = getUserById(id);
         validateSelfAccountUpdate(existingUser, request);
+        Role requestedRole = null;
+
+        if (Boolean.TRUE.equals(request.getRoleUpdateRequested())) {
+            validateRoleUpdateAllowed(existingUser);
+            requestedRole = validateSingleRole(request.getRoleId());
+            if (existingUser.getApprovalStatus() == ApprovalStatus.REJECTED) {
+                throw new IllegalArgumentException("Không thể thay đổi vai trò của tài khoản đã bị từ chối.");
+            }
+            validateLastActiveSystemAdmin(existingUser, requestedRole.getRoleName());
+        }
 
         if (Boolean.TRUE.equals(request.getIsActive())
-                && existingUser.getApprovalStatus() == ApprovalStatus.REJECTED
+                && existingUser.getApprovalStatus() != ApprovalStatus.APPROVED
                 && request.getApprovalStatus() != ApprovalStatus.APPROVED) {
-            throw new IllegalArgumentException("Không thể kích hoạt tài khoản đã bị từ chối. Hãy duyệt tài khoản trước.");
+            throw new IllegalArgumentException("Chỉ có thể kích hoạt tài khoản đã được duyệt.");
         }
 
         if (request.getIsActive() != null) {
@@ -137,13 +147,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(existingUser);
 
         if (Boolean.TRUE.equals(request.getRoleUpdateRequested())) {
-            Role newRole = validateSingleRole(request.getRoleId());
-            if (existingUser.getApprovalStatus() == ApprovalStatus.REJECTED) {
-                throw new IllegalArgumentException("Không thể thay đổi vai trò của tài khoản đã bị từ chối.");
-            }
-            validateLastActiveSystemAdmin(existingUser, newRole.getRoleName());
-
-            existingUser.setUserType(resolveUserType(newRole.getRoleName()));
+            existingUser.setUserType(UserType.STAFF);
             existingUser.setUpdatedAt(Instant.now());
             userRepository.saveAndFlush(existingUser);
 
@@ -156,9 +160,9 @@ public class UserServiceImpl implements UserService {
                     : null;
 
             UserRole newUserRole = new UserRole();
-            newUserRole.setId(new UserRoleId(id, newRole.getId()));
+            newUserRole.setId(new UserRoleId(id, requestedRole.getId()));
             newUserRole.setUser(entityManager.getReference(User.class, id));
-            newUserRole.setRole(entityManager.getReference(Role.class, newRole.getId()));
+            newUserRole.setRole(entityManager.getReference(Role.class, requestedRole.getId()));
             newUserRole.setAssignedAt(Instant.now());
             newUserRole.setAssignedBy(assignedBy);
             userRoleRepository.save(newUserRole);
@@ -210,11 +214,17 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Vai trò không hợp lệ.");
         }
 
+        if (role.getRoleName() == RoleName.GUEST) {
+            throw new IllegalArgumentException("Không thể gán vai trò Khách hàng trong quản lý tài khoản.");
+        }
+
         return role;
     }
 
-    private UserType resolveUserType(RoleName roleName) {
-        return roleName == RoleName.GUEST ? UserType.GUEST : UserType.STAFF;
+    private void validateRoleUpdateAllowed(User existingUser) {
+        if (existingUser.getUserType() == UserType.GUEST) {
+            throw new IllegalArgumentException("Không thể thay đổi vai trò của tài khoản khách hàng.");
+        }
     }
 
     private void validateLastActiveSystemAdmin(User existingUser, RoleName targetRoleName) {

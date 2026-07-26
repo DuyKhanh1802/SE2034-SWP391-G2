@@ -70,6 +70,7 @@ public class AdminUserViewService {
     public Map<Long, String> getRoleOptions() {
         return roleRepository.findAll().stream()
                 .filter(role -> role.getId() != null && role.getRoleName() != null)
+                .filter(role -> role.getRoleName() != RoleName.GUEST)
                 .sorted((left, right) -> Integer.compare(getRoleOrder(left.getRoleName()), getRoleOrder(right.getRoleName())))
                 .collect(Collectors.toMap(
                         role -> role.getId(),
