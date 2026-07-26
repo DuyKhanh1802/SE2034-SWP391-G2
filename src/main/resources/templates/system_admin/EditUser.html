@@ -125,10 +125,10 @@
                 <input type="hidden" name="isActive" th:value="${!user.isActive}">
                 <button type="submit"
                         class="user-btn-primary"
-                        th:classappend="${user.isActive ? ' danger' : (user.approvalStatus != null and user.approvalStatus.name() == 'REJECTED' ? ' is-disabled' : '')}"
-                        th:disabled="${!user.isActive and user.approvalStatus != null and user.approvalStatus.name() == 'REJECTED'}"
-                        th:title="${!user.isActive and user.approvalStatus != null and user.approvalStatus.name() == 'REJECTED'
-                            ? 'Hãy duyệt tài khoản trước khi kích hoạt.'
+                        th:classappend="${user.isActive ? ' danger' : (user.approvalStatus == null or user.approvalStatus.name() != 'APPROVED' ? ' is-disabled' : '')}"
+                        th:disabled="${!user.isActive and (user.approvalStatus == null or user.approvalStatus.name() != 'APPROVED')}"
+                        th:title="${!user.isActive and (user.approvalStatus == null or user.approvalStatus.name() != 'APPROVED')
+                            ? 'Chỉ có thể kích hoạt tài khoản đã được duyệt.'
                             : ''}">
                     <i class="fa-solid" th:classappend="${user.isActive} ? ' fa-user-slash' : ' fa-user-check'"></i>
                     <span th:text="${user.isActive} ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản'">
@@ -141,7 +141,8 @@
 
         <div class="user-card account-action-card"
              sec:authorize="hasRole('SYSTEM_ADMIN')"
-             th:if="${user.approvalStatus == null or user.approvalStatus.name() != 'REJECTED'}">
+             th:if="${(user.userType == null or user.userType.name() != 'GUEST')
+                    and (user.approvalStatus == null or user.approvalStatus.name() != 'REJECTED')}">
             <div class="section-header">
                 <span>PHÂN QUYỀN</span>
                 <h3>Thay đổi vai trò</h3>
