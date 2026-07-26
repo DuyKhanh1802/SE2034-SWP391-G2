@@ -21,7 +21,8 @@
 
     <section class="content-section promotion-detail-page">
         <!-- Thông báo thành công sau khi vừa chỉnh sửa xong và quay về màn chi tiết. -->
-        <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
+        <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert"
+             data-auto-dismiss-alert>
             <span class="material-symbols-outlined">check_circle</span>
             <span th:text="${successMessage}">Cập nhật khuyến mãi thành công.</span>
         </div>

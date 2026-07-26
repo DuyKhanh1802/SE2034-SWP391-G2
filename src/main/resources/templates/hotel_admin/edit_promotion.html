@@ -18,10 +18,12 @@
     <section class="content-section">
         <div class="form-card">
             <!-- Hiển thị lỗi từ backend hoặc lỗi ngày giờ do client kiểm tra. -->
-            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"
+                 data-auto-dismiss-alert>
                 Có lỗi xảy ra
             </div>
-            <div id="clientErrorMessage" class="alert alert-danger" style="display: none;"></div>
+            <div id="clientErrorMessage" class="alert alert-danger" style="display: none;"
+                 data-auto-dismiss-reusable></div>
 
             <form id="promotionForm"
                   th:action="@{/hotel-admin/promotions/edit/{id}(id=${promotionId})}"
@@ -230,18 +232,18 @@
         }
 
         function showFieldError(input, message) {
-            input.setCustomValidity(message);
             input.focus();
-            input.reportValidity();
+            showFormError(message);
         }
 
         function clearFieldError(input) {
-            input.setCustomValidity("");
+            // Chỉ dùng hộp thông báo lỗi chung, không dùng popup validation mặc định của trình duyệt.
         }
 
         function showFormError(message) {
             clientErrorMessage.textContent = message;
             clientErrorMessage.style.display = "block";
+            window.autoDismissAlert(clientErrorMessage);
         }
 
         function clearFormError() {

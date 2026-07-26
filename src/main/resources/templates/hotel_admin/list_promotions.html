@@ -22,12 +22,14 @@
 
     <section class="content-section">
         <!-- Thông báo thao tác thành công hoặc lỗi trả về từ controller. -->
-        <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert">
+        <div th:if="${successMessage}" class="alert alert-success promotion-alert" role="alert"
+             data-auto-dismiss-alert>
             <span class="material-symbols-outlined">check_circle</span>
             <span th:text="${successMessage}">Thêm khuyến mãi thành công.</span>
         </div>
 
-        <div th:if="${errorMessage}" class="alert alert-danger promotion-alert promotion-alert-danger" role="alert">
+        <div th:if="${errorMessage}" class="alert alert-danger promotion-alert promotion-alert-danger" role="alert"
+             data-auto-dismiss-alert>
             <span class="material-symbols-outlined">error</span>
             <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
         </div>
