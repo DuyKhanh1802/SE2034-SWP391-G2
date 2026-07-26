@@ -162,8 +162,7 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
         AND (
              :checkInDate IS NULL
              OR :checkOutDate IS NULL
-             OR available.availableRooms >= :roomCount
-        )
+OR ISNULL(available.availableRooms, 0) > 0        )
 
         AND rtv.capacity >= CEILING(
              1.0 * (:adults + :children) / :roomCount

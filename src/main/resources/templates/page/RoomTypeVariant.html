@@ -454,12 +454,12 @@
                                 </h4>
 
                                 <p>Giá trung bình mỗi đêm, bao gồm phí dịch vụ, chưa bao gồm thuế</p>
-
                                 <button class="reserve-btn"
                                         type="button"
                                         th:data-variant-id="${room.variantId}"
                                         th:data-variant-name="${room.variantName}"
-                                        th:data-price="${room.pricePerNight}">
+                                        th:data-price="${room.pricePerNight}"
+                                        th:data-available-rooms="${room.availableRooms}">
                                     ĐẶT NGAY
                                 </button>
                             </div>

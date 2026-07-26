@@ -98,6 +98,30 @@ public class BookingSelectionService {
             roomMap.putIfAbsent(room.getVariantId(), room);
         }
 
+        Map<Long, Integer> selectedCountByVariant = new LinkedHashMap<>();
+
+        for (Long id : ids) {
+            selectedCountByVariant.merge(id, 1, Integer::sum);
+        }
+
+        for (Map.Entry<Long, Integer> entry : selectedCountByVariant.entrySet()) {
+            GuestRoomVariantProjection room = roomMap.get(entry.getKey());
+
+            if (room == null) {
+                throw new IllegalArgumentException("Có phòng đã chọn không tồn tại hoặc không còn khả dụng");
+            }
+
+            Integer availableRooms = room.getAvailableRooms();
+
+            if (availableRooms != null && entry.getValue() > availableRooms) {
+                throw new IllegalArgumentException(
+                        "Hạng phòng " + room.getVariantName()
+                                + " chỉ còn " + availableRooms
+                                + " phòng trong thời gian đã chọn."
+                );
+            }
+        }
+
         List<GuestRoomVariantProjection> selectedRooms = new ArrayList<>();
 
         for (Long id : ids) {

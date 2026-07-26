@@ -943,6 +943,35 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function demSoLanDaChonVariant(variantId) {
+        return danhSachPhongDaChon.filter(function (room, index) {
+            return room
+                && String(room.variantId) === String(variantId)
+                && index !== phongDangChon - 1;
+        }).length;
+    }
+
+    function capNhatTrangThaiNutDatPhong() {
+        document.querySelectorAll(".reserve-btn").forEach(function (button) {
+            const variantId = button.dataset.variantId;
+            const availableRooms = Number(button.dataset.availableRooms || 0);
+
+            if (!availableRooms) {
+                button.disabled = false;
+                button.classList.remove("is-disabled");
+                button.textContent = "ĐẶT NGAY";
+                return;
+            }
+
+            const selectedCount = demSoLanDaChonVariant(variantId);
+            const daChonHet = selectedCount >= availableRooms;
+
+            button.disabled = daChonHet;
+            button.classList.toggle("is-disabled", daChonHet);
+            button.textContent = daChonHet ? "ĐÃ CHỌN HẾT" : "ĐẶT NGAY";
+        });
+    }
+
     function capNhatYourTrip() {
         const tripRoomList = document.getElementById("tripRoomList");
 
@@ -1130,7 +1159,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 capNhatYourTrip();
             });
         });
-
+        capNhatTrangThaiNutDatPhong();
         luuYourTripVaoSession();
     }
 
@@ -1138,14 +1167,27 @@ document.addEventListener("DOMContentLoaded", function () {
         button.addEventListener("click", function (event) {
             event.stopPropagation();
 
+            if (this.disabled) {
+                return;
+            }
+
             if (!kiemTraNgayTruocKhiChonPhong()) {
                 return;
             }
+
             const totalRooms = layTongSoPhong();
 
             const variantId = this.dataset.variantId;
             const variantName = this.dataset.variantName;
             const price = Number(this.dataset.price || 0);
+            const availableRooms = Number(this.dataset.availableRooms || 0);
+
+            const selectedSameVariant = demSoLanDaChonVariant(variantId);
+
+            if (availableRooms > 0 && selectedSameVariant >= availableRooms) {
+                capNhatTrangThaiNutDatPhong();
+                return;
+            }
 
             danhSachPhongDaChon[phongDangChon - 1] = {
                 variantId: variantId,
@@ -1158,6 +1200,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (totalRooms > 1 && phongDangChon < totalRooms) {
                 phongDangChon++;
                 capNhatThanhChonPhong();
+                capNhatTrangThaiNutDatPhong();
             }
 
             const filterBar = document.querySelector(".rose-filter-bar");
