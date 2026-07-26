@@ -572,6 +572,27 @@ public class OnlineBookingService {
 
         payment.setStatus(PaymentStatus.FAILED);
         paymentRepository.save(payment);
+
+        if (booking != null && booking.getStatus() == BookingStatus.PENDING) {
+            booking.setStatus(BookingStatus.CANCELLED);
+            booking.setCancelReason("Thanh toán VNPay không thành công hoặc khách hủy thanh toán.");
+            booking.setCancelledAt(Instant.now());
+
+            // Nếu muốn không hiện trong list booking receptionist:
+            booking.setIsDeleted(true);
+
+            bookingRepository.save(booking);
+
+            List<BookingDetail> details =
+                    bookingDetailRepository.findDetailsWithRoomsByBookingId(booking.getId());
+
+            for (BookingDetail detail : details) {
+                detail.setStayStatus(BookingDetailStatus.CANCELLED);
+                detail.setRoom(null);
+            }
+
+            bookingDetailRepository.saveAll(details);
+        }
     }
 
 

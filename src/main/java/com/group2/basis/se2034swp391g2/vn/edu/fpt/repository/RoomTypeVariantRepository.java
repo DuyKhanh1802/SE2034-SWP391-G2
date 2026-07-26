@@ -46,24 +46,19 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
          rtv.price_per_night AS pricePerNight,
          beds.bedSummary AS bedSummary,
 
-
          CASE
              WHEN :checkInDate IS NULL OR :checkOutDate IS NULL THEN NULL
              ELSE available.availableRooms
          END AS availableRooms,
 
-
          rtv.room_size AS roomSize,
          rtv.description AS description,
          img.imageUrls AS imageUrls
 
-
       FROM room_type_variants rtv
-
 
       JOIN room_types rt
          ON rtv.room_type_id = rt.room_type_id
-
 
       LEFT JOIN (
          SELECT
@@ -80,7 +75,6 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
       ) img
          ON img.variantId = rtv.variant_id
 
-
       LEFT JOIN (
          SELECT
              rtvb.variant_id AS variantId,
@@ -95,13 +89,11 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
       ) beds
          ON beds.variantId = rtv.variant_id
 
-
       LEFT JOIN (
          SELECT
              room_count.variantId,
              room_count.totalRooms
                  - ISNULL(booked.bookedRooms, 0) AS availableRooms
-
 
          FROM (
              SELECT
@@ -116,22 +108,27 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
              GROUP BY r.variant_id
          ) room_count
 
-
          LEFT JOIN (
              SELECT
                  bd.variant_id AS variantId,
                  COUNT(bd.booking_detail_id) AS bookedRooms
              FROM booking_details bd
 
-
              JOIN bookings b
                  ON bd.booking_id = b.booking_id
 
-
-             WHERE b.status NOT IN (
-                 'CANCELLED',
-                 'EXPIRED'
-             )
+             WHERE b.is_deleted = 0
+               AND (
+                   b.status IN (
+                       'CONFIRMED',
+                       'CHECKED_IN',
+                       'PARTIALLY_CHECKED_OUT'
+                   )
+                   OR (
+                       b.status = 'PENDING'
+                       AND b.deposit_status = 'PAID'
+                   )
+               )
                AND (
                    :checkInDate IS NULL
                    OR :checkOutDate IS NULL
@@ -141,25 +138,20 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
                    )
                )
 
-
              GROUP BY bd.variant_id
          ) booked
              ON booked.variantId = room_count.variantId
 
-
       ) available
          ON available.variantId = rtv.variant_id
 
-
       WHERE rtv.is_deleted = 0
         AND rt.is_deleted = 0
-
 
         AND (
              :roomTypeId IS NULL
              OR rt.room_type_id = :roomTypeId
         )
-
 
         AND (
              :viewType IS NULL
@@ -167,28 +159,23 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
              OR rtv.view_type = :viewType
         )
 
-
         AND (
              :checkInDate IS NULL
              OR :checkOutDate IS NULL
              OR available.availableRooms >= :roomCount
         )
 
-
         AND rtv.capacity >= CEILING(
              1.0 * (:adults + :children) / :roomCount
         )
-
 
         AND rtv.max_adults >= CEILING(
              1.0 * :adults / :roomCount
         )
 
-
         AND rtv.max_children >= CEILING(
              1.0 * :children / :roomCount
         )
-
 
       ORDER BY
          CASE
@@ -196,12 +183,10 @@ public interface RoomTypeVariantRepository extends JpaRepository<RoomTypeVariant
              THEN rtv.price_per_night
          END ASC,
 
-
          CASE
              WHEN :sort = 'priceDesc'
              THEN rtv.price_per_night
          END DESC,
-
 
          rt.base_price ASC,
          rtv.variant_id ASC
