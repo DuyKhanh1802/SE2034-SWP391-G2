@@ -4,10 +4,12 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.controller.Guest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Payment;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.BookingConfirmRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingCompleteResult;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.BookingConfirmView;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingDetailRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.BookingRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.PaymentRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.service.OnlineBookingService;
@@ -23,7 +25,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Controller
@@ -36,7 +40,7 @@ public class VnPayBookingController {
     private final OnlineBookingService onlineBookingService;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
-
+    private final BookingDetailRepository bookingDetailRepository;
     @PostMapping("/payment/vnpay")
     public String createVnPayPayment(@ModelAttribute BookingConfirmRequest request,
                                      Model model,
@@ -166,11 +170,18 @@ public class VnPayBookingController {
 
         onlineBookingService.markVnPayPaymentFailed(txnRef);
 
+        if ("24".equals(responseCode)) {
+            addConfirmRedirectAttributes(payment.getBooking(), redirectAttributes);
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Bạn đã hủy thanh toán VNPay. Vui lòng kiểm tra lại thông tin và thanh toán lại."
+            );
+            return "redirect:/page/booking/confirm";
+        }
 
         model.addAttribute("success", false);
         model.addAttribute("message", "Thanh toán không thành công. Mã lỗi: " + responseCode);
         model.addAttribute("txnRef", txnRef);
-
 
         return "guest/payment-result";
     }
@@ -193,6 +204,48 @@ public class VnPayBookingController {
         }
     }
 
+    private void addConfirmRedirectAttributes(Booking booking,
+                                              RedirectAttributes redirectAttributes) {
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(booking.getId());
 
+        String variantIds = details.stream()
+                .filter(detail -> detail.getVariant() != null)
+                .map(detail -> String.valueOf(detail.getVariant().getId()))
+                .collect(Collectors.joining(","));
+
+        String roomGuests = details.stream()
+                .map(detail -> {
+                    int adults = detail.getNumAdults() == null ? 1 : detail.getNumAdults();
+                    int children = detail.getNumChildren() == null ? 0 : detail.getNumChildren();
+                    return adults + "-" + children;
+                })
+                .collect(Collectors.joining("|"));
+
+        redirectAttributes.addAttribute("bookingReference", booking.getBookingReference());
+        redirectAttributes.addAttribute("variantIds", variantIds);
+
+        // Quan trọng: phải là yyyy-MM-dd, không add LocalDate trực tiếp
+        redirectAttributes.addAttribute("checkInDate", booking.getCheckInDate().toString());
+        redirectAttributes.addAttribute("checkOutDate", booking.getCheckOutDate().toString());
+
+        redirectAttributes.addAttribute("adults", booking.getNumAdults());
+        redirectAttributes.addAttribute("children", booking.getNumChildren());
+        redirectAttributes.addAttribute("roomCount", booking.getTotalRooms());
+        redirectAttributes.addAttribute("roomGuests", roomGuests);
+
+        if (booking.getPromotion() != null) {
+            redirectAttributes.addAttribute("promoCode", booking.getPromotion().getCode());
+        }
+
+        redirectAttributes.addAttribute("guestFirstName", booking.getGuestFirstName());
+        redirectAttributes.addAttribute("guestLastName", booking.getGuestLastName());
+        redirectAttributes.addAttribute("guestPhone", booking.getGuestPhone());
+        redirectAttributes.addAttribute("guestEmail", booking.getGuestEmail());
+
+        if (booking.getSpecialRequests() != null && !booking.getSpecialRequests().isBlank()) {
+            redirectAttributes.addAttribute("specialRequests", booking.getSpecialRequests());
+        }
+    }
 }
 

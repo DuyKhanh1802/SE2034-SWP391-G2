@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-
+<script th:src="@{/js/guest-auto-dismiss-alert.js}"></script>
 <head>
     <meta charset="UTF-8">
     <title>Xác nhận đặt phòng | V'Hotel</title>
@@ -71,8 +71,7 @@
                 <input type="hidden" name="roomCount" th:value="${request.roomCount}">
                 <input type="hidden" name="roomGuests" th:value="${request.roomGuests}">
                 <input type="hidden" name="promoCode" th:value="${request.promoCode}">
-                <input type="hidden" name="bookingReference" th:value="${confirmView.bookingReference}">
-
+                <input type="hidden" name="bookingReference" th:value="${request.bookingReference}">
                 <!-- Hidden selected add-on services -->
                 <div th:each="item, stat : ${request.roomServices}">
                     <input type="hidden"
