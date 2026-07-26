@@ -53,7 +53,7 @@ public class EmailVerificationService {
 
         mailService.sendRegisterVerificationOtpEmail(
                 user.getEmail(),
-                buildGuestName(user),
+                buildAccountName(user),
                 otp
         );
     }
@@ -199,14 +199,14 @@ public class EmailVerificationService {
         return String.valueOf(number);
     }
 
-    private String buildGuestName(User user) {
+    private String buildAccountName(User user) {
         String lastName = user.getLastName() != null ? user.getLastName().trim() : "";
         String firstName = user.getFirstName() != null ? user.getFirstName().trim() : "";
 
         String fullName = (lastName + " " + firstName).trim();
 
         if (fullName.isEmpty()) {
-            return "Quý khách";
+            return "Nhân viên";
         }
 
         return fullName;

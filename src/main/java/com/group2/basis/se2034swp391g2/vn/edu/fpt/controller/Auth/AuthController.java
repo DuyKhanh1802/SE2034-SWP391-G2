@@ -73,7 +73,7 @@ public class AuthController {
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Đăng ký thành công. Mã OTP xác thực đã được gửi đến email của quý khách."
+                    "Đã gửi mã OTP xác thực đến email đăng ký nhân viên."
             );
 
             return "redirect:/auth/verify-register-otp";
@@ -149,7 +149,7 @@ public class AuthController {
 
             case MAX_ATTEMPT_EXCEEDED:
                 model.addAttribute("email", email);
-                model.addAttribute("errorMessage", "Quý khách đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã OTP mới.");
+                model.addAttribute("errorMessage", "Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã OTP mới.");
                 return "auth/verify-register-otp";
 
             case DELETED_USER:
@@ -198,7 +198,7 @@ public class AuthController {
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Mã OTP mới đã được gửi đến email của quý khách."
+                    "Mã OTP mới đã được gửi đến email đăng ký nhân viên."
             );
 
             return "redirect:/auth/verify-register-otp";

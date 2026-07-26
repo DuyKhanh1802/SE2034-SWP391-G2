@@ -2,6 +2,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.UserType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -73,7 +74,18 @@ public class CustomerUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getApprovalStatus() == ApprovalStatus.APPROVED;
+        return user.getUserType() == UserType.STAFF
+                && user.getApprovalStatus() == ApprovalStatus.APPROVED
+                && hasInternalStaffRole();
+    }
+
+    private boolean hasInternalStaffRole() {
+        return user.getUserRoles() != null
+                && user.getUserRoles().stream()
+                .map(userRole -> userRole.getRole())
+                .anyMatch(role -> role != null
+                        && role.getRoleName() != null
+                        && role.getRoleName() != RoleName.GUEST);
     }
 
     public User getUser() {

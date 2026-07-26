@@ -79,6 +79,7 @@ public class OnlineBookingService {
     private final PaymentRepository paymentRepository;
     private final CashTransactionService cashTransactionService;
     private final FolioItemRepository folioItemRepository;
+    private final BookingGuestAccountService bookingGuestAccountService;
 
 
     @Transactional(readOnly = true)
@@ -336,6 +337,13 @@ public class OnlineBookingService {
 
 
         Booking booking = new Booking();
+        User guest = bookingGuestAccountService.findOrCreateGuest(
+                request.getGuestFirstName(),
+                request.getGuestLastName(),
+                request.getGuestEmail(),
+                request.getGuestPhone(),
+                null
+        );
 
 
         booking.setGuestFirstName(request.getGuestFirstName().trim());
@@ -344,7 +352,7 @@ public class OnlineBookingService {
         booking.setGuestEmail(request.getGuestEmail().trim());
 
 
-        booking.setGuest(null);
+        booking.setGuest(guest);
         booking.setPromotion(promotion);
         booking.setDiscountAmount(confirmView.getPriceSummary().getDiscountAmount());
         booking.setCheckInDate(request.getCheckInDate());
