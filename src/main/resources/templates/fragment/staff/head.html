@@ -42,7 +42,7 @@
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri, '/system-admin')}"
-          th:href="@{/system_admin/css/user-management.css}">
+          th:href="@{/system_admin/user-management.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri, '/hotel-admin/list-room')
@@ -88,7 +88,7 @@
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri, '/storekeeper/inventory')}"
-          th:href="@{/storekeeper/css/Inventory.css}">
+          th:href="@{/storekeeper/Inventory.css}">
 
     <link rel="stylesheet"
           th:if="${#strings.startsWith(currentUri, '/receptionist/bookings')}"

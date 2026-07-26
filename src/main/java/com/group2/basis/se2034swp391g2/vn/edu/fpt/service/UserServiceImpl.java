@@ -187,7 +187,6 @@ public class UserServiceImpl implements UserService {
             existingUser.setApprovalNote(approvalNote);
             existingUser.setIsActive(false);
         } else if (approvalStatus == ApprovalStatus.APPROVED) {
-            validateStaffHasInternalRole(existingUser);
             existingUser.setApprovalNote(null);
             existingUser.setIsActive(true);
         } else {
@@ -226,22 +225,9 @@ public class UserServiceImpl implements UserService {
         if (existingUser.getUserType() == UserType.GUEST) {
             throw new IllegalArgumentException("Không thể thay đổi vai trò của tài khoản khách hàng.");
         }
-    }
 
-    private void validateStaffHasInternalRole(User user) {
-        if (user.getUserType() != UserType.STAFF) {
-            return;
-        }
-
-        boolean hasInternalRole = user.getUserRoles() != null
-                && user.getUserRoles().stream()
-                .map(UserRole::getRole)
-                .anyMatch(role -> role != null
-                        && role.getRoleName() != null
-                        && role.getRoleName() != RoleName.GUEST);
-
-        if (!hasInternalRole) {
-            throw new IllegalArgumentException("Hãy gán vai trò nhân viên trước khi duyệt tài khoản.");
+        if (existingUser.getApprovalStatus() == ApprovalStatus.PENDING) {
+            throw new IllegalArgumentException("Vui lòng duyệt tài khoản trước khi gán vai trò.");
         }
     }
 

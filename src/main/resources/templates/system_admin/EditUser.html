@@ -84,8 +84,8 @@
                   class="approval-form"
                   sec:authorize="hasRole('SYSTEM_ADMIN')"
                   th:if="${user.approvalStatus != null and user.approvalStatus.name() == 'PENDING'}"
-                  th:action="@{/system-admin/list-user/{id}/review(id=${user.id})}"
-                  method="post">
+                   th:action="@{/system-admin/list-user/{id}/review(id=${user.id})}"
+                   method="post">
                 <label for="approvalNote">Lý do từ chối</label>
                 <textarea id="approvalNote"
                           name="approvalNote"
@@ -156,7 +156,9 @@
             <form th:action="@{/system-admin/list-user/{id}/edit(id=${user.id})}"
                   th:object="${updateRequest}"
                   method="post"
-                  class="role-form single-role-form">
+                  class="role-form single-role-form"
+                  th:attr="data-role-update-allowed=${user.approvalStatus != null
+                      and user.approvalStatus.name() == 'APPROVED'}">
                 <input type="hidden" name="roleUpdateRequested" value="true">
                 <div class="role-check-list">
                     <label class="role-check-item"
@@ -179,7 +181,7 @@
 
     </section>
 
-    <script th:src="@{/system_admin/js/edit-user.js}"></script>
+    <script th:src="@{/js/edit-user.js}"></script>
 </main>
 
 </body>

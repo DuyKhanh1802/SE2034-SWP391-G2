@@ -152,7 +152,9 @@ public class UserController {
 
         AccountUpdateRequest updateRequest = new AccountUpdateRequest();
         updateRequest.setIsActive(user.getIsActive());
-        updateRequest.setRoleId(adminUserViewService.getSelectedRoleId(user));
+        if (user.getApprovalStatus() == ApprovalStatus.APPROVED) {
+            updateRequest.setRoleId(adminUserViewService.getSelectedRoleId(user));
+        }
 
         model.addAttribute("user", user);
         model.addAttribute("displayName", DisplayUtils.formatDisplayName(user));

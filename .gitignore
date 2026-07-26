@@ -31,7 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-/scripts/
-/outputs/
-/.codex_tmp/

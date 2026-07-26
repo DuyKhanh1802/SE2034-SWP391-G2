@@ -33,12 +33,21 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('.single-role-form input[type="radio"][name="roleId"]')
     );
     const message = document.getElementById("roleValidationMessage");
+    const roleUpdateAllowed = roleForm
+        && roleForm.dataset.roleUpdateAllowed === "true";
 
     if (!roleForm || !message || radios.length === 0) {
         return;
     }
 
     function updateRoleMessage() {
+        if (!roleUpdateAllowed) {
+            message.textContent = "Vui lòng duyệt tài khoản trước khi gán vai trò.";
+            message.classList.remove("text-success", "text-warning");
+            message.classList.add("text-danger");
+            return false;
+        }
+
         const selected = radios.find(function (radio) {
             return radio.checked;
         });
@@ -64,7 +73,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     radios.forEach(function (radio) {
+        radio.addEventListener("click", function (event) {
+            if (!roleUpdateAllowed) {
+                event.preventDefault();
+                radio.checked = false;
+            }
+            updateRoleMessage();
+        });
         radio.addEventListener("change", updateRoleMessage);
     });
-    updateRoleMessage();
+    if (roleUpdateAllowed) {
+        updateRoleMessage();
+    }
 });
