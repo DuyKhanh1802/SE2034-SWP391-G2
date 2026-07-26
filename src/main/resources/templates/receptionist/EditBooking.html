@@ -134,7 +134,11 @@
 
                         <div class="edit-form-group">
                             <label>Email</label>
-                            <input type="email" th:field="*{email}" required>
+                            <input type="text"
+                                   th:field="*{email}"
+                                   inputmode="email"
+                                   autocomplete="email"
+                                   required>
                         </div>
 
                         <div class="edit-form-group">
