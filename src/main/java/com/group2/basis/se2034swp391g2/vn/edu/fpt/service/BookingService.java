@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.IdentityType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.UserType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Country;
@@ -95,6 +94,7 @@ public class BookingService {
     private final InventoryManagementService inventoryManagementService;
     private final PromotionRepository promotionRepository;
     private final PromotionService promotionService;
+    private final BookingGuestAccountService bookingGuestAccountService;
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingDetailRepository bookingDetailRepository,
@@ -108,7 +108,8 @@ public class BookingService {
                           InventoryManagementService inventoryManagementService,
                           PromotionRepository promotionRepository,
                           PromotionService promotionService,
-                          PaymentService paymentService) {
+                          PaymentService paymentService,
+                          BookingGuestAccountService bookingGuestAccountService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingDetailRepository = bookingDetailRepository;
@@ -123,6 +124,7 @@ public class BookingService {
         this.promotionRepository = promotionRepository;
         this.promotionService = promotionService;
         this.paymentService = paymentService;
+        this.bookingGuestAccountService = bookingGuestAccountService;
     }
 
     public List<BookingResponse> searchBookings(String keyword,
@@ -780,40 +782,35 @@ public class BookingService {
         String phone = request.getPhoneNumber().trim();
         String identityNumber = request.getIdentityNumber().trim();
 
-        User existingUser = userRepository
-                .findByIdentityNumberAndIsDeletedFalse(identityNumber)
-                .or(() -> userRepository.findByEmailAndIsDeletedFalse(email))
-                .or(() -> userRepository.findByPhoneAndIsDeletedFalse(phone))
-                .orElse(null);
-
-        if (existingUser != null) {
-            return existingUser;
-        }
+        User guest = bookingGuestAccountService.findOrCreateGuest(
+                request.getFirstName(),
+                request.getLastName(),
+                email,
+                phone,
+                identityNumber
+        );
 
         Country country = countryRepository.findById(request.getCountryId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quốc gia đã chọn."));
 
         IdentityType identityType = resolveIdentityType(country);
 
-        User guest = User.builder()
-                .userType(UserType.GUEST)
-                .approvalStatus(ApprovalStatus.APPROVED)
-                .firstName(request.getFirstName().trim())
-                .lastName(request.getLastName().trim())
-                .phone(phone)
-                .email(email)
-                .gender(request.getGender())
-                .birthYear(request.getBirthYear())
-                .country(country)
-                .identityType(identityType)
-                .identityNumber(identityNumber)
-                .passportExpiryDate(identityType == IdentityType.PASSPORT
-                        ? request.getPassportExpiryDate()
-                        : null)
-                .isActive(true)
-                .isDeleted(false)
-                .build();
+        if (guest.getUserType() != UserType.GUEST) {
+            return guest;
+        }
 
+        guest.setFirstName(request.getFirstName().trim());
+        guest.setLastName(request.getLastName().trim());
+        guest.setPhone(phone);
+        guest.setEmail(email);
+        guest.setGender(request.getGender());
+        guest.setBirthYear(request.getBirthYear());
+        guest.setCountry(country);
+        guest.setIdentityType(identityType);
+        guest.setIdentityNumber(identityNumber);
+        guest.setPassportExpiryDate(identityType == IdentityType.PASSPORT
+                ? request.getPassportExpiryDate()
+                : null);
         return userRepository.save(guest);
     }
 
@@ -1618,27 +1615,34 @@ public class BookingService {
         User guest = booking.getGuest();
 
         if (guest == null) {
-            guest = new User();
-            guest.setUserType(UserType.GUEST);
+            guest = bookingGuestAccountService.findOrCreateGuest(
+                    firstName,
+                    lastName,
+                    email,
+                    phone,
+                    identityNumber
+            );
             booking.setGuest(guest);
         }
 
-        guest.setFirstName(firstName);
-        guest.setLastName(lastName);
-        guest.setPhone(phone);
-        guest.setEmail(email);
-        guest.setGender(request.getGender());
-        guest.setBirthYear(request.getBirthYear());
-        guest.setCountry(country);
-        IdentityType identityType = resolveIdentityType(country);
+        if (guest.getUserType() == UserType.GUEST) {
+            guest.setFirstName(firstName);
+            guest.setLastName(lastName);
+            guest.setPhone(phone);
+            guest.setEmail(email);
+            guest.setGender(request.getGender());
+            guest.setBirthYear(request.getBirthYear());
+            guest.setCountry(country);
+            IdentityType identityType = resolveIdentityType(country);
 
-        guest.setIdentityNumber(identityNumber);
-        guest.setIdentityType(identityType);
-        guest.setPassportExpiryDate(identityType == IdentityType.PASSPORT
-                ? request.getPassportExpiryDate()
-                : null);
+            guest.setIdentityNumber(identityNumber);
+            guest.setIdentityType(identityType);
+            guest.setPassportExpiryDate(identityType == IdentityType.PASSPORT
+                    ? request.getPassportExpiryDate()
+                    : null);
 
-        userRepository.save(guest);
+            userRepository.save(guest);
+        }
         bookingRepository.save(booking);
     }
 

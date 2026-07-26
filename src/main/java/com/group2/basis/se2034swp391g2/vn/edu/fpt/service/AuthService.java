@@ -1,19 +1,13 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.ApprovalStatus;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.RoleName;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.UserType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.exception.EmailVerificationResentException;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Country;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Role;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.User;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.UserRole;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.UserRoleId;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.RegisterRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.CountryRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.RoleRepository;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRepository;
-import com.group2.basis.se2034swp391g2.vn.edu.fpt.repository.UserRoleRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,21 +20,15 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final CountryRepository countryRepository;
-    private final RoleRepository roleRepository;
-    private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
 
     public AuthService(UserRepository userRepository,
                        CountryRepository countryRepository,
-                       RoleRepository roleRepository,
-                       UserRoleRepository userRoleRepository,
                        PasswordEncoder passwordEncoder,
                        EmailVerificationService emailVerificationService) {
         this.userRepository = userRepository;
         this.countryRepository = countryRepository;
-        this.roleRepository = roleRepository;
-        this.userRoleRepository = userRoleRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailVerificationService = emailVerificationService;
     }
@@ -65,8 +53,6 @@ public class AuthService {
         Country country = countryRepository.findById(request.getCountryId())
                 .orElseThrow(() -> new IllegalArgumentException("Quốc gia không hợp lệ."));
 
-        Role guestRole = findGuestRole();
-
         User user = new User();
 
         user.setFirstName(request.getFirstName().trim());
@@ -76,7 +62,7 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
         user.setCountry(country);
 
-        user.setUserType(UserType.GUEST);
+        user.setUserType(UserType.STAFF);
         user.setApprovalStatus(ApprovalStatus.PENDING);
 
         // Tài khoản chỉ được kích hoạt sau khi System Admin phê duyệt.
@@ -88,23 +74,6 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        UserRoleId userRoleId = new UserRoleId();
-        userRoleId.setUserId(savedUser.getId());
-        userRoleId.setRoleId(guestRole.getId());
-
-        UserRole userRole = new UserRole();
-        userRole.setId(userRoleId);
-        userRole.setUser(savedUser);
-        userRole.setRole(guestRole);
-        userRole.setAssignedAt(Instant.now());
-        userRole.setAssignedBy(null);
-
-        userRoleRepository.save(userRole);
-
-        /*
-         * Gửi OTP xác thực tài khoản đăng ký.
-         * Không dùng createAndSendVerificationToken nữa.
-         */
         emailVerificationService.createAndSendVerificationOtp(savedUser);
     }
 
@@ -200,8 +169,4 @@ public class AuthService {
         return value == null || value.trim().isEmpty();
     }
 
-    private Role findGuestRole() {
-        return roleRepository.findByRoleName(RoleName.GUEST)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy quyền GUEST."));
-    }
 }

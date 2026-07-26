@@ -297,7 +297,7 @@ public class MailService {
 
 
 
-    public void sendRegisterVerificationOtpEmail(String toEmail, String guestName, String otp) {
+    public void sendRegisterVerificationOtpEmail(String toEmail, String accountName, String otp) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
 
@@ -306,12 +306,12 @@ public class MailService {
             message.setSubject("V'Hotel Hanoi - Mã OTP xác thực tài khoản");
 
             message.setText(
-                    "Xin chào " + guestName + ",\n\n" +
-                            "Cảm ơn quý khách đã đăng ký tài khoản tại V'Hotel Hanoi.\n\n" +
-                            "Mã OTP xác thực tài khoản của quý khách là: " + otp + "\n\n" +
+                    "Xin chào " + accountName + ",\n\n" +
+                            "Hệ thống đã nhận được yêu cầu đăng ký tài khoản nhân viên V'Hotel Hanoi.\n\n" +
+                            "Mã OTP xác thực tài khoản của bạn là: " + otp + "\n\n" +
                             "Mã OTP có hiệu lực trong vòng 5 phút.\n\n" +
                             "Vui lòng không chia sẻ mã này cho bất kỳ ai.\n\n" +
-                            "Nếu quý khách không thực hiện đăng ký tài khoản, vui lòng bỏ qua email này.\n\n" +
+                            "Nếu bạn không thực hiện đăng ký tài khoản, vui lòng bỏ qua email này.\n\n" +
                             "Trân trọng,\n" +
                             "Đội ngũ V'Hotel Hanoi"
             );
