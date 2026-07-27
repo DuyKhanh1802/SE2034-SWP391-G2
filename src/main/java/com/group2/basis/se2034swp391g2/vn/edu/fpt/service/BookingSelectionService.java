@@ -24,7 +24,6 @@ public class BookingSelectionService {
 
     private static final int DEFAULT_PAGE_SIZE = 6;
     private static final int MAX_PAGE_SIZE = 24;
-    private static final int MAX_SELECTED_VARIANTS = 20;
 
     private final RoomTypeVariantRepository roomTypeVariantRepository;
     private final ServiceRepository serviceRepository;
@@ -61,9 +60,6 @@ public class BookingSelectionService {
             throw new IllegalArgumentException("Vui lòng chọn phòng trước khi chọn dịch vụ");
         }
 
-        if (results.size() > MAX_SELECTED_VARIANTS) {
-            throw new IllegalArgumentException("Số lượng phòng được chọn vượt quá giới hạn cho phép");
-        }
 
         return results;
     }
