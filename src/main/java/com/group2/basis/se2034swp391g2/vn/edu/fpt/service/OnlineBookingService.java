@@ -77,6 +77,7 @@ public class OnlineBookingService {
     private final ServiceRepository serviceRepository;
     private final PromotionRepository promotionRepository;
     private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
     private final CashTransactionService cashTransactionService;
     private final FolioItemRepository folioItemRepository;
     private final BookingGuestAccountService bookingGuestAccountService;
@@ -526,8 +527,11 @@ public class OnlineBookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giao dịch thanh toán VNPay."));
 
         Booking booking = payment.getBooking();
+        List<BookingDetail> details =
+                bookingDetailRepository.findDetailsWithRoomsByBookingId(booking.getId());
 
         if (booking.getDepositStatus() == DepositStatus.PAID) {
+            paymentService.applyPaymentToBookingDetails(payment, booking, details);
             return booking;
         }
 
@@ -553,13 +557,9 @@ public class OnlineBookingService {
         payment.setTransactionRef(transactionRef);
         payment.setPaidAt(Instant.now());
 
-        paymentRepository.save(payment);
-
         Payment savedPayment = paymentRepository.save(payment);
+        paymentService.applyPaymentToBookingDetails(savedPayment, booking, details);
         cashTransactionService.createFromPayment(savedPayment);
-
-        List<BookingDetail> details =
-                bookingDetailRepository.findDetailsWithRoomsByBookingId(booking.getId());
 
         mailService.sendBookingConfirmedEmail(booking, details);
 

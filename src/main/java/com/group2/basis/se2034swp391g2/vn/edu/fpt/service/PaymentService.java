@@ -17,6 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -101,6 +107,92 @@ public class PaymentService {
                 .bookingDetail(bookingDetail)
                 .amount(normalizedAmount)
                 .build());
+    }
+
+    @Transactional
+    public void applyPaymentToBookingDetails(Payment payment,
+                                             Booking booking,
+                                             List<BookingDetail> bookingDetails) {
+        if (payment == null || payment.getId() == null || payment.getStatus() != PaymentStatus.SUCCESS) {
+            throw new IllegalArgumentException("Giao dịch thành công không hợp lệ.");
+        }
+        if (booking == null || booking.getId() == null
+                || payment.getBooking() == null
+                || !booking.getId().equals(payment.getBooking().getId())) {
+            throw new IllegalArgumentException("Giao dịch không thuộc booking này.");
+        }
+        if (bookingDetails == null || bookingDetails.isEmpty()) {
+            throw new IllegalArgumentException("Booking chưa có phòng để phân bổ thanh toán.");
+        }
+
+        List<BookingDetail> orderedDetails = bookingDetails.stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(BookingDetail::getId))
+                .toList();
+        if (orderedDetails.isEmpty() || orderedDetails.stream().anyMatch(detail ->
+                detail.getId() == null
+                        || detail.getBooking() == null
+                        || !booking.getId().equals(detail.getBooking().getId()))) {
+            throw new IllegalArgumentException("Danh sách phòng không hợp lệ hoặc không thuộc booking.");
+        }
+
+        List<PaymentApplication> existingApplications =
+                paymentApplicationRepository.findByPaymentId(payment.getId());
+        Map<Long, BigDecimal> appliedByDetail = existingApplications.stream()
+                .filter(application -> application.getBookingDetail() != null)
+                .collect(Collectors.toMap(
+                        application -> application.getBookingDetail().getId(),
+                        application -> normalizeAmount(application.getAmount()),
+                        BigDecimal::add
+                ));
+
+        BigDecimal paymentAmount = normalizeAmount(payment.getAmount());
+        BigDecimal alreadyApplied = existingApplications.stream()
+                .map(PaymentApplication::getAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal remainingAmount = paymentAmount.subtract(alreadyApplied);
+        if (remainingAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        BigDecimal remainingCapacity = orderedDetails.stream()
+                .map(detail -> normalizeAmount(detail.getTotalAmount())
+                        .subtract(appliedByDetail.getOrDefault(detail.getId(), BigDecimal.ZERO))
+                        .max(BigDecimal.ZERO))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (remainingAmount.compareTo(remainingCapacity) > 0) {
+            throw new IllegalStateException("Số tiền giao dịch vượt quá tổng tiền chưa phân bổ của các phòng.");
+        }
+
+        List<PaymentApplication> newApplications = new ArrayList<>();
+        for (BookingDetail detail : orderedDetails) {
+            if (remainingAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+
+            BigDecimal detailCapacity = normalizeAmount(detail.getTotalAmount())
+                    .subtract(appliedByDetail.getOrDefault(detail.getId(), BigDecimal.ZERO))
+                    .max(BigDecimal.ZERO);
+            BigDecimal appliedAmount = remainingAmount.min(detailCapacity);
+            if (appliedAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            newApplications.add(PaymentApplication.builder()
+                    .payment(payment)
+                    .booking(booking)
+                    .bookingDetail(detail)
+                    .amount(appliedAmount)
+                    .build());
+            remainingAmount = remainingAmount.subtract(appliedAmount);
+        }
+
+        paymentApplicationRepository.saveAll(newApplications);
+    }
+
+    private BigDecimal normalizeAmount(BigDecimal amount) {
+        return amount == null ? BigDecimal.ZERO : amount;
     }
 
     private String generateUniqueTransactionRef(PaymentType paymentType) {

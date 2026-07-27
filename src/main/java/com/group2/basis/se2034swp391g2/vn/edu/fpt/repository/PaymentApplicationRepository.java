@@ -12,6 +12,8 @@ public interface PaymentApplicationRepository extends JpaRepository<PaymentAppli
 
     List<PaymentApplication> findByBookingDetailId(Long bookingDetailId);
 
+    List<PaymentApplication> findByPaymentId(Long paymentId);
+
     @Query("""
             SELECT COALESCE(SUM(application.amount), 0)
             FROM PaymentApplication application
