@@ -473,7 +473,7 @@
             <aside class="trip-summary">
 
                 <div class="trip-header">
-                    <h3>Your trip</h3>
+                    <h3>Chuyến đi của bạn</h3>
                     <span th:if="${nights > 0}" th:text="${nights + ' đêm'}">2 đêm</span>
                     <span th:unless="${nights > 0}">Chưa chọn ngày</span>
                 </div>
@@ -513,7 +513,7 @@
                             roomGuests=${roomGuests},
                             promoCode=${promoCode}
                         )}">
-                                Edit
+                                Chỉnh sửa
                             </a>
                         </div>
 
@@ -575,7 +575,7 @@
                     <input type="hidden" name="promoCode" id="continuePromoCodeInput" th:value="${promoCode}">
 
                     <button type="submit" class="trip-continue-btn" id="tripContinueBtn" disabled>
-                        Continue
+                        Tiếp tục
                     </button>
                 </form>
 

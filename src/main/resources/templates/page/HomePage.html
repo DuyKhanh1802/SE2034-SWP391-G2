@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>V'Hotel - Luxury Hotel in Hanoi</title>
+    <title>V'Hotel - Khách sạn sang trọng tại Hà Nội</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap -->
@@ -56,7 +56,7 @@
         <div class="container-fluid px-lg-5">
 
             <div class="section-heading text-center">
-                <p class="section-label">WHAT'S ON</p>
+                <p class="section-label">TRẢI NGHIỆM NỔI BẬT</p>
                 <h2>Những dịch vụ không thể bỏ lỡ</h2>
                 <p class="section-desc">
                     Khám phá những trải nghiệm nổi bật được V'Hotel tinh chọn dành cho kỳ nghỉ của bạn.
@@ -79,10 +79,10 @@
                         </div>
 
                         <div class="service-card-body">
-                            <p class="card-kicker" th:text="${service.categoryName}">Category</p>
-                            <h3 th:text="${service.name}">Service name</h3>
+                            <p class="card-kicker" th:text="${service.categoryName}">Danh mục</p>
+                            <h3 th:text="${service.name}">Tên dịch vụ</h3>
                             <p th:text="${service.description}">
-                                Service description
+                                Mô tả dịch vụ
                             </p>
                         </div>
                     </article>
@@ -112,21 +112,21 @@
                          th:alt="${roomType.name}">
 
                     <div th:if="${roomType.imageUrl == null}" class="room-category-placeholder">
-                        <span th:text="${roomType.name}">Room Type</span>
+                        <span th:text="${roomType.name}">Loại phòng</span>
                     </div>
 
                     <div class="room-category-overlay"></div>
 
                     <div class="room-category-content">
-                        <h2 th:text="${roomType.name}">Suite Sojourn</h2>
+                        <h2 th:text="${roomType.name}">Không gian nghỉ dưỡng</h2>
 
                         <p th:text="${roomType.description}">
-                            With breathtaking views and refined interiors, explore our exceptional rooms for an unforgettable V'Hotel experience.
+                            Khám phá những căn phòng sang trọng với tầm nhìn ấn tượng và không gian tinh tế, mang đến kỳ nghỉ đáng nhớ tại V'Hotel.
                         </p>
                     </div>
 
                     <div class="room-category-reserve">
-                        <a th:href="@{/page/rooms(roomTypeId=${roomType.id})}">
+                        <a th:href="@{/page/rooms}">
                             Đặt ngay
                         </a>
                     </div>
@@ -151,13 +151,13 @@
 
                 <div class="col-lg-3">
                     <div class="side-heading">
-                        <p class="section-label">DINING</p>
-                        <h2>Culinary Experiences</h2>
+                        <p class="section-label">ẨM THỰC</p>
+                        <h2>Trải nghiệm ẩm thực</h2>
                         <p>
                             Tận hưởng những món ăn được chuẩn bị tinh tế, kết hợp giữa hương vị địa phương
                             và phong cách phục vụ sang trọng.
                         </p>
-                        <a th:href="@{/page/services/dining}" class="outline-dark-btn">VIEW ALL</a>
+                        <a th:href="@{/page/services/dining}" class="outline-dark-btn">XEM TẤT CẢ</a>
                     </div>
                 </div>
 
@@ -174,15 +174,15 @@
                                          th:alt="${service.name}">
 
                                     <div th:if="${service.imageUrl == null}" class="image-placeholder">
-                                        <span>DINING</span>
+                                        <span>ẨM THỰC</span>
                                     </div>
                                 </div>
 
                                 <div class="service-card-body">
-                                    <p class="card-kicker">V'HOTEL DINING</p>
-                                    <h3 th:text="${service.name}">Dining service</h3>
+                                    <p class="card-kicker">ẨM THỰC V'HOTEL</p>
+                                    <h3 th:text="${service.name}">Dịch vụ ẩm thực</h3>
                                     <p th:text="${service.description}">
-                                        Dining description
+                                        Mô tả dịch vụ ẩm thực
                                     </p>
                                 </div>
                             </article>
@@ -206,13 +206,13 @@
                 <!-- chữ wellness bên trái, giống layout Dining -->
                 <div class="col-lg-3">
                     <div class="side-heading wellness-side-heading">
-                        <p class="section-label">WELLNESS</p>
-                        <h2>Wellness Experiences</h2>
+                        <p class="section-label">CHĂM SÓC SỨC KHỎE</p>
+                        <h2>Trải nghiệm chăm sóc sức khỏe</h2>
                         <p>
                             Tái tạo năng lượng với những dịch vụ chăm sóc sức khỏe, thư giãn và cân bằng
                             dành riêng cho kỳ nghỉ của bạn tại V'Hotel.
                         </p>
-                        <a th:href="@{/page/services/wellness}" class="outline-dark-btn">VIEW ALL</a>
+                        <a th:href="@{/page/services/wellness}" class="outline-dark-btn">XEM TẤT CẢ</a>
                     </div>
                 </div>
 
@@ -230,15 +230,15 @@
                                          th:alt="${service.name}">
 
                                     <div th:if="${service.imageUrl == null}" class="image-placeholder">
-                                        <span>WELLNESS</span>
+                                        <span>CHĂM SÓC SỨC KHỎE</span>
                                     </div>
                                 </div>
 
                                 <div class="service-card-body">
-                                    <p class="card-kicker">V'HOTEL WELLNESS</p>
-                                    <h3 th:text="${service.name}">Wellness service</h3>
+                                    <p class="card-kicker">CHĂM SÓC SỨC KHỎE V'HOTEL</p>
+                                    <h3 th:text="${service.name}">Dịch vụ chăm sóc sức khỏe</h3>
                                     <p th:text="${service.description}">
-                                        Wellness description
+                                        Mô tả dịch vụ chăm sóc sức khỏe
                                     </p>
                                 </div>
                             </article>
@@ -267,12 +267,12 @@
 
                     <div th:if="${featuredPromotion.imageUrl == null}"
                          class="featured-offer-placeholder">
-                        <span>V'HOTEL OFFER</span>
+                        <span>ƯU ĐÃI V'HOTEL</span>
                     </div>
                 </div>
 
                 <div class="featured-offer-content">
-                    <p class="featured-offer-kicker">SPECIAL OFFER</p>
+                    <p class="featured-offer-kicker">ƯU ĐÃI ĐẶC BIỆT</p>
 
                     <h2 th:text="${featuredPromotion.name}">
                         Ưu đãi mùa hè 2026
@@ -280,7 +280,7 @@
 
                     <p class="featured-offer-desc"
                        th:text="${featuredPromotion.description}">
-                        Giảm 200.000 VND cho khách đặt phòng online trong mùa hè.
+                        Giảm 200.000 VND cho khách đặt phòng trực tuyến trong mùa hè.
                     </p>
 
                     <div class="featured-offer-code">
@@ -289,10 +289,10 @@
                     </div>
 
                     <div class="featured-offer-actions">
-                        <a th:href="@{/page/promotions}">VIEW ALL</a>
+                        <a th:href="@{/page/promotions}">XEM TẤT CẢ</a>
 
                         <a th:href="@{/page/rooms(promoCode=${featuredPromotion.code})}">
-                            BOOK NOW
+                            ĐẶT PHÒNG NGAY
                         </a>
                     </div>
                 </div>

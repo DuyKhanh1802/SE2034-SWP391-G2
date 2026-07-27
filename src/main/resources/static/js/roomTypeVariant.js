@@ -1012,13 +1012,13 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <button type="button"
                                         class="trip-edit-room-btn"
                                         data-room-index="${i}">
-                                    Edit
+                                    Chỉnh sửa
                                 </button>
 
                                 <button type="button"
                                         class="trip-remove-room-btn"
                                         data-room-index="${i}">
-                                    Remove
+                                    Xóa
                                 </button>
                             </div>
                         </div>
