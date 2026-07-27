@@ -281,7 +281,7 @@ public class MailService {
                             "Nếu quý khách chưa đến khách sạn hoặc không liên hệ với lễ tân trước 18:00, " +
                             "đặt phòng có thể được xử lý theo trạng thái khách không đến.\n\n" +
 
-                            "Nếu quý khách cần hỗ trợ hoặc đến muộn, vui lòng liên hệ lễ tân để được hỗ trợ.\n\n" +
+                            "Nếu quý khách cần hỗ trợ hoặc đến muộn, vui lòng liên hệ lễ tân qua số 0382271507 để được hỗ trợ.\n\n" +
 
                             "Trân trọng,\n" +
                             "Đội ngũ V'Hotel Hanoi"
