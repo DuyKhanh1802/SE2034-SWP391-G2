@@ -1,6 +1,7 @@
 package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.*;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.BookingDiscountAllocator;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.*;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.request.CheckoutRequest;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.modelview.response.CheckoutDetailResponse;
@@ -69,8 +70,12 @@ public class CheckoutService {
             throw new IllegalArgumentException("Thiếu thông tin trả phòng.");
         }
 
+        Long bookingId = getBookingId(bookingDetailId);
+        Booking booking = getActiveBookingForUpdate(bookingId);
         BookingDetail detail = getBookingDetailForUpdate(bookingDetailId);
-        Booking booking = getActiveBooking(detail);
+        if (detail.getBooking() == null || !booking.getId().equals(detail.getBooking().getId())) {
+            throw new IllegalArgumentException("Phòng được chọn không thuộc booking này.");
+        }
         validateCheckoutTarget(detail, booking);
         if (resolveStayStatus(detail, booking) != BookingDetailStatus.CHECKED_IN) {
             throw new IllegalStateException("Chỉ có thể trả phòng cho phòng đang ở trạng thái đã nhận phòng.");
@@ -79,11 +84,13 @@ public class CheckoutService {
             throw new IllegalStateException("Vui lòng xử lý toàn bộ dịch vụ đang chờ trước khi checkout.");
         }
 
+        List<BookingDetail> bookingDetails = bookingDetailRepository
+                .findDetailsWithRoomsByBookingId(booking.getId());
         List<FolioItem> folioItems = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
         List<PaymentApplication> applications = paymentApplicationRepository.findByBookingDetailId(detail.getId());
 
-        BigDecimal totalAmount = calculateRoomFolioTotal(detail, folioItems);
+        BigDecimal totalAmount = calculateRoomFolioTotal(booking, detail, bookingDetails, folioItems);
         BigDecimal paidAmount = calculateAppliedPaidAmount(applications);
         BigDecimal balance = totalAmount.subtract(paidAmount).setScale(0, RoundingMode.HALF_UP);
         BigDecimal paymentAmount = money(request.getPaymentAmount());
@@ -108,7 +115,7 @@ public class CheckoutService {
         Room room = detail.getRoom();
         if (room != null) {
             room.setStatus(nextRoomStatus);
-            room.setNote(null);
+            room.setNote("Dọn phòng sau checkout");
         }
 
         detail.setStayStatus(BookingDetailStatus.CHECKED_OUT);
@@ -123,7 +130,12 @@ public class CheckoutService {
                                               List<BookingDetail> bookingDetails,
                                               List<FolioItem> folioItems,
                                               List<PaymentApplication> applications) {
-        BigDecimal totalAmount = calculateRoomFolioTotal(detail, folioItems);
+        BigDecimal promotionDiscount = BookingDiscountAllocator.discountForDetail(
+                booking,
+                detail,
+                bookingDetails
+        );
+        BigDecimal totalAmount = calculateRoomFolioTotal(booking, detail, bookingDetails, folioItems);
         BigDecimal netPaid = calculateAppliedPaidAmount(applications);
         BigDecimal balance = totalAmount.subtract(netPaid).setScale(0, RoundingMode.HALF_UP);
         BigDecimal payable = balance.max(BigDecimal.ZERO);
@@ -152,7 +164,7 @@ public class CheckoutService {
                 .serviceSubtotal(calculateFolioSubtotal(folioItems))
                 .serviceChargeTotal(calculateFolioServiceCharge(folioItems))
                 .vatTotal(calculateFolioVat(folioItems))
-                .discountAmount(BigDecimal.ZERO)
+                .discountAmount(promotionDiscount)
                 .totalAmount(totalAmount)
                 .paidAmount(netPaid)
                 .balanceAmount(payable)
@@ -280,6 +292,19 @@ public class CheckoutService {
         return booking;
     }
 
+    private Booking getActiveBookingForUpdate(Long bookingId) {
+        return bookingRepository.findByIdAndIsDeletedFalseForUpdate(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đặt phòng."));
+    }
+
+    private Long getBookingId(Long bookingDetailId) {
+        if (bookingDetailId == null || bookingDetailId <= 0) {
+            throw new IllegalArgumentException("Thiếu mã phòng cần checkout.");
+        }
+        return bookingDetailRepository.findBookingIdById(bookingDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng trong booking."));
+    }
+
     private BookingDetailStatus resolveStayStatus(BookingDetail detail, Booking booking) {
         if (detail.getStayStatus() != null) {
             // Older check-ins only updated the booking and room statuses, leaving
@@ -306,8 +331,11 @@ public class CheckoutService {
         return BookingDetailStatus.RESERVED;
     }
 
-    private BigDecimal calculateRoomFolioTotal(BookingDetail detail, List<FolioItem> folioItems) {
-        return money(detail.getTotalAmount()).add(
+    private BigDecimal calculateRoomFolioTotal(Booking booking,
+                                               BookingDetail detail,
+                                               List<BookingDetail> bookingDetails,
+                                               List<FolioItem> folioItems) {
+        return BookingDiscountAllocator.discountedTotal(booking, detail, bookingDetails).add(
                 folioItems.stream()
                         .filter(this::isChargeableFolioItem)
                         .map(FolioItem::getTotalAmount)

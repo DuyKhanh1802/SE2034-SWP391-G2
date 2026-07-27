@@ -30,6 +30,7 @@ public class FolioDetailResponse {
     private BigDecimal serviceSubtotal;
     private BigDecimal adjustmentTotal;
     private BigDecimal folioDiscountTotal;
+    private BigDecimal promotionDiscountTotal;
     private BigDecimal serviceChargeTotal;
     private BigDecimal vatTotal;
     private BigDecimal totalAmount;

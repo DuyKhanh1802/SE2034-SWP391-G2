@@ -110,6 +110,7 @@
                     <div><span>Phí dịch vụ</span><strong th:text="${#numbers.formatDecimal(folio.serviceChargeTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                     <div><span>VAT</span><strong th:text="${#numbers.formatDecimal(folio.vatTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                     <div><span>Giảm trừ folio</span><strong th:text="'- ' + ${#numbers.formatDecimal(folio.folioDiscountTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
+                    <div><span>Khuyến mãi</span><strong th:text="'- ' + ${#numbers.formatDecimal(folio.promotionDiscountTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                     <div class="total"><span>Tổng thanh toán</span><strong th:text="${#numbers.formatDecimal(folio.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></strong></div>
                 </div>
             </section>

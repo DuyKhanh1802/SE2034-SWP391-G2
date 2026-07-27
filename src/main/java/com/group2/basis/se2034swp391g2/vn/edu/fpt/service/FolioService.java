@@ -6,6 +6,7 @@ import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.FolioItemType;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.BookingDiscountAllocator;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.FolioItem;
@@ -83,7 +84,8 @@ public class FolioService {
     @Transactional(readOnly = true)
     public FolioDetailResponse getFolioDetail(Long bookingId, Long bookingDetailId) {
         Booking booking = getActiveBooking(bookingId);
-        List<BookingDetail> details = bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+        List<BookingDetail> allDetails = bookingDetailRepository.findDetailsWithRoomsByBookingId(bookingId);
+        List<BookingDetail> details = allDetails;
         List<FolioItem> items = folioItemRepository.findByBookingIdAndIsVoidedFalseOrderByPostedAtAsc(bookingId);
         List<Payment> payments = paymentRepository.findByBookingId(bookingId);
         List<PaymentApplication> applications = List.of();
@@ -106,7 +108,8 @@ public class FolioService {
                     .toList();
         }
 
-        FolioTotals totals = calculateFolioTotals(details, items);
+        BigDecimal promotionDiscount = calculatePromotionDiscount(booking, details, allDetails);
+        FolioTotals totals = calculateFolioTotals(details, items, promotionDiscount);
         BigDecimal totalAmount = totals.totalAmount();
         BigDecimal paidAmount = bookingDetailId == null
                 ? calculatePaidAmount(payments)
@@ -146,6 +149,7 @@ public class FolioService {
                 .serviceSubtotal(totals.serviceSubtotal())
                 .adjustmentTotal(totals.adjustmentTotal())
                 .folioDiscountTotal(totals.folioDiscountTotal())
+                .promotionDiscountTotal(totals.promotionDiscountTotal())
                 .serviceChargeTotal(totals.serviceChargeTotal())
                 .vatTotal(totals.vatTotal())
                 .totalAmount(totalAmount)
@@ -170,8 +174,8 @@ public class FolioService {
             throw new IllegalArgumentException("Vui lòng chọn phòng áp dụng điều chỉnh.");
         }
 
-        BookingDetail detail = getBookingDetailForUpdate(request.getBookingDetailId());
         Booking booking = getActiveBookingForUpdate(bookingId);
+        BookingDetail detail = getBookingDetailForUpdate(request.getBookingDetailId());
         validateBookingDetailOwnership(booking, detail);
         validateEditableBooking(booking);
         validateEditableBookingDetail(detail);
@@ -226,8 +230,8 @@ public class FolioService {
             throw new IllegalArgumentException("Thiếu mã dòng folio cần huỷ.");
         }
 
-        BookingDetail detail = getBookingDetailForUpdate(bookingDetailId);
         Booking booking = getActiveBookingForUpdate(bookingId);
+        BookingDetail detail = getBookingDetailForUpdate(bookingDetailId);
         validateBookingDetailOwnership(booking, detail);
         validateEditableBooking(booking);
         validateEditableBookingDetail(detail);
@@ -280,8 +284,11 @@ public class FolioService {
         List<FolioItem> items = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
         List<PaymentApplication> applications = paymentApplicationRepository.findByBookingDetailId(detail.getId());
+        List<BookingDetail> allDetails = bookingDetailRepository
+                .findDetailsWithRoomsByBookingId(booking.getId());
 
-        BigDecimal totalAmount = calculateFolioTotals(List.of(detail), items).totalAmount();
+        BigDecimal promotionDiscount = calculatePromotionDiscount(booking, List.of(detail), allDetails);
+        BigDecimal totalAmount = calculateFolioTotals(List.of(detail), items, promotionDiscount).totalAmount();
         BigDecimal paidAmount = calculateAppliedPaidAmount(applications);
         BigDecimal balanceAmount = calculateBalance(totalAmount, paidAmount);
         PaymentState paymentState = resolvePaymentState(totalAmount, paidAmount);
@@ -445,7 +452,15 @@ public class FolioService {
     private void validateRoomTotalAfterAdjustment(BigDecimal amount, BookingDetail detail) {
         List<FolioItem> currentRoomItems = folioItemRepository
                 .findByBookingDetail_IdAndIsVoidedFalseOrderByPostedAtAsc(detail.getId());
-        BigDecimal currentRoomTotal = calculateFolioTotals(List.of(detail), currentRoomItems).totalAmount();
+        Booking booking = detail.getBooking();
+        List<BookingDetail> allDetails = bookingDetailRepository
+                .findDetailsWithRoomsByBookingId(booking.getId());
+        BigDecimal promotionDiscount = calculatePromotionDiscount(booking, List.of(detail), allDetails);
+        BigDecimal currentRoomTotal = calculateFolioTotals(
+                List.of(detail),
+                currentRoomItems,
+                promotionDiscount
+        ).totalAmount();
         BigDecimal newTotal = currentRoomTotal.add(money(amount));
         if (newTotal.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Số tiền giảm trừ không được lớn hơn tổng tiền hiện tại của phòng.");
@@ -579,7 +594,9 @@ public class FolioService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
-    private FolioTotals calculateFolioTotals(List<BookingDetail> details, List<FolioItem> items) {
+    private FolioTotals calculateFolioTotals(List<BookingDetail> details,
+                                             List<FolioItem> items,
+                                             BigDecimal promotionDiscount) {
         BigDecimal roomSubtotal = details.stream()
                 .map(BookingDetail::getTotalAmount)
                 .filter(Objects::nonNull)
@@ -624,10 +641,19 @@ public class FolioService {
                 money(serviceSubtotal),
                 money(adjustmentTotal),
                 money(folioDiscountTotal),
+                money(promotionDiscount),
                 money(serviceChargeTotal),
                 money(vatTotal),
-                money(roomSubtotal.add(itemTotal))
+                money(roomSubtotal.add(itemTotal).subtract(money(promotionDiscount))).max(BigDecimal.ZERO)
         );
+    }
+
+    private BigDecimal calculatePromotionDiscount(Booking booking,
+                                                  List<BookingDetail> selectedDetails,
+                                                  List<BookingDetail> allDetails) {
+        return money(selectedDetails.stream()
+                .map(detail -> BookingDiscountAllocator.discountForDetail(booking, detail, allDetails))
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
     private boolean isChargeableFolioItem(FolioItem item) {
@@ -669,6 +695,7 @@ public class FolioService {
                                BigDecimal serviceSubtotal,
                                BigDecimal adjustmentTotal,
                                BigDecimal folioDiscountTotal,
+                               BigDecimal promotionDiscountTotal,
                                BigDecimal serviceChargeTotal,
                                BigDecimal vatTotal,
                                BigDecimal totalAmount) {

@@ -3,6 +3,7 @@ package com.group2.basis.se2034swp391g2.vn.edu.fpt.service;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentMethod;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentStatus;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.enums.PaymentType;
+import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.BookingDiscountAllocator;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.common.utils.PaymentCodeGenerator;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.Booking;
 import com.group2.basis.se2034swp391g2.vn.edu.fpt.model.BookingDetail;
@@ -157,7 +158,7 @@ public class PaymentService {
         }
 
         BigDecimal remainingCapacity = orderedDetails.stream()
-                .map(detail -> normalizeAmount(detail.getTotalAmount())
+                .map(detail -> BookingDiscountAllocator.discountedTotal(booking, detail, orderedDetails)
                         .subtract(appliedByDetail.getOrDefault(detail.getId(), BigDecimal.ZERO))
                         .max(BigDecimal.ZERO))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -171,7 +172,7 @@ public class PaymentService {
                 break;
             }
 
-            BigDecimal detailCapacity = normalizeAmount(detail.getTotalAmount())
+            BigDecimal detailCapacity = BookingDiscountAllocator.discountedTotal(booking, detail, orderedDetails)
                     .subtract(appliedByDetail.getOrDefault(detail.getId(), BigDecimal.ZERO))
                     .max(BigDecimal.ZERO);
             BigDecimal appliedAmount = remainingAmount.min(detailCapacity);
